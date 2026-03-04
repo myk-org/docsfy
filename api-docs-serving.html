@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GET /docs/{project}/{path} - docsfy</title>
+    <meta name="description" content="AI-powered documentation generator that creates polished, Mintlify-quality static HTML sites from GitHub repositories">
+    <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <a href="index.html" class="sidebar-logo">docsfy</a>
+            <p class="sidebar-tagline">AI-powered documentation generator that creates polished, Mintlify-quality static HTML sites from GitHub repositories</p>
+        </div>
+
+        <div class="sidebar-search">
+            <input type="text" id="search-input" placeholder="Search... (⌘K)" autocomplete="off" readonly>
+            <div id="search-results" class="search-results"></div>
+        </div>
+
+        <nav class="sidebar-nav">
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Getting Started</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="introduction.html"
+                           class="nav-link">
+                            Introduction
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="quickstart.html"
+                           class="nav-link">
+                            Quickstart
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="installation.html"
+                           class="nav-link">
+                            Installation
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Configuration</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="environment-variables.html"
+                           class="nav-link">
+                            Environment Variables
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="ai-providers.html"
+                           class="nav-link">
+                            AI Providers
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="docker-deployment.html"
+                           class="nav-link">
+                            Docker Deployment
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Usage</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="generating-docs.html"
+                           class="nav-link">
+                            Generating Documentation
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="serving-docs.html"
+                           class="nav-link">
+                            Serving Documentation
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="incremental-updates.html"
+                           class="nav-link">
+                            Incremental Updates
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Architecture</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="generation-pipeline.html"
+                           class="nav-link">
+                            Generation Pipeline
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="ai-cli-integration.html"
+                           class="nav-link">
+                            AI CLI Integration
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="storage-and-database.html"
+                           class="nav-link">
+                            Storage &amp; Database
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="html-renderer.html"
+                           class="nav-link">
+                            HTML Renderer
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">API Reference</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="api-generate.html"
+                           class="nav-link">
+                            POST /api/generate
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="api-status.html"
+                           class="nav-link">
+                            GET /api/status
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="api-projects.html"
+                           class="nav-link">
+                            GET /api/projects/{name}
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="api-projects-delete.html"
+                           class="nav-link">
+                            DELETE /api/projects/{name}
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="api-projects-download.html"
+                           class="nav-link">
+                            GET /api/projects/{name}/download
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="api-docs-serving.html"
+                           class="nav-link active">
+                            GET /docs/{project}/{path}
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="api-health.html"
+                           class="nav-link">
+                            GET /health
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Development</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="contributing.html"
+                           class="nav-link">
+                            Contributing
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="tech-stack.html"
+                           class="nav-link">
+                            Technology Stack
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+        </nav>
+    </aside>
+
+    <div class="main-wrapper">
+        <header class="top-bar">
+            <div class="top-bar-left">
+                <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebar">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                </button>
+                <a href="index.html" class="top-bar-title">docsfy</a>
+            </div>
+            <div class="top-bar-spacer"></div>
+            <div class="top-bar-right">
+                <button class="top-bar-search-btn" id="search-trigger" aria-label="Search">
+                    <kbd>&#8984;K</kbd> Search
+                </button>
+                
+                <a href="https://github.com/myk-org/docsfy" target="_blank" rel="noopener noreferrer" class="top-bar-github" id="github-link" data-repo-url="https://github.com/myk-org/docsfy">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                    <span class="github-stars" id="github-stars"></span>
+                </a>
+                
+                <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+                    <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                    </svg>
+                    <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <main class="content">
+            <article class="article">
+                <h1 class="article-title">GET /docs/{project}/{path}</h1>
+                <div class="article-body">
+                    <h1 id="get-docsprojectpath">GET /docs/{project}/{path}</h1>
+<p>Serve generated static HTML documentation pages directly from the docsfy server.</p>
+<h2 id="overview">Overview</h2>
+<p>The <code>GET /docs/{project}/{path}</code> endpoint serves the final rendered HTML documentation for a project. After docsfy's generation pipeline produces a static site, this endpoint makes it immediately browsable — no separate web server or download step required.</p>
+<p>Each project's documentation lives under its own URL namespace, making it easy to host multiple projects from a single docsfy instance.</p>
+<h2 id="url-parameters">URL Parameters</h2>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>project</code></td>
+<td><code>string</code></td>
+<td>The project name (derived from the repository name during generation)</td>
+</tr>
+<tr>
+<td><code>path</code></td>
+<td><code>string</code></td>
+<td>The path to a specific file within the generated site (e.g., <code>index.html</code>, <code>getting-started.html</code>, <code>assets/style.css</code>)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="how-it-works">How It Works</h2>
+<p>When a request hits <code>/docs/{project}/{path}</code>, docsfy resolves the path against the project's generated site directory on the filesystem:</p>
+<div class="highlight"><pre><span></span><code>/data/projects/{project}/site/{path}
+</code></pre></div>
+
+<p>This directory is populated by Stage 4 (HTML Renderer) of the generation pipeline. The endpoint serves whatever file matches the requested path — HTML pages, CSS stylesheets, JavaScript files, search indexes, and any other static assets.</p>
+<h3 id="request-flow">Request Flow</h3>
+<div class="highlight"><pre><span></span><code>Client Request
+    GET /docs/my-project/getting-started.html
+         │
+         ▼
+    FastAPI Router
+         │
+         ▼
+    Resolve filesystem path
+    /data/projects/my-project/site/getting-started.html
+         │
+         ▼
+    Return file with appropriate Content-Type
+</code></pre></div>
+
+<h2 id="usage-examples">Usage Examples</h2>
+<h3 id="browse-a-projects-documentation">Browse a Project's Documentation</h3>
+<p>Navigate to the root page of a project's documentation:</p>
+<div class="highlight"><pre><span></span><code>GET /docs/my-project/index.html
+</code></pre></div>
+
+<h3 id="access-a-specific-page">Access a Specific Page</h3>
+<p>Each page defined in the project's <code>plan.json</code> becomes an HTML file in the site directory:</p>
+<div class="highlight"><pre><span></span><code>GET /docs/my-project/getting-started.html
+GET /docs/my-project/api-reference.html
+GET /docs/my-project/configuration.html
+</code></pre></div>
+
+<h3 id="load-static-assets">Load Static Assets</h3>
+<p>The generated site includes bundled CSS, JavaScript, and other assets under the <code>assets/</code> directory:</p>
+<div class="highlight"><pre><span></span><code>GET /docs/my-project/assets/style.css
+GET /docs/my-project/assets/search.js
+GET /docs/my-project/assets/theme-toggle.js
+GET /docs/my-project/assets/highlight.js
+</code></pre></div>
+
+<h3 id="fetch-the-search-index">Fetch the Search Index</h3>
+<p>Client-side search is powered by a JSON index that is also served through this endpoint:</p>
+<div class="highlight"><pre><span></span><code>GET /docs/my-project/search-index.json
+</code></pre></div>
+
+<h2 id="generated-site-structure">Generated Site Structure</h2>
+<p>Every project's site directory follows a consistent layout:</p>
+<div class="highlight"><pre><span></span><code>/data/projects/{project}/site/
+├── index.html              # Landing page
+├── getting-started.html    # Example documentation page
+├── api-reference.html      # Example documentation page
+├── ...                     # Additional pages from plan.json
+├── assets/
+│   ├── style.css           # Theme styles (dark/light mode)
+│   ├── search.js           # Client-side search (lunr.js)
+│   ├── theme-toggle.js     # Dark/light theme switcher
+│   └── highlight.js        # Code syntax highlighting
+└── search-index.json       # Search index for client-side search
+</code></pre></div>
+
+<blockquote>
+<p><strong>Note:</strong> The exact set of HTML pages varies per project. The AI Planner (Stage 2) determines the documentation structure, and the AI Content Generator (Stage 3) produces the content for each page. The HTML Renderer (Stage 4) then converts everything into the final static site.</p>
+</blockquote>
+<h2 id="site-features">Site Features</h2>
+<p>Pages served through this endpoint include the full set of docsfy rendering features:</p>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Sidebar navigation</td>
+<td>Hierarchical page navigation generated from <code>plan.json</code></td>
+</tr>
+<tr>
+<td>Dark/light theme</td>
+<td>Toggle between themes; preference persisted client-side</td>
+</tr>
+<tr>
+<td>Client-side search</td>
+<td>Full-text search across all pages using lunr.js</td>
+</tr>
+<tr>
+<td>Syntax highlighting</td>
+<td>Code blocks highlighted with highlight.js</td>
+</tr>
+<tr>
+<td>Responsive design</td>
+<td>Adapts to mobile, tablet, and desktop viewports</td>
+</tr>
+<tr>
+<td>Card layouts</td>
+<td>Visual grouping for related content</td>
+</tr>
+<tr>
+<td>Callout boxes</td>
+<td>Styled note, warning, and info blocks</td>
+</tr>
+</tbody>
+</table>
+<h2 id="relationship-to-the-generation-pipeline">Relationship to the Generation Pipeline</h2>
+<p>This endpoint only serves documentation that has completed the full generation pipeline. The pipeline stages are:</p>
+<ol>
+<li><strong>Clone Repository</strong> — Shallow clone of the source repo</li>
+<li><strong>AI Planner</strong> — Analyzes the repo and produces <code>plan.json</code></li>
+<li><strong>AI Content Generator</strong> — Writes markdown for each page</li>
+<li><strong>HTML Renderer</strong> — Converts markdown + plan into the static site served by this endpoint</li>
+</ol>
+<blockquote>
+<p><strong>Warning:</strong> If a project's status is <code>generating</code> or <code>error</code>, the documentation may not be available or may be incomplete. Check the project status via <code>GET /api/projects/{name}</code> before linking to documentation pages.</p>
+</blockquote>
+<h2 id="project-status-and-availability">Project Status and Availability</h2>
+<p>Before serving documentation, verify the project has completed generation:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Check project status</span>
+curl<span class="w"> </span>http://localhost:8000/api/projects/my-project
+</code></pre></div>
+
+<table>
+<thead>
+<tr>
+<th>Status</th>
+<th>Docs available?</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ready</code></td>
+<td>Yes</td>
+<td>Generation completed successfully; docs are served</td>
+</tr>
+<tr>
+<td><code>generating</code></td>
+<td>Partial/No</td>
+<td>Pipeline is still running</td>
+</tr>
+<tr>
+<td><code>error</code></td>
+<td>No</td>
+<td>Generation failed; check logs for details</td>
+</tr>
+</tbody>
+</table>
+<h2 id="error-responses">Error Responses</h2>
+<table>
+<thead>
+<tr>
+<th>Scenario</th>
+<th>Expected Behavior</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Project does not exist</td>
+<td><code>404 Not Found</code></td>
+</tr>
+<tr>
+<td>Path does not exist within a project's site</td>
+<td><code>404 Not Found</code></td>
+</tr>
+<tr>
+<td>Project is in <code>generating</code> state</td>
+<td>Docs may not yet be available</td>
+</tr>
+<tr>
+<td>Project is in <code>error</code> state</td>
+<td>Docs are unavailable</td>
+</tr>
+</tbody>
+</table>
+<h2 id="self-hosting-alternative">Self-Hosting Alternative</h2>
+<p>If you prefer to serve documentation from your own infrastructure instead of through docsfy's built-in endpoint, download the complete site as a <code>.tar.gz</code> archive:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Download the static site for self-hosting</span>
+curl<span class="w"> </span>-O<span class="w"> </span>http://localhost:8000/api/projects/my-project/download
+</code></pre></div>
+
+<p>The archive contains the same files served by <code>GET /docs/{project}/{path}</code>, ready to deploy to any static file host (Nginx, Apache, S3, GitHub Pages, etc.).</p>
+<blockquote>
+<p><strong>Tip:</strong> Use <code>GET /docs/{project}/{path}</code> during development and testing for instant access. For production, consider downloading the static site and hosting it behind a CDN for optimal performance.</p>
+</blockquote>
+<h2 id="storage-configuration">Storage Configuration</h2>
+<p>The documentation files are stored in the persistent data volume. In the default Docker Compose configuration:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">services</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">docsfy</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">volumes</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./data:/data</span><span class="w">    </span><span class="c1"># All project data including generated sites</span>
+</code></pre></div>
+
+<p>This maps the container's <code>/data</code> directory — where all project sites live — to <code>./data</code> on the host. The generated sites persist across container restarts.</p>
+<blockquote>
+<p><strong>Note:</strong> Ensure the data volume has sufficient disk space. Each project's generated site includes HTML pages, CSS/JS assets, and a search index. Size varies based on the complexity of the documented repository.</p>
+</blockquote>
+                </div>
+            </article>
+            <nav class="page-nav">
+                
+                <a href="api-projects-download.html" class="page-nav-link page-nav-prev">
+                    <span class="page-nav-label">Previous</span>
+                    <span class="page-nav-title">GET /api/projects/{name}/download</span>
+                </a>
+                
+                
+                <a href="api-health.html" class="page-nav-link page-nav-next">
+                    <span class="page-nav-label">Next</span>
+                    <span class="page-nav-title">GET /health</span>
+                </a>
+                
+            </nav>
+            
+            <aside class="toc-sidebar">
+                <div class="toc-container">
+                    <h3>On this page</h3>
+                    <div class="toc">
+<ul>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#url-parameters">URL Parameters</a></li>
+<li><a href="#how-it-works">How It Works</a><ul>
+<li><a href="#request-flow">Request Flow</a></li>
+</ul>
+</li>
+<li><a href="#usage-examples">Usage Examples</a><ul>
+<li><a href="#browse-a-projects-documentation">Browse a Project's Documentation</a></li>
+<li><a href="#access-a-specific-page">Access a Specific Page</a></li>
+<li><a href="#load-static-assets">Load Static Assets</a></li>
+<li><a href="#fetch-the-search-index">Fetch the Search Index</a></li>
+</ul>
+</li>
+<li><a href="#generated-site-structure">Generated Site Structure</a></li>
+<li><a href="#site-features">Site Features</a></li>
+<li><a href="#relationship-to-the-generation-pipeline">Relationship to the Generation Pipeline</a></li>
+<li><a href="#project-status-and-availability">Project Status and Availability</a></li>
+<li><a href="#error-responses">Error Responses</a></li>
+<li><a href="#self-hosting-alternative">Self-Hosting Alternative</a></li>
+<li><a href="#storage-configuration">Storage Configuration</a></li>
+</ul>
+</div>
+
+                </div>
+            </aside>
+            
+        </main>
+
+        <footer class="footer">
+            <p>Built with <a href="https://github.com/docsfy/docsfy">docsfy</a></p>
+        </footer>
+    </div>
+
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <script src="assets/theme.js"></script>
+    <script src="assets/search.js"></script>
+    <script src="assets/copy.js"></script>
+    <script src="assets/callouts.js"></script>
+    <script src="assets/scrollspy.js"></script>
+    <script src="assets/codelabels.js"></script>
+    <script src="assets/github.js"></script>
+    <script>
+    (function() {
+        var toggle = document.getElementById('sidebar-toggle');
+        var sidebar = document.getElementById('sidebar');
+        var overlay = document.getElementById('sidebar-overlay');
+        if (toggle && sidebar) {
+            toggle.addEventListener('click', function() {
+                sidebar.classList.toggle('open');
+                if (overlay) overlay.classList.toggle('open');
+            });
+        }
+        if (overlay) {
+            overlay.addEventListener('click', function() {
+                sidebar.classList.remove('open');
+                overlay.classList.remove('open');
+            });
+        }
+    })();
+    </script>
+</body>
+</html>

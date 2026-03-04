@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>POST /api/generate - docsfy</title>
+    <meta name="description" content="AI-powered documentation generator that creates polished, Mintlify-quality static HTML sites from GitHub repositories">
+    <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <a href="index.html" class="sidebar-logo">docsfy</a>
+            <p class="sidebar-tagline">AI-powered documentation generator that creates polished, Mintlify-quality static HTML sites from GitHub repositories</p>
+        </div>
+
+        <div class="sidebar-search">
+            <input type="text" id="search-input" placeholder="Search... (⌘K)" autocomplete="off" readonly>
+            <div id="search-results" class="search-results"></div>
+        </div>
+
+        <nav class="sidebar-nav">
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Getting Started</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="introduction.html"
+                           class="nav-link">
+                            Introduction
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="quickstart.html"
+                           class="nav-link">
+                            Quickstart
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="installation.html"
+                           class="nav-link">
+                            Installation
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Configuration</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="environment-variables.html"
+                           class="nav-link">
+                            Environment Variables
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="ai-providers.html"
+                           class="nav-link">
+                            AI Providers
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="docker-deployment.html"
+                           class="nav-link">
+                            Docker Deployment
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Usage</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="generating-docs.html"
+                           class="nav-link">
+                            Generating Documentation
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="serving-docs.html"
+                           class="nav-link">
+                            Serving Documentation
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="incremental-updates.html"
+                           class="nav-link">
+                            Incremental Updates
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Architecture</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="generation-pipeline.html"
+                           class="nav-link">
+                            Generation Pipeline
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="ai-cli-integration.html"
+                           class="nav-link">
+                            AI CLI Integration
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="storage-and-database.html"
+                           class="nav-link">
+                            Storage &amp; Database
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="html-renderer.html"
+                           class="nav-link">
+                            HTML Renderer
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">API Reference</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="api-generate.html"
+                           class="nav-link active">
+                            POST /api/generate
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="api-status.html"
+                           class="nav-link">
+                            GET /api/status
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="api-projects.html"
+                           class="nav-link">
+                            GET /api/projects/{name}
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="api-projects-delete.html"
+                           class="nav-link">
+                            DELETE /api/projects/{name}
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="api-projects-download.html"
+                           class="nav-link">
+                            GET /api/projects/{name}/download
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="api-docs-serving.html"
+                           class="nav-link">
+                            GET /docs/{project}/{path}
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="api-health.html"
+                           class="nav-link">
+                            GET /health
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Development</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="contributing.html"
+                           class="nav-link">
+                            Contributing
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="tech-stack.html"
+                           class="nav-link">
+                            Technology Stack
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+        </nav>
+    </aside>
+
+    <div class="main-wrapper">
+        <header class="top-bar">
+            <div class="top-bar-left">
+                <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebar">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                </button>
+                <a href="index.html" class="top-bar-title">docsfy</a>
+            </div>
+            <div class="top-bar-spacer"></div>
+            <div class="top-bar-right">
+                <button class="top-bar-search-btn" id="search-trigger" aria-label="Search">
+                    <kbd>&#8984;K</kbd> Search
+                </button>
+                
+                <a href="https://github.com/myk-org/docsfy" target="_blank" rel="noopener noreferrer" class="top-bar-github" id="github-link" data-repo-url="https://github.com/myk-org/docsfy">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                    <span class="github-stars" id="github-stars"></span>
+                </a>
+                
+                <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+                    <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                    </svg>
+                    <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <main class="content">
+            <article class="article">
+                <h1 class="article-title">POST /api/generate</h1>
+                <div class="article-body">
+                    <h1 id="post-apigenerate">POST /api/generate</h1>
+<p>Start documentation generation for a GitHub repository. This endpoint triggers the full generation pipeline — cloning the repository, planning the documentation structure with AI, generating page content, and rendering a polished static HTML site.</p>
+<h2 id="endpoint">Endpoint</h2>
+<div class="highlight"><pre><span></span><code>POST /api/generate
+</code></pre></div>
+
+<h2 id="request-body">Request Body</h2>
+<p>Send a JSON object containing the GitHub repository URL to generate documentation for.</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;repo_url&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://github.com/owner/repository&quot;</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<h3 id="parameters">Parameters</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>repo_url</code></td>
+<td><code>string</code></td>
+<td>Yes</td>
+<td>The GitHub repository URL. Supports both HTTPS and SSH formats.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="supported-url-formats">Supported URL Formats</h3>
+<p>Both public and private repositories are supported:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># HTTPS (public or private)</span>
+https://github.com/owner/repository
+
+<span class="c1"># SSH (private repos using system git credentials)</span>
+git@github.com:owner/repository.git
+</code></pre></div>
+
+<blockquote>
+<p><strong>Note:</strong> Private repository access relies on system git credentials configured in the container environment. See <a href="/configuration">Configuration</a> for details on mounting credentials.</p>
+</blockquote>
+<h2 id="response">Response</h2>
+<p>A successful request returns <code>200 OK</code> with the project metadata, including its current generation status.</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;repository&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;repo_url&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://github.com/owner/repository&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;generating&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;last_generated&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;last_commit_sha&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<h3 id="response-fields">Response Fields</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>name</code></td>
+<td><code>string</code></td>
+<td>The project name, derived from the repository name.</td>
+</tr>
+<tr>
+<td><code>repo_url</code></td>
+<td><code>string</code></td>
+<td>The repository URL that was submitted.</td>
+</tr>
+<tr>
+<td><code>status</code></td>
+<td><code>string</code></td>
+<td>Current generation status. One of <code>generating</code>, <code>ready</code>, or <code>error</code>.</td>
+</tr>
+<tr>
+<td><code>last_generated</code></td>
+<td><code>string \| null</code></td>
+<td>ISO 8601 timestamp of the last successful generation, or <code>null</code> if not yet complete.</td>
+</tr>
+<tr>
+<td><code>last_commit_sha</code></td>
+<td><code>string \| null</code></td>
+<td>The commit SHA used for the most recent generation, or <code>null</code> if not yet complete.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="status-values">Status Values</h3>
+<table>
+<thead>
+<tr>
+<th>Status</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>generating</code></td>
+<td>The documentation pipeline is currently running.</td>
+</tr>
+<tr>
+<td><code>ready</code></td>
+<td>Documentation has been successfully generated and is available to view or download.</td>
+</tr>
+<tr>
+<td><code>error</code></td>
+<td>Generation failed. Check project details for error logs.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="example">Example</h2>
+<h3 id="curl">cURL</h3>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/api/generate<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{&quot;repo_url&quot;: &quot;https://github.com/myk-org/docsfy&quot;}&#39;</span>
+</code></pre></div>
+
+<h3 id="python-requests">Python (requests)</h3>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
+
+<span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span>
+    <span class="s2">&quot;http://localhost:8000/api/generate&quot;</span><span class="p">,</span>
+    <span class="n">json</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;repo_url&quot;</span><span class="p">:</span> <span class="s2">&quot;https://github.com/myk-org/docsfy&quot;</span><span class="p">}</span>
+<span class="p">)</span>
+
+<span class="n">project</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Project &#39;</span><span class="si">{</span><span class="n">project</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&#39; status: </span><span class="si">{</span><span class="n">project</span><span class="p">[</span><span class="s1">&#39;status&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+
+<h3 id="python-httpx-async">Python (httpx async)</h3>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">httpx</span>
+
+<span class="k">async</span> <span class="k">with</span> <span class="n">httpx</span><span class="o">.</span><span class="n">AsyncClient</span><span class="p">()</span> <span class="k">as</span> <span class="n">client</span><span class="p">:</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="n">client</span><span class="o">.</span><span class="n">post</span><span class="p">(</span>
+        <span class="s2">&quot;http://localhost:8000/api/generate&quot;</span><span class="p">,</span>
+        <span class="n">json</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;repo_url&quot;</span><span class="p">:</span> <span class="s2">&quot;https://github.com/myk-org/docsfy&quot;</span><span class="p">}</span>
+    <span class="p">)</span>
+    <span class="n">project</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+</code></pre></div>
+
+<h2 id="generation-pipeline">Generation Pipeline</h2>
+<p>When a request is accepted, docsfy runs four sequential stages in the background:</p>
+<h3 id="stage-1-clone-repository">Stage 1: Clone Repository</h3>
+<p>The repository is shallow-cloned (<code>--depth 1</code>) to a temporary directory. This minimizes disk usage and clone time while providing full access to the current source tree.</p>
+<h3 id="stage-2-ai-planner">Stage 2: AI Planner</h3>
+<p>The configured AI CLI analyzes the entire repository and produces a <code>plan.json</code> file containing the documentation structure — pages, sections, and navigation hierarchy.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># The AI CLI runs with cwd set to the cloned repo directory</span>
+<span class="c1"># Provider commands vary by configuration:</span>
+
+<span class="c1"># Claude</span>
+<span class="n">claude</span> <span class="o">--</span><span class="n">model</span> <span class="o">&lt;</span><span class="n">model</span><span class="o">&gt;</span> <span class="o">--</span><span class="n">dangerously</span><span class="o">-</span><span class="n">skip</span><span class="o">-</span><span class="n">permissions</span> <span class="o">-</span><span class="n">p</span>
+
+<span class="c1"># Gemini</span>
+<span class="n">gemini</span> <span class="o">--</span><span class="n">model</span> <span class="o">&lt;</span><span class="n">model</span><span class="o">&gt;</span> <span class="o">--</span><span class="n">yolo</span>
+
+<span class="c1"># Cursor</span>
+<span class="n">agent</span> <span class="o">--</span><span class="n">force</span> <span class="o">--</span><span class="n">model</span> <span class="o">&lt;</span><span class="n">model</span><span class="o">&gt;</span> <span class="o">--</span><span class="nb">print</span> <span class="o">--</span><span class="n">workspace</span> <span class="o">&lt;</span><span class="n">path</span><span class="o">&gt;</span>
+</code></pre></div>
+
+<h3 id="stage-3-ai-content-generator">Stage 3: AI Content Generator</h3>
+<p>For each page defined in <code>plan.json</code>, the AI CLI runs with full access to the cloned repository. Pages are generated concurrently using async execution with semaphore-limited concurrency. Generated markdown files are cached at <code>/data/projects/{name}/cache/pages/*.md</code>.</p>
+<h3 id="stage-4-html-renderer">Stage 4: HTML Renderer</h3>
+<p>Markdown pages and <code>plan.json</code> are converted into a polished static HTML site using Jinja2 templates with bundled CSS/JS assets. The final site includes:</p>
+<ul>
+<li>Sidebar navigation</li>
+<li>Dark/light theme toggle</li>
+<li>Client-side search (via lunr.js)</li>
+<li>Code syntax highlighting (via highlight.js)</li>
+<li>Callout boxes (note, warning, info)</li>
+<li>Responsive design</li>
+</ul>
+<p>Output is written to <code>/data/projects/{name}/site/</code>.</p>
+<blockquote>
+<p><strong>Tip:</strong> Once generation completes with status <code>ready</code>, view the docs at <code>GET /docs/{project}/</code> or download them as a <code>.tar.gz</code> archive via <code>GET /api/projects/{name}/download</code>.</p>
+</blockquote>
+<h2 id="incremental-updates">Incremental Updates</h2>
+<p>Calling <code>POST /api/generate</code> for a repository that has already been generated triggers an incremental update:</p>
+<ol>
+<li>The current commit SHA is compared against the stored SHA from the last generation.</li>
+<li>If the repository has changed, the AI Planner re-evaluates the documentation structure.</li>
+<li>Only pages affected by the changes are regenerated — unchanged pages use cached markdown.</li>
+<li>The HTML renderer rebuilds the full site with updated content.</li>
+</ol>
+<blockquote>
+<p><strong>Note:</strong> If the repository has not changed since the last generation, the endpoint returns the existing project metadata without re-running the pipeline.</p>
+</blockquote>
+<h2 id="error-handling">Error Handling</h2>
+<table>
+<thead>
+<tr>
+<th>HTTP Status</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>200</code></td>
+<td>Generation started successfully (or project already exists).</td>
+</tr>
+<tr>
+<td><code>422</code></td>
+<td>Invalid request body — missing or malformed <code>repo_url</code>.</td>
+</tr>
+<tr>
+<td><code>500</code></td>
+<td>Internal server error during pipeline initialization.</td>
+</tr>
+</tbody>
+</table>
+<p>If generation fails during any pipeline stage, the project status is set to <code>error</code>. Retrieve error details using <code>GET /api/projects/{name}</code>.</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;repository&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;repo_url&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://github.com/owner/repository&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;error&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;last_generated&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;last_commit_sha&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<blockquote>
+<p><strong>Warning:</strong> Generation is a long-running process that involves cloning a repository and making multiple AI CLI calls. The <code>AI_CLI_TIMEOUT</code> environment variable (default: <code>60</code> minutes) controls the maximum time allowed for each AI invocation.</p>
+</blockquote>
+<h2 id="related-configuration">Related Configuration</h2>
+<p>The AI provider and model used during generation are controlled by environment variables:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># AI Configuration</span>
+<span class="nv">AI_PROVIDER</span><span class="o">=</span>claude<span class="w">          </span><span class="c1"># Options: claude, gemini, cursor</span>
+<span class="nv">AI_MODEL</span><span class="o">=</span>claude-opus-4-6<span class="o">[</span>1m<span class="o">]</span><span class="w">  </span><span class="c1"># Model identifier for the selected provider</span>
+<span class="nv">AI_CLI_TIMEOUT</span><span class="o">=</span><span class="m">60</span><span class="w">           </span><span class="c1"># Timeout per AI invocation in minutes</span>
+</code></pre></div>
+
+<p>See the <a href="/configuration">Configuration</a> page for the full list of environment variables and provider setup instructions.</p>
+<h2 id="related-endpoints">Related Endpoints</h2>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Path</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GET</code></td>
+<td><code>/api/status</code></td>
+<td>List all projects and their generation status.</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/api/projects/{name}</code></td>
+<td>Get project details including generation logs.</td>
+</tr>
+<tr>
+<td><code>DELETE</code></td>
+<td><code>/api/projects/{name}</code></td>
+<td>Remove a project and its generated documentation.</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/api/projects/{name}/download</code></td>
+<td>Download the generated site as a <code>.tar.gz</code> archive.</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/docs/{project}/{path}</code></td>
+<td>Serve the generated static HTML documentation.</td>
+</tr>
+</tbody>
+</table>
+                </div>
+            </article>
+            <nav class="page-nav">
+                
+                <a href="html-renderer.html" class="page-nav-link page-nav-prev">
+                    <span class="page-nav-label">Previous</span>
+                    <span class="page-nav-title">HTML Renderer</span>
+                </a>
+                
+                
+                <a href="api-status.html" class="page-nav-link page-nav-next">
+                    <span class="page-nav-label">Next</span>
+                    <span class="page-nav-title">GET /api/status</span>
+                </a>
+                
+            </nav>
+            
+            <aside class="toc-sidebar">
+                <div class="toc-container">
+                    <h3>On this page</h3>
+                    <div class="toc">
+<ul>
+<li><a href="#endpoint">Endpoint</a></li>
+<li><a href="#request-body">Request Body</a><ul>
+<li><a href="#parameters">Parameters</a></li>
+<li><a href="#supported-url-formats">Supported URL Formats</a></li>
+</ul>
+</li>
+<li><a href="#response">Response</a><ul>
+<li><a href="#response-fields">Response Fields</a></li>
+<li><a href="#status-values">Status Values</a></li>
+</ul>
+</li>
+<li><a href="#example">Example</a><ul>
+<li><a href="#curl">cURL</a></li>
+<li><a href="#python-requests">Python (requests)</a></li>
+<li><a href="#python-httpx-async">Python (httpx async)</a></li>
+</ul>
+</li>
+<li><a href="#generation-pipeline">Generation Pipeline</a><ul>
+<li><a href="#stage-1-clone-repository">Stage 1: Clone Repository</a></li>
+<li><a href="#stage-2-ai-planner">Stage 2: AI Planner</a></li>
+<li><a href="#stage-3-ai-content-generator">Stage 3: AI Content Generator</a></li>
+<li><a href="#stage-4-html-renderer">Stage 4: HTML Renderer</a></li>
+</ul>
+</li>
+<li><a href="#incremental-updates">Incremental Updates</a></li>
+<li><a href="#error-handling">Error Handling</a></li>
+<li><a href="#related-configuration">Related Configuration</a></li>
+<li><a href="#related-endpoints">Related Endpoints</a></li>
+</ul>
+</div>
+
+                </div>
+            </aside>
+            
+        </main>
+
+        <footer class="footer">
+            <p>Built with <a href="https://github.com/docsfy/docsfy">docsfy</a></p>
+        </footer>
+    </div>
+
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <script src="assets/theme.js"></script>
+    <script src="assets/search.js"></script>
+    <script src="assets/copy.js"></script>
+    <script src="assets/callouts.js"></script>
+    <script src="assets/scrollspy.js"></script>
+    <script src="assets/codelabels.js"></script>
+    <script src="assets/github.js"></script>
+    <script>
+    (function() {
+        var toggle = document.getElementById('sidebar-toggle');
+        var sidebar = document.getElementById('sidebar');
+        var overlay = document.getElementById('sidebar-overlay');
+        if (toggle && sidebar) {
+            toggle.addEventListener('click', function() {
+                sidebar.classList.toggle('open');
+                if (overlay) overlay.classList.toggle('open');
+            });
+        }
+        if (overlay) {
+            overlay.addEventListener('click', function() {
+                sidebar.classList.remove('open');
+                overlay.classList.remove('open');
+            });
+        }
+    })();
+    </script>
+</body>
+</html>

@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTML Renderer - docsfy</title>
+    <meta name="description" content="AI-powered documentation generator that creates polished, Mintlify-quality static HTML sites from GitHub repositories">
+    <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <a href="index.html" class="sidebar-logo">docsfy</a>
+            <p class="sidebar-tagline">AI-powered documentation generator that creates polished, Mintlify-quality static HTML sites from GitHub repositories</p>
+        </div>
+
+        <div class="sidebar-search">
+            <input type="text" id="search-input" placeholder="Search... (⌘K)" autocomplete="off" readonly>
+            <div id="search-results" class="search-results"></div>
+        </div>
+
+        <nav class="sidebar-nav">
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Getting Started</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="introduction.html"
+                           class="nav-link">
+                            Introduction
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="quickstart.html"
+                           class="nav-link">
+                            Quickstart
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="installation.html"
+                           class="nav-link">
+                            Installation
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Configuration</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="environment-variables.html"
+                           class="nav-link">
+                            Environment Variables
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="ai-providers.html"
+                           class="nav-link">
+                            AI Providers
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="docker-deployment.html"
+                           class="nav-link">
+                            Docker Deployment
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Usage</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="generating-docs.html"
+                           class="nav-link">
+                            Generating Documentation
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="serving-docs.html"
+                           class="nav-link">
+                            Serving Documentation
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="incremental-updates.html"
+                           class="nav-link">
+                            Incremental Updates
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Architecture</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="generation-pipeline.html"
+                           class="nav-link">
+                            Generation Pipeline
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="ai-cli-integration.html"
+                           class="nav-link">
+                            AI CLI Integration
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="storage-and-database.html"
+                           class="nav-link">
+                            Storage &amp; Database
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="html-renderer.html"
+                           class="nav-link active">
+                            HTML Renderer
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">API Reference</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="api-generate.html"
+                           class="nav-link">
+                            POST /api/generate
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="api-status.html"
+                           class="nav-link">
+                            GET /api/status
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="api-projects.html"
+                           class="nav-link">
+                            GET /api/projects/{name}
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="api-projects-delete.html"
+                           class="nav-link">
+                            DELETE /api/projects/{name}
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="api-projects-download.html"
+                           class="nav-link">
+                            GET /api/projects/{name}/download
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="api-docs-serving.html"
+                           class="nav-link">
+                            GET /docs/{project}/{path}
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="api-health.html"
+                           class="nav-link">
+                            GET /health
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Development</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="contributing.html"
+                           class="nav-link">
+                            Contributing
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="tech-stack.html"
+                           class="nav-link">
+                            Technology Stack
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+        </nav>
+    </aside>
+
+    <div class="main-wrapper">
+        <header class="top-bar">
+            <div class="top-bar-left">
+                <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebar">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                </button>
+                <a href="index.html" class="top-bar-title">docsfy</a>
+            </div>
+            <div class="top-bar-spacer"></div>
+            <div class="top-bar-right">
+                <button class="top-bar-search-btn" id="search-trigger" aria-label="Search">
+                    <kbd>&#8984;K</kbd> Search
+                </button>
+                
+                <a href="https://github.com/myk-org/docsfy" target="_blank" rel="noopener noreferrer" class="top-bar-github" id="github-link" data-repo-url="https://github.com/myk-org/docsfy">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                    <span class="github-stars" id="github-stars"></span>
+                </a>
+                
+                <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+                    <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                    </svg>
+                    <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <main class="content">
+            <article class="article">
+                <h1 class="article-title">HTML Renderer</h1>
+                <div class="article-body">
+                    <h1 id="html-renderer">HTML Renderer</h1>
+<p>The HTML Renderer is Stage 4 of the docsfy generation pipeline. It transforms AI-generated Markdown pages and the <code>plan.json</code> navigation structure into a polished, self-contained static HTML documentation site.</p>
+<h2 id="overview">Overview</h2>
+<p>The renderer takes two inputs:</p>
+<ol>
+<li><strong><code>plan.json</code></strong> — the documentation structure produced by the AI Planner (Stage 2), defining pages, sections, and navigation hierarchy</li>
+<li><strong>Markdown files</strong> — per-page content generated by the AI Content Generator (Stage 3), cached at <code>/data/projects/{name}/cache/pages/*.md</code></li>
+</ol>
+<p>It produces a complete static site at <code>/data/projects/{name}/site/</code> that can be served directly by the docsfy API or downloaded as a <code>.tar.gz</code> archive for self-hosting.</p>
+<div class="highlight"><pre><span></span><code>/data/projects/{project-name}/site/
+  index.html
+  *.html
+  assets/
+    style.css
+    search.js
+    theme-toggle.js
+    highlight.js
+  search-index.json
+</code></pre></div>
+
+<h2 id="jinja2-templating">Jinja2 Templating</h2>
+<p>The renderer uses <a href="https://jinja.palletsprojects.com/">Jinja2</a> as its templating engine to convert Markdown content into fully-structured HTML pages. Each page defined in <code>plan.json</code> is rendered through a base template that provides consistent layout, navigation, and asset loading.</p>
+<h3 id="template-context">Template Context</h3>
+<p>When rendering a page, the following context variables are passed to the Jinja2 template:</p>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>page_title</code></td>
+<td><code>str</code></td>
+<td>Title of the current page</td>
+</tr>
+<tr>
+<td><code>page_content</code></td>
+<td><code>str</code></td>
+<td>Rendered HTML from Markdown source</td>
+</tr>
+<tr>
+<td><code>project_name</code></td>
+<td><code>str</code></td>
+<td>Name of the documentation project</td>
+</tr>
+<tr>
+<td><code>navigation</code></td>
+<td><code>list[dict]</code></td>
+<td>Sidebar navigation tree from <code>plan.json</code></td>
+</tr>
+<tr>
+<td><code>current_page</code></td>
+<td><code>str</code></td>
+<td>Slug/path of the active page (for highlighting)</td>
+</tr>
+<tr>
+<td><code>pages</code></td>
+<td><code>list[dict]</code></td>
+<td>All pages metadata for search index generation</td>
+</tr>
+</tbody>
+</table>
+<h3 id="markdown-processing">Markdown Processing</h3>
+<p>Markdown content is converted to HTML using the Python <code>markdown</code> library before being injected into the template. The renderer processes several extended Markdown features:</p>
+<ul>
+<li><strong>Fenced code blocks</strong> — converted to <code>&lt;pre&gt;&lt;code&gt;</code> elements with language classes for syntax highlighting</li>
+<li><strong>Callout boxes</strong> — blockquote patterns for note, warning, and info callouts are transformed into styled <code>&lt;div&gt;</code> elements</li>
+<li><strong>Card layouts</strong> — structured content blocks rendered as visual cards</li>
+<li><strong>Tables</strong> — GitHub-flavored Markdown tables with responsive wrappers</li>
+</ul>
+<h4 id="callout-syntax">Callout Syntax</h4>
+<p>The renderer recognizes three callout types in Markdown source:</p>
+<div class="highlight"><pre><span></span><code><span class="k">&gt; </span><span class="ge">**Note:** This provides additional context or helpful information.</span>
+
+<span class="k">&gt; </span><span class="ge">**Warning:** This highlights potential issues or breaking changes.</span>
+
+<span class="k">&gt; </span><span class="ge">**Info:** This offers supplementary details about the topic.</span>
+</code></pre></div>
+
+<p>These are rendered as styled callout boxes with distinct colors and icons for each type.</p>
+<h3 id="example-rendered-page-structure">Example: Rendered Page Structure</h3>
+<div class="highlight"><pre><span></span><code><span class="cp">&lt;!DOCTYPE html&gt;</span>
+<span class="p">&lt;</span><span class="nt">html</span> <span class="na">lang</span><span class="o">=</span><span class="s">&quot;en&quot;</span> <span class="na">data-theme</span><span class="o">=</span><span class="s">&quot;light&quot;</span><span class="p">&gt;</span>
+<span class="p">&lt;</span><span class="nt">head</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">meta</span> <span class="na">charset</span><span class="o">=</span><span class="s">&quot;UTF-8&quot;</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">meta</span> <span class="na">name</span><span class="o">=</span><span class="s">&quot;viewport&quot;</span> <span class="na">content</span><span class="o">=</span><span class="s">&quot;width=device-width, initial-scale=1.0&quot;</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">title</span><span class="p">&gt;</span>{{ page_title }} - {{ project_name }}<span class="p">&lt;/</span><span class="nt">title</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">link</span> <span class="na">rel</span><span class="o">=</span><span class="s">&quot;stylesheet&quot;</span> <span class="na">href</span><span class="o">=</span><span class="s">&quot;assets/style.css&quot;</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">link</span> <span class="na">rel</span><span class="o">=</span><span class="s">&quot;stylesheet&quot;</span> <span class="na">href</span><span class="o">=</span><span class="s">&quot;assets/highlight.css&quot;</span><span class="p">&gt;</span>
+<span class="p">&lt;/</span><span class="nt">head</span><span class="p">&gt;</span>
+<span class="p">&lt;</span><span class="nt">body</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">nav</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;sidebar&quot;</span><span class="p">&gt;</span>
+        <span class="cm">&lt;!-- Sidebar navigation --&gt;</span>
+    <span class="p">&lt;/</span><span class="nt">nav</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">main</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;content&quot;</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">header</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;top-bar&quot;</span><span class="p">&gt;</span>
+            <span class="cm">&lt;!-- Search bar and theme toggle --&gt;</span>
+        <span class="p">&lt;/</span><span class="nt">header</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">article</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;page-content&quot;</span><span class="p">&gt;</span>
+            {{ page_content }}
+        <span class="p">&lt;/</span><span class="nt">article</span><span class="p">&gt;</span>
+    <span class="p">&lt;/</span><span class="nt">main</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">script</span> <span class="na">src</span><span class="o">=</span><span class="s">&quot;assets/highlight.js&quot;</span><span class="p">&gt;&lt;/</span><span class="nt">script</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">script</span> <span class="na">src</span><span class="o">=</span><span class="s">&quot;assets/search.js&quot;</span><span class="p">&gt;&lt;/</span><span class="nt">script</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">script</span> <span class="na">src</span><span class="o">=</span><span class="s">&quot;assets/theme-toggle.js&quot;</span><span class="p">&gt;&lt;/</span><span class="nt">script</span><span class="p">&gt;</span>
+<span class="p">&lt;/</span><span class="nt">body</span><span class="p">&gt;</span>
+<span class="p">&lt;/</span><span class="nt">html</span><span class="p">&gt;</span>
+</code></pre></div>
+
+<h2 id="bundled-cssjs-assets">Bundled CSS/JS Assets</h2>
+<p>The renderer bundles all frontend assets into the <code>assets/</code> directory of the generated site. This ensures the documentation is fully self-contained with no external CDN dependencies — the entire site works offline.</p>
+<h3 id="asset-files">Asset Files</h3>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>style.css</code></td>
+<td>Complete site styling including layout, typography, responsive design, dark/light themes</td>
+</tr>
+<tr>
+<td><code>search.js</code></td>
+<td>Client-side full-text search engine and UI</td>
+</tr>
+<tr>
+<td><code>theme-toggle.js</code></td>
+<td>Dark/light theme switching with localStorage persistence</td>
+</tr>
+<tr>
+<td><code>highlight.js</code></td>
+<td>Code syntax highlighting via <a href="https://highlightjs.org/">highlight.js</a></td>
+</tr>
+<tr>
+<td><code>search-index.json</code></td>
+<td>Pre-built search index generated at render time</td>
+</tr>
+</tbody>
+</table>
+<p>Assets are copied from the docsfy package's bundled templates into each project's site directory during rendering, ensuring every generated site is independent.</p>
+<h2 id="sidebar-navigation">Sidebar Navigation</h2>
+<p>The sidebar provides hierarchical navigation generated from the <code>plan.json</code> structure. It supports nested sections and highlights the currently active page.</p>
+<h3 id="navigation-structure-from-planjson">Navigation Structure from <code>plan.json</code></h3>
+<p>The <code>plan.json</code> file produced by the AI Planner defines the navigation hierarchy:</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;project_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;my-project&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;pages&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;slug&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;introduction&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Introduction&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Project overview and getting started&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;section&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Getting Started&quot;</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;slug&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;installation&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Installation&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;How to install and configure&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;section&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Getting Started&quot;</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;slug&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;api-reference&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;API Reference&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Complete API documentation&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;section&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Reference&quot;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">]</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<h3 id="sidebar-rendering">Sidebar Rendering</h3>
+<p>Pages are grouped by their <code>section</code> field into collapsible navigation groups. The renderer:</p>
+<ol>
+<li>Parses <code>plan.json</code> to extract the page list</li>
+<li>Groups pages by <code>section</code> to create a two-level hierarchy</li>
+<li>Renders each group as a collapsible section with its pages listed beneath</li>
+<li>Marks the current page with an <code>active</code> class for visual highlighting</li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="p">&lt;</span><span class="nt">nav</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;sidebar&quot;</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;sidebar-header&quot;</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">h2</span><span class="p">&gt;</span>{{ project_name }}<span class="p">&lt;/</span><span class="nt">h2</span><span class="p">&gt;</span>
+    <span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">ul</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;nav-tree&quot;</span><span class="p">&gt;</span>
+        {% for section, pages in navigation %}
+        <span class="p">&lt;</span><span class="nt">li</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;nav-section&quot;</span><span class="p">&gt;</span>
+            <span class="p">&lt;</span><span class="nt">span</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;section-title&quot;</span><span class="p">&gt;</span>{{ section }}<span class="p">&lt;/</span><span class="nt">span</span><span class="p">&gt;</span>
+            <span class="p">&lt;</span><span class="nt">ul</span><span class="p">&gt;</span>
+                {% for page in pages %}
+                <span class="p">&lt;</span><span class="nt">li</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;{% if page.slug == current_page %}active{% endif %}&quot;</span><span class="p">&gt;</span>
+                    <span class="p">&lt;</span><span class="nt">a</span> <span class="na">href</span><span class="o">=</span><span class="s">&quot;{{ page.slug }}.html&quot;</span><span class="p">&gt;</span>{{ page.title }}<span class="p">&lt;/</span><span class="nt">a</span><span class="p">&gt;</span>
+                <span class="p">&lt;/</span><span class="nt">li</span><span class="p">&gt;</span>
+                {% endfor %}
+            <span class="p">&lt;/</span><span class="nt">ul</span><span class="p">&gt;</span>
+        <span class="p">&lt;/</span><span class="nt">li</span><span class="p">&gt;</span>
+        {% endfor %}
+    <span class="p">&lt;/</span><span class="nt">ul</span><span class="p">&gt;</span>
+<span class="p">&lt;/</span><span class="nt">nav</span><span class="p">&gt;</span>
+</code></pre></div>
+
+<h3 id="mobile-sidebar">Mobile Sidebar</h3>
+<p>On smaller viewports, the sidebar collapses into a hamburger menu overlay. A toggle button appears in the top bar to open and close the sidebar. See <a href="#responsive-design">Responsive Design</a> for breakpoint details.</p>
+<h2 id="darklight-theme-toggle">Dark/Light Theme Toggle</h2>
+<p>The renderer includes a theme toggle that allows users to switch between dark and light modes. Theme preference is persisted in the browser's <code>localStorage</code>.</p>
+<h3 id="how-it-works">How It Works</h3>
+<p>The theme system uses a <code>data-theme</code> attribute on the <code>&lt;html&gt;</code> element:</p>
+<div class="highlight"><pre><span></span><code><span class="p">&lt;</span><span class="nt">html</span> <span class="na">lang</span><span class="o">=</span><span class="s">&quot;en&quot;</span> <span class="na">data-theme</span><span class="o">=</span><span class="s">&quot;light&quot;</span><span class="p">&gt;</span>
+</code></pre></div>
+
+<p>The <code>theme-toggle.js</code> script manages the toggle behavior:</p>
+<ol>
+<li><strong>On page load</strong> — checks <code>localStorage</code> for a saved preference, falls back to the system preference via <code>prefers-color-scheme</code>, and defaults to <code>light</code></li>
+<li><strong>On toggle click</strong> — switches the <code>data-theme</code> attribute between <code>light</code> and <code>dark</code> and saves the choice to <code>localStorage</code></li>
+<li><strong>Across pages</strong> — the saved preference is applied immediately on every page load to prevent flash of wrong theme (FOWT)</li>
+</ol>
+<h3 id="css-theme-variables">CSS Theme Variables</h3>
+<p>The theme is implemented using CSS custom properties that change based on the <code>data-theme</code> attribute:</p>
+<div class="highlight"><pre><span></span><code><span class="p">:</span><span class="nd">root</span><span class="o">,</span>
+<span class="o">[</span><span class="nt">data-theme</span><span class="o">=</span><span class="s2">&quot;light&quot;</span><span class="o">]</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nv">--bg-primary</span><span class="p">:</span><span class="w"> </span><span class="mh">#ffffff</span><span class="p">;</span>
+<span class="w">    </span><span class="nv">--bg-secondary</span><span class="p">:</span><span class="w"> </span><span class="mh">#f8f9fa</span><span class="p">;</span>
+<span class="w">    </span><span class="nv">--bg-sidebar</span><span class="p">:</span><span class="w"> </span><span class="mh">#f1f3f5</span><span class="p">;</span>
+<span class="w">    </span><span class="nv">--text-primary</span><span class="p">:</span><span class="w"> </span><span class="mh">#212529</span><span class="p">;</span>
+<span class="w">    </span><span class="nv">--text-secondary</span><span class="p">:</span><span class="w"> </span><span class="mh">#495057</span><span class="p">;</span>
+<span class="w">    </span><span class="nv">--border-color</span><span class="p">:</span><span class="w"> </span><span class="mh">#dee2e6</span><span class="p">;</span>
+<span class="w">    </span><span class="nv">--link-color</span><span class="p">:</span><span class="w"> </span><span class="mh">#228be6</span><span class="p">;</span>
+<span class="w">    </span><span class="nv">--code-bg</span><span class="p">:</span><span class="w"> </span><span class="mh">#f1f3f5</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="o">[</span><span class="nt">data-theme</span><span class="o">=</span><span class="s2">&quot;dark&quot;</span><span class="o">]</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nv">--bg-primary</span><span class="p">:</span><span class="w"> </span><span class="mh">#1a1b1e</span><span class="p">;</span>
+<span class="w">    </span><span class="nv">--bg-secondary</span><span class="p">:</span><span class="w"> </span><span class="mh">#25262b</span><span class="p">;</span>
+<span class="w">    </span><span class="nv">--bg-sidebar</span><span class="p">:</span><span class="w"> </span><span class="mh">#18191c</span><span class="p">;</span>
+<span class="w">    </span><span class="nv">--text-primary</span><span class="p">:</span><span class="w"> </span><span class="mh">#c1c2c5</span><span class="p">;</span>
+<span class="w">    </span><span class="nv">--text-secondary</span><span class="p">:</span><span class="w"> </span><span class="mh">#909296</span><span class="p">;</span>
+<span class="w">    </span><span class="nv">--border-color</span><span class="p">:</span><span class="w"> </span><span class="mh">#373a40</span><span class="p">;</span>
+<span class="w">    </span><span class="nv">--link-color</span><span class="p">:</span><span class="w"> </span><span class="mh">#4dabf7</span><span class="p">;</span>
+<span class="w">    </span><span class="nv">--code-bg</span><span class="p">:</span><span class="w"> </span><span class="mh">#2c2e33</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<p>All site styles reference these variables rather than hard-coded color values, ensuring seamless theme switching without page reloads.</p>
+<h3 id="toggle-button">Toggle Button</h3>
+<p>The theme toggle renders as a sun/moon icon button in the top bar:</p>
+<div class="highlight"><pre><span></span><code><span class="p">&lt;</span><span class="nt">button</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;theme-toggle&quot;</span> <span class="na">aria-label</span><span class="o">=</span><span class="s">&quot;Toggle dark mode&quot;</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">span</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;icon-sun&quot;</span><span class="p">&gt;</span>☀️<span class="p">&lt;/</span><span class="nt">span</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">span</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;icon-moon&quot;</span><span class="p">&gt;</span>🌙<span class="p">&lt;/</span><span class="nt">span</span><span class="p">&gt;</span>
+<span class="p">&lt;/</span><span class="nt">button</span><span class="p">&gt;</span>
+</code></pre></div>
+
+<blockquote>
+<p><strong>Tip:</strong> The toggle respects the user's operating system preference on first visit. If a user has their OS set to dark mode, the documentation site will load in dark mode automatically.</p>
+</blockquote>
+<h2 id="client-side-search">Client-Side Search</h2>
+<p>The renderer generates a pre-built search index at render time and bundles a client-side search engine. This enables instant full-text search without any server-side component — ideal for static hosting.</p>
+<h3 id="search-index-generation">Search Index Generation</h3>
+<p>During rendering, the renderer builds <code>search-index.json</code> by extracting searchable content from each page:</p>
+<div class="highlight"><pre><span></span><code><span class="n">search_entries</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">page</span> <span class="ow">in</span> <span class="n">plan</span><span class="p">[</span><span class="s2">&quot;pages&quot;</span><span class="p">]:</span>
+    <span class="n">search_entries</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+        <span class="s2">&quot;slug&quot;</span><span class="p">:</span> <span class="n">page</span><span class="p">[</span><span class="s2">&quot;slug&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="n">page</span><span class="p">[</span><span class="s2">&quot;title&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;section&quot;</span><span class="p">:</span> <span class="n">page</span><span class="p">[</span><span class="s2">&quot;section&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;body&quot;</span><span class="p">:</span> <span class="n">strip_html_tags</span><span class="p">(</span><span class="n">rendered_content</span><span class="p">),</span>
+    <span class="p">})</span>
+</code></pre></div>
+
+<p>The resulting <code>search-index.json</code> contains the full text of every page, stripped of HTML tags, alongside metadata for display in search results.</p>
+<h3 id="search-ui">Search UI</h3>
+<p>The search interface consists of a search input in the top bar and a results dropdown:</p>
+<div class="highlight"><pre><span></span><code><span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;search-container&quot;</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">input</span> <span class="na">type</span><span class="o">=</span><span class="s">&quot;text&quot;</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;search-input&quot;</span>
+           <span class="na">placeholder</span><span class="o">=</span><span class="s">&quot;Search documentation...&quot;</span>
+           <span class="na">aria-label</span><span class="o">=</span><span class="s">&quot;Search documentation&quot;</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;search-results&quot;</span> <span class="na">hidden</span><span class="p">&gt;</span>
+        <span class="cm">&lt;!-- Results populated by search.js --&gt;</span>
+    <span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
+<span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
+</code></pre></div>
+
+<h3 id="how-search-works">How Search Works</h3>
+<p>The <code>search.js</code> script provides client-side full-text search:</p>
+<ol>
+<li><strong>Index loading</strong> — on first search interaction, <code>search-index.json</code> is fetched and parsed</li>
+<li><strong>Query matching</strong> — user input is matched against page titles, section names, and body text</li>
+<li><strong>Result ranking</strong> — matches are ranked by relevance (title matches rank higher than body matches)</li>
+<li><strong>Result display</strong> — matching pages are shown in a dropdown with title, section, and a text snippet with the matching term highlighted</li>
+</ol>
+<blockquote>
+<p><strong>Note:</strong> The search index is loaded lazily on first interaction to avoid impacting initial page load performance.</p>
+</blockquote>
+<h3 id="keyboard-navigation">Keyboard Navigation</h3>
+<p>The search results support keyboard navigation:</p>
+<ul>
+<li><code>Ctrl+K</code> or <code>/</code> — focus the search input</li>
+<li><code>↑</code> / <code>↓</code> — navigate through results</li>
+<li><code>Enter</code> — navigate to the selected result</li>
+<li><code>Escape</code> — close the results dropdown</li>
+</ul>
+<h2 id="code-syntax-highlighting">Code Syntax Highlighting</h2>
+<p>The renderer uses <a href="https://highlightjs.org/">highlight.js</a> for automatic syntax highlighting of fenced code blocks. Highlighting runs client-side after page load.</p>
+<h3 id="supported-languages">Supported Languages</h3>
+<p>highlight.js provides syntax highlighting for a wide range of languages out of the box, including Python, JavaScript, TypeScript, Go, Rust, Java, C/C++, Shell/Bash, JSON, YAML, HTML, CSS, SQL, and many more.</p>
+<h3 id="markdown-code-blocks">Markdown Code Blocks</h3>
+<p>Fenced code blocks in Markdown source are converted to properly-classed HTML elements:</p>
+<div class="highlight"><pre><span></span><code><span class="sb">```python</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">docsfy.renderer</span><span class="w"> </span><span class="kn">import</span> <span class="n">render_site</span>
+
+<span class="n">render_site</span><span class="p">(</span><span class="n">project_name</span><span class="o">=</span><span class="s2">&quot;my-project&quot;</span><span class="p">,</span> <span class="n">plan</span><span class="o">=</span><span class="n">plan</span><span class="p">,</span> <span class="n">pages</span><span class="o">=</span><span class="n">pages</span><span class="p">)</span>
+<span class="sb">```</span>
+</code></pre></div>
+
+<p>This renders as:</p>
+<div class="highlight"><pre><span></span><code><span class="p">&lt;</span><span class="nt">pre</span><span class="p">&gt;&lt;</span><span class="nt">code</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;language-python&quot;</span><span class="p">&gt;</span>from docsfy.renderer import render_site
+
+render_site(project_name=&quot;my-project&quot;, plan=plan, pages=pages)
+<span class="p">&lt;/</span><span class="nt">code</span><span class="p">&gt;&lt;/</span><span class="nt">pre</span><span class="p">&gt;</span>
+</code></pre></div>
+
+<p>The <code>highlight.js</code> script then detects the <code>language-*</code> class and applies syntax highlighting automatically on page load:</p>
+<div class="highlight"><pre><span></span><code><span class="nb">document</span><span class="p">.</span><span class="nx">addEventListener</span><span class="p">(</span><span class="s2">&quot;DOMContentLoaded&quot;</span><span class="p">,</span><span class="w"> </span><span class="kd">function</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nb">document</span><span class="p">.</span><span class="nx">querySelectorAll</span><span class="p">(</span><span class="s2">&quot;pre code&quot;</span><span class="p">).</span><span class="nx">forEach</span><span class="p">(</span><span class="kd">function</span><span class="w"> </span><span class="p">(</span><span class="nx">block</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nx">hljs</span><span class="p">.</span><span class="nx">highlightElement</span><span class="p">(</span><span class="nx">block</span><span class="p">);</span>
+<span class="w">    </span><span class="p">});</span>
+<span class="p">});</span>
+</code></pre></div>
+
+<h3 id="theme-aware-highlighting">Theme-Aware Highlighting</h3>
+<p>Code block colors adapt to the current theme. The highlight.js theme CSS uses the same CSS custom properties as the rest of the site:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">pre</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">background</span><span class="p">:</span><span class="w"> </span><span class="nf">var</span><span class="p">(</span><span class="nv">--code-bg</span><span class="p">);</span>
+<span class="w">    </span><span class="k">border</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="kt">px</span><span class="w"> </span><span class="kc">solid</span><span class="w"> </span><span class="nf">var</span><span class="p">(</span><span class="nv">--border-color</span><span class="p">);</span>
+<span class="w">    </span><span class="k">border-radius</span><span class="p">:</span><span class="w"> </span><span class="mi">6</span><span class="kt">px</span><span class="p">;</span>
+<span class="w">    </span><span class="k">padding</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="kt">rem</span><span class="p">;</span>
+<span class="w">    </span><span class="k">overflow-x</span><span class="p">:</span><span class="w"> </span><span class="kc">auto</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="nt">code</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">font-family</span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;SF Mono&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;Fira Code&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;Cascadia Code&#39;</span><span class="p">,</span><span class="w"> </span><span class="kc">monospace</span><span class="p">;</span>
+<span class="w">    </span><span class="k">font-size</span><span class="p">:</span><span class="w"> </span><span class="mf">0.875</span><span class="kt">rem</span><span class="p">;</span>
+<span class="w">    </span><span class="k">line-height</span><span class="p">:</span><span class="w"> </span><span class="mf">1.5</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<blockquote>
+<p><strong>Tip:</strong> If a code block has no language specified, highlight.js will attempt automatic language detection. For best results, always specify the language in your fenced code blocks.</p>
+</blockquote>
+<h2 id="responsive-design">Responsive Design</h2>
+<p>The generated documentation sites are fully responsive, adapting to desktops, tablets, and mobile devices using CSS media queries and a flexible layout system.</p>
+<h3 id="layout-structure">Layout Structure</h3>
+<p>The site uses a two-column layout with a fixed sidebar and scrollable main content area:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">body</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">display</span><span class="p">:</span><span class="w"> </span><span class="kc">flex</span><span class="p">;</span>
+<span class="w">    </span><span class="k">min-height</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span><span class="kt">vh</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="p">.</span><span class="nc">sidebar</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">width</span><span class="p">:</span><span class="w"> </span><span class="mi">280</span><span class="kt">px</span><span class="p">;</span>
+<span class="w">    </span><span class="k">position</span><span class="p">:</span><span class="w"> </span><span class="kc">fixed</span><span class="p">;</span>
+<span class="w">    </span><span class="k">height</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span><span class="kt">vh</span><span class="p">;</span>
+<span class="w">    </span><span class="k">overflow-y</span><span class="p">:</span><span class="w"> </span><span class="kc">auto</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="p">.</span><span class="nc">content</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">margin-left</span><span class="p">:</span><span class="w"> </span><span class="mi">280</span><span class="kt">px</span><span class="p">;</span>
+<span class="w">    </span><span class="k">flex</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="w">    </span><span class="k">max-width</span><span class="p">:</span><span class="w"> </span><span class="mi">900</span><span class="kt">px</span><span class="p">;</span>
+<span class="w">    </span><span class="k">padding</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="kt">rem</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<h3 id="breakpoints">Breakpoints</h3>
+<p>The renderer uses the following responsive breakpoints:</p>
+<table>
+<thead>
+<tr>
+<th>Breakpoint</th>
+<th>Width</th>
+<th>Behavior</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Desktop</td>
+<td><code>≥ 1024px</code></td>
+<td>Full two-column layout with visible sidebar</td>
+</tr>
+<tr>
+<td>Tablet</td>
+<td><code>768px – 1023px</code></td>
+<td>Narrower sidebar, adjusted content margins</td>
+</tr>
+<tr>
+<td>Mobile</td>
+<td><code>&lt; 768px</code></td>
+<td>Sidebar hidden behind hamburger menu, full-width content</td>
+</tr>
+</tbody>
+</table>
+<h3 id="mobile-adaptations">Mobile Adaptations</h3>
+<p>On mobile viewports (<code>&lt; 768px</code>), the following adaptations are applied:</p>
+<div class="highlight"><pre><span></span><code><span class="p">@</span><span class="k">media</span><span class="w"> </span><span class="o">(</span><span class="nt">max-width</span><span class="o">:</span><span class="w"> </span><span class="nt">768px</span><span class="o">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="p">.</span><span class="nc">sidebar</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">transform</span><span class="p">:</span><span class="w"> </span><span class="nb">translateX</span><span class="p">(</span><span class="mi">-100</span><span class="kt">%</span><span class="p">);</span>
+<span class="w">        </span><span class="k">position</span><span class="p">:</span><span class="w"> </span><span class="kc">fixed</span><span class="p">;</span>
+<span class="w">        </span><span class="k">z-index</span><span class="p">:</span><span class="w"> </span><span class="mi">1000</span><span class="p">;</span>
+<span class="w">        </span><span class="k">transition</span><span class="p">:</span><span class="w"> </span><span class="k">transform</span><span class="w"> </span><span class="mf">0.3</span><span class="kt">s</span><span class="w"> </span><span class="kc">ease</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="p">.</span><span class="nc">sidebar</span><span class="p">.</span><span class="nc">open</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">transform</span><span class="p">:</span><span class="w"> </span><span class="nb">translateX</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="p">.</span><span class="nc">content</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">margin-left</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">        </span><span class="k">padding</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="kt">rem</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="p">.</span><span class="nc">hamburger-btn</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">display</span><span class="p">:</span><span class="w"> </span><span class="kc">block</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="nt">pre</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">font-size</span><span class="p">:</span><span class="w"> </span><span class="mf">0.8</span><span class="kt">rem</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="nt">table</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">display</span><span class="p">:</span><span class="w"> </span><span class="kc">block</span><span class="p">;</span>
+<span class="w">        </span><span class="k">overflow-x</span><span class="p">:</span><span class="w"> </span><span class="kc">auto</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<p>Key mobile behaviors:</p>
+<ul>
+<li><strong>Sidebar</strong> collapses into an off-canvas overlay toggled by a hamburger button</li>
+<li><strong>Code blocks</strong> use smaller font sizes and allow horizontal scrolling</li>
+<li><strong>Tables</strong> become horizontally scrollable within their container</li>
+<li><strong>Content</strong> padding is reduced for more readable line lengths</li>
+<li><strong>Search</strong> expands to full width</li>
+</ul>
+<h3 id="typography">Typography</h3>
+<p>The renderer applies a clean, readable typographic scale:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">body</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">font-family</span><span class="p">:</span><span class="w"> </span><span class="o">-</span><span class="n">apple-system</span><span class="p">,</span><span class="w"> </span><span class="n">BlinkMacSystemFont</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;Segoe UI&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">Roboto</span><span class="p">,</span>
+<span class="w">                 </span><span class="n">Oxygen</span><span class="p">,</span><span class="w"> </span><span class="n">Ubuntu</span><span class="p">,</span><span class="w"> </span><span class="n">Cantarell</span><span class="p">,</span><span class="w"> </span><span class="kc">sans-serif</span><span class="p">;</span>
+<span class="w">    </span><span class="k">font-size</span><span class="p">:</span><span class="w"> </span><span class="mi">16</span><span class="kt">px</span><span class="p">;</span>
+<span class="w">    </span><span class="k">line-height</span><span class="p">:</span><span class="w"> </span><span class="mf">1.7</span><span class="p">;</span>
+<span class="w">    </span><span class="k">color</span><span class="p">:</span><span class="w"> </span><span class="nf">var</span><span class="p">(</span><span class="nv">--text-primary</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="nt">h1</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">font-size</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="kt">rem</span><span class="p">;</span><span class="w"> </span><span class="k">margin-top</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="kt">rem</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<span class="nt">h2</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">font-size</span><span class="p">:</span><span class="w"> </span><span class="mf">1.5</span><span class="kt">rem</span><span class="p">;</span><span class="w"> </span><span class="k">margin-top</span><span class="p">:</span><span class="w"> </span><span class="mf">1.75</span><span class="kt">rem</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<span class="nt">h3</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">font-size</span><span class="p">:</span><span class="w"> </span><span class="mf">1.25</span><span class="kt">rem</span><span class="p">;</span><span class="w"> </span><span class="k">margin-top</span><span class="p">:</span><span class="w"> </span><span class="mf">1.5</span><span class="kt">rem</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+</code></pre></div>
+
+<h2 id="output-structure">Output Structure</h2>
+<p>After rendering completes, the full static site is written to <code>/data/projects/{name}/site/</code>. The output directory contains everything needed to host the documentation independently:</p>
+<div class="highlight"><pre><span></span><code>site/
+├── index.html              # Landing page / first page in plan
+├── introduction.html       # Individual page per plan entry
+├── installation.html
+├── api-reference.html
+├── assets/
+│   ├── style.css           # Complete site styles (dark + light themes)
+│   ├── search.js           # Client-side search engine
+│   ├── theme-toggle.js     # Theme switching logic
+│   └── highlight.js        # Code syntax highlighting
+└── search-index.json       # Pre-built search index
+</code></pre></div>
+
+<h3 id="serving-the-output">Serving the Output</h3>
+<p>The generated site can be served in two ways:</p>
+<ol>
+<li><strong>Via the docsfy API</strong> — access at <code>GET /docs/{project}/{path}</code> directly from the running docsfy service</li>
+<li><strong>Self-hosted</strong> — download the site as a <code>.tar.gz</code> archive via <code>GET /api/projects/{name}/download</code> and serve it from any static file host (Nginx, Caddy, S3, GitHub Pages, etc.)</li>
+</ol>
+<blockquote>
+<p><strong>Note:</strong> Because all assets are bundled and there are no external dependencies, the generated site works entirely offline once downloaded. No CDN or internet connection is required.</p>
+</blockquote>
+<h3 id="incremental-re-rendering">Incremental Re-rendering</h3>
+<p>When a project is regenerated incrementally (see <a href="../plans/2026-03-04-docsfy-design.md">Incremental Updates</a>), the renderer only re-renders pages whose Markdown source has changed. The search index is always fully rebuilt to ensure consistency. Unchanged pages retain their existing HTML output.</p>
+                </div>
+            </article>
+            <nav class="page-nav">
+                
+                <a href="storage-and-database.html" class="page-nav-link page-nav-prev">
+                    <span class="page-nav-label">Previous</span>
+                    <span class="page-nav-title">Storage &amp; Database</span>
+                </a>
+                
+                
+                <a href="api-generate.html" class="page-nav-link page-nav-next">
+                    <span class="page-nav-label">Next</span>
+                    <span class="page-nav-title">POST /api/generate</span>
+                </a>
+                
+            </nav>
+            
+            <aside class="toc-sidebar">
+                <div class="toc-container">
+                    <h3>On this page</h3>
+                    <div class="toc">
+<ul>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#jinja2-templating">Jinja2 Templating</a><ul>
+<li><a href="#template-context">Template Context</a></li>
+<li><a href="#markdown-processing">Markdown Processing</a></li>
+<li><a href="#example-rendered-page-structure">Example: Rendered Page Structure</a></li>
+</ul>
+</li>
+<li><a href="#bundled-cssjs-assets">Bundled CSS/JS Assets</a><ul>
+<li><a href="#asset-files">Asset Files</a></li>
+</ul>
+</li>
+<li><a href="#sidebar-navigation">Sidebar Navigation</a><ul>
+<li><a href="#navigation-structure-from-planjson">Navigation Structure from plan.json</a></li>
+<li><a href="#sidebar-rendering">Sidebar Rendering</a></li>
+<li><a href="#mobile-sidebar">Mobile Sidebar</a></li>
+</ul>
+</li>
+<li><a href="#darklight-theme-toggle">Dark/Light Theme Toggle</a><ul>
+<li><a href="#how-it-works">How It Works</a></li>
+<li><a href="#css-theme-variables">CSS Theme Variables</a></li>
+<li><a href="#toggle-button">Toggle Button</a></li>
+</ul>
+</li>
+<li><a href="#client-side-search">Client-Side Search</a><ul>
+<li><a href="#search-index-generation">Search Index Generation</a></li>
+<li><a href="#search-ui">Search UI</a></li>
+<li><a href="#how-search-works">How Search Works</a></li>
+<li><a href="#keyboard-navigation">Keyboard Navigation</a></li>
+</ul>
+</li>
+<li><a href="#code-syntax-highlighting">Code Syntax Highlighting</a><ul>
+<li><a href="#supported-languages">Supported Languages</a></li>
+<li><a href="#markdown-code-blocks">Markdown Code Blocks</a></li>
+<li><a href="#theme-aware-highlighting">Theme-Aware Highlighting</a></li>
+</ul>
+</li>
+<li><a href="#responsive-design">Responsive Design</a><ul>
+<li><a href="#layout-structure">Layout Structure</a></li>
+<li><a href="#breakpoints">Breakpoints</a></li>
+<li><a href="#mobile-adaptations">Mobile Adaptations</a></li>
+<li><a href="#typography">Typography</a></li>
+</ul>
+</li>
+<li><a href="#output-structure">Output Structure</a><ul>
+<li><a href="#serving-the-output">Serving the Output</a></li>
+<li><a href="#incremental-re-rendering">Incremental Re-rendering</a></li>
+</ul>
+</li>
+</ul>
+</div>
+
+                </div>
+            </aside>
+            
+        </main>
+
+        <footer class="footer">
+            <p>Built with <a href="https://github.com/docsfy/docsfy">docsfy</a></p>
+        </footer>
+    </div>
+
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <script src="assets/theme.js"></script>
+    <script src="assets/search.js"></script>
+    <script src="assets/copy.js"></script>
+    <script src="assets/callouts.js"></script>
+    <script src="assets/scrollspy.js"></script>
+    <script src="assets/codelabels.js"></script>
+    <script src="assets/github.js"></script>
+    <script>
+    (function() {
+        var toggle = document.getElementById('sidebar-toggle');
+        var sidebar = document.getElementById('sidebar');
+        var overlay = document.getElementById('sidebar-overlay');
+        if (toggle && sidebar) {
+            toggle.addEventListener('click', function() {
+                sidebar.classList.toggle('open');
+                if (overlay) overlay.classList.toggle('open');
+            });
+        }
+        if (overlay) {
+            overlay.addEventListener('click', function() {
+                sidebar.classList.remove('open');
+                overlay.classList.remove('open');
+            });
+        }
+    })();
+    </script>
+</body>
+</html>

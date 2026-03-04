@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Environment Variables - docsfy</title>
+    <meta name="description" content="AI-powered documentation generator that creates polished, Mintlify-quality static HTML sites from GitHub repositories">
+    <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <a href="index.html" class="sidebar-logo">docsfy</a>
+            <p class="sidebar-tagline">AI-powered documentation generator that creates polished, Mintlify-quality static HTML sites from GitHub repositories</p>
+        </div>
+
+        <div class="sidebar-search">
+            <input type="text" id="search-input" placeholder="Search... (⌘K)" autocomplete="off" readonly>
+            <div id="search-results" class="search-results"></div>
+        </div>
+
+        <nav class="sidebar-nav">
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Getting Started</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="introduction.html"
+                           class="nav-link">
+                            Introduction
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="quickstart.html"
+                           class="nav-link">
+                            Quickstart
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="installation.html"
+                           class="nav-link">
+                            Installation
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Configuration</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="environment-variables.html"
+                           class="nav-link active">
+                            Environment Variables
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="ai-providers.html"
+                           class="nav-link">
+                            AI Providers
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="docker-deployment.html"
+                           class="nav-link">
+                            Docker Deployment
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Usage</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="generating-docs.html"
+                           class="nav-link">
+                            Generating Documentation
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="serving-docs.html"
+                           class="nav-link">
+                            Serving Documentation
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="incremental-updates.html"
+                           class="nav-link">
+                            Incremental Updates
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Architecture</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="generation-pipeline.html"
+                           class="nav-link">
+                            Generation Pipeline
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="ai-cli-integration.html"
+                           class="nav-link">
+                            AI CLI Integration
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="storage-and-database.html"
+                           class="nav-link">
+                            Storage &amp; Database
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="html-renderer.html"
+                           class="nav-link">
+                            HTML Renderer
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">API Reference</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="api-generate.html"
+                           class="nav-link">
+                            POST /api/generate
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="api-status.html"
+                           class="nav-link">
+                            GET /api/status
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="api-projects.html"
+                           class="nav-link">
+                            GET /api/projects/{name}
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="api-projects-delete.html"
+                           class="nav-link">
+                            DELETE /api/projects/{name}
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="api-projects-download.html"
+                           class="nav-link">
+                            GET /api/projects/{name}/download
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="api-docs-serving.html"
+                           class="nav-link">
+                            GET /docs/{project}/{path}
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="api-health.html"
+                           class="nav-link">
+                            GET /health
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Development</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="contributing.html"
+                           class="nav-link">
+                            Contributing
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="tech-stack.html"
+                           class="nav-link">
+                            Technology Stack
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+        </nav>
+    </aside>
+
+    <div class="main-wrapper">
+        <header class="top-bar">
+            <div class="top-bar-left">
+                <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebar">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                </button>
+                <a href="index.html" class="top-bar-title">docsfy</a>
+            </div>
+            <div class="top-bar-spacer"></div>
+            <div class="top-bar-right">
+                <button class="top-bar-search-btn" id="search-trigger" aria-label="Search">
+                    <kbd>&#8984;K</kbd> Search
+                </button>
+                
+                <a href="https://github.com/myk-org/docsfy" target="_blank" rel="noopener noreferrer" class="top-bar-github" id="github-link" data-repo-url="https://github.com/myk-org/docsfy">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                    <span class="github-stars" id="github-stars"></span>
+                </a>
+                
+                <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+                    <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                    </svg>
+                    <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <main class="content">
+            <article class="article">
+                <h1 class="article-title">Environment Variables</h1>
+                <div class="article-body">
+                    <h1 id="environment-variables">Environment Variables</h1>
+<p>Complete reference for all environment variables used to configure docsfy. These variables control AI provider selection, authentication, CLI behavior, and logging.</p>
+<h2 id="quick-reference">Quick Reference</h2>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Required</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>AI_PROVIDER</code></td>
+<td>No</td>
+<td><code>claude</code></td>
+<td>AI CLI provider to use</td>
+</tr>
+<tr>
+<td><code>AI_MODEL</code></td>
+<td>No</td>
+<td><code>claude-opus-4-6[1m]</code></td>
+<td>Model name passed to the AI CLI</td>
+</tr>
+<tr>
+<td><code>AI_CLI_TIMEOUT</code></td>
+<td>No</td>
+<td><code>60</code></td>
+<td>Maximum time (minutes) for AI CLI execution</td>
+</tr>
+<tr>
+<td><code>ANTHROPIC_API_KEY</code></td>
+<td>Conditional</td>
+<td>—</td>
+<td>API key for Claude direct access</td>
+</tr>
+<tr>
+<td><code>CLAUDE_CODE_USE_VERTEX</code></td>
+<td>No</td>
+<td>—</td>
+<td>Enable Vertex AI authentication for Claude</td>
+</tr>
+<tr>
+<td><code>CLOUD_ML_REGION</code></td>
+<td>Conditional</td>
+<td>—</td>
+<td>Google Cloud region for Vertex AI</td>
+</tr>
+<tr>
+<td><code>ANTHROPIC_VERTEX_PROJECT_ID</code></td>
+<td>Conditional</td>
+<td>—</td>
+<td>Google Cloud project ID for Vertex AI</td>
+</tr>
+<tr>
+<td><code>GEMINI_API_KEY</code></td>
+<td>Conditional</td>
+<td>—</td>
+<td>API key for Gemini CLI</td>
+</tr>
+<tr>
+<td><code>CURSOR_API_KEY</code></td>
+<td>Conditional</td>
+<td>—</td>
+<td>API key for Cursor Agent</td>
+</tr>
+<tr>
+<td><code>LOG_LEVEL</code></td>
+<td>No</td>
+<td><code>INFO</code></td>
+<td>Application logging verbosity</td>
+</tr>
+</tbody>
+</table>
+<h2 id="configuration-file">Configuration File</h2>
+<p>docsfy loads environment variables from a <code>.env</code> file at the project root via the <code>docker-compose.yaml</code> <code>env_file</code> directive:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">services</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">docsfy</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">build</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">.</span>
+<span class="w">    </span><span class="nt">ports</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;8000:8000&quot;</span>
+<span class="w">    </span><span class="nt">env_file</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">.env</span>
+</code></pre></div>
+
+<p>Create your <code>.env</code> from the provided template:</p>
+<div class="highlight"><pre><span></span><code>cp<span class="w"> </span>.env.example<span class="w"> </span>.env
+</code></pre></div>
+
+<blockquote>
+<p><strong>Warning:</strong> Never commit your <code>.env</code> file to version control. It contains secrets such as API keys.</p>
+</blockquote>
+<hr />
+<h2 id="ai-configuration">AI Configuration</h2>
+<p>These variables control which AI CLI tool docsfy uses and how it behaves during documentation generation.</p>
+<h3 id="ai_provider"><code>AI_PROVIDER</code></h3>
+<p>Selects the AI CLI provider used for both the planning and content generation stages of the pipeline.</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Type</strong></td>
+<td>String</td>
+</tr>
+<tr>
+<td><strong>Default</strong></td>
+<td><code>claude</code></td>
+</tr>
+<tr>
+<td><strong>Allowed values</strong></td>
+<td><code>claude</code>, <code>gemini</code>, <code>cursor</code></td>
+</tr>
+</tbody>
+</table>
+<p>Each provider maps to a specific binary and command pattern:</p>
+<table>
+<thead>
+<tr>
+<th>Provider value</th>
+<th>Binary</th>
+<th>Command template</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>claude</code></td>
+<td><code>claude</code></td>
+<td><code>claude --model &lt;AI_MODEL&gt; --dangerously-skip-permissions -p</code></td>
+</tr>
+<tr>
+<td><code>gemini</code></td>
+<td><code>gemini</code></td>
+<td><code>gemini --model &lt;AI_MODEL&gt; --yolo</code></td>
+</tr>
+<tr>
+<td><code>cursor</code></td>
+<td><code>agent</code></td>
+<td><code>agent --force --model &lt;AI_MODEL&gt; --print --workspace &lt;path&gt;</code></td>
+</tr>
+</tbody>
+</table>
+<p>The provider is configured internally using a frozen dataclass:</p>
+<div class="highlight"><pre><span></span><code><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">ProviderConfig</span><span class="p">:</span>
+    <span class="n">binary</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">build_cmd</span><span class="p">:</span> <span class="n">Callable</span>
+    <span class="n">uses_own_cwd</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+</code></pre></div>
+
+<p>Most providers operate with the subprocess <code>cwd</code> set to the cloned repository path. Cursor is the exception — it uses its own <code>--workspace</code> flag and sets <code>uses_own_cwd=True</code>.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># .env</span>
+<span class="nv">AI_PROVIDER</span><span class="o">=</span>claude
+</code></pre></div>
+
+<blockquote>
+<p><strong>Note:</strong> docsfy performs an availability check before starting generation by sending a lightweight "Hi" prompt to verify the selected CLI tool is installed and responsive.</p>
+</blockquote>
+<h3 id="ai_model"><code>AI_MODEL</code></h3>
+<p>Specifies the model name passed to the AI CLI via its <code>--model</code> flag.</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Type</strong></td>
+<td>String</td>
+</tr>
+<tr>
+<td><strong>Default</strong></td>
+<td><code>claude-opus-4-6[1m]</code></td>
+</tr>
+</tbody>
+</table>
+<p>The model value is passed directly to whichever provider is selected. Make sure the model name is valid for your chosen provider.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Use the default Claude model</span>
+<span class="nv">AI_MODEL</span><span class="o">=</span>claude-opus-4-6<span class="o">[</span>1m<span class="o">]</span>
+
+<span class="c1"># Or specify a Gemini model when using the Gemini provider</span>
+<span class="nv">AI_PROVIDER</span><span class="o">=</span>gemini
+<span class="nv">AI_MODEL</span><span class="o">=</span>gemini-2.5-pro
+</code></pre></div>
+
+<blockquote>
+<p><strong>Tip:</strong> The model value is interpolated directly into the CLI command. Refer to your provider's documentation for available model identifiers.</p>
+</blockquote>
+<h3 id="ai_cli_timeout"><code>AI_CLI_TIMEOUT</code></h3>
+<p>Maximum time in <strong>minutes</strong> that docsfy will wait for a single AI CLI invocation to complete. This applies to each subprocess call during both the planning and content generation stages.</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Type</strong></td>
+<td>Integer</td>
+</tr>
+<tr>
+<td><strong>Default</strong></td>
+<td><code>60</code></td>
+</tr>
+<tr>
+<td><strong>Unit</strong></td>
+<td>Minutes</td>
+</tr>
+</tbody>
+</table>
+<p>AI CLI tools are invoked asynchronously via <code>asyncio.to_thread(subprocess.run, ...)</code>. If a call exceeds this timeout, the subprocess is terminated.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Allow up to 2 hours for large repositories</span>
+<span class="nv">AI_CLI_TIMEOUT</span><span class="o">=</span><span class="m">120</span>
+</code></pre></div>
+
+<blockquote>
+<p><strong>Note:</strong> Large repositories with many files may require a higher timeout. If generation consistently fails with timeout errors, increase this value.</p>
+</blockquote>
+<hr />
+<h2 id="authentication">Authentication</h2>
+<p>Authentication variables are <strong>conditional</strong> — you must set the appropriate keys for whichever <code>AI_PROVIDER</code> you have selected. Each provider has its own authentication mechanism.</p>
+<h3 id="claude-authentication">Claude Authentication</h3>
+<p>Claude Code supports two authentication methods. Use <strong>one</strong> of the following options.</p>
+<h4 id="option-1-direct-api-key">Option 1: Direct API Key</h4>
+<div class="highlight"><pre><span></span><code><span class="nv">ANTHROPIC_API_KEY</span><span class="o">=</span>sk-ant-...
+</code></pre></div>
+
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Variable</strong></td>
+<td><code>ANTHROPIC_API_KEY</code></td>
+</tr>
+<tr>
+<td><strong>Type</strong></td>
+<td>String</td>
+</tr>
+<tr>
+<td><strong>Required</strong></td>
+<td>Yes, if using Claude without Vertex AI</td>
+</tr>
+</tbody>
+</table>
+<p>Set your Anthropic API key for direct access to Claude.</p>
+<h4 id="option-2-google-vertex-ai">Option 2: Google Vertex AI</h4>
+<p>For organizations using Claude through Google Cloud's Vertex AI platform, set all three of the following variables:</p>
+<div class="highlight"><pre><span></span><code><span class="nv">CLAUDE_CODE_USE_VERTEX</span><span class="o">=</span><span class="m">1</span>
+<span class="nv">CLOUD_ML_REGION</span><span class="o">=</span>us-east5
+<span class="nv">ANTHROPIC_VERTEX_PROJECT_ID</span><span class="o">=</span>my-gcp-project-id
+</code></pre></div>
+
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>CLAUDE_CODE_USE_VERTEX</code></td>
+<td>Boolean (<code>1</code> to enable)</td>
+<td>Switches Claude to use Vertex AI authentication</td>
+</tr>
+<tr>
+<td><code>CLOUD_ML_REGION</code></td>
+<td>String</td>
+<td>Google Cloud region where your Vertex AI endpoint is deployed</td>
+</tr>
+<tr>
+<td><code>ANTHROPIC_VERTEX_PROJECT_ID</code></td>
+<td>String</td>
+<td>Google Cloud project ID with Vertex AI access enabled</td>
+</tr>
+</tbody>
+</table>
+<p>When using Vertex AI, your Google Cloud credentials must also be available inside the container. The <code>docker-compose.yaml</code> mounts them as a read-only volume:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">volumes</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">~/.config/gcloud:/home/appuser/.config/gcloud:ro</span>
+</code></pre></div>
+
+<blockquote>
+<p><strong>Warning:</strong> When using Vertex AI, all three variables (<code>CLAUDE_CODE_USE_VERTEX</code>, <code>CLOUD_ML_REGION</code>, <code>ANTHROPIC_VERTEX_PROJECT_ID</code>) must be set together. Setting only some of them will result in authentication failures.</p>
+</blockquote>
+<h3 id="gemini-authentication">Gemini Authentication</h3>
+<div class="highlight"><pre><span></span><code><span class="nv">GEMINI_API_KEY</span><span class="o">=</span>AIza...
+</code></pre></div>
+
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Variable</strong></td>
+<td><code>GEMINI_API_KEY</code></td>
+</tr>
+<tr>
+<td><strong>Type</strong></td>
+<td>String</td>
+</tr>
+<tr>
+<td><strong>Required</strong></td>
+<td>Yes, if <code>AI_PROVIDER=gemini</code></td>
+</tr>
+</tbody>
+</table>
+<p>API key for the Google Gemini CLI. Additionally, Google Cloud credentials are mounted into the container for Gemini CLI access:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">volumes</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">~/.config/gcloud:/home/appuser/.config/gcloud:ro</span>
+</code></pre></div>
+
+<h3 id="cursor-authentication">Cursor Authentication</h3>
+<div class="highlight"><pre><span></span><code><span class="nv">CURSOR_API_KEY</span><span class="o">=</span>cur-...
+</code></pre></div>
+
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Variable</strong></td>
+<td><code>CURSOR_API_KEY</code></td>
+</tr>
+<tr>
+<td><strong>Type</strong></td>
+<td>String</td>
+</tr>
+<tr>
+<td><strong>Required</strong></td>
+<td>Yes, if <code>AI_PROVIDER=cursor</code></td>
+</tr>
+</tbody>
+</table>
+<p>API key for the Cursor Agent CLI. Cursor configuration is mounted via a dedicated volume:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">volumes</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./cursor:/home/appuser/.config/cursor</span>
+</code></pre></div>
+
+<hr />
+<h2 id="logging">Logging</h2>
+<h3 id="log_level"><code>LOG_LEVEL</code></h3>
+<p>Controls the verbosity of application logging output.</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Type</strong></td>
+<td>String</td>
+</tr>
+<tr>
+<td><strong>Default</strong></td>
+<td><code>INFO</code></td>
+</tr>
+<tr>
+<td><strong>Allowed values</strong></td>
+<td><code>DEBUG</code>, <code>INFO</code>, <code>WARNING</code>, <code>ERROR</code>, <code>CRITICAL</code></td>
+</tr>
+</tbody>
+</table>
+<div class="highlight"><pre><span></span><code><span class="c1"># Default logging</span>
+<span class="nv">LOG_LEVEL</span><span class="o">=</span>INFO
+
+<span class="c1"># Verbose logging for debugging AI CLI interactions</span>
+<span class="nv">LOG_LEVEL</span><span class="o">=</span>DEBUG
+
+<span class="c1"># Quieter logging for production</span>
+<span class="nv">LOG_LEVEL</span><span class="o">=</span>WARNING
+</code></pre></div>
+
+<blockquote>
+<p><strong>Tip:</strong> Set <code>LOG_LEVEL=DEBUG</code> when troubleshooting generation failures. This will include detailed output from AI CLI subprocess invocations.</p>
+</blockquote>
+<hr />
+<h2 id="complete-envexample">Complete <code>.env.example</code></h2>
+<p>Below is the full <code>.env.example</code> template with all supported variables:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># AI Configuration</span>
+<span class="nv">AI_PROVIDER</span><span class="o">=</span>claude
+<span class="nv">AI_MODEL</span><span class="o">=</span>claude-opus-4-6<span class="o">[</span>1m<span class="o">]</span>
+<span class="nv">AI_CLI_TIMEOUT</span><span class="o">=</span><span class="m">60</span>
+
+<span class="c1"># Claude - Option 1: API Key</span>
+<span class="c1"># ANTHROPIC_API_KEY=</span>
+
+<span class="c1"># Claude - Option 2: Vertex AI</span>
+<span class="c1"># CLAUDE_CODE_USE_VERTEX=1</span>
+<span class="c1"># CLOUD_ML_REGION=</span>
+<span class="c1"># ANTHROPIC_VERTEX_PROJECT_ID=</span>
+
+<span class="c1"># Gemini</span>
+<span class="c1"># GEMINI_API_KEY=</span>
+
+<span class="c1"># Cursor</span>
+<span class="c1"># CURSOR_API_KEY=</span>
+
+<span class="c1"># Logging</span>
+<span class="nv">LOG_LEVEL</span><span class="o">=</span>INFO
+</code></pre></div>
+
+<hr />
+<h2 id="provider-configuration-examples">Provider Configuration Examples</h2>
+<h3 id="claude-with-direct-api-key">Claude with Direct API Key</h3>
+<div class="highlight"><pre><span></span><code><span class="nv">AI_PROVIDER</span><span class="o">=</span>claude
+<span class="nv">AI_MODEL</span><span class="o">=</span>claude-opus-4-6<span class="o">[</span>1m<span class="o">]</span>
+<span class="nv">AI_CLI_TIMEOUT</span><span class="o">=</span><span class="m">60</span>
+<span class="nv">ANTHROPIC_API_KEY</span><span class="o">=</span>sk-ant-your-key-here
+<span class="nv">LOG_LEVEL</span><span class="o">=</span>INFO
+</code></pre></div>
+
+<h3 id="claude-with-vertex-ai">Claude with Vertex AI</h3>
+<div class="highlight"><pre><span></span><code><span class="nv">AI_PROVIDER</span><span class="o">=</span>claude
+<span class="nv">AI_MODEL</span><span class="o">=</span>claude-opus-4-6<span class="o">[</span>1m<span class="o">]</span>
+<span class="nv">AI_CLI_TIMEOUT</span><span class="o">=</span><span class="m">60</span>
+<span class="nv">CLAUDE_CODE_USE_VERTEX</span><span class="o">=</span><span class="m">1</span>
+<span class="nv">CLOUD_ML_REGION</span><span class="o">=</span>us-east5
+<span class="nv">ANTHROPIC_VERTEX_PROJECT_ID</span><span class="o">=</span>my-project-id
+<span class="nv">LOG_LEVEL</span><span class="o">=</span>INFO
+</code></pre></div>
+
+<h3 id="gemini">Gemini</h3>
+<div class="highlight"><pre><span></span><code><span class="nv">AI_PROVIDER</span><span class="o">=</span>gemini
+<span class="nv">AI_MODEL</span><span class="o">=</span>gemini-2.5-pro
+<span class="nv">AI_CLI_TIMEOUT</span><span class="o">=</span><span class="m">90</span>
+<span class="nv">GEMINI_API_KEY</span><span class="o">=</span>AIza-your-key-here
+<span class="nv">LOG_LEVEL</span><span class="o">=</span>INFO
+</code></pre></div>
+
+<h3 id="cursor">Cursor</h3>
+<div class="highlight"><pre><span></span><code><span class="nv">AI_PROVIDER</span><span class="o">=</span>cursor
+<span class="nv">AI_MODEL</span><span class="o">=</span>claude-opus-4-6<span class="o">[</span>1m<span class="o">]</span>
+<span class="nv">AI_CLI_TIMEOUT</span><span class="o">=</span><span class="m">60</span>
+<span class="nv">CURSOR_API_KEY</span><span class="o">=</span>cur-your-key-here
+<span class="nv">LOG_LEVEL</span><span class="o">=</span>INFO
+</code></pre></div>
+
+<hr />
+<h2 id="docker-and-container-considerations">Docker and Container Considerations</h2>
+<p>docsfy runs as a non-root user (<code>appuser</code>) inside a <code>python:3.12-slim</code> container. Environment variables are injected via the <code>env_file</code> directive in <code>docker-compose.yaml</code>.</p>
+<h3 id="volume-mounts-for-credentials">Volume Mounts for Credentials</h3>
+<p>Some authentication methods require file-based credentials in addition to environment variables:</p>
+<table>
+<thead>
+<tr>
+<th>Mount</th>
+<th>Purpose</th>
+<th>Mode</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>~/.config/gcloud:/home/appuser/.config/gcloud</code></td>
+<td>Google Cloud credentials for Vertex AI and Gemini</td>
+<td>Read-only</td>
+</tr>
+<tr>
+<td><code>./cursor:/home/appuser/.config/cursor</code></td>
+<td>Cursor CLI configuration</td>
+<td>Read-write</td>
+</tr>
+<tr>
+<td><code>./data:/data</code></td>
+<td>Persistent storage for generated docs and database</td>
+<td>Read-write</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Note:</strong> The gcloud credentials mount is read-only (<code>:ro</code>) to prevent the container from modifying your local Google Cloud configuration.</p>
+</blockquote>
+<h3 id="overriding-at-runtime">Overriding at Runtime</h3>
+<p>You can override any environment variable at runtime without modifying your <code>.env</code> file:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Override provider for a single run</span>
+docker<span class="w"> </span>compose<span class="w"> </span>run<span class="w"> </span>-e<span class="w"> </span><span class="nv">AI_PROVIDER</span><span class="o">=</span>gemini<span class="w"> </span>-e<span class="w"> </span><span class="nv">GEMINI_API_KEY</span><span class="o">=</span>your-key<span class="w"> </span>docsfy
+
+<span class="c1"># Override timeout for a large repository</span>
+docker<span class="w"> </span>compose<span class="w"> </span>run<span class="w"> </span>-e<span class="w"> </span><span class="nv">AI_CLI_TIMEOUT</span><span class="o">=</span><span class="m">120</span><span class="w"> </span>docsfy
+</code></pre></div>
+                </div>
+            </article>
+            <nav class="page-nav">
+                
+                <a href="installation.html" class="page-nav-link page-nav-prev">
+                    <span class="page-nav-label">Previous</span>
+                    <span class="page-nav-title">Installation</span>
+                </a>
+                
+                
+                <a href="ai-providers.html" class="page-nav-link page-nav-next">
+                    <span class="page-nav-label">Next</span>
+                    <span class="page-nav-title">AI Providers</span>
+                </a>
+                
+            </nav>
+            
+            <aside class="toc-sidebar">
+                <div class="toc-container">
+                    <h3>On this page</h3>
+                    <div class="toc">
+<ul>
+<li><a href="#quick-reference">Quick Reference</a></li>
+<li><a href="#configuration-file">Configuration File</a></li>
+<li><a href="#ai-configuration">AI Configuration</a><ul>
+<li><a href="#ai_provider">AI_PROVIDER</a></li>
+<li><a href="#ai_model">AI_MODEL</a></li>
+<li><a href="#ai_cli_timeout">AI_CLI_TIMEOUT</a></li>
+</ul>
+</li>
+<li><a href="#authentication">Authentication</a><ul>
+<li><a href="#claude-authentication">Claude Authentication</a></li>
+<li><a href="#gemini-authentication">Gemini Authentication</a></li>
+<li><a href="#cursor-authentication">Cursor Authentication</a></li>
+</ul>
+</li>
+<li><a href="#logging">Logging</a><ul>
+<li><a href="#log_level">LOG_LEVEL</a></li>
+</ul>
+</li>
+<li><a href="#complete-envexample">Complete .env.example</a></li>
+<li><a href="#provider-configuration-examples">Provider Configuration Examples</a><ul>
+<li><a href="#claude-with-direct-api-key">Claude with Direct API Key</a></li>
+<li><a href="#claude-with-vertex-ai">Claude with Vertex AI</a></li>
+<li><a href="#gemini">Gemini</a></li>
+<li><a href="#cursor">Cursor</a></li>
+</ul>
+</li>
+<li><a href="#docker-and-container-considerations">Docker and Container Considerations</a><ul>
+<li><a href="#volume-mounts-for-credentials">Volume Mounts for Credentials</a></li>
+<li><a href="#overriding-at-runtime">Overriding at Runtime</a></li>
+</ul>
+</li>
+</ul>
+</div>
+
+                </div>
+            </aside>
+            
+        </main>
+
+        <footer class="footer">
+            <p>Built with <a href="https://github.com/docsfy/docsfy">docsfy</a></p>
+        </footer>
+    </div>
+
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <script src="assets/theme.js"></script>
+    <script src="assets/search.js"></script>
+    <script src="assets/copy.js"></script>
+    <script src="assets/callouts.js"></script>
+    <script src="assets/scrollspy.js"></script>
+    <script src="assets/codelabels.js"></script>
+    <script src="assets/github.js"></script>
+    <script>
+    (function() {
+        var toggle = document.getElementById('sidebar-toggle');
+        var sidebar = document.getElementById('sidebar');
+        var overlay = document.getElementById('sidebar-overlay');
+        if (toggle && sidebar) {
+            toggle.addEventListener('click', function() {
+                sidebar.classList.toggle('open');
+                if (overlay) overlay.classList.toggle('open');
+            });
+        }
+        if (overlay) {
+            overlay.addEventListener('click', function() {
+                sidebar.classList.remove('open');
+                overlay.classList.remove('open');
+            });
+        }
+    })();
+    </script>
+</body>
+</html>

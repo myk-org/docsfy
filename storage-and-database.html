@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Storage &amp; Database - docsfy</title>
+    <meta name="description" content="AI-powered documentation generator that creates polished, Mintlify-quality static HTML sites from GitHub repositories">
+    <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <a href="index.html" class="sidebar-logo">docsfy</a>
+            <p class="sidebar-tagline">AI-powered documentation generator that creates polished, Mintlify-quality static HTML sites from GitHub repositories</p>
+        </div>
+
+        <div class="sidebar-search">
+            <input type="text" id="search-input" placeholder="Search... (⌘K)" autocomplete="off" readonly>
+            <div id="search-results" class="search-results"></div>
+        </div>
+
+        <nav class="sidebar-nav">
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Getting Started</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="introduction.html"
+                           class="nav-link">
+                            Introduction
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="quickstart.html"
+                           class="nav-link">
+                            Quickstart
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="installation.html"
+                           class="nav-link">
+                            Installation
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Configuration</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="environment-variables.html"
+                           class="nav-link">
+                            Environment Variables
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="ai-providers.html"
+                           class="nav-link">
+                            AI Providers
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="docker-deployment.html"
+                           class="nav-link">
+                            Docker Deployment
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Usage</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="generating-docs.html"
+                           class="nav-link">
+                            Generating Documentation
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="serving-docs.html"
+                           class="nav-link">
+                            Serving Documentation
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="incremental-updates.html"
+                           class="nav-link">
+                            Incremental Updates
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Architecture</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="generation-pipeline.html"
+                           class="nav-link">
+                            Generation Pipeline
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="ai-cli-integration.html"
+                           class="nav-link">
+                            AI CLI Integration
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="storage-and-database.html"
+                           class="nav-link active">
+                            Storage &amp; Database
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="html-renderer.html"
+                           class="nav-link">
+                            HTML Renderer
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">API Reference</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="api-generate.html"
+                           class="nav-link">
+                            POST /api/generate
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="api-status.html"
+                           class="nav-link">
+                            GET /api/status
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="api-projects.html"
+                           class="nav-link">
+                            GET /api/projects/{name}
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="api-projects-delete.html"
+                           class="nav-link">
+                            DELETE /api/projects/{name}
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="api-projects-download.html"
+                           class="nav-link">
+                            GET /api/projects/{name}/download
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="api-docs-serving.html"
+                           class="nav-link">
+                            GET /docs/{project}/{path}
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="api-health.html"
+                           class="nav-link">
+                            GET /health
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Development</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="contributing.html"
+                           class="nav-link">
+                            Contributing
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="tech-stack.html"
+                           class="nav-link">
+                            Technology Stack
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+        </nav>
+    </aside>
+
+    <div class="main-wrapper">
+        <header class="top-bar">
+            <div class="top-bar-left">
+                <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebar">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                </button>
+                <a href="index.html" class="top-bar-title">docsfy</a>
+            </div>
+            <div class="top-bar-spacer"></div>
+            <div class="top-bar-right">
+                <button class="top-bar-search-btn" id="search-trigger" aria-label="Search">
+                    <kbd>&#8984;K</kbd> Search
+                </button>
+                
+                <a href="https://github.com/myk-org/docsfy" target="_blank" rel="noopener noreferrer" class="top-bar-github" id="github-link" data-repo-url="https://github.com/myk-org/docsfy">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                    <span class="github-stars" id="github-stars"></span>
+                </a>
+                
+                <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+                    <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                    </svg>
+                    <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <main class="content">
+            <article class="article">
+                <h1 class="article-title">Storage &amp; Database</h1>
+                <div class="article-body">
+                    <h1 id="storage-database">Storage &amp; Database</h1>
+<p>docsfy uses a two-layer storage architecture: a <strong>SQLite database</strong> for project metadata and tracking, and a <strong>filesystem directory tree</strong> for cached markdown content, rendered HTML sites, and search indexes. Both live under a single <code>/data</code> mount point for simple container deployment.</p>
+<h2 id="storage-overview">Storage Overview</h2>
+<div class="highlight"><pre><span></span><code>/data/
+  docsfy.db                          # SQLite database (project metadata)
+  projects/                          # Filesystem storage (generated content)
+    {project-name}/
+      plan.json                      # Documentation structure from AI Planner
+      cache/
+        pages/*.md                   # AI-generated markdown (cached)
+      site/                          # Final rendered static HTML site
+        index.html
+        *.html
+        assets/
+          style.css
+          search.js
+          theme-toggle.js
+          highlight.js
+        search-index.json            # Client-side search index
+</code></pre></div>
+
+<p>All storage is rooted at <code>/data</code>, which is mapped as a Docker volume:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># docker-compose.yaml</span>
+<span class="nt">services</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">docsfy</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">volumes</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./data:/data</span>
+</code></pre></div>
+
+<blockquote>
+<p><strong>Tip:</strong> Since all persistent state lives under <code>/data</code>, backing up this single directory captures everything — the database, cached content, and rendered sites.</p>
+</blockquote>
+<h2 id="sqlite-database">SQLite Database</h2>
+<h3 id="location">Location</h3>
+<p>The database file lives at <code>/data/docsfy.db</code>. docsfy accesses it asynchronously via <code>aiosqlite</code>, which is well-suited for the FastAPI async request lifecycle.</p>
+<h3 id="schema">Schema</h3>
+<p>The database stores <strong>project metadata only</strong> — it does not store page content or rendered HTML. The tracked fields are:</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Project name</td>
+<td>Unique identifier derived from the repository</td>
+</tr>
+<tr>
+<td>Repository URL</td>
+<td>Source GitHub repository (SSH or HTTPS)</td>
+</tr>
+<tr>
+<td>Status</td>
+<td>Current generation state: <code>generating</code>, <code>ready</code>, or <code>error</code></td>
+</tr>
+<tr>
+<td>Last generated</td>
+<td>Timestamp of the most recent successful generation</td>
+</tr>
+<tr>
+<td>Last commit SHA</td>
+<td>HEAD commit SHA from the last generation run</td>
+</tr>
+<tr>
+<td>Generation history</td>
+<td>Logs from previous generation runs</td>
+</tr>
+</tbody>
+</table>
+<h3 id="project-status-lifecycle">Project Status Lifecycle</h3>
+<p>A project transitions through these statuses during generation:</p>
+<div class="highlight"><pre><span></span><code>POST /api/generate
+       │
+       v
+  ┌──────────┐     success     ┌───────┐
+  │generating │ ──────────────&gt; │ ready │
+  └──────────┘                  └───────┘
+       │
+       │ failure
+       v
+  ┌───────┐
+  │ error │
+  └───────┘
+</code></pre></div>
+
+<ul>
+<li><strong><code>generating</code></strong> — Pipeline is actively running (clone, plan, content generation, render).</li>
+<li><strong><code>ready</code></strong> — Site is built and available for serving at <code>GET /docs/{project}/</code>.</li>
+<li><strong><code>error</code></strong> — Generation failed; logs are stored for debugging.</li>
+</ul>
+<h3 id="incremental-update-tracking">Incremental Update Tracking</h3>
+<p>The database plays a central role in docsfy's incremental update strategy. When a project is re-generated:</p>
+<ol>
+<li>The stored <strong>last commit SHA</strong> is compared against the repository's current HEAD.</li>
+<li>If the SHA has changed, the AI Planner re-runs to check if the documentation structure changed.</li>
+<li>Only pages whose source content may be affected are regenerated.</li>
+<li>If the plan structure is unchanged and only specific files changed, only the relevant pages are rebuilt.</li>
+</ol>
+<blockquote>
+<p><strong>Note:</strong> The commit SHA comparison happens before any AI invocation, making the "nothing changed" case fast and free of AI costs.</p>
+</blockquote>
+<h2 id="filesystem-layout">Filesystem Layout</h2>
+<h3 id="per-project-directory">Per-Project Directory</h3>
+<p>Each project gets its own directory at <code>/data/projects/{project-name}/</code> containing three distinct areas:</p>
+<div class="highlight"><pre><span></span><code>/data/projects/{project-name}/
+  plan.json
+  cache/
+    pages/*.md
+  site/
+    ...
+</code></pre></div>
+
+<h3 id="planjson-documentation-structure">plan.json — Documentation Structure</h3>
+<p>The <code>plan.json</code> file is the output of <strong>Stage 2 (AI Planner)</strong> and defines the entire documentation structure: pages, sections, and navigation hierarchy.</p>
+<p>This file is:
+- Generated by the AI CLI after analyzing the full repository
+- Used by the content generator to know which pages to write
+- Used by the HTML renderer to build sidebar navigation
+- Persisted for incremental update comparisons (to detect if the doc structure changed)</p>
+<h3 id="cachepages-markdown-cache">cache/pages/ — Markdown Cache</h3>
+<div class="highlight"><pre><span></span><code>cache/
+  pages/
+    getting-started.md
+    api-reference.md
+    configuration.md
+    ...
+</code></pre></div>
+
+<p>The <code>cache/pages/</code> directory holds the <strong>AI-generated markdown</strong> files produced in <strong>Stage 3 (AI Content Generator)</strong>. Each page defined in <code>plan.json</code> gets a corresponding <code>.md</code> file.</p>
+<p>These cached markdown files serve two purposes:</p>
+<ol>
+<li><strong>Input for rendering</strong> — The HTML renderer converts these into the final static site.</li>
+<li><strong>Incremental update cache</strong> — On re-generation, unchanged pages can be skipped if their source material hasn't changed, avoiding unnecessary AI invocations.</li>
+</ol>
+<blockquote>
+<p><strong>Warning:</strong> Manually editing files in <code>cache/pages/</code> is not recommended. They will be overwritten on the next generation run. To customize output, adjust AI prompts or post-process the rendered site instead.</p>
+</blockquote>
+<h3 id="site-rendered-html-output">site/ — Rendered HTML Output</h3>
+<div class="highlight"><pre><span></span><code>site/
+  index.html
+  getting-started.html
+  api-reference.html
+  configuration.html
+  assets/
+    style.css
+    search.js
+    theme-toggle.js
+    highlight.js
+  search-index.json
+</code></pre></div>
+
+<p>The <code>site/</code> directory contains the <strong>final static HTML output</strong> from <strong>Stage 4 (HTML Renderer)</strong>. This is a fully self-contained static site that can be:</p>
+<ul>
+<li><strong>Served directly</strong> by docsfy at <code>GET /docs/{project}/{path}</code></li>
+<li><strong>Downloaded</strong> as a <code>.tar.gz</code> archive via <code>GET /api/projects/{name}/download</code> for self-hosting</li>
+</ul>
+<p>The renderer uses <strong>Jinja2 templates</strong> with bundled CSS and JavaScript assets to produce a polished documentation site with:</p>
+<ul>
+<li>Sidebar navigation (generated from <code>plan.json</code>)</li>
+<li>Dark/light theme toggle</li>
+<li>Client-side search</li>
+<li>Code syntax highlighting (via highlight.js)</li>
+<li>Responsive design</li>
+<li>Callout boxes (note, warning, info)</li>
+<li>Card layouts</li>
+</ul>
+<h2 id="search-index">Search Index</h2>
+<h3 id="how-it-works">How It Works</h3>
+<p>docsfy uses <strong>client-side search</strong> powered by lunr.js (or similar). The search index is generated at build time during the HTML rendering stage and served as a static JSON file.</p>
+<h3 id="search-indexjson">search-index.json</h3>
+<p>The search index lives at:</p>
+<div class="highlight"><pre><span></span><code>/data/projects/{project-name}/site/search-index.json
+</code></pre></div>
+
+<p>This JSON file is built from the markdown content of all pages during Stage 4. It contains pre-processed, tokenized content that the client-side search library can query without any server-side infrastructure.</p>
+<h3 id="searchjs">search.js</h3>
+<p>The corresponding search JavaScript is bundled as a static asset:</p>
+<div class="highlight"><pre><span></span><code>/data/projects/{project-name}/site/assets/search.js
+</code></pre></div>
+
+<p>This script loads <code>search-index.json</code> on the client side and provides instant search results as the user types — no server roundtrips required.</p>
+<blockquote>
+<p><strong>Tip:</strong> Because search is entirely client-side, downloaded/self-hosted sites get full search functionality with no additional setup.</p>
+</blockquote>
+<h2 id="docker-volume-mapping">Docker Volume Mapping</h2>
+<p>The recommended deployment maps <code>/data</code> as a bind mount or named volume:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">services</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">docsfy</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">build</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">.</span>
+<span class="w">    </span><span class="nt">ports</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;8000:8000&quot;</span>
+<span class="w">    </span><span class="nt">env_file</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">.env</span>
+<span class="w">    </span><span class="nt">volumes</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./data:/data</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">~/.config/gcloud:/home/appuser/.config/gcloud:ro</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./cursor:/home/appuser/.config/cursor</span>
+<span class="w">    </span><span class="nt">healthcheck</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">test</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;CMD&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;curl&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;-f&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;http://localhost:8000/health&quot;</span><span class="p p-Indicator">]</span>
+<span class="w">      </span><span class="nt">interval</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">30s</span>
+<span class="w">      </span><span class="nt">timeout</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10s</span>
+<span class="w">      </span><span class="nt">retries</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3</span>
+</code></pre></div>
+
+<p>The container runs as a non-root user (<code>appuser</code>) for OpenShift compatibility. The <code>/data</code> directory must be writable by this user.</p>
+<blockquote>
+<p><strong>Warning:</strong> If you use a bind mount (<code>./data:/data</code>), ensure the host directory exists and has appropriate permissions before starting the container.</p>
+</blockquote>
+<h2 id="storage-management">Storage Management</h2>
+<h3 id="removing-a-project">Removing a Project</h3>
+<p>Use the API to cleanly remove a project and all its associated storage:</p>
+<div class="highlight"><pre><span></span><code>DELETE /api/projects/{name}
+</code></pre></div>
+
+<p>This removes:
+- The project record from the SQLite database
+- The entire <code>/data/projects/{name}/</code> directory tree (plan, cache, and site)</p>
+<h3 id="disk-space-considerations">Disk Space Considerations</h3>
+<p>Each generated project consumes disk space across three areas:</p>
+<table>
+<thead>
+<tr>
+<th>Area</th>
+<th>Contents</th>
+<th>Relative Size</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>plan.json</code></td>
+<td>Documentation structure</td>
+<td>Small (a few KB)</td>
+</tr>
+<tr>
+<td><code>cache/pages/</code></td>
+<td>AI-generated markdown</td>
+<td>Moderate (depends on page count)</td>
+</tr>
+<tr>
+<td><code>site/</code></td>
+<td>Rendered HTML + assets + search index</td>
+<td>Largest (HTML + bundled JS/CSS)</td>
+</tr>
+</tbody>
+</table>
+<p>The SQLite database (<code>docsfy.db</code>) itself remains small, as it stores only metadata — not page content.</p>
+<blockquote>
+<p><strong>Tip:</strong> To reclaim space without losing the ability to re-render, you can delete the <code>site/</code> directory for a project. The cached markdown and plan can be used to regenerate the HTML without re-invoking the AI.</p>
+</blockquote>
+                </div>
+            </article>
+            <nav class="page-nav">
+                
+                <a href="ai-cli-integration.html" class="page-nav-link page-nav-prev">
+                    <span class="page-nav-label">Previous</span>
+                    <span class="page-nav-title">AI CLI Integration</span>
+                </a>
+                
+                
+                <a href="html-renderer.html" class="page-nav-link page-nav-next">
+                    <span class="page-nav-label">Next</span>
+                    <span class="page-nav-title">HTML Renderer</span>
+                </a>
+                
+            </nav>
+            
+            <aside class="toc-sidebar">
+                <div class="toc-container">
+                    <h3>On this page</h3>
+                    <div class="toc">
+<ul>
+<li><a href="#storage-overview">Storage Overview</a></li>
+<li><a href="#sqlite-database">SQLite Database</a><ul>
+<li><a href="#location">Location</a></li>
+<li><a href="#schema">Schema</a></li>
+<li><a href="#project-status-lifecycle">Project Status Lifecycle</a></li>
+<li><a href="#incremental-update-tracking">Incremental Update Tracking</a></li>
+</ul>
+</li>
+<li><a href="#filesystem-layout">Filesystem Layout</a><ul>
+<li><a href="#per-project-directory">Per-Project Directory</a></li>
+<li><a href="#planjson-documentation-structure">plan.json — Documentation Structure</a></li>
+<li><a href="#cachepages-markdown-cache">cache/pages/ — Markdown Cache</a></li>
+<li><a href="#site-rendered-html-output">site/ — Rendered HTML Output</a></li>
+</ul>
+</li>
+<li><a href="#search-index">Search Index</a><ul>
+<li><a href="#how-it-works">How It Works</a></li>
+<li><a href="#search-indexjson">search-index.json</a></li>
+<li><a href="#searchjs">search.js</a></li>
+</ul>
+</li>
+<li><a href="#docker-volume-mapping">Docker Volume Mapping</a></li>
+<li><a href="#storage-management">Storage Management</a><ul>
+<li><a href="#removing-a-project">Removing a Project</a></li>
+<li><a href="#disk-space-considerations">Disk Space Considerations</a></li>
+</ul>
+</li>
+</ul>
+</div>
+
+                </div>
+            </aside>
+            
+        </main>
+
+        <footer class="footer">
+            <p>Built with <a href="https://github.com/docsfy/docsfy">docsfy</a></p>
+        </footer>
+    </div>
+
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <script src="assets/theme.js"></script>
+    <script src="assets/search.js"></script>
+    <script src="assets/copy.js"></script>
+    <script src="assets/callouts.js"></script>
+    <script src="assets/scrollspy.js"></script>
+    <script src="assets/codelabels.js"></script>
+    <script src="assets/github.js"></script>
+    <script>
+    (function() {
+        var toggle = document.getElementById('sidebar-toggle');
+        var sidebar = document.getElementById('sidebar');
+        var overlay = document.getElementById('sidebar-overlay');
+        if (toggle && sidebar) {
+            toggle.addEventListener('click', function() {
+                sidebar.classList.toggle('open');
+                if (overlay) overlay.classList.toggle('open');
+            });
+        }
+        if (overlay) {
+            overlay.addEventListener('click', function() {
+                sidebar.classList.remove('open');
+                overlay.classList.remove('open');
+            });
+        }
+    })();
+    </script>
+</body>
+</html>
