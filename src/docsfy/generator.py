@@ -18,6 +18,8 @@ def _strip_ai_preamble(text: str) -> str:
     """Strip AI thinking/planning text that appears before actual content."""
     lines = text.split("\n")
     for i, line in enumerate(lines):
+        if i > 10:
+            break
         if line.startswith("#"):
             return "\n".join(lines[i:])
     return text
@@ -127,8 +129,16 @@ async def generate_all_pages(
         coroutines, max_concurrency=MAX_CONCURRENT_PAGES
     )
     pages: dict[str, str] = {}
-    for page_info, md in zip(all_pages, results):
-        pages[page_info["slug"]] = md
+    for page_info, result in zip(all_pages, results):
+        if isinstance(result, Exception):
+            logger.warning(
+                f"Page generation failed for '{page_info['slug']}': {result}"
+            )
+            pages[page_info["slug"]] = (
+                f"# {page_info['title']}\n\n*Documentation generation failed.*"
+            )
+        else:
+            pages[page_info["slug"]] = result
 
     logger.info(f"Generated {len(pages)} pages total")
     return pages

@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import json
 import os
+import re as _re
 import shutil
 import tarfile
 import tempfile
@@ -36,6 +37,15 @@ from docsfy.storage import (
 
 logger = get_logger(name=__name__)
 
+_generating: set[str] = set()
+
+
+def _validate_project_name(name: str) -> str:
+    """Validate project name to prevent path traversal."""
+    if not _re.match(r"^[a-zA-Z0-9][a-zA-Z0-9._-]*$", name):
+        raise HTTPException(status_code=400, detail=f"Invalid project name: '{name}'")
+    return name
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
@@ -68,6 +78,14 @@ async def generate(request: GenerateRequest) -> dict[str, str]:
     ai_provider = request.ai_provider or settings.ai_provider
     ai_model = request.ai_model or settings.ai_model
     project_name = request.project_name
+
+    if project_name in _generating:
+        raise HTTPException(
+            status_code=409,
+            detail=f"Project '{project_name}' is already being generated",
+        )
+
+    _generating.add(project_name)
 
     await save_project(
         name=project_name,
@@ -120,9 +138,9 @@ async def _run_generation(
             )
         else:
             # Remote repository - clone to temp dir
-            assert repo_url is not None, (
-                "repo_url must be provided for remote repositories"
-            )
+            if repo_url is None:
+                msg = "repo_url must be provided for remote repositories"
+                raise ValueError(msg)
             with tempfile.TemporaryDirectory() as tmp_dir:
                 repo_dir, commit_sha = await asyncio.to_thread(
                     clone_repo, repo_url, Path(tmp_dir)
@@ -138,11 +156,19 @@ async def _run_generation(
                     force,
                 )
 
+    except asyncio.CancelledError:
+        logger.warning(f"Generation cancelled for {project_name}")
+        await update_project_status(
+            project_name, status="error", error_message="Generation was cancelled"
+        )
+        raise
     except Exception as exc:
         logger.error(f"Generation failed for {project_name}: {exc}")
         await update_project_status(
             project_name, status="error", error_message=str(exc)
         )
+    finally:
+        _generating.discard(project_name)
 
 
 async def _generate_from_path(
@@ -155,7 +181,12 @@ async def _generate_from_path(
     ai_cli_timeout: int,
     force: bool,
 ) -> None:
-    if not force:
+    if force:
+        cache_dir = get_project_cache_dir(project_name)
+        if cache_dir.exists():
+            shutil.rmtree(cache_dir)
+            logger.info(f"Cleared cache for {project_name} (force=True)")
+    else:
         existing = await get_project(project_name)
         if (
             existing
@@ -163,13 +194,8 @@ async def _generate_from_path(
             and existing.get("status") == "ready"
         ):
             logger.info(f"Project {project_name} is up to date at {commit_sha[:8]}")
+            await update_project_status(project_name, status="ready")
             return
-
-    if force:
-        cache_dir = get_project_cache_dir(project_name)
-        if cache_dir.exists():
-            shutil.rmtree(cache_dir)
-            logger.info(f"Cleared cache for {project_name} (force=True)")
 
     plan = await run_planner(
         repo_path=repo_dir,
@@ -211,6 +237,7 @@ async def _generate_from_path(
 
 @app.get("/api/projects/{name}")
 async def get_project_details(name: str) -> dict[str, str | int | None]:
+    name = _validate_project_name(name)
     project = await get_project(name)
     if not project:
         raise HTTPException(status_code=404, detail=f"Project '{name}' not found")
@@ -219,6 +246,7 @@ async def get_project_details(name: str) -> dict[str, str | int | None]:
 
 @app.delete("/api/projects/{name}")
 async def delete_project_endpoint(name: str) -> dict[str, str]:
+    name = _validate_project_name(name)
     deleted = await delete_project(name)
     if not deleted:
         raise HTTPException(status_code=404, detail=f"Project '{name}' not found")
@@ -230,6 +258,7 @@ async def delete_project_endpoint(name: str) -> dict[str, str]:
 
 @app.get("/api/projects/{name}/download")
 async def download_project(name: str) -> StreamingResponse:
+    name = _validate_project_name(name)
     project = await get_project(name)
     if not project:
         raise HTTPException(status_code=404, detail=f"Project '{name}' not found")
@@ -256,6 +285,7 @@ async def download_project(name: str) -> StreamingResponse:
 
 @app.get("/docs/{project}/{path:path}")
 async def serve_docs(project: str, path: str = "index.html") -> FileResponse:
+    project = _validate_project_name(project)
     if not path or path == "/":
         path = "index.html"
     site_dir = get_project_site_dir(project)
@@ -273,4 +303,6 @@ def run() -> None:
     import uvicorn
 
     reload = os.getenv("DEBUG", "").lower() == "true"
-    uvicorn.run("docsfy.main:app", host="0.0.0.0", port=8000, reload=reload)
+    host = os.getenv("HOST", "0.0.0.0")
+    port = int(os.getenv("PORT", "8000"))
+    uvicorn.run("docsfy.main:app", host=host, port=port, reload=reload)

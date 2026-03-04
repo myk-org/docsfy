@@ -35,6 +35,9 @@ def clone_repo(repo_url: str, base_dir: Path) -> tuple[Path, str]:
         capture_output=True,
         text=True,
     )
+    if sha_result.returncode != 0:
+        msg = f"Failed to get commit SHA: {sha_result.stderr or sha_result.stdout}"
+        raise RuntimeError(msg)
     commit_sha = sha_result.stdout.strip()
     logger.info(f"Cloned {repo_name} at commit {commit_sha[:8]}")
     return repo_path, commit_sha
@@ -48,6 +51,9 @@ def get_local_repo_info(repo_path: Path) -> tuple[Path, str]:
         capture_output=True,
         text=True,
     )
+    if sha_result.returncode != 0:
+        msg = f"Failed to get commit SHA: {sha_result.stderr or sha_result.stdout}"
+        raise RuntimeError(msg)
     commit_sha = sha_result.stdout.strip()
     logger.info(f"Local repo {repo_path.name} at commit {commit_sha[:8]}")
     return repo_path, commit_sha

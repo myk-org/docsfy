@@ -15,11 +15,17 @@ TEMPLATES_DIR = Path(__file__).parent / "templates"
 STATIC_DIR = Path(__file__).parent / "static"
 
 
+_jinja_env: Environment | None = None
+
+
 def _get_jinja_env() -> Environment:
-    return Environment(
-        loader=FileSystemLoader(str(TEMPLATES_DIR)),
-        autoescape=select_autoescape(["html"]),
-    )
+    global _jinja_env
+    if _jinja_env is None:
+        _jinja_env = Environment(
+            loader=FileSystemLoader(str(TEMPLATES_DIR)),
+            autoescape=select_autoescape(["html"]),
+        )
+    return _jinja_env
 
 
 def _md_to_html(md_text: str) -> tuple[str, str]:

@@ -34,7 +34,13 @@ async def init_db() -> None:
 async def save_project(name: str, repo_url: str, status: str = "generating") -> None:
     async with aiosqlite.connect(DB_PATH) as db:
         await db.execute(
-            "INSERT OR REPLACE INTO projects (name, repo_url, status, updated_at) VALUES (?, ?, ?, CURRENT_TIMESTAMP)",
+            """INSERT INTO projects (name, repo_url, status, updated_at)
+               VALUES (?, ?, ?, CURRENT_TIMESTAMP)
+               ON CONFLICT(name) DO UPDATE SET
+               repo_url = excluded.repo_url,
+               status = excluded.status,
+               error_message = NULL,
+               updated_at = CURRENT_TIMESTAMP""",
             (name, repo_url, status),
         )
         await db.commit()

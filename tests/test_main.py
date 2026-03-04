@@ -15,12 +15,16 @@ async def client(tmp_path: Path):
     storage.DATA_DIR = tmp_path
     storage.PROJECTS_DIR = tmp_path / "projects"
 
+    import docsfy.main as main_module
     from docsfy.main import app
+
+    main_module._generating.clear()
 
     await storage.init_db()
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
         yield ac
+    main_module._generating.clear()
 
 
 async def test_health_endpoint(client: AsyncClient) -> None:
