@@ -20,8 +20,8 @@ PLAN_SCHEMA = """{
 
 def build_planner_prompt(project_name: str) -> str:
     return f"""You are a technical documentation planner. Explore this repository thoroughly.
-Read the README, source code, configuration files, tests, and any existing documentation.
-Understand what this project does, how it works, and who uses it.
+Explore the source code, configuration files, tests, CI/CD pipelines, and project structure.
+Do NOT rely on the README — understand the project from its code and configuration.
 
 Then create a documentation plan as a JSON object. The plan should cover:
 - Introduction and overview
@@ -45,8 +45,8 @@ the "{page_title}" page for the {project_name} documentation.
 
 Page description: {page_description}
 
-Explore the codebase as needed. Read source files, configs, tests, and existing docs
-to write comprehensive, accurate documentation.
+Explore the codebase as needed. Read source files, configs, tests, and CI/CD pipelines
+to write comprehensive, accurate documentation. Do NOT rely on the README.
 
 Write in markdown format. Include:
 - Clear explanations

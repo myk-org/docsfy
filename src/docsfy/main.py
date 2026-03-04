@@ -20,7 +20,7 @@ from docsfy.ai_client import check_ai_cli_available
 from docsfy.config import get_settings
 from docsfy.generator import generate_all_pages, run_planner
 from docsfy.models import GenerateRequest
-from docsfy.repository import clone_repo
+from docsfy.repository import clone_repo, get_local_repo_info
 from docsfy.renderer import render_site
 from docsfy.storage import (
     delete_project,
@@ -70,16 +70,20 @@ async def generate(request: GenerateRequest) -> dict[str, str]:
     project_name = request.project_name
 
     await save_project(
-        name=project_name, repo_url=request.repo_url, status="generating"
+        name=project_name,
+        repo_url=request.repo_url or request.repo_path or "",
+        status="generating",
     )
 
     asyncio.create_task(
         _run_generation(
             repo_url=request.repo_url,
+            repo_path=request.repo_path,
             project_name=project_name,
             ai_provider=ai_provider,
             ai_model=ai_model,
             ai_cli_timeout=request.ai_cli_timeout or settings.ai_cli_timeout,
+            force=request.force,
         )
     )
 
@@ -87,11 +91,13 @@ async def generate(request: GenerateRequest) -> dict[str, str]:
 
 
 async def _run_generation(
-    repo_url: str,
+    repo_url: str | None,
+    repo_path: str | None,
     project_name: str,
     ai_provider: str,
     ai_model: str,
     ai_cli_timeout: int,
+    force: bool = False,
 ) -> None:
     try:
         available, msg = await check_ai_cli_available(ai_provider, ai_model)
@@ -99,59 +105,108 @@ async def _run_generation(
             await update_project_status(project_name, status="error", error_message=msg)
             return
 
-        with tempfile.TemporaryDirectory() as tmp_dir:
-            repo_path, commit_sha = await asyncio.to_thread(
-                clone_repo, repo_url, Path(tmp_dir)
+        if repo_path:
+            # Local repository - use directly, no cloning needed
+            local_path, commit_sha = get_local_repo_info(Path(repo_path))
+            await _generate_from_path(
+                local_path,
+                commit_sha,
+                repo_url or repo_path,
+                project_name,
+                ai_provider,
+                ai_model,
+                ai_cli_timeout,
+                force,
             )
-
-            existing = await get_project(project_name)
-            if (
-                existing
-                and existing.get("last_commit_sha") == commit_sha
-                and existing.get("status") == "ready"
-            ):
-                logger.info(f"Project {project_name} is up to date at {commit_sha[:8]}")
-                return
-
-            plan = await run_planner(
-                repo_path=repo_path,
-                project_name=project_name,
-                ai_provider=ai_provider,
-                ai_model=ai_model,
-                ai_cli_timeout=ai_cli_timeout,
+        else:
+            # Remote repository - clone to temp dir
+            assert repo_url is not None, (
+                "repo_url must be provided for remote repositories"
             )
-
-            cache_dir = get_project_cache_dir(project_name)
-            pages = await generate_all_pages(
-                repo_path=repo_path,
-                plan=plan,
-                cache_dir=cache_dir,
-                ai_provider=ai_provider,
-                ai_model=ai_model,
-                ai_cli_timeout=ai_cli_timeout,
-            )
-
-        site_dir = get_project_site_dir(project_name)
-        render_site(plan=plan, pages=pages, output_dir=site_dir)
-
-        project_dir = get_project_dir(project_name)
-        (project_dir / "plan.json").write_text(json.dumps(plan, indent=2))
-
-        page_count = len(pages)
-        await update_project_status(
-            project_name,
-            status="ready",
-            last_commit_sha=commit_sha,
-            page_count=page_count,
-            plan_json=json.dumps(plan),
-        )
-        logger.info(f"Documentation for {project_name} is ready ({page_count} pages)")
+            with tempfile.TemporaryDirectory() as tmp_dir:
+                repo_dir, commit_sha = await asyncio.to_thread(
+                    clone_repo, repo_url, Path(tmp_dir)
+                )
+                await _generate_from_path(
+                    repo_dir,
+                    commit_sha,
+                    repo_url or "",
+                    project_name,
+                    ai_provider,
+                    ai_model,
+                    ai_cli_timeout,
+                    force,
+                )
 
     except Exception as exc:
         logger.error(f"Generation failed for {project_name}: {exc}")
         await update_project_status(
             project_name, status="error", error_message=str(exc)
         )
+
+
+async def _generate_from_path(
+    repo_dir: Path,
+    commit_sha: str,
+    source_url: str,
+    project_name: str,
+    ai_provider: str,
+    ai_model: str,
+    ai_cli_timeout: int,
+    force: bool,
+) -> None:
+    if not force:
+        existing = await get_project(project_name)
+        if (
+            existing
+            and existing.get("last_commit_sha") == commit_sha
+            and existing.get("status") == "ready"
+        ):
+            logger.info(f"Project {project_name} is up to date at {commit_sha[:8]}")
+            return
+
+    if force:
+        cache_dir = get_project_cache_dir(project_name)
+        if cache_dir.exists():
+            shutil.rmtree(cache_dir)
+            logger.info(f"Cleared cache for {project_name} (force=True)")
+
+    plan = await run_planner(
+        repo_path=repo_dir,
+        project_name=project_name,
+        ai_provider=ai_provider,
+        ai_model=ai_model,
+        ai_cli_timeout=ai_cli_timeout,
+    )
+
+    plan["repo_url"] = source_url
+
+    cache_dir = get_project_cache_dir(project_name)
+    pages = await generate_all_pages(
+        repo_path=repo_dir,
+        plan=plan,
+        cache_dir=cache_dir,
+        ai_provider=ai_provider,
+        ai_model=ai_model,
+        ai_cli_timeout=ai_cli_timeout,
+        use_cache=not force,
+    )
+
+    site_dir = get_project_site_dir(project_name)
+    render_site(plan=plan, pages=pages, output_dir=site_dir)
+
+    project_dir = get_project_dir(project_name)
+    (project_dir / "plan.json").write_text(json.dumps(plan, indent=2))
+
+    page_count = len(pages)
+    await update_project_status(
+        project_name,
+        status="ready",
+        last_commit_sha=commit_sha,
+        page_count=page_count,
+        plan_json=json.dumps(plan),
+    )
+    logger.info(f"Documentation for {project_name} is ready ({page_count} pages)")
 
 
 @app.get("/api/projects/{name}")

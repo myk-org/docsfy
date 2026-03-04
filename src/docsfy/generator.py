@@ -1,12 +1,11 @@
 from __future__ import annotations
 
-import asyncio
 from pathlib import Path
 from typing import Any
 
 from simple_logger.logger import get_logger
 
-from docsfy.ai_client import call_ai_cli
+from docsfy.ai_client import call_ai_cli, run_parallel_with_limit
 from docsfy.json_parser import parse_json_response
 from docsfy.prompts import build_page_prompt, build_planner_prompt
 
@@ -98,32 +97,38 @@ async def generate_all_pages(
     ai_cli_timeout: int | None = None,
     use_cache: bool = False,
 ) -> dict[str, str]:
-    semaphore = asyncio.Semaphore(MAX_CONCURRENT_PAGES)
-    pages: dict[str, str] = {}
-
-    async def _gen(slug: str, title: str, description: str) -> tuple[str, str]:
-        async with semaphore:
-            md = await generate_page(
-                repo_path=repo_path,
-                slug=slug,
-                title=title,
-                description=description,
-                cache_dir=cache_dir,
-                ai_provider=ai_provider,
-                ai_model=ai_model,
-                ai_cli_timeout=ai_cli_timeout,
-                use_cache=use_cache,
-            )
-            return slug, md
-
-    tasks = []
+    all_pages: list[dict[str, str]] = []
     for group in plan.get("navigation", []):
         for page in group.get("pages", []):
-            tasks.append(_gen(page["slug"], page["title"], page.get("description", "")))
+            all_pages.append(
+                {
+                    "slug": page["slug"],
+                    "title": page["title"],
+                    "description": page.get("description", ""),
+                }
+            )
 
-    results = await asyncio.gather(*tasks)
-    for slug, md in results:
-        pages[slug] = md
+    coroutines = [
+        generate_page(
+            repo_path=repo_path,
+            slug=p["slug"],
+            title=p["title"],
+            description=p["description"],
+            cache_dir=cache_dir,
+            ai_provider=ai_provider,
+            ai_model=ai_model,
+            ai_cli_timeout=ai_cli_timeout,
+            use_cache=use_cache,
+        )
+        for p in all_pages
+    ]
+
+    results = await run_parallel_with_limit(
+        coroutines, max_concurrency=MAX_CONCURRENT_PAGES
+    )
+    pages: dict[str, str] = {}
+    for page_info, md in zip(all_pages, results):
+        pages[page_info["slug"]] = md
 
     logger.info(f"Generated {len(pages)} pages total")
     return pages

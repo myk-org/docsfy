@@ -134,6 +134,7 @@
 html {
     font-size: 16px;
     scroll-behavior: smooth;
+    scroll-padding-top: calc(var(--header-height, 60px) + 20px);
     -webkit-text-size-adjust: 100%;
 }
 
@@ -404,7 +405,7 @@ a:hover {
    -------------------------------------------------------------------------- */
 .content {
     flex: 1;
-    padding: 40px 48px;
+    padding: calc(var(--header-height, 60px) + 20px) 48px 40px;
     max-width: calc(var(--content-max-width) + 96px);
 }
 
@@ -590,16 +591,6 @@ a:hover {
 /* --------------------------------------------------------------------------
    Blockquotes / Callouts
    -------------------------------------------------------------------------- */
-.article-body blockquote {
-    margin: 20px 0;
-    padding: 14px 20px;
-    border-left: 4px solid var(--callout-note-border);
-    background: var(--callout-note-bg);
-    color: var(--callout-note-text);
-    border-radius: 0 8px 8px 0;
-    font-size: 0.9375rem;
-}
-
 .article-body blockquote p {
     margin-bottom: 8px;
 }
@@ -608,18 +599,37 @@ a:hover {
     margin-bottom: 0;
 }
 
-/* Warning callout: > **Warning:** ... */
-.article-body blockquote:has(strong:first-child) {
-    border-left-color: var(--callout-warning-border);
-    background: var(--callout-warning-bg);
-    color: var(--callout-warning-text);
+/* Callout boxes */
+blockquote.callout-note {
+    border-left: 4px solid #3b82f6;
+    background: rgba(59, 130, 246, 0.08);
+    padding: 1rem 1.25rem;
+    border-radius: 0 8px 8px 0;
+    margin: 1.5rem 0;
 }
 
-/* Tip callout: > **Tip:** ... */
-.article-body blockquote:has(strong:first-child) {
-    border-left-color: var(--callout-warning-border);
-    background: var(--callout-warning-bg);
-    color: var(--callout-warning-text);
+blockquote.callout-warning {
+    border-left: 4px solid #f59e0b;
+    background: rgba(245, 158, 11, 0.08);
+    padding: 1rem 1.25rem;
+    border-radius: 0 8px 8px 0;
+    margin: 1.5rem 0;
+}
+
+blockquote.callout-tip {
+    border-left: 4px solid #10b981;
+    background: rgba(16, 185, 129, 0.08);
+    padding: 1rem 1.25rem;
+    border-radius: 0 8px 8px 0;
+    margin: 1.5rem 0;
+}
+
+/* Default blockquote styling (not a callout) */
+blockquote:not(.callout-note):not(.callout-warning):not(.callout-tip) {
+    border-left: 4px solid var(--border-primary);
+    padding: 1rem 1.25rem;
+    margin: 1.5rem 0;
+    color: var(--text-secondary);
 }
 
 /* --------------------------------------------------------------------------
@@ -822,12 +832,13 @@ a:hover {
    -------------------------------------------------------------------------- */
 .toc-sidebar {
     position: fixed;
-    top: 80px;
+    top: var(--header-height);
     right: 20px;
-    width: 220px;
-    max-height: calc(100vh - 100px);
+    width: 200px;
+    max-height: calc(100vh - var(--header-height) - 20px);
     overflow-y: auto;
-    font-size: 0.85rem;
+    font-size: 0.8125rem;
+    display: none;
 }
 
 .toc-container h3 {
@@ -837,6 +848,11 @@ a:hover {
     letter-spacing: 0.05em;
     color: var(--text-secondary);
     margin-bottom: 0.75rem;
+    position: sticky;
+    top: 0;
+    background: var(--bg-primary);
+    padding: 12px 0 8px;
+    z-index: 1;
 }
 
 .toc-container ul {
@@ -864,23 +880,23 @@ a:hover {
     border-left-color: var(--accent);
 }
 
+/* Hide h3+ nested items to limit TOC depth to h2 only */
 .toc-container ul ul {
-    padding-left: 0.75rem;
+    display: none;
 }
 
-/* Adjust main content to not overlap with TOC */
-@media (min-width: 1200px) {
-    .main-content {
-        margin-right: 260px;
-    }
-}
-
-/* Hide TOC on smaller screens */
-@media (max-width: 1199px) {
+/* Show TOC and adjust main content on wide screens only */
+@media (min-width: 1280px) {
     .toc-sidebar {
-        display: none;
+        display: block;
+    }
+
+    .content {
+        margin-right: 220px;
     }
 }
+
+/* TOC is hidden by default (display: none above), no extra rule needed */
 
 /* --------------------------------------------------------------------------
    Footer
@@ -1023,4 +1039,298 @@ a:hover {
         padding: 0;
         max-width: 100%;
     }
+}
+
+/* --------------------------------------------------------------------------
+   Code Copy Button
+   -------------------------------------------------------------------------- */
+.copy-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    padding: 4px 10px;
+    font-size: 0.75rem;
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+}
+
+pre:hover .copy-btn {
+    opacity: 1;
+}
+
+.copy-btn:hover {
+    background: var(--accent-color);
+    color: white;
+    border-color: var(--accent-color);
+}
+
+/* --------------------------------------------------------------------------
+   Prev/Next Page Navigation
+   -------------------------------------------------------------------------- */
+.page-nav {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.page-nav-link {
+    display: flex;
+    flex-direction: column;
+    padding: 1rem 1.25rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    text-decoration: none;
+    transition: all 0.15s ease;
+    max-width: 50%;
+}
+
+.page-nav-link:hover {
+    border-color: var(--accent-color);
+    box-shadow: 0 2px 8px rgba(79, 70, 229, 0.1);
+}
+
+.page-nav-next {
+    text-align: right;
+    margin-left: auto;
+}
+
+.page-nav-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-secondary);
+    margin-bottom: 0.25rem;
+}
+
+.page-nav-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--accent-color);
+}
+
+/* --------------------------------------------------------------------------
+   Search Modal (Cmd+K)
+   -------------------------------------------------------------------------- */
+.search-modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    justify-content: center;
+    padding-top: 15vh;
+}
+
+.search-modal-overlay.active {
+    display: flex;
+}
+
+.search-modal {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-primary);
+    border-radius: 12px;
+    width: 560px;
+    max-height: 480px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+}
+
+.search-modal-input {
+    width: 100%;
+    padding: 16px 20px;
+    border: none;
+    border-bottom: 1px solid var(--border-primary);
+    background: transparent;
+    color: var(--text-primary);
+    font-size: 1rem;
+    outline: none;
+    box-sizing: border-box;
+}
+
+.search-modal-results {
+    overflow-y: auto;
+    flex: 1;
+}
+
+.search-modal .search-result-item {
+    display: flex;
+    flex-direction: column;
+    padding: 12px 20px;
+    text-decoration: none;
+    border-bottom: 1px solid var(--border-primary);
+    transition: background 0.1s ease;
+}
+
+.search-modal .search-result-item:hover,
+.search-modal .search-result-item.selected {
+    background: var(--bg-secondary);
+}
+
+.search-result-title {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+}
+
+.search-result-preview {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-top: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.search-no-results {
+    padding: 20px;
+    text-align: center;
+    color: var(--text-secondary);
+}
+
+.search-modal-footer {
+    padding: 8px 20px;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    border-top: 1px solid var(--border-primary);
+    text-align: center;
+}
+
+.search-modal-footer kbd {
+    display: inline-block;
+    padding: 2px 6px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-primary);
+    border-radius: 4px;
+    font-family: inherit;
+    font-size: 0.7rem;
+}
+
+/* --------------------------------------------------------------------------
+   Scroll Spy - TOC Active State
+   -------------------------------------------------------------------------- */
+.toc-container a.toc-active {
+    color: var(--accent);
+    border-left-color: var(--accent);
+    font-weight: 500;
+}
+
+/* --------------------------------------------------------------------------
+   Top Bar - Desktop Visibility & Layout
+   -------------------------------------------------------------------------- */
+.top-bar-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.top-bar-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    text-decoration: none;
+    letter-spacing: -0.01em;
+}
+
+.top-bar-title:hover {
+    color: var(--accent);
+    text-decoration: none;
+}
+
+.top-bar-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.top-bar-search-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-primary);
+    border-radius: 8px;
+    color: var(--text-tertiary);
+    font-size: 0.8125rem;
+    cursor: pointer;
+    transition: color var(--transition-fast), background-color var(--transition-fast),
+                border-color var(--transition-fast);
+}
+
+.top-bar-search-btn:hover {
+    color: var(--text-primary);
+    background: var(--bg-tertiary);
+    border-color: var(--border-primary);
+}
+
+.top-bar-search-btn kbd {
+    display: inline-block;
+    padding: 1px 5px;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-primary);
+    border-radius: 4px;
+    font-family: inherit;
+    font-size: 0.7rem;
+    color: var(--text-tertiary);
+}
+
+.top-bar-github {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border: 1px solid var(--border-primary);
+    border-radius: 6px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 0.85rem;
+    transition: color var(--transition-fast), background-color var(--transition-fast),
+                border-color var(--transition-fast);
+}
+
+.top-bar-github:hover {
+    color: var(--text-primary);
+    background: var(--bg-tertiary);
+    border-color: var(--accent);
+    text-decoration: none;
+}
+
+.top-bar-github svg {
+    flex-shrink: 0;
+}
+
+.github-stars {
+    font-weight: 600;
+    font-size: 0.8rem;
+}
+
+.github-stars:empty {
+    display: none;
+}
+
+/* --------------------------------------------------------------------------
+   Code Language Labels
+   -------------------------------------------------------------------------- */
+.code-lang-label {
+    position: absolute;
+    top: 8px;
+    right: 60px;
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    opacity: 0.6;
 }

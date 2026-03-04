@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "AI-powered documentation generator - generates Mintlify-quality static HTML docs from GitHub repos"
 requires-python = ">=3.12"
 dependencies = [
+    "ai-cli-runner",
     "fastapi",
     "uvicorn",
     "pydantic-settings",
@@ -13,6 +14,10 @@ dependencies = [
     "markdown",
     "pygments",
 ]
+
+[project.urls]
+Documentation = "https://myk-org.github.io/docsfy/"
+Repository = "https://github.com/myk-org/docsfy"
 
 [project.scripts]
 docsfy = "docsfy.main:run"

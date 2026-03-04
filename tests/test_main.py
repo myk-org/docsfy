@@ -57,6 +57,32 @@ async def test_get_project_not_found(client: AsyncClient) -> None:
     assert response.status_code == 404
 
 
+async def test_generate_endpoint_with_force(client: AsyncClient) -> None:
+    with patch("docsfy.main.asyncio.create_task"):
+        response = await client.post(
+            "/api/generate",
+            json={"repo_url": "https://github.com/org/repo.git", "force": True},
+        )
+    assert response.status_code == 202
+    body = response.json()
+    assert body["project"] == "repo"
+
+
+async def test_generate_endpoint_local_path(
+    client: AsyncClient, tmp_path: Path
+) -> None:
+    # Create a fake git repo
+    (tmp_path / "myrepo" / ".git").mkdir(parents=True)
+    with patch("docsfy.main.asyncio.create_task"):
+        response = await client.post(
+            "/api/generate",
+            json={"repo_path": str(tmp_path / "myrepo")},
+        )
+    assert response.status_code == 202
+    body = response.json()
+    assert body["project"] == "myrepo"
+
+
 async def test_delete_project_not_found(client: AsyncClient) -> None:
     response = await client.delete("/api/projects/nonexistent")
     assert response.status_code == 404

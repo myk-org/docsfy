@@ -63,6 +63,7 @@ async def test_full_flow_mock(client: AsyncClient, tmp_path: Path) -> None:
 
         await _run_generation(
             repo_url="https://github.com/org/test-repo.git",
+            repo_path=None,
             project_name="test-repo",
             ai_provider="claude",
             ai_model="opus",

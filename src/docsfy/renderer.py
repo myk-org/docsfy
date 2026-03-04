@@ -36,6 +36,23 @@ def _md_to_html(md_text: str) -> tuple[str, str]:
     return content_html, toc_html
 
 
+def _get_prev_next(
+    plan: dict[str, Any], current_slug: str
+) -> tuple[dict[str, str] | None, dict[str, str] | None]:
+    """Get previous and next pages for navigation."""
+    all_pages: list[dict[str, str]] = []
+    for group in plan.get("navigation", []):
+        for page in group.get("pages", []):
+            all_pages.append({"slug": page["slug"], "title": page["title"]})
+
+    for i, page in enumerate(all_pages):
+        if page["slug"] == current_slug:
+            prev_page = all_pages[i - 1] if i > 0 else None
+            next_page = all_pages[i + 1] if i < len(all_pages) - 1 else None
+            return prev_page, next_page
+    return None, None
+
+
 def render_page(
     markdown_content: str,
     page_title: str,
@@ -43,10 +60,13 @@ def render_page(
     tagline: str,
     navigation: list[dict[str, Any]],
     current_slug: str,
+    plan: dict[str, Any] | None = None,
+    repo_url: str = "",
 ) -> str:
     env = _get_jinja_env()
     template = env.get_template("page.html")
     content_html, toc_html = _md_to_html(markdown_content)
+    prev_page, next_page = _get_prev_next(plan, current_slug) if plan else (None, None)
     return template.render(
         title=page_title,
         project_name=project_name,
@@ -55,11 +75,17 @@ def render_page(
         toc=toc_html,
         navigation=navigation,
         current_slug=current_slug,
+        prev_page=prev_page,
+        next_page=next_page,
+        repo_url=repo_url,
     )
 
 
 def render_index(
-    project_name: str, tagline: str, navigation: list[dict[str, Any]]
+    project_name: str,
+    tagline: str,
+    navigation: list[dict[str, Any]],
+    repo_url: str = "",
 ) -> str:
     env = _get_jinja_env()
     template = env.get_template("index.html")
@@ -68,6 +94,7 @@ def render_index(
         project_name=project_name,
         tagline=tagline,
         navigation=navigation,
+        repo_url=repo_url,
     )
 
 
@@ -102,9 +129,9 @@ def _build_llms_txt(plan: dict[str, Any]) -> str:
         for page in group.get("pages", []):
             desc = page.get("description", "")
             if desc:
-                lines.append(f"- [{page['title']}]({page['slug']}.html): {desc}")
+                lines.append(f"- [{page['title']}]({page['slug']}.md): {desc}")
             else:
-                lines.append(f"- [{page['title']}]({page['slug']}.html)")
+                lines.append(f"- [{page['title']}]({page['slug']}.md)")
         lines.append("")
     return "\n".join(lines)
 
@@ -123,9 +150,7 @@ def _build_llms_full_txt(plan: dict[str, Any], pages: dict[str, str]) -> str:
             content = pages.get(slug, "")
             lines.extend(
                 [
-                    f"# {page['title']}",
-                    "",
-                    f"Source: {slug}.html",
+                    f"Source: {slug}.md",
                     "",
                     content,
                     "",
@@ -144,13 +169,14 @@ def render_site(plan: dict[str, Any], pages: dict[str, str], output_dir: Path) -
     project_name: str = plan.get("project_name", "Documentation")
     tagline: str = plan.get("tagline", "")
     navigation: list[dict[str, Any]] = plan.get("navigation", [])
+    repo_url: str = plan.get("repo_url", "")
 
     if STATIC_DIR.exists():
         for static_file in STATIC_DIR.iterdir():
             if static_file.is_file():
                 shutil.copy2(static_file, assets_dir / static_file.name)
 
-    index_html = render_index(project_name, tagline, navigation)
+    index_html = render_index(project_name, tagline, navigation, repo_url=repo_url)
     (output_dir / "index.html").write_text(index_html)
 
     for slug, md_content in pages.items():
@@ -167,8 +193,13 @@ def render_site(plan: dict[str, Any], pages: dict[str, str], output_dir: Path) -
             tagline=tagline,
             navigation=navigation,
             current_slug=slug,
+            plan=plan,
+            repo_url=repo_url,
         )
         (output_dir / f"{slug}.html").write_text(page_html)
+
+        # Also write raw markdown for LLM consumption
+        (output_dir / f"{slug}.md").write_text(md_content)
 
     search_index = _build_search_index(pages, plan)
     (output_dir / "search-index.json").write_text(json.dumps(search_index))
