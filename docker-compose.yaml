@@ -6,8 +6,6 @@ services:
     env_file: .env
     volumes:
       - ./data:/data
-      - ~/.config/gcloud:/home/appuser/.config/gcloud:ro
-      - ./cursor:/home/appuser/.config/cursor
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s
