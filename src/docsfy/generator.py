@@ -15,6 +15,15 @@ logger = get_logger(name=__name__)
 MAX_CONCURRENT_PAGES = 5
 
 
+def _strip_ai_preamble(text: str) -> str:
+    """Strip AI thinking/planning text that appears before actual content."""
+    lines = text.split("\n")
+    for i, line in enumerate(lines):
+        if line.startswith("#"):
+            return "\n".join(lines[i:])
+    return text
+
+
 async def run_planner(
     repo_path: Path,
     project_name: str,
@@ -73,6 +82,7 @@ async def generate_page(
         logger.warning(f"Failed to generate page '{slug}': {output}")
         output = f"# {title}\n\n*Documentation generation failed. Please re-run.*"
 
+    output = _strip_ai_preamble(output)
     cache_dir.mkdir(parents=True, exist_ok=True)
     cache_file.write_text(output)
     logger.info(f"Generated page: {slug} ({len(output)} chars)")

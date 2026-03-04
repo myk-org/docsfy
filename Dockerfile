@@ -6,6 +6,11 @@ WORKDIR /app
 # Install uv
 COPY --from=ghcr.io/astral-sh/uv:0.5.14 /uv /usr/local/bin/uv
 
+# Install git (needed for gitpython dependency)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
 # Copy project files
 COPY pyproject.toml uv.lock ./
 COPY src/ src/
@@ -18,20 +23,14 @@ FROM python:3.12-slim
 
 WORKDIR /app
 
-# Install bash (needed for CLI install scripts), git, curl (for Claude CLI),
-# ca-certificates, gnupg, and nodejs/npm (for Gemini CLI)
+# Install bash (needed for CLI install scripts), git (required at runtime for gitpython), curl (for Claude CLI), and nodejs/npm (for Gemini CLI)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     bash \
     git \
     curl \
-    ca-certificates \
-    gnupg \
+    nodejs \
+    npm \
     && rm -rf /var/lib/apt/lists/*
-
-# Install Node.js 20.x (for Gemini CLI)
-RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
-    apt-get install -y --no-install-recommends nodejs && \
-    rm -rf /var/lib/apt/lists/*
 
 # Create non-root user, data directory, and set permissions
 # OpenShift runs containers as a random UID in the root group (GID 0)

@@ -818,6 +818,71 @@ a:hover {
 }
 
 /* --------------------------------------------------------------------------
+   Table of Contents - Right Sidebar
+   -------------------------------------------------------------------------- */
+.toc-sidebar {
+    position: fixed;
+    top: 80px;
+    right: 20px;
+    width: 220px;
+    max-height: calc(100vh - 100px);
+    overflow-y: auto;
+    font-size: 0.85rem;
+}
+
+.toc-container h3 {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-secondary);
+    margin-bottom: 0.75rem;
+}
+
+.toc-container ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.toc-container li {
+    margin-bottom: 0.4rem;
+}
+
+.toc-container a {
+    color: var(--text-secondary);
+    text-decoration: none;
+    display: block;
+    padding: 0.2rem 0;
+    padding-left: 0.75rem;
+    border-left: 2px solid var(--border-primary);
+    transition: all 0.15s ease;
+}
+
+.toc-container a:hover {
+    color: var(--accent);
+    border-left-color: var(--accent);
+}
+
+.toc-container ul ul {
+    padding-left: 0.75rem;
+}
+
+/* Adjust main content to not overlap with TOC */
+@media (min-width: 1200px) {
+    .main-content {
+        margin-right: 260px;
+    }
+}
+
+/* Hide TOC on smaller screens */
+@media (max-width: 1199px) {
+    .toc-sidebar {
+        display: none;
+    }
+}
+
+/* --------------------------------------------------------------------------
    Footer
    -------------------------------------------------------------------------- */
 .footer {

@@ -22,14 +22,18 @@ def _get_jinja_env() -> Environment:
     )
 
 
-def _md_to_html(md_text: str) -> str:
-    return markdown.markdown(
-        md_text,
+def _md_to_html(md_text: str) -> tuple[str, str]:
+    """Convert markdown to HTML. Returns (content_html, toc_html)."""
+    md = markdown.Markdown(
         extensions=["fenced_code", "codehilite", "tables", "toc"],
         extension_configs={
             "codehilite": {"css_class": "highlight", "guess_lang": False},
+            "toc": {"toc_depth": "2-3"},
         },
     )
+    content_html = md.convert(md_text)
+    toc_html = getattr(md, "toc", "")
+    return content_html, toc_html
 
 
 def render_page(
@@ -42,12 +46,13 @@ def render_page(
 ) -> str:
     env = _get_jinja_env()
     template = env.get_template("page.html")
-    content_html = _md_to_html(markdown_content)
+    content_html, toc_html = _md_to_html(markdown_content)
     return template.render(
         title=page_title,
         project_name=project_name,
         tagline=tagline,
         content=content_html,
+        toc=toc_html,
         navigation=navigation,
         current_slug=current_slug,
     )
@@ -83,6 +88,52 @@ def _build_search_index(
             }
         )
     return index
+
+
+def _build_llms_txt(plan: dict[str, Any]) -> str:
+    """Build llms.txt index file."""
+    project_name = plan.get("project_name", "Documentation")
+    tagline = plan.get("tagline", "")
+    lines = [f"# {project_name}", ""]
+    if tagline:
+        lines.extend([f"> {tagline}", ""])
+    for group in plan.get("navigation", []):
+        lines.extend([f"## {group['group']}", ""])
+        for page in group.get("pages", []):
+            desc = page.get("description", "")
+            if desc:
+                lines.append(f"- [{page['title']}]({page['slug']}.html): {desc}")
+            else:
+                lines.append(f"- [{page['title']}]({page['slug']}.html)")
+        lines.append("")
+    return "\n".join(lines)
+
+
+def _build_llms_full_txt(plan: dict[str, Any], pages: dict[str, str]) -> str:
+    """Build llms-full.txt with all content concatenated."""
+    project_name = plan.get("project_name", "Documentation")
+    tagline = plan.get("tagline", "")
+    lines = [f"# {project_name}", ""]
+    if tagline:
+        lines.extend([f"> {tagline}", ""])
+    lines.extend(["---", ""])
+    for group in plan.get("navigation", []):
+        for page in group.get("pages", []):
+            slug = page["slug"]
+            content = pages.get(slug, "")
+            lines.extend(
+                [
+                    f"# {page['title']}",
+                    "",
+                    f"Source: {slug}.html",
+                    "",
+                    content,
+                    "",
+                    "---",
+                    "",
+                ]
+            )
+    return "\n".join(lines)
 
 
 def render_site(plan: dict[str, Any], pages: dict[str, str], output_dir: Path) -> None:
@@ -121,4 +172,12 @@ def render_site(plan: dict[str, Any], pages: dict[str, str], output_dir: Path) -
 
     search_index = _build_search_index(pages, plan)
     (output_dir / "search-index.json").write_text(json.dumps(search_index))
+
+    # Generate llms.txt files
+    llms_txt = _build_llms_txt(plan)
+    (output_dir / "llms.txt").write_text(llms_txt)
+
+    llms_full_txt = _build_llms_full_txt(plan, pages)
+    (output_dir / "llms-full.txt").write_text(llms_full_txt)
+
     logger.info(f"Rendered site: {len(pages)} pages to {output_dir}")
