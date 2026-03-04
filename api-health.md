@@ -1,46 +1,36 @@
 # GET /health
 
-Health check endpoint used for container orchestration, monitoring, and load balancer readiness probes.
+Health check endpoint for monitoring and container orchestration. Returns the operational status of the docsfy service, enabling Docker, Kubernetes, and external monitoring tools to verify the application is running and responsive.
 
-## Overview
-
-The `/health` endpoint provides a lightweight mechanism to verify that the docsfy service is running and able to accept requests. It requires no authentication and returns immediately, making it suitable for automated health monitoring by container runtimes, orchestrators, and load balancers.
-
-## Request
+## Endpoint
 
 ```
 GET /health
 ```
 
-**Parameters:** None
-
-**Authentication:** Not required
-
-**Headers:** No special headers required
+No authentication or parameters required.
 
 ## Response
 
-### 200 OK
-
-The service is healthy and ready to accept requests.
+**Status Code:** `200 OK`
 
 ```json
-{"status": "healthy"}
+{
+  "status": "healthy"
+}
 ```
 
-### 503 Service Unavailable
+A successful response indicates the FastAPI server is running and able to handle requests on port `8000`.
 
-The service is running but not ready to handle requests (e.g., during startup or shutdown).
+## Usage
 
-## Usage Examples
-
-### cURL
+### curl
 
 ```bash
 curl -f http://localhost:8000/health
 ```
 
-The `-f` flag causes curl to return a non-zero exit code on HTTP errors, which is the same approach used in the Docker health check configuration.
+The `-f` flag causes curl to return a non-zero exit code on HTTP errors, which is critical for use in health check scripts and container orchestration.
 
 ### Python (requests)
 
@@ -48,25 +38,13 @@ The `-f` flag causes curl to return a non-zero exit code on HTTP errors, which i
 import requests
 
 response = requests.get("http://localhost:8000/health")
-if response.status_code == 200:
-    print("Service is healthy")
-else:
-    print("Service is unhealthy")
-```
-
-### Python (httpx, async)
-
-```python
-import httpx
-
-async with httpx.AsyncClient() as client:
-    response = await client.get("http://localhost:8000/health")
-    assert response.status_code == 200
+response.raise_for_status()
+print(response.json())  # {"status": "healthy"}
 ```
 
 ## Docker Health Check
 
-The `/health` endpoint is configured as the Docker health check in `docker-compose.yaml`:
+The `docker-compose.yaml` configures automatic health monitoring using this endpoint:
 
 ```yaml
 services:
@@ -88,38 +66,40 @@ services:
 
 | Parameter | Value | Description |
 |-----------|-------|-------------|
-| `test` | `curl -f http://localhost:8000/health` | Probes the health endpoint; fails on non-2xx responses |
-| `interval` | `30s` | Time between consecutive health checks |
-| `timeout` | `10s` | Maximum time to wait for a response before marking as failed |
-| `retries` | `3` | Consecutive failures required before the container is marked `unhealthy` |
+| `test` | `curl -f http://localhost:8000/health` | Command to run inside the container |
+| `interval` | `30s` | Time between health checks |
+| `timeout` | `10s` | Maximum time to wait for a response |
+| `retries` | `3` | Consecutive failures before marking unhealthy |
 
-> **Note:** The `curl` binary is included in the container image (`python:3.12-slim` base with `curl` added as a system dependency) specifically to support this health check.
+> **Note:** The container image includes `curl` as a system dependency (installed in the Dockerfile alongside bash, git, nodejs, npm, and ca-certificates), so it is always available for health checks.
 
 ### Container Health States
 
-Docker tracks three health states based on the results of the health check:
+Docker tracks three health states based on the check results:
 
 | State | Meaning |
 |-------|---------|
-| `starting` | The container has started but the first health check has not yet run |
-| `healthy` | The most recent health check returned a 2xx status code |
-| `unhealthy` | Three consecutive health checks failed (non-2xx or timeout) |
+| `starting` | Container started, initial health check not yet run |
+| `healthy` | Last health check succeeded (HTTP 200 from `/health`) |
+| `unhealthy` | 3 consecutive health checks failed (no response or non-200 status) |
 
-You can inspect the current health state with:
-
-```bash
-docker inspect --format='{{.State.Health.Status}}' docsfy
-```
-
-Or view health check logs:
+Check the current health status of the container:
 
 ```bash
-docker inspect --format='{{json .State.Health}}' docsfy | jq
+docker inspect --format='{{.State.Health.Status}}' docsfy-docsfy-1
 ```
 
-## Kubernetes Integration
+Or view it in the container listing:
 
-When deploying docsfy to Kubernetes, configure liveness and readiness probes to use the `/health` endpoint:
+```bash
+docker ps
+```
+
+The `STATUS` column will show `(healthy)` or `(unhealthy)` next to the uptime.
+
+## Kubernetes Probes
+
+When deploying to Kubernetes, use the `/health` endpoint for liveness and readiness probes:
 
 ```yaml
 apiVersion: apps/v1
@@ -152,69 +132,103 @@ spec:
             failureThreshold: 2
 ```
 
-> **Tip:** Use a shorter `periodSeconds` for the readiness probe than for the liveness probe. The readiness probe controls traffic routing and should detect issues quickly, while the liveness probe triggers a container restart and should be more conservative to avoid unnecessary restarts.
+> **Tip:** Set `initialDelaySeconds` on the liveness probe high enough for uvicorn to finish startup. The default entrypoint (`uv run --no-sync uvicorn docsfy.main:app --host 0.0.0.0 --port 8000`) typically starts within a few seconds.
 
-## Load Balancer Configuration
-
-### NGINX
-
-```nginx
-upstream docsfy {
-    server 127.0.0.1:8000;
-}
-
-server {
-    location /health {
-        proxy_pass http://docsfy/health;
-    }
-}
-```
-
-### AWS Application Load Balancer
-
-Configure the target group health check:
-
-| Setting | Value |
-|---------|-------|
-| Protocol | HTTP |
-| Path | `/health` |
-| Port | 8000 |
-| Healthy threshold | 2 |
-| Unhealthy threshold | 3 |
-| Timeout | 10 seconds |
-| Interval | 30 seconds |
-| Success codes | 200 |
+| Probe | Purpose | Behavior on Failure |
+|-------|---------|---------------------|
+| **Liveness** | Is the process alive? | Kubernetes restarts the container |
+| **Readiness** | Can it serve traffic? | Kubernetes removes the pod from Service endpoints |
 
 ## Architecture Context
 
-The `/health` endpoint sits at the FastAPI application level alongside the other API routes:
+The `/health` endpoint sits alongside the core docsfy API:
 
 ```
-                    FastAPI Server
-+--------------------------------------------------+
-|                                                  |
-|  POST /api/generate  <-- repo URL                |
-|  GET  /api/status    <-- project list            |
-|  GET  /docs/{project}/  <-- serves HTML          |
-|  GET  /health           <-- health check         |
-|                                                  |
-|  Storage:                                        |
-|  /data/docsfy.db  (SQLite: metadata)             |
-|  /data/projects/  (filesystem: docs)             |
-+--------------------------------------------------+
+FastAPI Server (:8000)
+├── POST   /api/generate                  # Start doc generation
+├── GET    /api/status                    # List all projects
+├── GET    /api/projects/{name}           # Project details
+├── DELETE /api/projects/{name}           # Remove a project
+├── GET    /api/projects/{name}/download  # Download site as .tar.gz
+├── GET    /docs/{project}/{path}         # Serve generated HTML
+└── GET    /health                        # Health check  ← this endpoint
 ```
 
-The endpoint is served by **uvicorn** on port `8000` (all interfaces) as defined in the container entrypoint:
+The health endpoint is intentionally lightweight — it confirms the FastAPI/uvicorn process is responding to HTTP requests without performing expensive operations like database queries or filesystem checks.
+
+## Monitoring Integration
+
+### Uptime Monitoring
+
+Point any HTTP uptime monitor at the health endpoint:
 
 ```
-uv run --no-sync uvicorn docsfy.main:app --host 0.0.0.0 --port 8000
+https://your-domain.com/health
 ```
 
-> **Warning:** The health endpoint only confirms the FastAPI process is responding. It does not verify that external dependencies (AI CLI tools, storage volumes) are available. A healthy response means the HTTP server is accepting connections, not that documentation generation will succeed.
+Configure your monitor to:
+- Expect HTTP status `200`
+- Check at 30-second intervals (matching the Docker health check)
+- Alert after 3 consecutive failures
 
-## Monitoring Best Practices
+### Docker Compose Restart Policy
 
-- **Alerting threshold**: Alert when the endpoint is unreachable for more than 90 seconds (3 intervals at 30s each), matching the Docker retry configuration.
-- **Dashboard integration**: Track response times from `/health` to detect performance degradation before full failures occur.
-- **Dependency checks**: Complement the health endpoint with application-level monitoring of storage availability (`/data/docsfy.db`) and AI CLI tool readiness for full observability.
-- **Log level**: Health check requests are logged at `INFO` level by default. Set `LOG_LEVEL=WARNING` in your `.env` file to suppress health check noise in production logs if your monitoring generates high request volume.
+Pair the health check with a restart policy so Docker automatically recovers from failures:
+
+```yaml
+services:
+  docsfy:
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+```
+
+> **Warning:** Without a restart policy, Docker will mark the container as `unhealthy` but will **not** automatically restart it. Add `restart: unless-stopped` or `restart: always` to enable automatic recovery.
+
+## Troubleshooting
+
+### Health Check Failing
+
+1. **Verify the server is running:**
+
+   ```bash
+   docker logs docsfy-docsfy-1
+   ```
+
+   Look for the uvicorn startup message:
+   ```
+   INFO:     Uvicorn running on http://0.0.0.0:8000
+   ```
+
+2. **Test from inside the container:**
+
+   ```bash
+   docker exec docsfy-docsfy-1 curl -f http://localhost:8000/health
+   ```
+
+3. **Check port binding:**
+
+   ```bash
+   docker port docsfy-docsfy-1
+   ```
+
+   Expected output: `8000/tcp -> 0.0.0.0:8000`
+
+4. **Review health check history:**
+
+   ```bash
+   docker inspect --format='{{json .State.Health}}' docsfy-docsfy-1 | python3 -m json.tool
+   ```
+
+   This shows the last 5 health check results, including timestamps and any error output.
+
+### Common Causes
+
+| Symptom | Likely Cause | Fix |
+|---------|-------------|-----|
+| Connection refused | uvicorn hasn't started yet | Increase `start_period` in health check config |
+| Timeout | Server overloaded (long-running generation) | The health endpoint should still respond; check for event loop blocking |
+| curl not found | Custom image missing dependencies | Ensure `curl` is installed in the Dockerfile |

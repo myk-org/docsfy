@@ -4,14 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Managing Projects - docsfy</title>
-    <meta name="description" content="AI-powered documentation generator that creates polished, Mintlify-quality static HTML sites from GitHub repositories.">
+    <meta name="description" content="AI-powered documentation site generator that turns GitHub repositories into polished, Mintlify-quality static HTML docs">
     <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <a href="index.html" class="sidebar-logo">docsfy</a>
-            <p class="sidebar-tagline">AI-powered documentation generator that creates polished, Mintlify-quality static HTML sites from GitHub repositories.</p>
+            <p class="sidebar-tagline">AI-powered documentation site generator that turns GitHub repositories into polished, Mintlify-quality static HTML docs</p>
         </div>
 
         <div class="sidebar-search">
@@ -63,14 +63,14 @@
                     <li>
                         <a href="ai-providers.html"
                            class="nav-link">
-                            AI Providers
+                            AI Provider Setup
                         </a>
                     </li>
                     
                     <li>
-                        <a href="docker-deployment.html"
+                        <a href="docker-configuration.html"
                            class="nav-link">
-                            Docker Deployment
+                            Docker &amp; Deployment
                         </a>
                     </li>
                     
@@ -89,16 +89,16 @@
                     </li>
                     
                     <li>
-                        <a href="incremental-updates.html"
+                        <a href="serving-and-hosting.html"
                            class="nav-link">
-                            Incremental Updates
+                            Serving &amp; Hosting
                         </a>
                     </li>
                     
                     <li>
-                        <a href="downloading-and-self-hosting.html"
+                        <a href="incremental-updates.html"
                            class="nav-link">
-                            Downloading &amp; Self-Hosting
+                            Incremental Updates
                         </a>
                     </li>
                     
@@ -124,16 +124,23 @@
                     </li>
                     
                     <li>
-                        <a href="storage-and-database.html"
+                        <a href="storage-and-data.html"
                            class="nav-link">
-                            Storage &amp; Database
+                            Storage &amp; Data Model
                         </a>
                     </li>
                     
                     <li>
-                        <a href="html-theming.html"
+                        <a href="html-renderer.html"
                            class="nav-link">
-                            HTML Theming &amp; Output
+                            HTML Renderer &amp; Theming
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="ai-cli-integration.html"
+                           class="nav-link">
+                            AI CLI Integration
                         </a>
                     </li>
                     
@@ -145,13 +152,6 @@
                 <ul class="nav-group-pages">
                     
                     <li>
-                        <a href="api-overview.html"
-                           class="nav-link">
-                            API Overview
-                        </a>
-                    </li>
-                    
-                    <li>
                         <a href="api-generate.html"
                            class="nav-link">
                             POST /api/generate
@@ -159,30 +159,23 @@
                     </li>
                     
                     <li>
-                        <a href="api-status.html"
+                        <a href="api-status-and-projects.html"
                            class="nav-link">
-                            GET /api/status
+                            Project Status &amp; Details
                         </a>
                     </li>
                     
                     <li>
-                        <a href="api-projects.html"
+                        <a href="api-download-and-delete.html"
                            class="nav-link">
-                            Project Endpoints
+                            Download &amp; Delete
                         </a>
                     </li>
                     
                     <li>
-                        <a href="api-docs-serving.html"
+                        <a href="api-health-and-docs.html"
                            class="nav-link">
-                            GET /docs/{project}/{path}
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="api-health.html"
-                           class="nav-link">
-                            GET /health
+                            Health Check &amp; Doc Serving
                         </a>
                     </li>
                     
@@ -194,16 +187,16 @@
                 <ul class="nav-group-pages">
                     
                     <li>
-                        <a href="contributing.html"
+                        <a href="development-setup.html"
                            class="nav-link">
-                            Contributing
+                            Development Setup
                         </a>
                     </li>
                     
                     <li>
-                        <a href="project-structure.html"
+                        <a href="contributing.html"
                            class="nav-link">
-                            Project Structure
+                            Contributing
                         </a>
                     </li>
                     
@@ -250,116 +243,49 @@
                 <h1 class="article-title">Managing Projects</h1>
                 <div class="article-body">
                     <h1 id="managing-projects">Managing Projects</h1>
-<p>Documentation projects in docsfy go through a defined lifecycle — from initial generation to serving and eventual cleanup. The API provides endpoints for listing all projects, inspecting individual project details, tracking generation status, and removing projects you no longer need.</p>
-<h2 id="project-lifecycle">Project Lifecycle</h2>
-<p>Every project passes through a series of statuses as it moves from generation to completion:</p>
+<p>docsfy organizes generated documentation into <strong>projects</strong>. Each project corresponds to a single GitHub repository and contains the AI-generated documentation plan, cached markdown pages, and the final rendered HTML site. This page covers how to list, inspect, and delete projects, as well as how to interpret project statuses.</p>
+<h2 id="project-overview">Project Overview</h2>
+<p>Every project in docsfy tracks the following metadata in a SQLite database (<code>/data/docsfy.db</code>):</p>
 <table>
 <thead>
 <tr>
-<th>Status</th>
+<th>Field</th>
 <th>Description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>generating</code></td>
-<td>The AI pipeline is actively cloning the repository, planning documentation structure, generating content, and rendering HTML.</td>
+<td>Project name</td>
+<td>Unique identifier derived from the repository</td>
 </tr>
 <tr>
-<td><code>ready</code></td>
-<td>Generation completed successfully. Documentation is available for browsing and download.</td>
+<td>Repo URL</td>
+<td>The GitHub repository URL (SSH or HTTPS)</td>
 </tr>
 <tr>
-<td><code>error</code></td>
-<td>Generation failed at some stage. Check the generation history for details.</td>
+<td>Status</td>
+<td>Current state: <code>generating</code>, <code>ready</code>, or <code>error</code></td>
+</tr>
+<tr>
+<td>Last generated timestamp</td>
+<td>When documentation was last successfully built</td>
+</tr>
+<tr>
+<td>Last commit SHA</td>
+<td>The commit SHA from the most recent generation</td>
+</tr>
+<tr>
+<td>Generation history and logs</td>
+<td>Record of past generation runs</td>
 </tr>
 </tbody>
 </table>
-<div class="highlight"><pre><span></span><code>POST /api/generate          GET /api/status
-      │                          │
-      v                          v
- ┌────────────┐           ┌─────────────┐
- │ generating │──success──▶│    ready    │
- │            │            └─────────────┘
- │            │──failure──▶┌─────────────┐
- └────────────┘            │    error    │
-                           └─────────────┘
-</code></pre></div>
-
-<p>A project that has reached <code>ready</code> or <code>error</code> status can be re-generated by posting the same repository URL to <code>/api/generate</code> again. docsfy uses incremental updates to regenerate only the pages affected by repository changes.</p>
-<h2 id="listing-projects">Listing Projects</h2>
-<p>Retrieve all projects and their current generation status with <code>GET /api/status</code>.</p>
-<h3 id="request">Request</h3>
-<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>http://localhost:8000/api/status
-</code></pre></div>
-
-<h3 id="response">Response</h3>
-<p>The response contains an array of all tracked projects with their current status, repository URL, and last generation timestamp:</p>
-<div class="highlight"><pre><span></span><code><span class="p">[</span>
-<span class="w">  </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;my-project&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;repo_url&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://github.com/owner/my-project&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ready&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;last_generated&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-03-04T14:30:00Z&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;last_commit_sha&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;a1b2c3d4e5f6...&quot;</span>
-<span class="w">  </span><span class="p">},</span>
-<span class="w">  </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;another-project&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;repo_url&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://github.com/owner/another-project&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;generating&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;last_generated&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;last_commit_sha&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span>
-<span class="w">  </span><span class="p">}</span>
-<span class="p">]</span>
-</code></pre></div>
-
-<blockquote>
-<p><strong>Tip:</strong> Poll this endpoint to monitor the progress of in-flight generation jobs. Once a project transitions from <code>generating</code> to <code>ready</code>, its documentation is available at <code>/docs/{project}/</code>.</p>
-</blockquote>
-<h2 id="inspecting-a-project">Inspecting a Project</h2>
-<p>Get detailed information about a specific project with <code>GET /api/projects/{name}</code>.</p>
-<h3 id="request_1">Request</h3>
-<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>http://localhost:8000/api/projects/my-project
-</code></pre></div>
-
-<h3 id="response_1">Response</h3>
-<p>The response includes full project metadata: the documentation plan, page inventory, generation timestamps, and the commit SHA that was used for generation:</p>
-<div class="highlight"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;my-project&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;repo_url&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://github.com/owner/my-project&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ready&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;last_generated&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-03-04T14:30:00Z&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;last_commit_sha&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;a1b2c3d4e5f6...&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;pages&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">    </span><span class="s2">&quot;index&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="s2">&quot;getting-started&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="s2">&quot;configuration&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="s2">&quot;api-reference&quot;</span>
-<span class="w">  </span><span class="p">],</span>
-<span class="w">  </span><span class="nt">&quot;generation_history&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;timestamp&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-03-04T14:30:00Z&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;commit_sha&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;a1b2c3d4e5f6...&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ready&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;pages_generated&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">4</span>
-<span class="w">    </span><span class="p">},</span>
-<span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;timestamp&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-03-03T10:15:00Z&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;commit_sha&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;f6e5d4c3b2a1...&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ready&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;pages_generated&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">4</span>
-<span class="w">    </span><span class="p">}</span>
-<span class="w">  </span><span class="p">]</span>
-<span class="p">}</span>
-</code></pre></div>
-
-<h3 id="project-storage-layout">Project Storage Layout</h3>
-<p>Each project's artifacts are stored under <code>/data/projects/{project-name}/</code>:</p>
+<p>Each project also has a corresponding directory on the filesystem:</p>
 <div class="highlight"><pre><span></span><code>/data/projects/{project-name}/
-  plan.json             # Documentation structure from AI planner
+  plan.json             # doc structure from AI
   cache/
     pages/*.md          # AI-generated markdown (cached for incremental updates)
-  site/                 # Final rendered HTML
+  site/                 # final rendered HTML
     index.html
     *.html
     assets/
@@ -370,126 +296,196 @@
     search-index.json
 </code></pre></div>
 
-<p>The <code>plan.json</code> file contains the navigation hierarchy and page definitions produced by the AI planner stage. Cached markdown files in <code>cache/pages/</code> are preserved between generations to support incremental updates — only pages affected by repository changes are regenerated.</p>
-<h2 id="generation-history-and-status-tracking">Generation History and Status Tracking</h2>
-<p>docsfy persists project metadata in a SQLite database at <code>/data/docsfy.db</code>. This includes:</p>
-<ul>
-<li><strong>Project name</strong> and <strong>repository URL</strong></li>
-<li><strong>Current status</strong> (<code>generating</code>, <code>ready</code>, or <code>error</code>)</li>
-<li><strong>Last generated timestamp</strong> — when the most recent generation completed</li>
-<li><strong>Last commit SHA</strong> — the repository commit used for the most recent generation</li>
-<li><strong>Generation history</strong> — a log of all past generation runs with their outcomes</li>
-</ul>
-<h3 id="tracking-incremental-updates">Tracking Incremental Updates</h3>
-<p>When you re-generate documentation for an existing project, docsfy performs an incremental update rather than a full rebuild:</p>
-<ol>
-<li>The repository is fetched and the current commit SHA is compared against the stored SHA</li>
-<li>If the commit has changed, the AI Planner re-analyzes the repository structure</li>
-<li>If the documentation plan structure is unchanged, only pages affected by modified source files are regenerated</li>
-<li>If the plan structure has changed (new pages, removed sections), the renderer updates navigation across all pages</li>
-</ol>
-<p>This means re-generating documentation for a project with minor changes is significantly faster than the initial generation.</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># Re-generate docs after pushing changes to the repository</span>
-curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/api/generate<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{&quot;repo_url&quot;: &quot;https://github.com/owner/my-project&quot;}&#39;</span>
-</code></pre></div>
-
-<blockquote>
-<p><strong>Note:</strong> The project name is derived from the repository URL. Posting the same URL triggers an incremental update of the existing project rather than creating a duplicate.</p>
-</blockquote>
-<h2 id="deleting-a-project">Deleting a Project</h2>
-<p>Remove a project and all its generated documentation with <code>DELETE /api/projects/{name}</code>.</p>
-<h3 id="request_2">Request</h3>
-<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-X<span class="w"> </span>DELETE<span class="w"> </span>http://localhost:8000/api/projects/my-project
-</code></pre></div>
-
-<h3 id="what-gets-deleted">What Gets Deleted</h3>
-<p>Deleting a project removes:</p>
-<ul>
-<li>The project record from the SQLite database (metadata, status, generation history)</li>
-<li>The entire project directory under <code>/data/projects/{project-name}/</code>, including:</li>
-<li>The documentation plan (<code>plan.json</code>)</li>
-<li>All cached markdown files (<code>cache/pages/*.md</code>)</li>
-<li>The rendered HTML site (<code>site/</code>)</li>
-</ul>
-<blockquote>
-<p><strong>Warning:</strong> This operation is irreversible. All generated documentation and cached content for the project will be permanently removed. You will need to run a full generation again to recreate the documentation.</p>
-</blockquote>
-<h3 id="verifying-deletion">Verifying Deletion</h3>
-<p>After deleting a project, confirm it has been removed by listing all projects:</p>
+<h2 id="listing-all-projects">Listing All Projects</h2>
+<p>To retrieve a list of all projects and their current generation status, use the <code>GET /api/status</code> endpoint.</p>
+<p><strong>Request:</strong></p>
 <div class="highlight"><pre><span></span><code>curl<span class="w"> </span>http://localhost:8000/api/status
 </code></pre></div>
 
-<p>The deleted project should no longer appear in the response.</p>
-<h2 id="downloading-project-documentation">Downloading Project Documentation</h2>
-<p>Before deleting a project — or for self-hosting purposes — you can download the complete generated site as a <code>.tar.gz</code> archive.</p>
-<h3 id="request_3">Request</h3>
-<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-o<span class="w"> </span>my-project-docs.tar.gz<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>http://localhost:8000/api/projects/my-project/download
+<p>This returns all projects with their current status (<code>generating</code>, <code>ready</code>, or <code>error</code>), giving you a dashboard-level view of every documentation site managed by your docsfy instance.</p>
+<blockquote>
+<p><strong>Tip:</strong> Use this endpoint to monitor generation progress after submitting multiple repositories. Projects currently being built will show <code>generating</code> status.</p>
+</blockquote>
+<h2 id="viewing-project-details">Viewing Project Details</h2>
+<p>To inspect a specific project's metadata, use the <code>GET /api/projects/{name}</code> endpoint.</p>
+<p><strong>Request:</strong></p>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>http://localhost:8000/api/projects/my-project
 </code></pre></div>
 
-<p>The archive contains the full contents of the <code>site/</code> directory: all HTML pages, CSS, JavaScript assets, and the search index. Extract and serve it with any static file server.</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># Extract and serve locally</span>
-tar<span class="w"> </span>-xzf<span class="w"> </span>my-project-docs.tar.gz<span class="w"> </span>-C<span class="w"> </span>./my-docs
-<span class="nb">cd</span><span class="w"> </span>my-docs<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span>http.server<span class="w"> </span><span class="m">3000</span>
+<p>The response includes:</p>
+<ul>
+<li><strong>Last generated timestamp</strong> — when the documentation was last built</li>
+<li><strong>Last commit SHA</strong> — the Git commit that was used for generation</li>
+<li><strong>Pages</strong> — the list of documentation pages (derived from <code>plan.json</code>)</li>
+<li><strong>Current status</strong> — the project's generation state</li>
+</ul>
+<p>This information is especially useful for verifying whether documentation is up to date with the latest repository changes. By comparing the <strong>last commit SHA</strong> against the current HEAD of your repository, you can determine if a regeneration is needed.</p>
+<blockquote>
+<p><strong>Note:</strong> The pages list reflects the structure determined by the AI Planner during generation. It includes all sections and navigation hierarchy defined in the project's <code>plan.json</code>.</p>
+</blockquote>
+<h2 id="serving-and-downloading-generated-docs">Serving and Downloading Generated Docs</h2>
+<p>Once a project reaches <code>ready</code> status, its documentation is available in two ways:</p>
+<h3 id="browsing-docs-directly">Browsing Docs Directly</h3>
+<p>Generated documentation is served directly by the docsfy API:</p>
+<div class="highlight"><pre><span></span><code>GET /docs/{project}/{path}
+</code></pre></div>
+
+<p>For example, to view the index page of a project called <code>my-project</code>:</p>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>http://localhost:8000/docs/my-project/index.html
+</code></pre></div>
+
+<p>Or simply open <code>http://localhost:8000/docs/my-project/</code> in a browser to browse the full documentation site with sidebar navigation, search, and theme toggling.</p>
+<h3 id="downloading-for-self-hosting">Downloading for Self-Hosting</h3>
+<p>To download the entire rendered site as a portable archive:</p>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-O<span class="w"> </span>http://localhost:8000/api/projects/my-project/download
+</code></pre></div>
+
+<p>This returns a <code>.tar.gz</code> archive of the project's <code>site/</code> directory, containing all HTML files, CSS, JavaScript, and the search index. You can extract and host these files with any static file server (Nginx, Caddy, GitHub Pages, S3, etc.).</p>
+<h2 id="deleting-projects">Deleting Projects</h2>
+<p>To remove a project and all of its generated documentation, use the <code>DELETE /api/projects/{name}</code> endpoint.</p>
+<p><strong>Request:</strong></p>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-X<span class="w"> </span>DELETE<span class="w"> </span>http://localhost:8000/api/projects/my-project
+</code></pre></div>
+
+<p>This operation:</p>
+<ol>
+<li>Removes the project's metadata from the SQLite database (<code>/data/docsfy.db</code>)</li>
+<li>Deletes the project's entire directory from the filesystem (<code>/data/projects/my-project/</code>)</li>
+</ol>
+<blockquote>
+<p><strong>Warning:</strong> Deleting a project is irreversible. All generated documentation — including cached markdown pages, the <code>plan.json</code>, and the rendered HTML site — will be permanently removed. You will need to run a full regeneration via <code>POST /api/generate</code> to recreate the project.</p>
+</blockquote>
+<h2 id="understanding-project-statuses">Understanding Project Statuses</h2>
+<p>Every project has one of three statuses that reflects where it is in the generation lifecycle:</p>
+<h3 id="generating"><code>generating</code></h3>
+<p>The project is currently being processed through the four-stage generation pipeline:</p>
+<ol>
+<li><strong>Clone Repository</strong> — shallow clone (<code>--depth 1</code>) of the source repo to a temporary directory</li>
+<li><strong>AI Planner</strong> — the AI CLI analyzes the codebase and produces a <code>plan.json</code> with the documentation structure</li>
+<li><strong>AI Content Generator</strong> — for each page in <code>plan.json</code>, the AI generates markdown content (pages may be generated concurrently)</li>
+<li><strong>HTML Renderer</strong> — markdown and <code>plan.json</code> are converted into a polished static HTML site using Jinja2 templates</li>
+</ol>
+<div class="highlight"><pre><span></span><code>POST /api/generate
+       │
+       ▼
+  ┌──────────┐    ┌──────────────┐    ┌─────────────┐    ┌──────────┐
+  │  Clone   │───▶│  AI Planner  │───▶│ AI Content  │───▶│   HTML   │
+  │  Repo    │    │ (plan.json)  │    │  Generator  │    │ Renderer │
+  └──────────┘    └──────────────┘    └─────────────┘    └──────────┘
+                                                                │
+                                                                ▼
+                                                          ready / error
+</code></pre></div>
+
+<p>A project remains in <code>generating</code> status until the pipeline either completes successfully or encounters a failure.</p>
+<blockquote>
+<p><strong>Note:</strong> The generation timeout is controlled by the <code>AI_CLI_TIMEOUT</code> environment variable, which defaults to <code>60</code> minutes. Long or complex repositories may require increasing this value.</p>
+</blockquote>
+<h3 id="ready"><code>ready</code></h3>
+<p>The project's documentation has been successfully generated and is available to serve or download. A project in <code>ready</code> status has:</p>
+<ul>
+<li>A valid <code>plan.json</code> defining the documentation structure</li>
+<li>Cached markdown pages in <code>cache/pages/*.md</code></li>
+<li>A fully rendered static HTML site in <code>site/</code></li>
+</ul>
+<p>Projects in <code>ready</code> status are served at <code>GET /docs/{project}/{path}</code>.</p>
+<h3 id="error"><code>error</code></h3>
+<p>The generation pipeline failed at some stage. This can happen for several reasons:</p>
+<ul>
+<li>The repository URL is invalid or inaccessible</li>
+<li>The AI CLI tool is not available or not properly configured</li>
+<li>The AI provider timed out during planning or content generation</li>
+<li>The AI response could not be parsed into valid JSON (despite multi-strategy extraction)</li>
+<li>An error occurred during HTML rendering</li>
+</ul>
+<blockquote>
+<p><strong>Tip:</strong> Check the project's generation logs to diagnose the specific failure. After resolving the issue, submit a new <code>POST /api/generate</code> request to retry. The project status will transition back to <code>generating</code>.</p>
+</blockquote>
+<h3 id="status-transitions">Status Transitions</h3>
+<div class="highlight"><pre><span></span><code>                    ┌──────────────┐
+  POST /api/generate│              │
+  ─────────────────▶│  generating  │
+                    │              │
+                    └──────┬───────┘
+                           │
+                ┌──────────┴──────────┐
+                │                     │
+           success                  failure
+                │                     │
+                ▼                     ▼
+         ┌──────────┐         ┌──────────┐
+         │  ready   │         │  error   │
+         └──────────┘         └──────────┘
+</code></pre></div>
+
+<p>Submitting a new generation request (including for an existing project) always transitions the status back to <code>generating</code>, regardless of the current state.</p>
+<h2 id="incremental-updates">Incremental Updates</h2>
+<p>docsfy supports smart incremental updates to avoid regenerating unchanged documentation. When you trigger a regeneration for an existing project:</p>
+<ol>
+<li>The system fetches the repository and compares the current commit SHA against the stored <strong>last commit SHA</strong></li>
+<li>If the SHA has changed, the AI Planner reruns to check whether the documentation structure has changed</li>
+<li>If the plan structure is unchanged, only pages affected by the code changes are regenerated</li>
+<li>Unchanged cached markdown pages in <code>cache/pages/*.md</code> are reused</li>
+</ol>
+<p>This significantly reduces generation time and AI usage for repositories with frequent, incremental changes.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Trigger a regeneration — docsfy handles incremental logic automatically</span>
+curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/api/generate<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{&quot;repo_url&quot;: &quot;https://github.com/owner/repo&quot;}&#39;</span>
 </code></pre></div>
 
 <blockquote>
-<p><strong>Tip:</strong> Download a project archive before deleting it if you want to preserve a copy of the documentation for offline use or self-hosting.</p>
+<p><strong>Tip:</strong> Incremental updates are fully automatic. Simply call <code>POST /api/generate</code> with the same repository URL, and docsfy will determine what needs to be regenerated based on the commit history.</p>
 </blockquote>
-<h2 id="browsing-generated-documentation">Browsing Generated Documentation</h2>
-<p>Generated documentation is served directly by docsfy at <code>/docs/{project}/{path}</code>:</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># Open the project&#39;s documentation index</span>
-curl<span class="w"> </span>http://localhost:8000/docs/my-project/
-
-<span class="c1"># Access a specific page</span>
-curl<span class="w"> </span>http://localhost:8000/docs/my-project/getting-started.html
-</code></pre></div>
-
-<p>In a browser, navigate to <code>http://localhost:8000/docs/my-project/</code> to browse the full documentation site with sidebar navigation, dark/light theme toggle, client-side search, and syntax-highlighted code blocks.</p>
-<h2 id="common-workflows">Common Workflows</h2>
-<h3 id="generate-and-monitor">Generate and Monitor</h3>
-<div class="highlight"><pre><span></span><code><span class="c1"># Start generation</span>
-curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/api/generate<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{&quot;repo_url&quot;: &quot;https://github.com/owner/my-project&quot;}&#39;</span>
-
-<span class="c1"># Poll until status is &quot;ready&quot; or &quot;error&quot;</span>
-curl<span class="w"> </span>http://localhost:8000/api/projects/my-project
-
-<span class="c1"># Browse the docs</span>
-open<span class="w"> </span>http://localhost:8000/docs/my-project/
-</code></pre></div>
-
-<h3 id="export-and-clean-up">Export and Clean Up</h3>
-<div class="highlight"><pre><span></span><code><span class="c1"># Download the docs</span>
-curl<span class="w"> </span>-o<span class="w"> </span>docs.tar.gz<span class="w"> </span>http://localhost:8000/api/projects/my-project/download
-
-<span class="c1"># Delete the project from docsfy</span>
-curl<span class="w"> </span>-X<span class="w"> </span>DELETE<span class="w"> </span>http://localhost:8000/api/projects/my-project
-</code></pre></div>
-
-<h3 id="update-after-repository-changes">Update After Repository Changes</h3>
-<div class="highlight"><pre><span></span><code><span class="c1"># Push changes to your repository, then re-generate</span>
-curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/api/generate<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{&quot;repo_url&quot;: &quot;https://github.com/owner/my-project&quot;}&#39;</span>
-
-<span class="c1"># Check that the new commit SHA is reflected</span>
-curl<span class="w"> </span>http://localhost:8000/api/projects/my-project
-</code></pre></div>
-
-<blockquote>
-<p><strong>Note:</strong> Incremental updates compare the current repository HEAD against the last generated commit SHA. If no new commits have been pushed, the generation will complete quickly with no changes.</p>
-</blockquote>
+<h2 id="api-reference-summary">API Reference Summary</h2>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Endpoint</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>POST</code></td>
+<td><code>/api/generate</code></td>
+<td>Start documentation generation for a repository</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/api/status</code></td>
+<td>List all projects with their current status</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/api/projects/{name}</code></td>
+<td>Get detailed project metadata (timestamp, SHA, pages)</td>
+</tr>
+<tr>
+<td><code>DELETE</code></td>
+<td><code>/api/projects/{name}</code></td>
+<td>Remove a project and all generated docs</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/api/projects/{name}/download</code></td>
+<td>Download the rendered site as a <code>.tar.gz</code> archive</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/docs/{project}/{path}</code></td>
+<td>Serve generated documentation pages</td>
+</tr>
+</tbody>
+</table>
                 </div>
             </article>
             <nav class="page-nav">
                 
-                <a href="downloading-and-self-hosting.html" class="page-nav-link page-nav-prev">
+                <a href="incremental-updates.html" class="page-nav-link page-nav-prev">
                     <span class="page-nav-label">Previous</span>
-                    <span class="page-nav-title">Downloading &amp; Self-Hosting</span>
+                    <span class="page-nav-title">Incremental Updates</span>
                 </a>
                 
                 
@@ -505,39 +501,24 @@ curl<span class="w"> </span>http://localhost:8000/api/projects/my-project
                     <h3>On this page</h3>
                     <div class="toc">
 <ul>
-<li><a href="#project-lifecycle">Project Lifecycle</a></li>
-<li><a href="#listing-projects">Listing Projects</a><ul>
-<li><a href="#request">Request</a></li>
-<li><a href="#response">Response</a></li>
+<li><a href="#project-overview">Project Overview</a></li>
+<li><a href="#listing-all-projects">Listing All Projects</a></li>
+<li><a href="#viewing-project-details">Viewing Project Details</a></li>
+<li><a href="#serving-and-downloading-generated-docs">Serving and Downloading Generated Docs</a><ul>
+<li><a href="#browsing-docs-directly">Browsing Docs Directly</a></li>
+<li><a href="#downloading-for-self-hosting">Downloading for Self-Hosting</a></li>
 </ul>
 </li>
-<li><a href="#inspecting-a-project">Inspecting a Project</a><ul>
-<li><a href="#request_1">Request</a></li>
-<li><a href="#response_1">Response</a></li>
-<li><a href="#project-storage-layout">Project Storage Layout</a></li>
+<li><a href="#deleting-projects">Deleting Projects</a></li>
+<li><a href="#understanding-project-statuses">Understanding Project Statuses</a><ul>
+<li><a href="#generating">generating</a></li>
+<li><a href="#ready">ready</a></li>
+<li><a href="#error">error</a></li>
+<li><a href="#status-transitions">Status Transitions</a></li>
 </ul>
 </li>
-<li><a href="#generation-history-and-status-tracking">Generation History and Status Tracking</a><ul>
-<li><a href="#tracking-incremental-updates">Tracking Incremental Updates</a></li>
-</ul>
-</li>
-<li><a href="#deleting-a-project">Deleting a Project</a><ul>
-<li><a href="#request_2">Request</a></li>
-<li><a href="#what-gets-deleted">What Gets Deleted</a></li>
-<li><a href="#verifying-deletion">Verifying Deletion</a></li>
-</ul>
-</li>
-<li><a href="#downloading-project-documentation">Downloading Project Documentation</a><ul>
-<li><a href="#request_3">Request</a></li>
-</ul>
-</li>
-<li><a href="#browsing-generated-documentation">Browsing Generated Documentation</a></li>
-<li><a href="#common-workflows">Common Workflows</a><ul>
-<li><a href="#generate-and-monitor">Generate and Monitor</a></li>
-<li><a href="#export-and-clean-up">Export and Clean Up</a></li>
-<li><a href="#update-after-repository-changes">Update After Repository Changes</a></li>
-</ul>
-</li>
+<li><a href="#incremental-updates">Incremental Updates</a></li>
+<li><a href="#api-reference-summary">API Reference Summary</a></li>
 </ul>
 </div>
 

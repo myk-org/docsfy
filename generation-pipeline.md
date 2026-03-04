@@ -1,91 +1,92 @@
 # Generation Pipeline
 
-The docsfy generation pipeline transforms a GitHub repository URL into a polished static HTML documentation site through four sequential stages. Each stage builds on the output of the previous one, progressing from raw source code to a fully rendered, searchable documentation website.
-
-```
-POST /api/generate { "repo_url": "..." }
-         │
-         ▼
-┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
-│  Stage 1: Clone │────▶│  Stage 2: Plan  │────▶│  Stage 3: Gen   │────▶│  Stage 4: Render │
-│  Repository     │     │  (AI Planner)   │     │  (AI Content)   │     │  (Jinja2 + HTML) │
-└─────────────────┘     └─────────────────┘     └─────────────────┘     └─────────────────┘
-     git clone            plan.json              cache/pages/*.md        site/*.html
-     --depth 1            (doc structure)        (markdown per page)     (static site)
-```
-
 ## Overview
 
-When a user submits a repository URL via `POST /api/generate`, the pipeline executes these four stages sequentially:
+Every documentation site produced by docsfy flows through a four-stage generation pipeline. When a `POST /api/generate` request arrives with a repository URL, the pipeline executes each stage sequentially — cloning the repository, planning the documentation structure with AI, generating page content concurrently, and rendering the final static HTML site.
 
-| Stage | Input | Process | Output |
-|-------|-------|---------|--------|
-| **1. Clone** | GitHub repo URL | Shallow git clone | Temporary directory with source code |
-| **2. Plan** | Cloned repository | AI analyzes codebase structure | `plan.json` (documentation hierarchy) |
-| **3. Generate** | `plan.json` + cloned repo | AI writes content per page (concurrent) | Markdown files in `cache/pages/*.md` |
-| **4. Render** | Markdown files + `plan.json` | Jinja2 templating + asset bundling | Static HTML site in `site/` |
+```
+POST /api/generate { repo_url }
+        │
+        ▼
+┌──────────────┐     ┌──────────────┐     ┌──────────────┐     ┌──────────────┐
+│  Stage 1     │     │  Stage 2     │     │  Stage 3     │     │  Stage 4     │
+│  Clone Repo  │────▶│  AI Planner  │────▶│  AI Content  │────▶│    HTML      │
+│              │     │  (plan.json) │     │  Generator   │     │  Renderer    │
+└──────────────┘     └──────────────┘     └──────────────┘     └──────────────┘
+   temp dir              plan.json          cache/pages/*.md     site/*.html
+```
 
-The pipeline status is tracked in SQLite throughout execution, transitioning from `generating` to either `ready` or `error` upon completion.
-
----
+The pipeline stores all intermediate and final artifacts under `/data/projects/{project-name}/`, making each stage's output inspectable and cacheable for incremental updates.
 
 ## Stage 1: Repository Cloning
 
-The first stage acquires the source code that will be documented. docsfy performs a **shallow clone** to minimize bandwidth and disk usage — only the latest commit is needed since documentation reflects the current state of the codebase.
+The first stage acquires the source code by performing a **shallow clone** of the target repository into a temporary directory.
 
 ### How It Works
 
-```
-Input:  GitHub repository URL (SSH or HTTPS)
-Output: Temporary directory containing the cloned repository
-```
-
-The clone operation uses `--depth 1` to fetch only the most recent commit:
+docsfy uses a `--depth 1` shallow clone to minimize bandwidth and disk usage. Only the latest commit on the default branch is fetched — historical commits are unnecessary since the AI analyzes the current state of the codebase.
 
 ```bash
-git clone --depth 1 <repo_url> <temp_directory>
+git clone --depth 1 <repo_url> /tmp/<temp_dir>
 ```
 
-### Supported URL Formats
+### URL Support
 
-Both SSH and HTTPS URLs are supported for public and private repositories:
+Both major Git transport protocols are supported:
 
-| Format | Example | Authentication |
-|--------|---------|---------------|
-| HTTPS (public) | `https://github.com/org/repo.git` | None required |
-| HTTPS (private) | `https://github.com/org/repo.git` | System git credentials |
-| SSH | `git@github.com:org/repo.git` | SSH keys configured on host |
+| Protocol | Example | Authentication |
+|----------|---------|----------------|
+| HTTPS | `https://github.com/org/repo.git` | Public repos work out of the box; private repos use system git credential helpers |
+| SSH | `git@github.com:org/repo.git` | Uses SSH keys available to the container's `appuser` |
 
-Private repository access relies on the git credentials available in the container environment. When running via Docker, SSH keys or credential helpers must be mounted into the container.
+### Temporary Directory Lifecycle
 
-### Execution Model
+The cloned repository lives in a temporary directory for the duration of the pipeline. This directory serves as the **working directory** for both Stage 2 (planning) and Stage 3 (content generation), giving the AI CLI full filesystem access to explore source code, configuration files, tests, and any other repository artifacts. The temporary directory is cleaned up after the pipeline completes.
 
-The clone runs asynchronously using `asyncio.to_thread` to avoid blocking the FastAPI event loop:
+> **Note:** The shallow clone captures only the repository's current state. If your documentation needs to reference version history or changelogs, that content should be maintained in files within the repository itself (e.g., `CHANGELOG.md`).
+
+## Stage 2: AI-Driven Documentation Planning
+
+The second stage is where AI analyzes the entire repository and produces a structured documentation plan. This plan determines what pages will be generated, how they're organized, and what navigation hierarchy the final site will have.
+
+### AI CLI Invocation
+
+The AI CLI is executed as a subprocess with the cloned repository set as the working directory. This gives the AI full access to explore every file in the repo:
 
 ```python
-asyncio.to_thread(subprocess.run, ["git", "clone", "--depth", "1", repo_url, temp_dir], ...)
+subprocess.run(
+    cmd,
+    input=prompt,
+    capture_output=True,
+    text=True,
+    cwd=repo_path,       # AI can explore the entire cloned repo
+    timeout=ai_cli_timeout * 60
+)
 ```
 
-> **Note:** The cloned repository is stored in a temporary directory for the duration of the pipeline. After all stages complete, this temporary directory can be cleaned up. For incremental updates, docsfy tracks the last commit SHA in SQLite to determine if regeneration is needed.
+For asynchronous execution within the FastAPI service, the blocking subprocess call is wrapped with `asyncio.to_thread`:
 
----
-
-## Stage 2: AI-Driven Planning
-
-The planning stage is where AI analyzes the entire repository and produces a structured documentation plan. This is the architectural blueprint that determines what pages will be generated, how they're organized, and what the navigation hierarchy looks like.
-
-### How It Works
-
-```
-Input:  Cloned repository directory
-Output: plan.json (documentation structure with pages, sections, and navigation)
+```python
+success, output = await asyncio.to_thread(
+    subprocess.run, cmd, input=prompt, capture_output=True, text=True, cwd=repo_path
+)
 ```
 
-The AI CLI is invoked with its **working directory set to the cloned repository**, giving it full access to explore every file, read source code, examine configuration, and understand the project's architecture.
+The prompt instructs the AI to analyze the repository structure — reading source files, configs, tests, CI/CD pipelines, and any existing documentation — then output a `plan.json` that defines the complete documentation site structure.
 
-### AI Provider Configuration
+### Provider-Specific Commands
 
-docsfy supports three AI providers, each configured through the `ProviderConfig` dataclass:
+The command constructed depends on the configured AI provider:
+
+| Provider | Command |
+|----------|---------|
+| Claude | `claude --model <model> --dangerously-skip-permissions -p` |
+| Gemini | `gemini --model <model> --yolo` |
+| Cursor | `agent --force --model <model> --print --workspace <repo_path>` |
+
+> **Note:** Cursor uses a `--workspace` flag instead of subprocess `cwd` to point the AI at the repository. This is handled by the `uses_own_cwd` flag in the provider configuration.
+
+Each provider is defined through a common configuration pattern:
 
 ```python
 @dataclass(frozen=True)
@@ -95,306 +96,231 @@ class ProviderConfig:
     uses_own_cwd: bool = False
 ```
 
-The `uses_own_cwd` flag controls how the repository path is communicated to the AI CLI:
-
-- **`False` (default):** The subprocess `cwd` is set to the repository path. Used by Claude and Gemini.
-- **`True`:** The repository path is passed via a CLI flag (e.g., `--workspace`). Used by Cursor.
-
-### Provider Commands
-
-Each provider has a specific invocation pattern:
-
-| Provider | Binary | Command | CWD Handling |
-|----------|--------|---------|-------------|
-| Claude (default) | `claude` | `claude --model <model> --dangerously-skip-permissions -p` | subprocess `cwd` = repo path |
-| Gemini | `gemini` | `gemini --model <model> --yolo` | subprocess `cwd` = repo path |
-| Cursor | `agent` | `agent --force --model <model> --print --workspace <path>` | `--workspace` flag, `uses_own_cwd=True` |
-
-### Invocation Pattern
-
-Prompts are passed to the AI CLI via stdin, and the response is captured from stdout:
-
-```python
-asyncio.to_thread(
-    subprocess.run,
-    cmd,
-    input=prompt,
-    capture_output=True,
-    text=True
-)
-# Returns: tuple[bool, str] (success, output)
-```
-
-> **Tip:** Before starting a full generation, docsfy performs an availability check by sending a lightweight `"Hi"` prompt to verify the AI CLI is properly configured and responding. This catches authentication or configuration issues early, before committing to the full pipeline.
-
-### JSON Response Parsing
-
-AI models don't always return clean JSON. docsfy uses a multi-strategy extraction approach (with a cascading fallback chain) to reliably extract the `plan.json` structure from the AI response:
-
-1. **Direct JSON parse** — Try `json.loads()` on the raw output
-2. **Brace-matching** — Find the outermost `{...}` JSON object in the response
-3. **Markdown code block extraction** — Extract JSON from triple-backtick code blocks
-4. **Regex recovery** — Last-resort pattern matching to salvage JSON fragments
-
-```
-AI Response                          Extraction Strategy
-─────────────────────────────────    ─────────────────────
-'{"pages": [...]}'               →  Strategy 1: Direct parse ✓
-'Here is the plan: {"pages":..}' →  Strategy 2: Brace-matching ✓
-'```json\n{"pages": [...]}\n```' →  Strategy 3: Code block extraction ✓
-'The plan has {"pages":[...'     →  Strategy 4: Regex recovery ✓
-```
-
 ### The plan.json Output
 
-The planner produces a `plan.json` file that defines the complete documentation structure. This file is saved at `/data/projects/{project-name}/plan.json` and serves as the contract between the planning and generation stages. It contains:
+The AI's response is parsed using a multi-strategy JSON extraction approach that handles the variety of output formats AI CLIs can produce:
 
-- **Pages** — Individual documentation pages with titles and descriptions
-- **Sections** — Logical groupings of related pages
-- **Navigation hierarchy** — The sidebar structure and page ordering
+1. **Direct JSON parse** — attempt to parse the entire output as JSON
+2. **Brace-matching** — find the outermost `{...}` JSON object in the output
+3. **Markdown code block extraction** — extract JSON from `` ```json ``` `` blocks
+4. **Regex fallback** — recover JSON fragments using pattern matching
 
-### Default Configuration
-
-| Setting | Default Value | Description |
-|---------|--------------|-------------|
-| `AI_PROVIDER` | `claude` | Which AI CLI to use |
-| `AI_MODEL` | `claude-opus-4-6[1m]` | Model identifier passed to the CLI |
-| `AI_CLI_TIMEOUT` | `60` (minutes) | Maximum time for a single AI invocation |
-
-These are configured via environment variables:
-
-```bash
-# .env
-AI_PROVIDER=claude
-AI_MODEL=claude-opus-4-6[1m]
-AI_CLI_TIMEOUT=60
-```
-
-> **Warning:** The `--dangerously-skip-permissions` flag (Claude) and `--yolo` flag (Gemini) grant the AI CLI unrestricted access within the cloned repository. This is intentional — the AI needs to freely explore the codebase to produce accurate documentation. The clone is performed in an isolated temporary directory to limit the blast radius.
-
----
-
-## Stage 3: Concurrent Content Generation
-
-The content generation stage is where the bulk of the work happens. For each page defined in `plan.json`, an AI CLI session explores the codebase and writes comprehensive markdown documentation.
-
-### How It Works
+The resulting `plan.json` is saved to `/data/projects/{project-name}/plan.json` and defines the documentation structure:
 
 ```
-Input:  plan.json (page definitions) + cloned repository
-Output: Markdown files at /data/projects/{name}/cache/pages/*.md
+/data/projects/{project-name}/
+  plan.json             # Documentation structure from AI
 ```
+
+The plan contains pages, sections, and the navigation hierarchy that will drive both Stage 3 (what content to generate) and Stage 4 (how to render the site navigation).
+
+### Availability Check
+
+Before starting a generation pipeline, docsfy verifies that the configured AI CLI is functional by running a lightweight "Hi" prompt. This fast-fails the pipeline if the AI provider is unavailable or misconfigured, rather than discovering the problem after the clone stage has already completed.
+
+## Stage 3: Concurrent Page Content Generation
+
+The third stage iterates over every page defined in `plan.json` and generates the markdown content for each one. This is the most time-intensive stage, and docsfy uses **async concurrency with semaphore-limited parallelism** to accelerate it.
 
 ### Concurrency Model
 
-Pages are generated **concurrently** using Python's async capabilities with semaphore-limited concurrency. This dramatically reduces total generation time for projects with many documentation pages:
+Each page generation is an independent AI CLI invocation — the AI explores the codebase and writes markdown for that specific page. Since these invocations are independent, they can run concurrently.
+
+docsfy uses an `asyncio.Semaphore` to control the level of parallelism:
 
 ```python
-# Conceptual model:
-# Each page generation is an independent async task
-# A semaphore limits how many AI CLI processes run simultaneously
+semaphore = asyncio.Semaphore(max_concurrent_pages)
 
-async with semaphore:
-    result = await asyncio.to_thread(
-        subprocess.run,
-        cmd,
-        input=page_prompt,
-        capture_output=True,
-        text=True
-    )
+async def generate_page(page_def):
+    async with semaphore:
+        prompt = build_page_prompt(page_def, plan)
+        success, markdown = await asyncio.to_thread(
+            subprocess.run, cmd, input=prompt,
+            capture_output=True, text=True, cwd=repo_path
+        )
+        return page_def, markdown
 ```
 
-```
-                    plan.json
-                       │
-          ┌────────────┼────────────┐
-          ▼            ▼            ▼
-    ┌──────────┐ ┌──────────┐ ┌──────────┐
-    │ Page 1   │ │ Page 2   │ │ Page 3   │  ... (concurrent, semaphore-limited)
-    │ AI CLI   │ │ AI CLI   │ │ AI CLI   │
-    └────┬─────┘ └────┬─────┘ └────┬─────┘
-         ▼            ▼            ▼
-    page-1.md    page-2.md    page-3.md
+The semaphore ensures that no more than `max_concurrent_pages` AI CLI processes run simultaneously. This prevents resource exhaustion (CPU, memory, API rate limits) while still achieving significant speedup over sequential generation.
+
+All page tasks are gathered and executed concurrently:
+
+```python
+tasks = [generate_page(page) for page in plan["pages"]]
+results = await asyncio.gather(*tasks)
 ```
 
-Each AI CLI invocation runs with `cwd` set to the cloned repository (or `--workspace` for Cursor), giving the AI full access to explore the codebase as needed for that specific page. The AI receives a prompt that includes the page title, description, and any context from the plan about what the page should cover.
+### Per-Page AI Invocation
 
-### Caching Strategy
+For each page, the AI CLI runs with `cwd` set to the cloned repository, just like the planning stage. The prompt provides:
+
+- The page's title and description from `plan.json`
+- The section it belongs to
+- Instructions to explore the codebase as needed and produce comprehensive markdown
+
+This means the AI can read any file in the repository — source code, tests, configuration — to produce accurate, code-grounded documentation for each page.
+
+### Markdown Caching
 
 Generated markdown files are cached at:
 
 ```
-/data/projects/{project-name}/cache/pages/*.md
+/data/projects/{project-name}/
+  cache/
+    pages/*.md          # AI-generated markdown (one file per page)
 ```
 
-This cache serves two purposes:
+This cache serves a critical purpose for **incremental updates**. When a repository is re-generated after changes:
 
-1. **Resilience** — If the pipeline fails partway through, already-generated pages don't need to be regenerated
-2. **Incremental updates** — When a repository changes, only affected pages need regeneration (see [Incremental Updates](#incremental-updates) below)
+1. docsfy compares the current commit SHA against the stored SHA in SQLite
+2. If the plan structure is unchanged, only pages affected by code changes are regenerated
+3. Unchanged pages are served from the markdown cache, avoiding redundant AI invocations
 
-### Output Format
+> **Tip:** The markdown cache means that re-generating documentation after small code changes is significantly faster than the initial generation. Only the affected pages trigger new AI CLI calls.
 
-Each page is generated as a standalone markdown file containing:
+### Return Value Convention
 
-- Prose explanations of concepts and architecture
-- Code examples drawn from the actual repository
-- Configuration snippets and usage instructions
-- Cross-references to other documentation pages
+Each AI CLI invocation returns a `tuple[bool, str]` — a success boolean and the output string. This consistent interface allows uniform error handling across all three providers:
 
-> **Note:** The AI has full access to explore the repository for each page it generates. This means it can read source files, examine tests, check configuration, and follow import chains to produce accurate, codebase-specific documentation — not generic boilerplate.
-
----
+```python
+success, output = await run_ai_cli(prompt, cwd=repo_path)
+if not success:
+    log.error(f"Page generation failed: {output}")
+```
 
 ## Stage 4: HTML Rendering with Jinja2
 
-The final stage transforms raw markdown into a polished, interactive static HTML documentation site. This is a deterministic process — no AI is involved — that uses Jinja2 templates and bundled front-end assets.
+The final stage transforms the markdown content and navigation plan into a polished static HTML documentation site.
 
-### How It Works
+### Rendering Process
 
+The renderer takes two inputs:
+
+- **`plan.json`** — defines the navigation hierarchy (sections, pages, ordering)
+- **`cache/pages/*.md`** — the AI-generated markdown content for each page
+
+Each markdown file is converted to HTML using the Python `markdown` library, then wrapped in a Jinja2 template that provides the complete page shell — header, sidebar navigation, content area, and footer.
+
+### Jinja2 Templates
+
+docsfy uses Jinja2 as its templating engine to produce the final HTML. Templates receive the rendered HTML content, navigation structure, page metadata, and project information as context variables:
+
+```python
+template = jinja_env.get_template("page.html")
+html = template.render(
+    content=rendered_markdown,
+    navigation=plan["pages"],
+    page_title=page["title"],
+    project_name=project_name,
+    # ... additional context
+)
 ```
-Input:  Markdown pages (cache/pages/*.md) + plan.json + CSS/JS assets
-Output: Static HTML site at /data/projects/{name}/site/
-```
 
-### Rendering Pipeline
+### Built-in Features
 
-The renderer performs these operations:
-
-1. **Markdown-to-HTML conversion** — Using the Python `markdown` library
-2. **Template rendering** — Jinja2 templates wrap HTML content with navigation, headers, and layout
-3. **Asset bundling** — CSS, JavaScript, and other static assets are copied to the output directory
-4. **Search index generation** — A JSON search index is built for client-side full-text search
-
-### Site Features
-
-The rendered HTML site includes a rich set of features out of the box:
+The rendered HTML site includes several features out of the box, powered by bundled CSS and JavaScript assets:
 
 | Feature | Implementation |
 |---------|---------------|
 | Sidebar navigation | Generated from `plan.json` hierarchy |
-| Dark/light theme toggle | `theme-toggle.js` |
-| Client-side search | `search.js` + `search-index.json` (lunr.js or similar) |
-| Code syntax highlighting | `highlight.js` |
-| Responsive design | Custom CSS |
-| Card layouts | CSS component styles |
-| Callout boxes | Note, warning, and info styled blocks |
+| Dark/light theme toggle | `theme-toggle.js` with CSS custom properties |
+| Client-side search | `search.js` powered by a pre-built `search-index.json` |
+| Code syntax highlighting | `highlight.js` for fenced code blocks |
+| Card layouts | CSS grid-based component cards |
+| Callout boxes | Styled note, warning, and info blocks |
+| Responsive design | Mobile-friendly layout with CSS media queries |
 
 ### Output Structure
 
-The final static site follows this directory layout:
+The rendered site is written to `/data/projects/{project-name}/site/`:
 
 ```
-/data/projects/{project-name}/site/
-  index.html              # Landing page
-  *.html                  # Generated documentation pages
-  assets/
-    style.css             # Bundled stylesheet
-    search.js             # Client-side search functionality
-    theme-toggle.js       # Dark/light mode toggle
-    highlight.js          # Code syntax highlighting
-  search-index.json       # Pre-built search index
+/data/projects/{project-name}/
+  site/
+    index.html            # Landing page
+    *.html                # One HTML file per documentation page
+    assets/
+      style.css           # Theme and layout styles
+      search.js           # Client-side search engine
+      theme-toggle.js     # Dark/light mode toggle
+      highlight.js        # Code syntax highlighting
+    search-index.json     # Pre-built search index for client-side search
 ```
 
 ### Serving and Distribution
 
-Once rendered, the static site can be accessed in two ways:
+Once the site is generated, it can be accessed in two ways:
 
-1. **Served directly** via docsfy's built-in route:
-   ```
-   GET /docs/{project}/{path}
-   ```
+- **Direct serving** — Access pages via `GET /docs/{project}/{path}`, where docsfy serves the static files directly from the FastAPI server
+- **Download and self-host** — Download the entire site as a `.tar.gz` archive via `GET /api/projects/{name}/download` and deploy it to any static hosting provider (Nginx, S3, Cloudflare Pages, GitHub Pages, etc.)
 
-2. **Downloaded** as a `.tar.gz` archive for self-hosting:
-   ```
-   GET /api/projects/{name}/download
-   ```
+> **Tip:** The generated site is fully self-contained with all assets bundled inline. No external CDN dependencies are required, making it suitable for air-gapped or intranet deployments.
 
-> **Tip:** The downloaded archive is a fully self-contained static site. You can host it on any static file server — GitHub Pages, Netlify, S3, nginx, or any CDN — with no docsfy dependency required.
+## Configuration
 
----
-
-## Incremental Updates
-
-docsfy avoids regenerating documentation from scratch when a repository changes. The incremental update strategy minimizes AI usage and generation time:
-
-1. **SHA tracking** — The last commit SHA is stored per project in SQLite
-2. **Change detection** — On re-generate, the repository is fetched and the current SHA is compared against the stored SHA
-3. **Plan comparison** — If the SHA has changed, the AI Planner re-runs to check if the documentation structure changed
-4. **Selective regeneration** — Only pages whose content may be affected by the changes are regenerated
-5. **Cache reuse** — Unaffected pages are served directly from `cache/pages/*.md`
-
-```
-Re-generate Request
-       │
-       ▼
-  Compare SHA ──── Same? ──── No regeneration needed
-       │
-    Different
-       │
-       ▼
-  Re-run Planner
-       │
-       ├── Plan unchanged ──── Regenerate only affected pages
-       │
-       └── Plan changed ──── Regenerate all pages
-```
-
-> **Note:** The incremental update strategy relies on the AI Planner's ability to determine which pages are affected by code changes. For significant architectural changes to a repository, a full regeneration may still be triggered.
-
----
-
-## Pipeline Configuration Reference
-
-All pipeline behavior is controlled through environment variables:
+The generation pipeline is controlled by environment variables:
 
 ```bash
-# .env
+# AI provider selection: claude, gemini, or cursor
+AI_PROVIDER=claude
 
-# AI Provider Selection
-AI_PROVIDER=claude                    # Options: claude, gemini, cursor
-AI_MODEL=claude-opus-4-6[1m]         # Model identifier
-AI_CLI_TIMEOUT=60                     # Timeout per AI invocation (minutes)
+# Model to use for the selected provider
+AI_MODEL=claude-opus-4-6[1m]
 
-# Claude Authentication (Option 1: API Key)
-ANTHROPIC_API_KEY=sk-ant-...
+# Timeout for each AI CLI invocation (in minutes)
+AI_CLI_TIMEOUT=60
 
-# Claude Authentication (Option 2: Vertex AI)
-CLAUDE_CODE_USE_VERTEX=1
-CLOUD_ML_REGION=us-central1
-ANTHROPIC_VERTEX_PROJECT_ID=my-project
-
-# Gemini Authentication
-GEMINI_API_KEY=...
-
-# Cursor Authentication
-CURSOR_API_KEY=...
-
-# Logging
+# Logging verbosity
 LOG_LEVEL=INFO
 ```
 
-### Storage Paths
+### Provider Authentication
 
-| Path | Purpose |
-|------|---------|
-| `/data/docsfy.db` | SQLite database for project metadata and status |
-| `/data/projects/{name}/plan.json` | Documentation structure from AI Planner |
-| `/data/projects/{name}/cache/pages/*.md` | Cached AI-generated markdown |
-| `/data/projects/{name}/site/` | Final rendered static HTML site |
+Each provider requires its own authentication setup:
 
----
+| Provider | Authentication Options |
+|----------|----------------------|
+| **Claude** | `ANTHROPIC_API_KEY` for direct API access, or Vertex AI via `CLAUDE_CODE_USE_VERTEX=1` with `CLOUD_ML_REGION` and `ANTHROPIC_VERTEX_PROJECT_ID` |
+| **Gemini** | `GEMINI_API_KEY` |
+| **Cursor** | `CURSOR_API_KEY` |
 
-## Error Handling
+> **Warning:** The `AI_CLI_TIMEOUT` applies per invocation — once for the planner stage and once for each page in the content generation stage. For large repositories with many pages, the total pipeline time can be significantly longer than this single-invocation timeout.
 
-If any stage in the pipeline fails, the project status in SQLite is set to `error` and the failure is logged. The pipeline does not automatically retry — the user must re-trigger generation via `POST /api/generate`.
+## Pipeline State Tracking
 
-Key failure modes by stage:
+docsfy tracks the state of each project's generation pipeline in a SQLite database at `/data/docsfy.db`:
 
-| Stage | Common Failures | Effect |
-|-------|----------------|--------|
-| Clone | Invalid URL, auth failure, network timeout | Pipeline aborts before AI invocation |
-| Plan | AI CLI unavailable, timeout, unparseable response | No `plan.json` produced |
-| Generate | Individual page timeout, AI error | Partial cache (successful pages preserved) |
-| Render | Template error, disk full | No `site/` directory produced |
+| Field | Description |
+|-------|-------------|
+| Project name | Derived from the repository URL |
+| Repository URL | The source repository |
+| Status | `generating`, `ready`, or `error` |
+| Last generated | Timestamp of the most recent successful generation |
+| Last commit SHA | The HEAD commit of the last processed clone |
+| Generation logs | Diagnostic output from the pipeline stages |
 
-> **Tip:** Use the availability check (lightweight `"Hi"` prompt) before starting a full generation to catch AI CLI configuration issues early. This prevents wasting time on a clone operation only to discover the AI provider is not accessible.
+The status field transitions through the pipeline:
+
+```
+POST /api/generate
+    │
+    ▼
+generating ──────▶ ready     (on success)
+    │
+    └────────────▶ error     (on failure at any stage)
+```
+
+You can query the current status of all projects via `GET /api/status` or get detailed information about a specific project with `GET /api/projects/{name}`.
+
+## Incremental Updates
+
+When `POST /api/generate` is called for a repository that has already been generated, docsfy performs an **incremental update** rather than a full regeneration:
+
+1. **SHA comparison** — The current HEAD commit SHA is compared against the stored SHA in SQLite
+2. **Plan re-evaluation** — If the SHA has changed, the AI Planner re-runs to check whether the documentation structure needs updating
+3. **Selective regeneration** — Only pages whose content may be affected by the code changes are regenerated; unchanged pages are served from the markdown cache
+4. **Re-render** — Stage 4 always runs to produce a fresh HTML site from the (updated) markdown files
+
+This approach dramatically reduces the cost and time of keeping documentation up to date with a rapidly evolving codebase.
+
+> **Note:** The incremental update strategy relies on the AI planner's ability to identify which pages are affected by code changes. For maximum accuracy, ensure your `plan.json` pages have clear, well-scoped topics that map to identifiable areas of the codebase.

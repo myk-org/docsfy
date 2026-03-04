@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Download &amp; Delete - docsfy</title>
+    <meta name="description" content="AI-powered documentation site generator that turns GitHub repositories into polished, Mintlify-quality static HTML docs">
+    <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <a href="index.html" class="sidebar-logo">docsfy</a>
+            <p class="sidebar-tagline">AI-powered documentation site generator that turns GitHub repositories into polished, Mintlify-quality static HTML docs</p>
+        </div>
+
+        <div class="sidebar-search">
+            <input type="text" id="search-input" placeholder="Search... (⌘K)" autocomplete="off" readonly>
+            <div id="search-results" class="search-results"></div>
+        </div>
+
+        <nav class="sidebar-nav">
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Getting Started</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="introduction.html"
+                           class="nav-link">
+                            Introduction
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="quickstart.html"
+                           class="nav-link">
+                            Quickstart
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="installation.html"
+                           class="nav-link">
+                            Installation
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Configuration</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="environment-variables.html"
+                           class="nav-link">
+                            Environment Variables
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="ai-providers.html"
+                           class="nav-link">
+                            AI Provider Setup
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="docker-configuration.html"
+                           class="nav-link">
+                            Docker &amp; Deployment
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Usage</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="generating-docs.html"
+                           class="nav-link">
+                            Generating Documentation
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="serving-and-hosting.html"
+                           class="nav-link">
+                            Serving &amp; Hosting
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="incremental-updates.html"
+                           class="nav-link">
+                            Incremental Updates
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="managing-projects.html"
+                           class="nav-link">
+                            Managing Projects
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Architecture</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="generation-pipeline.html"
+                           class="nav-link">
+                            Generation Pipeline
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="storage-and-data.html"
+                           class="nav-link">
+                            Storage &amp; Data Model
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="html-renderer.html"
+                           class="nav-link">
+                            HTML Renderer &amp; Theming
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="ai-cli-integration.html"
+                           class="nav-link">
+                            AI CLI Integration
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">API Reference</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="api-generate.html"
+                           class="nav-link">
+                            POST /api/generate
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="api-status-and-projects.html"
+                           class="nav-link">
+                            Project Status &amp; Details
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="api-download-and-delete.html"
+                           class="nav-link active">
+                            Download &amp; Delete
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="api-health-and-docs.html"
+                           class="nav-link">
+                            Health Check &amp; Doc Serving
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Development</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="development-setup.html"
+                           class="nav-link">
+                            Development Setup
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="contributing.html"
+                           class="nav-link">
+                            Contributing
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+        </nav>
+    </aside>
+
+    <div class="main-wrapper">
+        <header class="top-bar">
+            <div class="top-bar-left">
+                <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebar">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                </button>
+                <a href="index.html" class="top-bar-title">docsfy</a>
+            </div>
+            <div class="top-bar-spacer"></div>
+            <div class="top-bar-right">
+                <button class="top-bar-search-btn" id="search-trigger" aria-label="Search">
+                    <kbd>&#8984;K</kbd> Search
+                </button>
+                
+                <a href="https://github.com/myk-org/docsfy" target="_blank" rel="noopener noreferrer" class="top-bar-github" id="github-link" data-repo-url="https://github.com/myk-org/docsfy">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                    <span class="github-stars" id="github-stars"></span>
+                </a>
+                
+                <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+                    <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                    </svg>
+                    <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <main class="content">
+            <article class="article">
+                <h1 class="article-title">Download &amp; Delete</h1>
+                <div class="article-body">
+                    <h1 id="download-delete">Download &amp; Delete</h1>
+<p>Once docsfy has generated your documentation site, you can download the complete static site as a portable archive or remove a project entirely when it is no longer needed.</p>
+<h2 id="download-a-project">Download a Project</h2>
+<h3 id="get-apiprojectsnamedownload"><code>GET /api/projects/{name}/download</code></h3>
+<p>Retrieves the generated documentation site as a <code>.tar.gz</code> archive. This allows you to host your docs anywhere — on a CDN, a static file server, or any hosting provider of your choice.</p>
+<h3 id="path-parameters">Path Parameters</h3>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>name</code></td>
+<td><code>string</code></td>
+<td>Yes</td>
+<td>The project name as it appears in <code>/api/status</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="response">Response</h3>
+<table>
+<thead>
+<tr>
+<th>Status Code</th>
+<th>Content-Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>200</code></td>
+<td><code>application/gzip</code></td>
+<td>The <code>.tar.gz</code> archive containing the full static site</td>
+</tr>
+<tr>
+<td><code>404</code></td>
+<td><code>application/json</code></td>
+<td>Project not found</td>
+</tr>
+</tbody>
+</table>
+<h3 id="example-request">Example Request</h3>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-o<span class="w"> </span>my-project-docs.tar.gz<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>http://localhost:8000/api/projects/my-project/download
+</code></pre></div>
+
+<h3 id="extracting-the-archive">Extracting the Archive</h3>
+<p>The archive contains the complete static site from the project's <code>site/</code> directory:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Extract the downloaded archive</span>
+tar<span class="w"> </span>-xzf<span class="w"> </span>my-project-docs.tar.gz
+
+<span class="c1"># Preview the site locally</span>
+<span class="nb">cd</span><span class="w"> </span>site/
+python<span class="w"> </span>-m<span class="w"> </span>http.server<span class="w"> </span><span class="m">3000</span>
+</code></pre></div>
+
+<h3 id="archive-contents">Archive Contents</h3>
+<p>The downloaded archive mirrors the generated site structure stored at <code>/data/projects/{project-name}/site/</code>:</p>
+<div class="highlight"><pre><span></span><code>site/
+  index.html
+  *.html
+  assets/
+    style.css
+    search.js
+    theme-toggle.js
+    highlight.js
+  search-index.json
+</code></pre></div>
+
+<table>
+<thead>
+<tr>
+<th>File / Directory</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>index.html</code></td>
+<td>Landing page for the documentation site</td>
+</tr>
+<tr>
+<td><code>*.html</code></td>
+<td>Individual documentation pages generated from the AI content pipeline</td>
+</tr>
+<tr>
+<td><code>assets/style.css</code></td>
+<td>Theme styles with dark/light mode support</td>
+</tr>
+<tr>
+<td><code>assets/search.js</code></td>
+<td>Client-side search powered by lunr.js</td>
+</tr>
+<tr>
+<td><code>assets/theme-toggle.js</code></td>
+<td>Dark/light theme switcher</td>
+</tr>
+<tr>
+<td><code>assets/highlight.js</code></td>
+<td>Code syntax highlighting</td>
+</tr>
+<tr>
+<td><code>search-index.json</code></td>
+<td>Pre-built search index for client-side search</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Tip:</strong> The downloaded site is fully self-contained — no external dependencies or API calls are needed. You can serve it with any static file server (Nginx, Apache, Caddy, GitHub Pages, S3, etc.).</p>
+</blockquote>
+<h3 id="self-hosting-examples">Self-Hosting Examples</h3>
+<p><strong>Nginx:</strong></p>
+<div class="highlight"><pre><span></span><code><span class="k">server</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kn">listen</span><span class="w"> </span><span class="mi">80</span><span class="p">;</span>
+<span class="w">    </span><span class="kn">server_name</span><span class="w"> </span><span class="s">docs.example.com</span><span class="p">;</span>
+
+<span class="w">    </span><span class="kn">root</span><span class="w"> </span><span class="s">/var/www/my-project-docs/site</span><span class="p">;</span>
+<span class="w">    </span><span class="kn">index</span><span class="w"> </span><span class="s">index.html</span><span class="p">;</span>
+
+<span class="w">    </span><span class="kn">location</span><span class="w"> </span><span class="s">/</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="kn">try_files</span><span class="w"> </span><span class="nv">$uri</span><span class="w"> </span><span class="nv">$uri/</span><span class="w"> </span><span class="p">=</span><span class="mi">404</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<p><strong>Docker (with Nginx):</strong></p>
+<div class="highlight"><pre><span></span><code>docker<span class="w"> </span>run<span class="w"> </span>-d<span class="w"> </span>-p<span class="w"> </span><span class="m">8080</span>:80<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-v<span class="w"> </span><span class="k">$(</span><span class="nb">pwd</span><span class="k">)</span>/site:/usr/share/nginx/html:ro<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>nginx:alpine
+</code></pre></div>
+
+<blockquote>
+<p><strong>Note:</strong> The download endpoint is only available for projects with a <code>ready</code> status. Projects that are still <code>generating</code> or in an <code>error</code> state cannot be downloaded. Check the project status first with <code>GET /api/projects/{name}</code>.</p>
+</blockquote>
+<hr />
+<h2 id="delete-a-project">Delete a Project</h2>
+<h3 id="delete-apiprojectsname"><code>DELETE /api/projects/{name}</code></h3>
+<p>Permanently removes a project and all of its associated data, including generated documentation, cached content, and database records.</p>
+<h3 id="path-parameters_1">Path Parameters</h3>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>name</code></td>
+<td><code>string</code></td>
+<td>Yes</td>
+<td>The project name to delete</td>
+</tr>
+</tbody>
+</table>
+<h3 id="response_1">Response</h3>
+<table>
+<thead>
+<tr>
+<th>Status Code</th>
+<th>Content-Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>200</code></td>
+<td><code>application/json</code></td>
+<td>Project successfully deleted</td>
+</tr>
+<tr>
+<td><code>404</code></td>
+<td><code>application/json</code></td>
+<td>Project not found</td>
+</tr>
+</tbody>
+</table>
+<h3 id="example-request_1">Example Request</h3>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-X<span class="w"> </span>DELETE<span class="w"> </span>http://localhost:8000/api/projects/my-project
+</code></pre></div>
+
+<h3 id="what-gets-deleted">What Gets Deleted</h3>
+<p>Deleting a project removes <strong>all</strong> associated data from both the database and the filesystem.</p>
+<p><strong>SQLite database</strong> (<code>/data/docsfy.db</code>):</p>
+<ul>
+<li>Project name and repository URL</li>
+<li>Status information (<code>generating</code> / <code>ready</code> / <code>error</code>)</li>
+<li>Last generated timestamp and last commit SHA</li>
+<li>Generation history and logs</li>
+</ul>
+<p><strong>Filesystem</strong> (<code>/data/projects/{project-name}/</code>):</p>
+<div class="highlight"><pre><span></span><code>/data/projects/{project-name}/    &lt;-- entire directory removed
+  plan.json                       # documentation structure from AI planner
+  cache/
+    pages/*.md                    # cached AI-generated markdown pages
+  site/                           # rendered HTML site
+    index.html
+    *.html
+    assets/
+      style.css
+      search.js
+      theme-toggle.js
+      highlight.js
+    search-index.json
+</code></pre></div>
+
+<blockquote>
+<p><strong>Warning:</strong> This action is irreversible. All generated documentation, cached markdown pages, and the AI-generated plan will be permanently deleted. If you want to keep a copy of the generated site, use the <a href="#download-a-project">download endpoint</a> before deleting.</p>
+</blockquote>
+<h3 id="verifying-deletion">Verifying Deletion</h3>
+<p>After deleting a project, you can confirm it has been removed by listing all projects:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># List remaining projects</span>
+curl<span class="w"> </span>http://localhost:8000/api/status
+</code></pre></div>
+
+<p>The deleted project should no longer appear in the response.</p>
+<hr />
+<h2 id="common-workflows">Common Workflows</h2>
+<h3 id="download-then-delete">Download Then Delete</h3>
+<p>If you want to archive a project's documentation before cleaning it up:</p>
+<div class="highlight"><pre><span></span><code><span class="nv">PROJECT</span><span class="o">=</span><span class="s2">&quot;my-project&quot;</span>
+
+<span class="c1"># 1. Download the generated site</span>
+curl<span class="w"> </span>-o<span class="w"> </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">PROJECT</span><span class="si">}</span><span class="s2">-docs.tar.gz&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span><span class="s2">&quot;http://localhost:8000/api/projects/</span><span class="si">${</span><span class="nv">PROJECT</span><span class="si">}</span><span class="s2">/download&quot;</span>
+
+<span class="c1"># 2. Verify the archive is valid</span>
+tar<span class="w"> </span>-tzf<span class="w"> </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">PROJECT</span><span class="si">}</span><span class="s2">-docs.tar.gz&quot;</span><span class="w"> </span>&gt;<span class="w"> </span>/dev/null<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Archive OK&quot;</span>
+
+<span class="c1"># 3. Delete the project from docsfy</span>
+curl<span class="w"> </span>-X<span class="w"> </span>DELETE<span class="w"> </span><span class="s2">&quot;http://localhost:8000/api/projects/</span><span class="si">${</span><span class="nv">PROJECT</span><span class="si">}</span><span class="s2">&quot;</span>
+</code></pre></div>
+
+<h3 id="regenerate-a-project">Regenerate a Project</h3>
+<p>To regenerate documentation from scratch (e.g., after major repository changes), delete the existing project and trigger a new generation:</p>
+<div class="highlight"><pre><span></span><code><span class="nv">PROJECT</span><span class="o">=</span><span class="s2">&quot;my-project&quot;</span>
+<span class="nv">REPO_URL</span><span class="o">=</span><span class="s2">&quot;https://github.com/org/my-project&quot;</span>
+
+<span class="c1"># 1. Delete the existing project</span>
+curl<span class="w"> </span>-X<span class="w"> </span>DELETE<span class="w"> </span><span class="s2">&quot;http://localhost:8000/api/projects/</span><span class="si">${</span><span class="nv">PROJECT</span><span class="si">}</span><span class="s2">&quot;</span>
+
+<span class="c1"># 2. Start a fresh generation</span>
+curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/api/generate<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s2">&quot;{\&quot;repo_url\&quot;: \&quot;</span><span class="si">${</span><span class="nv">REPO_URL</span><span class="si">}</span><span class="s2">\&quot;}&quot;</span>
+</code></pre></div>
+
+<blockquote>
+<p><strong>Tip:</strong> For minor repository updates, you don't need to delete and recreate. docsfy supports incremental updates — it tracks the last commit SHA and only regenerates pages affected by changes. Simply call <code>POST /api/generate</code> again with the same repository URL.</p>
+</blockquote>
+                </div>
+            </article>
+            <nav class="page-nav">
+                
+                <a href="api-status-and-projects.html" class="page-nav-link page-nav-prev">
+                    <span class="page-nav-label">Previous</span>
+                    <span class="page-nav-title">Project Status &amp; Details</span>
+                </a>
+                
+                
+                <a href="api-health-and-docs.html" class="page-nav-link page-nav-next">
+                    <span class="page-nav-label">Next</span>
+                    <span class="page-nav-title">Health Check &amp; Doc Serving</span>
+                </a>
+                
+            </nav>
+            
+            <aside class="toc-sidebar">
+                <div class="toc-container">
+                    <h3>On this page</h3>
+                    <div class="toc">
+<ul>
+<li><a href="#download-a-project">Download a Project</a><ul>
+<li><a href="#get-apiprojectsnamedownload">GET /api/projects/{name}/download</a></li>
+<li><a href="#path-parameters">Path Parameters</a></li>
+<li><a href="#response">Response</a></li>
+<li><a href="#example-request">Example Request</a></li>
+<li><a href="#extracting-the-archive">Extracting the Archive</a></li>
+<li><a href="#archive-contents">Archive Contents</a></li>
+<li><a href="#self-hosting-examples">Self-Hosting Examples</a></li>
+</ul>
+</li>
+<li><a href="#delete-a-project">Delete a Project</a><ul>
+<li><a href="#delete-apiprojectsname">DELETE /api/projects/{name}</a></li>
+<li><a href="#path-parameters_1">Path Parameters</a></li>
+<li><a href="#response_1">Response</a></li>
+<li><a href="#example-request_1">Example Request</a></li>
+<li><a href="#what-gets-deleted">What Gets Deleted</a></li>
+<li><a href="#verifying-deletion">Verifying Deletion</a></li>
+</ul>
+</li>
+<li><a href="#common-workflows">Common Workflows</a><ul>
+<li><a href="#download-then-delete">Download Then Delete</a></li>
+<li><a href="#regenerate-a-project">Regenerate a Project</a></li>
+</ul>
+</li>
+</ul>
+</div>
+
+                </div>
+            </aside>
+            
+        </main>
+
+        <footer class="footer">
+            <p>Built with <a href="https://github.com/docsfy/docsfy">docsfy</a></p>
+        </footer>
+    </div>
+
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <script src="assets/theme.js"></script>
+    <script src="assets/search.js"></script>
+    <script src="assets/copy.js"></script>
+    <script src="assets/callouts.js"></script>
+    <script src="assets/scrollspy.js"></script>
+    <script src="assets/codelabels.js"></script>
+    <script src="assets/github.js"></script>
+    <script>
+    (function() {
+        var toggle = document.getElementById('sidebar-toggle');
+        var sidebar = document.getElementById('sidebar');
+        var overlay = document.getElementById('sidebar-overlay');
+        if (toggle && sidebar) {
+            toggle.addEventListener('click', function() {
+                sidebar.classList.toggle('open');
+                if (overlay) overlay.classList.toggle('open');
+            });
+        }
+        if (overlay) {
+            overlay.addEventListener('click', function() {
+                sidebar.classList.remove('open');
+                overlay.classList.remove('open');
+            });
+        }
+    })();
+    </script>
+</body>
+</html>

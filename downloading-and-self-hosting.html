@@ -4,14 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Downloading &amp; Self-Hosting - docsfy</title>
-    <meta name="description" content="AI-powered documentation generator that creates polished, Mintlify-quality static HTML sites from GitHub repositories.">
+    <meta name="description" content="AI-powered documentation generator that creates polished static HTML sites from GitHub repositories">
     <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <a href="index.html" class="sidebar-logo">docsfy</a>
-            <p class="sidebar-tagline">AI-powered documentation generator that creates polished, Mintlify-quality static HTML sites from GitHub repositories.</p>
+            <p class="sidebar-tagline">AI-powered documentation generator that creates polished static HTML sites from GitHub repositories</p>
         </div>
 
         <div class="sidebar-search">
@@ -68,9 +68,9 @@
                     </li>
                     
                     <li>
-                        <a href="docker-deployment.html"
+                        <a href="storage-and-data.html"
                            class="nav-link">
-                            Docker Deployment
+                            Storage &amp; Data
                         </a>
                     </li>
                     
@@ -89,9 +89,9 @@
                     </li>
                     
                     <li>
-                        <a href="incremental-updates.html"
+                        <a href="serving-docs.html"
                            class="nav-link">
-                            Incremental Updates
+                            Serving Documentation
                         </a>
                     </li>
                     
@@ -103,9 +103,9 @@
                     </li>
                     
                     <li>
-                        <a href="managing-projects.html"
+                        <a href="incremental-updates.html"
                            class="nav-link">
-                            Managing Projects
+                            Incremental Updates
                         </a>
                     </li>
                     
@@ -124,16 +124,16 @@
                     </li>
                     
                     <li>
-                        <a href="storage-and-database.html"
+                        <a href="html-renderer.html"
                            class="nav-link">
-                            Storage &amp; Database
+                            HTML Renderer &amp; Theming
                         </a>
                     </li>
                     
                     <li>
-                        <a href="html-theming.html"
+                        <a href="ai-cli-integration.html"
                            class="nav-link">
-                            HTML Theming &amp; Output
+                            AI CLI Integration
                         </a>
                     </li>
                     
@@ -145,13 +145,6 @@
                 <ul class="nav-group-pages">
                     
                     <li>
-                        <a href="api-overview.html"
-                           class="nav-link">
-                            API Overview
-                        </a>
-                    </li>
-                    
-                    <li>
                         <a href="api-generate.html"
                            class="nav-link">
                             POST /api/generate
@@ -159,23 +152,16 @@
                     </li>
                     
                     <li>
-                        <a href="api-status.html"
+                        <a href="api-status-and-projects.html"
                            class="nav-link">
-                            GET /api/status
+                            GET /api/status &amp; Project Details
                         </a>
                     </li>
                     
                     <li>
-                        <a href="api-projects.html"
+                        <a href="api-download.html"
                            class="nav-link">
-                            Project Endpoints
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="api-docs-serving.html"
-                           class="nav-link">
-                            GET /docs/{project}/{path}
+                            GET /api/projects/{name}/download
                         </a>
                     </li>
                     
@@ -190,20 +176,41 @@
             </div>
             
             <div class="nav-group">
+                <h3 class="nav-group-title">Deployment</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="docker-deployment.html"
+                           class="nav-link">
+                            Docker Deployment
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="docker-compose.html"
+                           class="nav-link">
+                            Docker Compose Setup
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
                 <h3 class="nav-group-title">Development</h3>
                 <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="development-setup.html"
+                           class="nav-link">
+                            Development Setup
+                        </a>
+                    </li>
                     
                     <li>
                         <a href="contributing.html"
                            class="nav-link">
                             Contributing
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="project-structure.html"
-                           class="nav-link">
-                            Project Structure
                         </a>
                     </li>
                     
@@ -250,92 +257,117 @@
                 <h1 class="article-title">Downloading &amp; Self-Hosting</h1>
                 <div class="article-body">
                     <h1 id="downloading-self-hosting">Downloading &amp; Self-Hosting</h1>
-<p>docsfy can serve your generated documentation directly from its built-in API, but you can also download the entire static site as a <code>.tar.gz</code> archive and deploy it to any hosting provider. This page covers how to download your documentation and deploy it yourself.</p>
-<h2 id="how-the-static-site-works">How the Static Site Works</h2>
-<p>When docsfy generates documentation for a repository, the final output is a fully self-contained static HTML site stored at <code>/data/projects/{project-name}/site/</code>. This site requires no server-side processing — it's plain HTML, CSS, and JavaScript that can be served by any web server or static hosting provider.</p>
-<p>The generated site includes:</p>
-<div class="highlight"><pre><span></span><code>site/
-  index.html            # Main entry point
-  *.html                # Individual documentation pages
-  assets/
-    style.css           # Bundled stylesheet
-    search.js           # Client-side search functionality
-    theme-toggle.js     # Dark/light theme toggle
-    highlight.js        # Code syntax highlighting
-  search-index.json     # Pre-built search index
+<p>docsfy supports two hosting models: serving documentation directly from the API, or downloading the generated static site as a <code>.tar.gz</code> archive to host on your own infrastructure. This page covers the download API, the structure of the archive, and how to deploy the static site to common hosting platforms.</p>
+<h2 id="prerequisites">Prerequisites</h2>
+<p>Before downloading documentation, you need a docsfy instance running and at least one project with a <code>ready</code> status. Generate documentation for a repository first:</p>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/api/generate<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{&quot;url&quot;: &quot;https://github.com/your-org/your-repo&quot;}&#39;</span>
 </code></pre></div>
 
-<p>All assets are bundled — there are no external CDN dependencies. The site works offline and can be hosted anywhere.</p>
+<p>Verify the project status is <code>ready</code> before attempting to download:</p>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>http://localhost:8000/api/status
+</code></pre></div>
+
+<p>The response includes the status of each project. Only projects with <code>"status": "ready"</code> have a complete static site available for download.</p>
 <h2 id="downloading-the-archive">Downloading the Archive</h2>
-<h3 id="via-the-api">Via the API</h3>
-<p>Use the download endpoint to retrieve the generated site as a <code>.tar.gz</code> archive:</p>
+<h3 id="download-endpoint">Download Endpoint</h3>
 <div class="highlight"><pre><span></span><code>GET /api/projects/{name}/download
 </code></pre></div>
 
-<p>For example, using <code>curl</code>:</p>
-<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-O<span class="w"> </span>http://localhost:8000/api/projects/my-project/download
+<p>This endpoint returns the generated documentation site as a <code>.tar.gz</code> archive. The <code>{name}</code> parameter is the project name assigned during generation.</p>
+<h3 id="using-curl">Using curl</h3>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-O<span class="w"> </span>http://localhost:8000/api/projects/your-project/download<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--output<span class="w"> </span>your-project-docs.tar.gz
 </code></pre></div>
 
-<p>This downloads a <code>my-project.tar.gz</code> file containing the complete static site.</p>
+<h3 id="using-wget">Using wget</h3>
+<div class="highlight"><pre><span></span><code>wget<span class="w"> </span>http://localhost:8000/api/projects/your-project/download<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-O<span class="w"> </span>your-project-docs.tar.gz
+</code></pre></div>
+
+<h3 id="using-python">Using Python</h3>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">httpx</span>
+
+<span class="n">response</span> <span class="o">=</span> <span class="n">httpx</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;http://localhost:8000/api/projects/your-project/download&quot;</span><span class="p">)</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;your-project-docs.tar.gz&quot;</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">content</span><span class="p">)</span>
+</code></pre></div>
+
 <blockquote>
-<p><strong>Note:</strong> The project must have a status of <code>ready</code> before you can download it. Check the project status first if the download fails.</p>
+<p><strong>Tip:</strong> Use the <code>GET /api/projects/{name}</code> endpoint to retrieve project details — including the last generated timestamp and commit SHA — before downloading. This helps you determine whether you need a fresh copy.</p>
 </blockquote>
-<h3 id="checking-project-status-before-download">Checking Project Status Before Download</h3>
-<p>Before downloading, verify that documentation generation has completed:</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># List all projects and their statuses</span>
-curl<span class="w"> </span>http://localhost:8000/api/status
-
-<span class="c1"># Check a specific project</span>
-curl<span class="w"> </span>http://localhost:8000/api/projects/my-project
+<h2 id="archive-contents">Archive Contents</h2>
+<p>The <code>.tar.gz</code> archive contains the complete static site from <code>/data/projects/{project-name}/site/</code>. Once extracted, the directory structure looks like this:</p>
+<div class="highlight"><pre><span></span><code>site/
+├── index.html
+├── *.html
+├── assets/
+│   ├── style.css
+│   ├── search.js
+│   ├── theme-toggle.js
+│   └── highlight.js
+└── search-index.json
 </code></pre></div>
 
-<p>A project can be in one of three states:</p>
 <table>
 <thead>
 <tr>
-<th>Status</th>
+<th>File / Directory</th>
 <th>Description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>generating</code></td>
-<td>Documentation is still being generated — download not yet available</td>
+<td><code>index.html</code></td>
+<td>Landing page for the documentation site</td>
 </tr>
 <tr>
-<td><code>ready</code></td>
-<td>Generation complete — archive is available for download</td>
+<td><code>*.html</code></td>
+<td>Individual documentation pages generated from the AI content pipeline</td>
 </tr>
 <tr>
-<td><code>error</code></td>
-<td>Generation failed — check logs for details</td>
+<td><code>assets/style.css</code></td>
+<td>Theme styles supporting dark and light modes</td>
+</tr>
+<tr>
+<td><code>assets/search.js</code></td>
+<td>Client-side search powered by lunr.js</td>
+</tr>
+<tr>
+<td><code>assets/theme-toggle.js</code></td>
+<td>Dark/light theme toggle functionality</td>
+</tr>
+<tr>
+<td><code>assets/highlight.js</code></td>
+<td>Code syntax highlighting</td>
+</tr>
+<tr>
+<td><code>search-index.json</code></td>
+<td>Pre-built search index for client-side search</td>
 </tr>
 </tbody>
 </table>
-<blockquote>
-<p><strong>Warning:</strong> Attempting to download a project that is still in the <code>generating</code> state will fail. Wait until the status changes to <code>ready</code>.</p>
-</blockquote>
+<p>The site is entirely self-contained — all CSS, JavaScript, and search index data are bundled in the archive. No external CDN dependencies are required at runtime.</p>
 <h2 id="extracting-the-archive">Extracting the Archive</h2>
-<p>Once downloaded, extract the archive:</p>
-<div class="highlight"><pre><span></span><code>tar<span class="w"> </span>-xzf<span class="w"> </span>my-project.tar.gz
+<div class="highlight"><pre><span></span><code>mkdir<span class="w"> </span>-p<span class="w"> </span>./docs-site
+tar<span class="w"> </span>-xzf<span class="w"> </span>your-project-docs.tar.gz<span class="w"> </span>-C<span class="w"> </span>./docs-site
 </code></pre></div>
 
-<p>This produces a directory containing the full static site with <code>index.html</code> at the root.</p>
-<p>You can preview it locally before deploying:</p>
-<div class="highlight"><pre><span></span><code><span class="nb">cd</span><span class="w"> </span>my-project/site
-python3<span class="w"> </span>-m<span class="w"> </span>http.server<span class="w"> </span><span class="m">3000</span>
+<p>Verify the extraction:</p>
+<div class="highlight"><pre><span></span><code>ls<span class="w"> </span>./docs-site/site/
 </code></pre></div>
 
-<p>Then open <code>http://localhost:3000</code> in your browser.</p>
-<h2 id="deploying-to-hosting-providers">Deploying to Hosting Providers</h2>
-<p>Since the downloaded archive is a standard static site, it works with any hosting provider that serves HTML files.</p>
+<p>You should see <code>index.html</code>, the <code>assets/</code> directory, and the other HTML pages.</p>
+<h2 id="hosting-on-your-own-infrastructure">Hosting on Your Own Infrastructure</h2>
+<p>Since the downloaded archive is a fully static site, it can be served by any HTTP server or static hosting platform.</p>
 <h3 id="nginx">Nginx</h3>
 <p>Create an Nginx configuration to serve the extracted site:</p>
 <div class="highlight"><pre><span></span><code><span class="k">server</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="kn">listen</span><span class="w"> </span><span class="mi">80</span><span class="p">;</span>
 <span class="w">    </span><span class="kn">server_name</span><span class="w"> </span><span class="s">docs.example.com</span><span class="p">;</span>
 
-<span class="w">    </span><span class="kn">root</span><span class="w"> </span><span class="s">/var/www/my-project/site</span><span class="p">;</span>
+<span class="w">    </span><span class="kn">root</span><span class="w"> </span><span class="s">/var/www/docs-site/site</span><span class="p">;</span>
 <span class="w">    </span><span class="kn">index</span><span class="w"> </span><span class="s">index.html</span><span class="p">;</span>
 
 <span class="w">    </span><span class="kn">location</span><span class="w"> </span><span class="s">/</span><span class="w"> </span><span class="p">{</span>
@@ -344,202 +376,216 @@ python3<span class="w"> </span>-m<span class="w"> </span>http.server<span class=
 
 <span class="w">    </span><span class="c1"># Cache static assets</span>
 <span class="w">    </span><span class="kn">location</span><span class="w"> </span><span class="s">/assets/</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="kn">expires</span><span class="w"> </span><span class="s">1y</span><span class="p">;</span>
+<span class="w">        </span><span class="kn">expires</span><span class="w"> </span><span class="s">30d</span><span class="p">;</span>
 <span class="w">        </span><span class="kn">add_header</span><span class="w"> </span><span class="s">Cache-Control</span><span class="w"> </span><span class="s">&quot;public,</span><span class="w"> </span><span class="s">immutable&quot;</span><span class="p">;</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
 
-<p>Then copy the site files and reload Nginx:</p>
-<div class="highlight"><pre><span></span><code>tar<span class="w"> </span>-xzf<span class="w"> </span>my-project.tar.gz<span class="w"> </span>-C<span class="w"> </span>/var/www/my-project
+<p>Copy the extracted files and reload Nginx:</p>
+<div class="highlight"><pre><span></span><code>cp<span class="w"> </span>-r<span class="w"> </span>./docs-site/site/<span class="w"> </span>/var/www/docs-site/site/
 sudo<span class="w"> </span>nginx<span class="w"> </span>-s<span class="w"> </span>reload
 </code></pre></div>
 
 <h3 id="apache">Apache</h3>
-<p>Use an <code>.htaccess</code> file or virtual host configuration:</p>
 <div class="highlight"><pre><span></span><code><span class="nt">&lt;VirtualHost</span><span class="w"> </span><span class="s">*:80</span><span class="nt">&gt;</span>
 <span class="w">    </span><span class="nb">ServerName</span><span class="w"> </span>docs.example.com
-<span class="w">    </span><span class="nb">DocumentRoot</span><span class="w"> </span><span class="sx">/var/www/my-project/site</span>
+<span class="w">    </span><span class="nb">DocumentRoot</span><span class="w"> </span><span class="sx">/var/www/docs-site/site</span>
 
-<span class="w">    </span><span class="nt">&lt;Directory</span><span class="w"> </span><span class="s">/var/www/my-project/site</span><span class="nt">&gt;</span>
+<span class="w">    </span><span class="nt">&lt;Directory</span><span class="w"> </span><span class="s">/var/www/docs-site/site</span><span class="nt">&gt;</span>
 <span class="w">        </span><span class="nb">Options</span><span class="w"> </span>-Indexes<span class="w"> </span>+FollowSymLinks
 <span class="w">        </span><span class="nb">AllowOverride</span><span class="w"> </span><span class="k">None</span>
 <span class="w">        </span><span class="nb">Require</span><span class="w"> </span><span class="k">all</span><span class="w"> </span>granted
 <span class="w">    </span><span class="nt">&lt;/Directory&gt;</span>
 
 <span class="w">    </span><span class="c"># Cache static assets</span>
-<span class="w">    </span><span class="nt">&lt;LocationMatch</span><span class="w"> </span><span class="s">&quot;/assets/&quot;</span><span class="nt">&gt;</span>
-<span class="w">        </span><span class="nb">ExpiresActive</span><span class="w"> </span><span class="k">On</span>
-<span class="w">        </span><span class="nb">ExpiresDefault</span><span class="w"> </span><span class="s2">&quot;access plus 1 year&quot;</span>
-<span class="w">    </span><span class="nt">&lt;/LocationMatch&gt;</span>
+<span class="w">    </span><span class="nt">&lt;Directory</span><span class="w"> </span><span class="s">/var/www/docs-site/site/assets</span><span class="nt">&gt;</span>
+<span class="w">        </span><span class="nb">Header</span><span class="w"> </span>set<span class="w"> </span>Cache-Control<span class="w"> </span><span class="s2">&quot;public, max-age=2592000, immutable&quot;</span>
+<span class="w">    </span><span class="nt">&lt;/Directory&gt;</span>
 <span class="nt">&lt;/VirtualHost&gt;</span>
 </code></pre></div>
 
-<h3 id="github-pages">GitHub Pages</h3>
-<p>Push the extracted site contents to a GitHub Pages branch:</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># Extract the archive</span>
-tar<span class="w"> </span>-xzf<span class="w"> </span>my-project.tar.gz
-
-<span class="c1"># Initialize a repo or use an existing one</span>
-<span class="nb">cd</span><span class="w"> </span>my-project/site
-git<span class="w"> </span>init
-git<span class="w"> </span>checkout<span class="w"> </span>-b<span class="w"> </span>gh-pages
-git<span class="w"> </span>add<span class="w"> </span>.
-git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;Deploy documentation&quot;</span>
-git<span class="w"> </span>remote<span class="w"> </span>add<span class="w"> </span>origin<span class="w"> </span>git@github.com:yourorg/yourproject-docs.git
-git<span class="w"> </span>push<span class="w"> </span>-u<span class="w"> </span>origin<span class="w"> </span>gh-pages
+<h3 id="python-quick-preview">Python (Quick Preview)</h3>
+<p>For local preview or development, use Python's built-in HTTP server:</p>
+<div class="highlight"><pre><span></span><code><span class="nb">cd</span><span class="w"> </span>./docs-site/site
+python3<span class="w"> </span>-m<span class="w"> </span>http.server<span class="w"> </span><span class="m">3000</span>
 </code></pre></div>
 
-<p>Then enable GitHub Pages in your repository settings, selecting the <code>gh-pages</code> branch as the source.</p>
+<p>Then open <code>http://localhost:3000</code> in your browser.</p>
+<h2 id="deploying-to-cloud-cdn-providers">Deploying to Cloud &amp; CDN Providers</h2>
+<h3 id="aws-s3-cloudfront">AWS S3 + CloudFront</h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Extract the archive</span>
+tar<span class="w"> </span>-xzf<span class="w"> </span>your-project-docs.tar.gz<span class="w"> </span>-C<span class="w"> </span>./docs-site
+
+<span class="c1"># Sync to S3</span>
+aws<span class="w"> </span>s3<span class="w"> </span>sync<span class="w"> </span>./docs-site/site/<span class="w"> </span>s3://your-docs-bucket/<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--delete
+
+<span class="c1"># Set cache headers for assets</span>
+aws<span class="w"> </span>s3<span class="w"> </span>cp<span class="w"> </span>s3://your-docs-bucket/assets/<span class="w"> </span>s3://your-docs-bucket/assets/<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--recursive<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--cache-control<span class="w"> </span><span class="s2">&quot;public, max-age=2592000, immutable&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--metadata-directive<span class="w"> </span>REPLACE
+</code></pre></div>
+
+<p>Configure the S3 bucket for static website hosting and point a CloudFront distribution at it for HTTPS and edge caching.</p>
+<h3 id="github-pages">GitHub Pages</h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Extract into a repository configured for GitHub Pages</span>
+tar<span class="w"> </span>-xzf<span class="w"> </span>your-project-docs.tar.gz<span class="w"> </span>-C<span class="w"> </span>./docs-site
+
+<span class="c1"># Copy site content to the repo root (or /docs depending on your config)</span>
+cp<span class="w"> </span>-r<span class="w"> </span>./docs-site/site/*<span class="w"> </span>./your-pages-repo/
+
+<span class="nb">cd</span><span class="w"> </span>./your-pages-repo
+git<span class="w"> </span>add<span class="w"> </span>.
+git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;Update documentation&quot;</span>
+git<span class="w"> </span>push<span class="w"> </span>origin<span class="w"> </span>main
+</code></pre></div>
+
 <blockquote>
-<p><strong>Tip:</strong> Automate this with a CI/CD pipeline that periodically fetches the latest archive from docsfy and deploys it to GitHub Pages.</p>
+<p><strong>Note:</strong> GitHub Pages serves from the repository root or a <code>/docs</code> folder. Adjust the copy destination to match your repository's Pages configuration.</p>
 </blockquote>
 <h3 id="netlify">Netlify</h3>
-<p>Deploy using the Netlify CLI:</p>
-<div class="highlight"><pre><span></span><code>tar<span class="w"> </span>-xzf<span class="w"> </span>my-project.tar.gz
+<div class="highlight"><pre><span></span><code><span class="c1"># Extract the archive</span>
+tar<span class="w"> </span>-xzf<span class="w"> </span>your-project-docs.tar.gz<span class="w"> </span>-C<span class="w"> </span>./docs-site
 
-<span class="c1"># Install the Netlify CLI if needed</span>
-npm<span class="w"> </span>install<span class="w"> </span>-g<span class="w"> </span>netlify-cli
-
-<span class="c1"># Deploy the site directory</span>
-netlify<span class="w"> </span>deploy<span class="w"> </span>--prod<span class="w"> </span>--dir<span class="o">=</span>my-project/site
+<span class="c1"># Deploy with the Netlify CLI</span>
+netlify<span class="w"> </span>deploy<span class="w"> </span>--dir<span class="o">=</span>./docs-site/site<span class="w"> </span>--prod
 </code></pre></div>
 
-<p>Or use drag-and-drop: extract the archive locally and drag the <code>site/</code> folder into the Netlify dashboard.</p>
 <h3 id="cloudflare-pages">Cloudflare Pages</h3>
-<p>Deploy using the Wrangler CLI:</p>
-<div class="highlight"><pre><span></span><code>tar<span class="w"> </span>-xzf<span class="w"> </span>my-project.tar.gz
+<div class="highlight"><pre><span></span><code><span class="c1"># Extract the archive</span>
+tar<span class="w"> </span>-xzf<span class="w"> </span>your-project-docs.tar.gz<span class="w"> </span>-C<span class="w"> </span>./docs-site
 
-npm<span class="w"> </span>install<span class="w"> </span>-g<span class="w"> </span>wrangler
-wrangler<span class="w"> </span>pages<span class="w"> </span>deploy<span class="w"> </span>my-project/site<span class="w"> </span>--project-name<span class="o">=</span>my-docs
+<span class="c1"># Deploy with Wrangler</span>
+npx<span class="w"> </span>wrangler<span class="w"> </span>pages<span class="w"> </span>deploy<span class="w"> </span>./docs-site/site<span class="w"> </span>--project-name<span class="o">=</span>your-docs
 </code></pre></div>
 
-<h3 id="amazon-s3-cloudfront">Amazon S3 + CloudFront</h3>
-<p>Upload the static site to an S3 bucket configured for static hosting:</p>
-<div class="highlight"><pre><span></span><code>tar<span class="w"> </span>-xzf<span class="w"> </span>my-project.tar.gz
+<h2 id="automating-downloads-with-cicd">Automating Downloads with CI/CD</h2>
+<p>You can automate the download-and-deploy workflow in your CI/CD pipeline. Here is an example using GitHub Actions:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Update Documentation</span>
 
-aws<span class="w"> </span>s3<span class="w"> </span>sync<span class="w"> </span>my-project/site/<span class="w"> </span>s3://my-docs-bucket/<span class="w"> </span>--delete
-</code></pre></div>
+<span class="nt">on</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">push</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">branches</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">main</span><span class="p p-Indicator">]</span>
 
-<p>Configure the S3 bucket for static website hosting and optionally place a CloudFront distribution in front of it for HTTPS and caching.</p>
-<h2 id="automating-downloads">Automating Downloads</h2>
-<p>You can script periodic downloads to keep your self-hosted docs in sync with the latest generated output. The following example uses <code>curl</code> to download and extract the archive whenever the project has been regenerated:</p>
-<div class="highlight"><pre><span></span><code><span class="ch">#!/usr/bin/env bash</span>
-<span class="nb">set</span><span class="w"> </span>-euo<span class="w"> </span>pipefail
+<span class="nt">jobs</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">update-docs</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">runs-on</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ubuntu-latest</span>
+<span class="w">    </span><span class="nt">steps</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Trigger documentation generation</span>
+<span class="w">        </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span>
+<span class="w">          </span><span class="no">curl -X POST ${{ secrets.DOCSFY_URL }}/api/generate \</span>
+<span class="w">            </span><span class="no">-H &quot;Content-Type: application/json&quot; \</span>
+<span class="w">            </span><span class="no">-d &#39;{&quot;url&quot;: &quot;https://github.com/${{ github.repository }}&quot;}&#39;</span>
 
-<span class="nv">DOCSFY_URL</span><span class="o">=</span><span class="s2">&quot;http://localhost:8000&quot;</span>
-<span class="nv">PROJECT</span><span class="o">=</span><span class="s2">&quot;my-project&quot;</span>
-<span class="nv">DEPLOY_DIR</span><span class="o">=</span><span class="s2">&quot;/var/www/</span><span class="si">${</span><span class="nv">PROJECT</span><span class="si">}</span><span class="s2">/site&quot;</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Wait for generation to complete</span>
+<span class="w">        </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span>
+<span class="w">          </span><span class="no">PROJECT_NAME=&quot;${{ github.event.repository.name }}&quot;</span>
+<span class="w">          </span><span class="no">for i in $(seq 1 60); do</span>
+<span class="w">            </span><span class="no">STATUS=$(curl -s &quot;${{ secrets.DOCSFY_URL }}/api/projects/${PROJECT_NAME}&quot; | jq -r &#39;.status&#39;)</span>
+<span class="w">            </span><span class="no">if [ &quot;$STATUS&quot; = &quot;ready&quot; ]; then</span>
+<span class="w">              </span><span class="no">echo &quot;Documentation is ready&quot;</span>
+<span class="w">              </span><span class="no">break</span>
+<span class="w">            </span><span class="no">elif [ &quot;$STATUS&quot; = &quot;error&quot; ]; then</span>
+<span class="w">              </span><span class="no">echo &quot;Generation failed&quot;</span>
+<span class="w">              </span><span class="no">exit 1</span>
+<span class="w">            </span><span class="no">fi</span>
+<span class="w">            </span><span class="no">echo &quot;Status: $STATUS - waiting...&quot;</span>
+<span class="w">            </span><span class="no">sleep 30</span>
+<span class="w">          </span><span class="no">done</span>
 
-<span class="c1"># Check if project is ready</span>
-<span class="nv">status</span><span class="o">=</span><span class="k">$(</span>curl<span class="w"> </span>-s<span class="w"> </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">DOCSFY_URL</span><span class="si">}</span><span class="s2">/api/projects/</span><span class="si">${</span><span class="nv">PROJECT</span><span class="si">}</span><span class="s2">&quot;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>python3<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;import sys,json; print(json.load(sys.stdin)[&#39;status&#39;])&quot;</span><span class="k">)</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Download documentation archive</span>
+<span class="w">        </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span>
+<span class="w">          </span><span class="no">PROJECT_NAME=&quot;${{ github.event.repository.name }}&quot;</span>
+<span class="w">          </span><span class="no">curl -o docs.tar.gz \</span>
+<span class="w">            </span><span class="no">&quot;${{ secrets.DOCSFY_URL }}/api/projects/${PROJECT_NAME}/download&quot;</span>
+<span class="w">          </span><span class="no">tar -xzf docs.tar.gz -C ./docs-output</span>
 
-<span class="k">if</span><span class="w"> </span><span class="o">[</span><span class="w"> </span><span class="s2">&quot;</span><span class="nv">$status</span><span class="s2">&quot;</span><span class="w"> </span>!<span class="o">=</span><span class="w"> </span><span class="s2">&quot;ready&quot;</span><span class="w"> </span><span class="o">]</span><span class="p">;</span><span class="w"> </span><span class="k">then</span>
-<span class="w">  </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Project not ready (status: </span><span class="si">${</span><span class="nv">status</span><span class="si">}</span><span class="s2">), skipping.&quot;</span>
-<span class="w">  </span><span class="nb">exit</span><span class="w"> </span><span class="m">0</span>
-<span class="k">fi</span>
-
-<span class="c1"># Download and extract</span>
-curl<span class="w"> </span>-s<span class="w"> </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">DOCSFY_URL</span><span class="si">}</span><span class="s2">/api/projects/</span><span class="si">${</span><span class="nv">PROJECT</span><span class="si">}</span><span class="s2">/download&quot;</span><span class="w"> </span>-o<span class="w"> </span>/tmp/<span class="si">${</span><span class="nv">PROJECT</span><span class="si">}</span>.tar.gz
-tar<span class="w"> </span>-xzf<span class="w"> </span>/tmp/<span class="si">${</span><span class="nv">PROJECT</span><span class="si">}</span>.tar.gz<span class="w"> </span>-C<span class="w"> </span>/tmp/<span class="si">${</span><span class="nv">PROJECT</span><span class="si">}</span>-new
-
-<span class="c1"># Swap into place</span>
-rm<span class="w"> </span>-rf<span class="w"> </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">DEPLOY_DIR</span><span class="si">}</span><span class="s2">&quot;</span>
-mv<span class="w"> </span>/tmp/<span class="si">${</span><span class="nv">PROJECT</span><span class="si">}</span>-new/site<span class="w"> </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">DEPLOY_DIR</span><span class="si">}</span><span class="s2">&quot;</span>
-rm<span class="w"> </span>-rf<span class="w"> </span>/tmp/<span class="si">${</span><span class="nv">PROJECT</span><span class="si">}</span>.tar.gz<span class="w"> </span>/tmp/<span class="si">${</span><span class="nv">PROJECT</span><span class="si">}</span>-new
-
-<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Documentation deployed successfully.&quot;</span>
-</code></pre></div>
-
-<blockquote>
-<p><strong>Tip:</strong> Run this script on a cron schedule or trigger it via a webhook after calling <code>POST /api/generate</code> to regenerate documentation when your repository changes.</p>
-</blockquote>
-<h2 id="serving-directly-from-docsfy">Serving Directly from docsfy</h2>
-<p>If you prefer not to self-host, docsfy serves the generated documentation directly:</p>
-<div class="highlight"><pre><span></span><code>GET /docs/{project}/{path}
-</code></pre></div>
-
-<p>For example, once a project named <code>my-project</code> has been generated, its documentation is available at:</p>
-<div class="highlight"><pre><span></span><code>http://localhost:8000/docs/my-project/
-http://localhost:8000/docs/my-project/getting-started.html
-</code></pre></div>
-
-<p>This is useful for development or internal use. For production, you can expose the docsfy service behind a reverse proxy:</p>
-<div class="highlight"><pre><span></span><code><span class="k">server</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="kn">listen</span><span class="w"> </span><span class="mi">80</span><span class="p">;</span>
-<span class="w">    </span><span class="kn">server_name</span><span class="w"> </span><span class="s">docs.example.com</span><span class="p">;</span>
-
-<span class="w">    </span><span class="kn">location</span><span class="w"> </span><span class="s">/</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="kn">proxy_pass</span><span class="w"> </span><span class="s">http://localhost:8000/docs/my-project/</span><span class="p">;</span>
-<span class="w">        </span><span class="kn">proxy_set_header</span><span class="w"> </span><span class="s">Host</span><span class="w"> </span><span class="nv">$host</span><span class="p">;</span>
-<span class="w">        </span><span class="kn">proxy_set_header</span><span class="w"> </span><span class="s">X-Real-IP</span><span class="w"> </span><span class="nv">$remote_addr</span><span class="p">;</span>
-<span class="w">    </span><span class="p">}</span>
-<span class="p">}</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Deploy to GitHub Pages</span>
+<span class="w">        </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">peaceiris/actions-gh-pages@v4</span>
+<span class="w">        </span><span class="nt">with</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">github_token</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${{ secrets.GITHUB_TOKEN }}</span>
+<span class="w">          </span><span class="nt">publish_dir</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./docs-output/site</span>
 </code></pre></div>
 
 <blockquote>
-<p><strong>Note:</strong> When serving directly from docsfy, the service must remain running. For zero-downtime documentation hosting, downloading and self-hosting the static site is recommended.</p>
+<p><strong>Warning:</strong> AI-powered documentation generation can take several minutes depending on repository size and complexity. The <code>AI_CLI_TIMEOUT</code> defaults to 60 minutes. Make sure your CI/CD job timeout accommodates the generation time.</p>
 </blockquote>
-<h2 id="comparison-direct-serving-vs-self-hosting">Comparison: Direct Serving vs. Self-Hosting</h2>
-<table>
-<thead>
-<tr>
-<th></th>
-<th>Direct Serving</th>
-<th>Self-Hosting</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><strong>Setup</strong></td>
-<td>No extra setup needed</td>
-<td>Requires a web server or hosting provider</td>
-</tr>
-<tr>
-<td><strong>Availability</strong></td>
-<td>Requires docsfy to be running</td>
-<td>Independent of docsfy</td>
-</tr>
-<tr>
-<td><strong>Performance</strong></td>
-<td>Served through FastAPI</td>
-<td>Optimized static file serving</td>
-</tr>
-<tr>
-<td><strong>CDN support</strong></td>
-<td>Requires separate configuration</td>
-<td>Native support on most platforms</td>
-</tr>
-<tr>
-<td><strong>Custom domain</strong></td>
-<td>Via reverse proxy</td>
-<td>Native support</td>
-</tr>
-<tr>
-<td><strong>Offline access</strong></td>
-<td>No</td>
-<td>Yes (after download)</td>
-</tr>
-<tr>
-<td><strong>Best for</strong></td>
-<td>Development, internal use</td>
-<td>Production, public-facing docs</td>
-</tr>
-</tbody>
-</table>
+<h2 id="incremental-updates">Incremental Updates</h2>
+<p>docsfy tracks the last commit SHA for each project. When you call <code>POST /api/generate</code> for a project that already exists, it:</p>
+<ol>
+<li>Fetches the latest code and compares the current commit SHA against the stored SHA</li>
+<li>Re-runs the AI Planner to detect structural changes to the documentation</li>
+<li>Regenerates only pages whose content may be affected by the changes</li>
+<li>Rebuilds the static site with updated pages</li>
+</ol>
+<p>This means subsequent downloads after incremental updates will be faster to generate. You can check whether documentation needs regeneration by comparing the commit SHA:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Get the current project state</span>
+curl<span class="w"> </span>-s<span class="w"> </span>http://localhost:8000/api/projects/your-project<span class="w"> </span><span class="p">|</span><span class="w"> </span>jq<span class="w"> </span><span class="s1">&#39;.last_commit_sha&#39;</span>
+
+<span class="c1"># Compare against your repo&#39;s latest commit</span>
+git<span class="w"> </span>ls-remote<span class="w"> </span>https://github.com/your-org/your-repo<span class="w"> </span>HEAD
+</code></pre></div>
+
+<blockquote>
+<p><strong>Tip:</strong> For repositories that change frequently, set up a webhook or scheduled CI job to trigger <code>POST /api/generate</code> and re-download the archive only when the commit SHA has changed.</p>
+</blockquote>
+<h2 id="verifying-the-downloaded-site">Verifying the Downloaded Site</h2>
+<p>After extracting the archive, verify that all expected files are present and the site works correctly:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Check the file structure</span>
+find<span class="w"> </span>./docs-site/site<span class="w"> </span>-type<span class="w"> </span>f<span class="w"> </span><span class="p">|</span><span class="w"> </span>head<span class="w"> </span>-20
+
+<span class="c1"># Verify key files exist</span>
+<span class="nb">test</span><span class="w"> </span>-f<span class="w"> </span>./docs-site/site/index.html<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;index.html: OK&quot;</span>
+<span class="nb">test</span><span class="w"> </span>-f<span class="w"> </span>./docs-site/site/assets/style.css<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;style.css: OK&quot;</span>
+<span class="nb">test</span><span class="w"> </span>-f<span class="w"> </span>./docs-site/site/search-index.json<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;search-index.json: OK&quot;</span>
+
+<span class="c1"># Quick local preview</span>
+<span class="nb">cd</span><span class="w"> </span>./docs-site/site<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>python3<span class="w"> </span>-m<span class="w"> </span>http.server<span class="w"> </span><span class="m">3000</span>
+</code></pre></div>
+
+<p>Open <code>http://localhost:3000</code> to verify:
+- Pages render correctly with sidebar navigation
+- Dark/light theme toggle works
+- Client-side search returns results
+- Code blocks have syntax highlighting</p>
+<h2 id="troubleshooting">Troubleshooting</h2>
+<h3 id="download-returns-404">Download returns 404</h3>
+<p>The project either doesn't exist or hasn't finished generating. Check the project status:</p>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>http://localhost:8000/api/projects/your-project
+</code></pre></div>
+
+<p>If the status is <code>generating</code>, wait for it to complete. If the status is <code>error</code>, check the generation logs and retry with <code>POST /api/generate</code>.</p>
+<h3 id="archive-is-empty-or-incomplete">Archive is empty or incomplete</h3>
+<p>Ensure the generation completed successfully (status is <code>ready</code>). A project in <code>error</code> state may have partial output. Delete and regenerate:</p>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-X<span class="w"> </span>DELETE<span class="w"> </span>http://localhost:8000/api/projects/your-project
+curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/api/generate<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{&quot;url&quot;: &quot;https://github.com/your-org/your-repo&quot;}&#39;</span>
+</code></pre></div>
+
+<h3 id="search-not-working-on-self-hosted-site">Search not working on self-hosted site</h3>
+<p>Client-side search requires the <code>search-index.json</code> file to be served with the correct MIME type (<code>application/json</code>). Most web servers handle this correctly by default. If search isn't working, verify the file is accessible:</p>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-I<span class="w"> </span>http://docs.example.com/search-index.json
+</code></pre></div>
+
+<p>The <code>Content-Type</code> header should be <code>application/json</code>.</p>
+<h3 id="cors-issues-when-hosting-on-a-cdn">CORS issues when hosting on a CDN</h3>
+<p>If you're serving the documentation from a different domain than your application, you may need to configure CORS headers on your hosting provider. The search functionality loads <code>search-index.json</code> via fetch, which requires CORS when cross-origin.</p>
                 </div>
             </article>
             <nav class="page-nav">
                 
-                <a href="incremental-updates.html" class="page-nav-link page-nav-prev">
+                <a href="serving-docs.html" class="page-nav-link page-nav-prev">
                     <span class="page-nav-label">Previous</span>
-                    <span class="page-nav-title">Incremental Updates</span>
+                    <span class="page-nav-title">Serving Documentation</span>
                 </a>
                 
                 
-                <a href="managing-projects.html" class="page-nav-link page-nav-next">
+                <a href="incremental-updates.html" class="page-nav-link page-nav-next">
                     <span class="page-nav-label">Next</span>
-                    <span class="page-nav-title">Managing Projects</span>
+                    <span class="page-nav-title">Incremental Updates</span>
                 </a>
                 
             </nav>
@@ -549,25 +595,39 @@ http://localhost:8000/docs/my-project/getting-started.html
                     <h3>On this page</h3>
                     <div class="toc">
 <ul>
-<li><a href="#how-the-static-site-works">How the Static Site Works</a></li>
+<li><a href="#prerequisites">Prerequisites</a></li>
 <li><a href="#downloading-the-archive">Downloading the Archive</a><ul>
-<li><a href="#via-the-api">Via the API</a></li>
-<li><a href="#checking-project-status-before-download">Checking Project Status Before Download</a></li>
+<li><a href="#download-endpoint">Download Endpoint</a></li>
+<li><a href="#using-curl">Using curl</a></li>
+<li><a href="#using-wget">Using wget</a></li>
+<li><a href="#using-python">Using Python</a></li>
 </ul>
 </li>
+<li><a href="#archive-contents">Archive Contents</a></li>
 <li><a href="#extracting-the-archive">Extracting the Archive</a></li>
-<li><a href="#deploying-to-hosting-providers">Deploying to Hosting Providers</a><ul>
+<li><a href="#hosting-on-your-own-infrastructure">Hosting on Your Own Infrastructure</a><ul>
 <li><a href="#nginx">Nginx</a></li>
 <li><a href="#apache">Apache</a></li>
+<li><a href="#python-quick-preview">Python (Quick Preview)</a></li>
+</ul>
+</li>
+<li><a href="#deploying-to-cloud-cdn-providers">Deploying to Cloud &amp; CDN Providers</a><ul>
+<li><a href="#aws-s3-cloudfront">AWS S3 + CloudFront</a></li>
 <li><a href="#github-pages">GitHub Pages</a></li>
 <li><a href="#netlify">Netlify</a></li>
 <li><a href="#cloudflare-pages">Cloudflare Pages</a></li>
-<li><a href="#amazon-s3-cloudfront">Amazon S3 + CloudFront</a></li>
 </ul>
 </li>
-<li><a href="#automating-downloads">Automating Downloads</a></li>
-<li><a href="#serving-directly-from-docsfy">Serving Directly from docsfy</a></li>
-<li><a href="#comparison-direct-serving-vs-self-hosting">Comparison: Direct Serving vs. Self-Hosting</a></li>
+<li><a href="#automating-downloads-with-cicd">Automating Downloads with CI/CD</a></li>
+<li><a href="#incremental-updates">Incremental Updates</a></li>
+<li><a href="#verifying-the-downloaded-site">Verifying the Downloaded Site</a></li>
+<li><a href="#troubleshooting">Troubleshooting</a><ul>
+<li><a href="#download-returns-404">Download returns 404</a></li>
+<li><a href="#archive-is-empty-or-incomplete">Archive is empty or incomplete</a></li>
+<li><a href="#search-not-working-on-self-hosted-site">Search not working on self-hosted site</a></li>
+<li><a href="#cors-issues-when-hosting-on-a-cdn">CORS issues when hosting on a CDN</a></li>
+</ul>
+</li>
 </ul>
 </div>
 

@@ -4,14 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI CLI Integration - docsfy</title>
-    <meta name="description" content="AI-powered documentation generator that creates polished, Mintlify-quality static HTML sites from GitHub repositories">
+    <meta name="description" content="AI-powered documentation generator that creates polished static HTML sites from GitHub repositories">
     <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <a href="index.html" class="sidebar-logo">docsfy</a>
-            <p class="sidebar-tagline">AI-powered documentation generator that creates polished, Mintlify-quality static HTML sites from GitHub repositories</p>
+            <p class="sidebar-tagline">AI-powered documentation generator that creates polished static HTML sites from GitHub repositories</p>
         </div>
 
         <div class="sidebar-search">
@@ -68,9 +68,9 @@
                     </li>
                     
                     <li>
-                        <a href="docker-deployment.html"
+                        <a href="storage-and-data.html"
                            class="nav-link">
-                            Docker Deployment
+                            Storage &amp; Data
                         </a>
                     </li>
                     
@@ -96,6 +96,13 @@
                     </li>
                     
                     <li>
+                        <a href="downloading-and-self-hosting.html"
+                           class="nav-link">
+                            Downloading &amp; Self-Hosting
+                        </a>
+                    </li>
+                    
+                    <li>
                         <a href="incremental-updates.html"
                            class="nav-link">
                             Incremental Updates
@@ -117,23 +124,16 @@
                     </li>
                     
                     <li>
+                        <a href="html-renderer.html"
+                           class="nav-link">
+                            HTML Renderer &amp; Theming
+                        </a>
+                    </li>
+                    
+                    <li>
                         <a href="ai-cli-integration.html"
                            class="nav-link active">
                             AI CLI Integration
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="storage-and-database.html"
-                           class="nav-link">
-                            Storage &amp; Database
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="html-renderer.html"
-                           class="nav-link">
-                            HTML Renderer
                         </a>
                     </li>
                     
@@ -152,37 +152,16 @@
                     </li>
                     
                     <li>
-                        <a href="api-status.html"
+                        <a href="api-status-and-projects.html"
                            class="nav-link">
-                            GET /api/status
+                            GET /api/status &amp; Project Details
                         </a>
                     </li>
                     
                     <li>
-                        <a href="api-projects.html"
-                           class="nav-link">
-                            GET /api/projects/{name}
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="api-projects-delete.html"
-                           class="nav-link">
-                            DELETE /api/projects/{name}
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="api-projects-download.html"
+                        <a href="api-download.html"
                            class="nav-link">
                             GET /api/projects/{name}/download
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="api-docs-serving.html"
-                           class="nav-link">
-                            GET /docs/{project}/{path}
                         </a>
                     </li>
                     
@@ -197,20 +176,41 @@
             </div>
             
             <div class="nav-group">
+                <h3 class="nav-group-title">Deployment</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="docker-deployment.html"
+                           class="nav-link">
+                            Docker Deployment
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="docker-compose.html"
+                           class="nav-link">
+                            Docker Compose Setup
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
                 <h3 class="nav-group-title">Development</h3>
                 <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="development-setup.html"
+                           class="nav-link">
+                            Development Setup
+                        </a>
+                    </li>
                     
                     <li>
                         <a href="contributing.html"
                            class="nav-link">
                             Contributing
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="tech-stack.html"
-                           class="nav-link">
-                            Technology Stack
                         </a>
                     </li>
                     
@@ -257,17 +257,12 @@
                 <h1 class="article-title">AI CLI Integration</h1>
                 <div class="article-body">
                     <h1 id="ai-cli-integration">AI CLI Integration</h1>
-<p>docsfy delegates all intelligence — repository analysis, documentation planning, and content generation — to external AI CLI tools running as subprocesses. This page explains the provider abstraction layer, how commands are built and executed, how AI responses are parsed, and how timeouts protect the pipeline from hung processes.</p>
 <h2 id="overview">Overview</h2>
-<p>Rather than embedding AI SDKs or calling HTTP APIs directly, docsfy shells out to locally-installed AI CLI binaries. This approach offers several advantages:</p>
-<ul>
-<li><strong>No SDK dependencies</strong> — the AI tools manage their own authentication, model routing, and API versioning</li>
-<li><strong>Provider portability</strong> — switching from Claude to Gemini or Cursor requires changing a single environment variable</li>
-<li><strong>Full repository context</strong> — each CLI tool runs with <code>cwd</code> set to the cloned repository, giving it native file exploration capabilities</li>
-</ul>
-<p>The integration layer follows the same provider pattern used in <a href="https://github.com/">jenkins-job-insight</a>, keeping the abstraction consistent across projects in the ecosystem.</p>
-<h2 id="the-providerconfig-pattern">The ProviderConfig Pattern</h2>
-<p>At the core of the integration is a frozen dataclass that encapsulates everything docsfy needs to know about a given AI CLI tool:</p>
+<p>docsfy delegates all AI-powered analysis and content generation to external CLI tools running as subprocesses. Rather than embedding SDK clients or managing API connections directly, docsfy invokes AI command-line interfaces — Claude Code, Gemini CLI, and Cursor Agent — through a unified <strong>provider pattern</strong>. This architecture keeps the core application thin, avoids tight coupling to any single AI vendor, and allows operators to swap providers with a single environment variable.</p>
+<p>This page covers the provider abstraction, subprocess lifecycle, asynchronous execution model, response parsing strategies, and runtime availability checking.</p>
+<h2 id="provider-pattern">Provider Pattern</h2>
+<h3 id="the-providerconfig-dataclass">The ProviderConfig Dataclass</h3>
+<p>Each supported AI CLI tool is represented by a frozen dataclass that captures three concerns: which binary to invoke, how to assemble the command, and whether the tool manages its own working directory.</p>
 <div class="highlight"><pre><span></span><code><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">ProviderConfig</span><span class="p">:</span>
     <span class="n">binary</span><span class="p">:</span> <span class="nb">str</span>
@@ -275,186 +270,278 @@
     <span class="n">uses_own_cwd</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
 </code></pre></div>
 
-<h3 id="field-reference">Field Reference</h3>
 <table>
 <thead>
 <tr>
 <th>Field</th>
 <th>Type</th>
-<th>Description</th>
+<th>Purpose</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td><code>binary</code></td>
 <td><code>str</code></td>
-<td>Name of the CLI executable (e.g., <code>"claude"</code>, <code>"gemini"</code>, <code>"agent"</code>)</td>
+<td>Name of the CLI executable (used for availability checks and invocation)</td>
 </tr>
 <tr>
 <td><code>build_cmd</code></td>
 <td><code>Callable</code></td>
-<td>Function that constructs the full command-line argument list given a model name and optional workspace path</td>
+<td>Factory function that assembles the full command list from model name, prompt, and repository path</td>
 </tr>
 <tr>
 <td><code>uses_own_cwd</code></td>
 <td><code>bool</code></td>
-<td>Whether the provider handles working directory via its own flag (e.g., <code>--workspace</code>) rather than subprocess <code>cwd</code>. Defaults to <code>False</code></td>
+<td>When <code>False</code>, the subprocess <code>cwd</code> is set to the repo path. When <code>True</code>, the provider handles workspace targeting via its own flags</td>
 </tr>
 </tbody>
 </table>
-<blockquote>
-<p><strong>Note:</strong> The dataclass uses <code>frozen=True</code>, making provider configurations immutable after construction. This prevents accidental mutation during concurrent page generation where multiple tasks share the same config.</p>
-</blockquote>
-<h3 id="provider-definitions">Provider Definitions</h3>
-<p>Each supported provider has a corresponding <code>ProviderConfig</code> instance. The <code>build_cmd</code> callable encapsulates the provider-specific CLI flags:</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># Claude Code</span>
-<span class="n">ProviderConfig</span><span class="p">(</span>
-    <span class="n">binary</span><span class="o">=</span><span class="s2">&quot;claude&quot;</span><span class="p">,</span>
-    <span class="n">build_cmd</span><span class="o">=</span><span class="k">lambda</span> <span class="n">model</span><span class="p">,</span> <span class="n">_</span><span class="p">:</span> <span class="p">[</span>
-        <span class="s2">&quot;claude&quot;</span><span class="p">,</span> <span class="s2">&quot;--model&quot;</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="s2">&quot;--dangerously-skip-permissions&quot;</span><span class="p">,</span> <span class="s2">&quot;-p&quot;</span>
-    <span class="p">],</span>
-<span class="p">)</span>
-
-<span class="c1"># Gemini CLI</span>
-<span class="n">ProviderConfig</span><span class="p">(</span>
-    <span class="n">binary</span><span class="o">=</span><span class="s2">&quot;gemini&quot;</span><span class="p">,</span>
-    <span class="n">build_cmd</span><span class="o">=</span><span class="k">lambda</span> <span class="n">model</span><span class="p">,</span> <span class="n">_</span><span class="p">:</span> <span class="p">[</span>
-        <span class="s2">&quot;gemini&quot;</span><span class="p">,</span> <span class="s2">&quot;--model&quot;</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="s2">&quot;--yolo&quot;</span>
-    <span class="p">],</span>
-<span class="p">)</span>
-
-<span class="c1"># Cursor Agent</span>
-<span class="n">ProviderConfig</span><span class="p">(</span>
-    <span class="n">binary</span><span class="o">=</span><span class="s2">&quot;agent&quot;</span><span class="p">,</span>
-    <span class="n">build_cmd</span><span class="o">=</span><span class="k">lambda</span> <span class="n">model</span><span class="p">,</span> <span class="n">workspace</span><span class="p">:</span> <span class="p">[</span>
-        <span class="s2">&quot;agent&quot;</span><span class="p">,</span> <span class="s2">&quot;--force&quot;</span><span class="p">,</span> <span class="s2">&quot;--model&quot;</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="s2">&quot;--print&quot;</span><span class="p">,</span> <span class="s2">&quot;--workspace&quot;</span><span class="p">,</span> <span class="n">workspace</span>
-    <span class="p">],</span>
-    <span class="n">uses_own_cwd</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-<span class="p">)</span>
+<p>The dataclass is frozen (<code>frozen=True</code>) to ensure provider configurations are immutable after creation — no runtime code can accidentally mutate a provider's binary path or command builder.</p>
+<h3 id="registered-providers">Registered Providers</h3>
+<p>Three providers are registered, each with distinct invocation semantics:</p>
+<div class="highlight"><pre><span></span><code><span class="n">PROVIDERS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;claude&quot;</span><span class="p">:</span> <span class="n">ProviderConfig</span><span class="p">(</span>
+        <span class="n">binary</span><span class="o">=</span><span class="s2">&quot;claude&quot;</span><span class="p">,</span>
+        <span class="n">build_cmd</span><span class="o">=</span><span class="k">lambda</span> <span class="n">model</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="p">[</span>
+            <span class="s2">&quot;claude&quot;</span><span class="p">,</span> <span class="s2">&quot;--model&quot;</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span>
+            <span class="s2">&quot;--dangerously-skip-permissions&quot;</span><span class="p">,</span> <span class="s2">&quot;-p&quot;</span>
+        <span class="p">],</span>
+    <span class="p">),</span>
+    <span class="s2">&quot;gemini&quot;</span><span class="p">:</span> <span class="n">ProviderConfig</span><span class="p">(</span>
+        <span class="n">binary</span><span class="o">=</span><span class="s2">&quot;gemini&quot;</span><span class="p">,</span>
+        <span class="n">build_cmd</span><span class="o">=</span><span class="k">lambda</span> <span class="n">model</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="p">[</span>
+            <span class="s2">&quot;gemini&quot;</span><span class="p">,</span> <span class="s2">&quot;--model&quot;</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="s2">&quot;--yolo&quot;</span>
+        <span class="p">],</span>
+    <span class="p">),</span>
+    <span class="s2">&quot;cursor&quot;</span><span class="p">:</span> <span class="n">ProviderConfig</span><span class="p">(</span>
+        <span class="n">binary</span><span class="o">=</span><span class="s2">&quot;agent&quot;</span><span class="p">,</span>
+        <span class="n">build_cmd</span><span class="o">=</span><span class="k">lambda</span> <span class="n">model</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="p">[</span>
+            <span class="s2">&quot;agent&quot;</span><span class="p">,</span> <span class="s2">&quot;--force&quot;</span><span class="p">,</span> <span class="s2">&quot;--model&quot;</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span>
+            <span class="s2">&quot;--print&quot;</span><span class="p">,</span> <span class="s2">&quot;--workspace&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="p">],</span>
+        <span class="n">uses_own_cwd</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">),</span>
+<span class="p">}</span>
 </code></pre></div>
 
-<h3 id="provider-command-summary">Provider Command Summary</h3>
+<h4 id="provider-command-reference">Provider Command Reference</h4>
 <table>
 <thead>
 <tr>
 <th>Provider</th>
 <th>Binary</th>
-<th>Command</th>
-<th>CWD Handling</th>
+<th>Key Flags</th>
+<th>CWD Strategy</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Claude</td>
+<td><strong>Claude Code</strong></td>
 <td><code>claude</code></td>
-<td><code>claude --model &lt;model&gt; --dangerously-skip-permissions -p</code></td>
+<td><code>--dangerously-skip-permissions -p</code></td>
 <td>subprocess <code>cwd</code> = repo path</td>
 </tr>
 <tr>
-<td>Gemini</td>
+<td><strong>Gemini CLI</strong></td>
 <td><code>gemini</code></td>
-<td><code>gemini --model &lt;model&gt; --yolo</code></td>
+<td><code>--yolo</code></td>
 <td>subprocess <code>cwd</code> = repo path</td>
 </tr>
 <tr>
-<td>Cursor</td>
+<td><strong>Cursor Agent</strong></td>
 <td><code>agent</code></td>
-<td><code>agent --force --model &lt;model&gt; --print --workspace &lt;path&gt;</code></td>
-<td><code>--workspace</code> flag, <code>uses_own_cwd=True</code></td>
+<td><code>--force --print --workspace &lt;path&gt;</code></td>
+<td><code>--workspace</code> flag (<code>uses_own_cwd=True</code>)</td>
 </tr>
 </tbody>
 </table>
 <blockquote>
-<p><strong>Warning:</strong> The <code>--dangerously-skip-permissions</code> flag (Claude) and <code>--yolo</code> flag (Gemini) disable interactive permission prompts. These flags are required because docsfy runs AI tools non-interactively in a subprocess where no user is present to approve file reads. Only use docsfy in trusted environments, such as containers with cloned repositories.</p>
+<p><strong>Warning:</strong> Claude Code's <code>--dangerously-skip-permissions</code> flag bypasses all interactive permission prompts. This is required for unattended subprocess execution but means the AI has unrestricted access to the cloned repository. docsfy mitigates this by running generation against temporary shallow clones, never against production codebases.</p>
 </blockquote>
-<h3 id="working-directory-strategies">Working Directory Strategies</h3>
-<p>docsfy uses two strategies for giving the AI tool access to the repository, determined by the <code>uses_own_cwd</code> flag:</p>
-<p><strong>Strategy 1: Subprocess <code>cwd</code> (default)</strong></p>
-<p>For Claude and Gemini, the subprocess itself is launched with <code>cwd</code> pointing to the cloned repository. The AI tool inherits this working directory and can explore files relative to it.</p>
-<div class="highlight"><pre><span></span><code><span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="n">repo_path</span><span class="p">,</span> <span class="nb">input</span><span class="o">=</span><span class="n">prompt</span><span class="p">,</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<h4 id="why-uses_own_cwd-matters">Why <code>uses_own_cwd</code> Matters</h4>
+<p>Most CLI tools inherit their working directory from the subprocess <code>cwd</code> parameter, giving them implicit access to the target repository. Cursor Agent is the exception — it requires an explicit <code>--workspace</code> flag to specify which directory to analyze. The <code>uses_own_cwd</code> field controls this branching:</p>
+<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">build_subprocess_args</span><span class="p">(</span><span class="n">provider</span><span class="p">:</span> <span class="n">ProviderConfig</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">repo_path</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+    <span class="n">cmd</span> <span class="o">=</span> <span class="n">provider</span><span class="o">.</span><span class="n">build_cmd</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">repo_path</span><span class="p">)</span>
+    <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;input&quot;</span><span class="p">:</span> <span class="n">prompt</span><span class="p">,</span>
+        <span class="s2">&quot;capture_output&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="s2">&quot;timeout&quot;</span><span class="p">:</span> <span class="n">timeout_seconds</span><span class="p">,</span>
+    <span class="p">}</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">provider</span><span class="o">.</span><span class="n">uses_own_cwd</span><span class="p">:</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;cwd&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">repo_path</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">cmd</span><span class="p">,</span> <span class="n">kwargs</span>
 </code></pre></div>
 
-<p><strong>Strategy 2: Provider-managed workspace (<code>uses_own_cwd=True</code>)</strong></p>
-<p>For Cursor Agent, the workspace path is passed explicitly via the <code>--workspace</code> flag. The subprocess <code>cwd</code> is not set to the repo path since the tool manages its own working directory.</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># Cursor builds the workspace into its command</span>
-<span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;agent&quot;</span><span class="p">,</span> <span class="s2">&quot;--force&quot;</span><span class="p">,</span> <span class="s2">&quot;--model&quot;</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="s2">&quot;--print&quot;</span><span class="p">,</span> <span class="s2">&quot;--workspace&quot;</span><span class="p">,</span> <span class="n">repo_path</span><span class="p">]</span>
-<span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="nb">input</span><span class="o">=</span><span class="n">prompt</span><span class="p">,</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<h2 id="subprocess-invocation">Subprocess Invocation</h2>
+<h3 id="execution-model">Execution Model</h3>
+<p>All AI CLI tools are invoked via <code>subprocess.run()</code>. Prompts are passed through <strong>stdin</strong> rather than command-line arguments, which avoids shell escaping issues and removes prompt length limitations imposed by argument list size limits.</p>
+<div class="highlight"><pre><span></span><code><span class="n">result</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+    <span class="n">cmd</span><span class="p">,</span>
+    <span class="nb">input</span><span class="o">=</span><span class="n">prompt</span><span class="p">,</span>
+    <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">text</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">timeout</span><span class="o">=</span><span class="n">timeout_seconds</span><span class="p">,</span>
+    <span class="n">cwd</span><span class="o">=</span><span class="n">repo_path</span><span class="p">,</span>  <span class="c1"># omitted when uses_own_cwd=True</span>
+<span class="p">)</span>
 </code></pre></div>
 
-<h2 id="subprocess-execution">Subprocess Execution</h2>
-<h3 id="core-invocation">Core Invocation</h3>
-<p>All AI CLI calls flow through a single execution function that wraps <code>subprocess.run</code> with async support:</p>
-<div class="highlight"><pre><span></span><code><span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="nb">input</span><span class="o">=</span><span class="n">prompt</span><span class="p">,</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Value</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>input</code></td>
+<td>The prompt string</td>
+<td>Feeds the prompt to the CLI tool via stdin</td>
+</tr>
+<tr>
+<td><code>capture_output</code></td>
+<td><code>True</code></td>
+<td>Captures both stdout and stderr</td>
+</tr>
+<tr>
+<td><code>text</code></td>
+<td><code>True</code></td>
+<td>Decodes output as UTF-8 strings (not bytes)</td>
+</tr>
+<tr>
+<td><code>timeout</code></td>
+<td>Configurable (default: 3600s)</td>
+<td>Kills the process if it exceeds the time limit</td>
+</tr>
+<tr>
+<td><code>cwd</code></td>
+<td>Repository path</td>
+<td>Sets the working directory for filesystem-aware providers</td>
+</tr>
+</tbody>
+</table>
+<h3 id="return-convention">Return Convention</h3>
+<p>The invocation function returns a <code>tuple[bool, str]</code> representing success status and raw output:</p>
+<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">run_ai_cli</span><span class="p">(</span><span class="n">provider</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">repo_path</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+    <span class="n">config</span> <span class="o">=</span> <span class="n">PROVIDERS</span><span class="p">[</span><span class="n">provider</span><span class="p">]</span>
+    <span class="n">cmd</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">build_cmd</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">repo_path</span><span class="p">)</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+            <span class="n">cmd</span><span class="p">,</span>
+            <span class="nb">input</span><span class="o">=</span><span class="n">prompt</span><span class="p">,</span>
+            <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">text</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">timeout</span><span class="o">=</span><span class="n">AI_CLI_TIMEOUT</span> <span class="o">*</span> <span class="mi">60</span><span class="p">,</span>
+            <span class="o">**</span><span class="p">({</span><span class="s2">&quot;cwd&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">repo_path</span><span class="p">)}</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">config</span><span class="o">.</span><span class="n">uses_own_cwd</span> <span class="k">else</span> <span class="p">{}),</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">returncode</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">stdout</span>
+        <span class="k">return</span> <span class="kc">False</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">stderr</span> <span class="ow">or</span> <span class="n">result</span><span class="o">.</span><span class="n">stdout</span>
+    <span class="k">except</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">TimeoutExpired</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;AI CLI timed out after </span><span class="si">{</span><span class="n">AI_CLI_TIMEOUT</span><span class="si">}</span><span class="s2"> minutes&quot;</span>
+    <span class="k">except</span> <span class="ne">FileNotFoundError</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;AI CLI binary &#39;</span><span class="si">{</span><span class="n">config</span><span class="o">.</span><span class="n">binary</span><span class="si">}</span><span class="s2">&#39; not found&quot;</span>
 </code></pre></div>
 
-<p>Key aspects of the invocation:</p>
-<ul>
-<li><strong>Prompt delivery via stdin</strong> — the <code>input=prompt</code> parameter pipes the prompt text to the CLI tool's standard input, avoiding shell escaping issues with complex prompts</li>
-<li><strong>Output capture</strong> — <code>capture_output=True</code> captures both stdout (the AI response) and stderr (diagnostic output)</li>
-<li><strong>Text mode</strong> — <code>text=True</code> ensures string I/O rather than bytes</li>
-</ul>
-<h3 id="async-wrapping">Async Wrapping</h3>
-<p>Since <code>subprocess.run</code> is a blocking call, docsfy wraps it with <code>asyncio.to_thread</code> to prevent blocking the FastAPI event loop:</p>
-<div class="highlight"><pre><span></span><code><span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">to_thread</span><span class="p">(</span><span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">,</span> <span class="n">cmd</span><span class="p">,</span> <span class="nb">input</span><span class="o">=</span><span class="n">prompt</span><span class="p">,</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</code></pre></div>
-
-<p>This is critical during Stage 3 (content generation), where multiple pages are generated concurrently using async tasks with semaphore-limited concurrency.</p>
-<h3 id="return-type">Return Type</h3>
-<p>The execution function returns a <code>tuple[bool, str]</code>:</p>
-<div class="highlight"><pre><span></span><code><span class="nb">tuple</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span>  <span class="c1"># (success, output)</span>
-</code></pre></div>
-
-<ul>
-<li><code>success</code> — <code>True</code> if the subprocess exited with return code 0</li>
-<li><code>output</code> — the stdout content from the AI tool (the generated text or JSON)</li>
-</ul>
 <blockquote>
-<p><strong>Tip:</strong> Check stderr in addition to the return code when debugging failed invocations. AI CLI tools often print diagnostic information, authentication errors, or rate-limit messages to stderr.</p>
+<p><strong>Note:</strong> The function catches <code>FileNotFoundError</code> separately from general subprocess failures. This exception is raised by <code>subprocess.run()</code> when the binary specified in the command list does not exist on <code>PATH</code>, providing a clear diagnostic distinct from a tool that exists but exits with an error.</p>
 </blockquote>
-<h3 id="availability-check">Availability Check</h3>
-<p>Before starting a full generation pipeline, docsfy performs a lightweight availability check by sending a simple "Hi" prompt to the configured AI CLI tool:</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># Verify the AI CLI is installed and authenticated</span>
-<span class="n">success</span><span class="p">,</span> <span class="n">output</span> <span class="o">=</span> <span class="k">await</span> <span class="n">run_ai_cli</span><span class="p">(</span><span class="n">provider_config</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">prompt</span><span class="o">=</span><span class="s2">&quot;Hi&quot;</span><span class="p">,</span> <span class="n">repo_path</span><span class="o">=</span><span class="s2">&quot;/tmp&quot;</span><span class="p">)</span>
-<span class="k">if</span> <span class="ow">not</span> <span class="n">success</span><span class="p">:</span>
-    <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;AI CLI &#39;</span><span class="si">{</span><span class="n">provider_config</span><span class="o">.</span><span class="n">binary</span><span class="si">}</span><span class="s2">&#39; is not available&quot;</span><span class="p">)</span>
+<h2 id="async-execution-via-asyncioto_thread">Async Execution via <code>asyncio.to_thread</code></h2>
+<h3 id="the-problem">The Problem</h3>
+<p>docsfy is a FastAPI application running on an asyncio event loop. <code>subprocess.run()</code> is a <strong>blocking</strong> call — it halts the calling thread until the subprocess completes. For AI CLI invocations that can run for several minutes, blocking the event loop would freeze the entire server: no health checks, no status queries, no concurrent generation requests.</p>
+<h3 id="the-solution">The Solution</h3>
+<p>docsfy wraps blocking subprocess calls with <code>asyncio.to_thread()</code>, which offloads the blocking function to a separate thread from the default executor's thread pool:</p>
+<div class="highlight"><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">run_ai_cli_async</span><span class="p">(</span>
+    <span class="n">provider</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">repo_path</span><span class="p">:</span> <span class="n">Path</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+    <span class="k">return</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">to_thread</span><span class="p">(</span>
+        <span class="n">run_ai_cli</span><span class="p">,</span> <span class="n">provider</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">prompt</span><span class="p">,</span> <span class="n">repo_path</span>
+    <span class="p">)</span>
 </code></pre></div>
 
-<p>This catches common issues early:
-- CLI binary not installed or not on <code>$PATH</code>
-- Missing or expired authentication credentials
-- Model not available for the configured provider</p>
-<h2 id="json-response-parsing">JSON Response Parsing</h2>
-<p>AI CLI tools return free-form text, but docsfy needs structured JSON from certain stages — most critically, the <code>plan.json</code> output from Stage 2 (AI Planner). Since LLMs don't always produce clean JSON, docsfy uses a multi-strategy extraction approach with four fallback levels.</p>
+<p>This keeps the event loop free to handle other requests while the AI CLI runs in a background thread.</p>
+<h3 id="concurrent-page-generation">Concurrent Page Generation</h3>
+<p>During the content generation stage, multiple documentation pages can be generated concurrently. A semaphore limits parallelism to prevent resource exhaustion:</p>
+<div class="highlight"><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">generate_pages</span><span class="p">(</span><span class="n">pages</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">],</span> <span class="n">repo_path</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+    <span class="n">semaphore</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Semaphore</span><span class="p">(</span><span class="n">MAX_CONCURRENT_PAGES</span><span class="p">)</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">generate_one</span><span class="p">(</span><span class="n">page</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">async</span> <span class="k">with</span> <span class="n">semaphore</span><span class="p">:</span>
+            <span class="n">success</span><span class="p">,</span> <span class="n">content</span> <span class="o">=</span> <span class="k">await</span> <span class="n">run_ai_cli_async</span><span class="p">(</span>
+                <span class="n">provider</span><span class="o">=</span><span class="n">AI_PROVIDER</span><span class="p">,</span>
+                <span class="n">model</span><span class="o">=</span><span class="n">AI_MODEL</span><span class="p">,</span>
+                <span class="n">prompt</span><span class="o">=</span><span class="n">build_page_prompt</span><span class="p">(</span><span class="n">page</span><span class="p">,</span> <span class="n">repo_path</span><span class="p">),</span>
+                <span class="n">repo_path</span><span class="o">=</span><span class="n">repo_path</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">success</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">GenerationError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to generate page: </span><span class="si">{</span><span class="n">page</span><span class="p">[</span><span class="s1">&#39;title&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">content</span>
+
+    <span class="k">return</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="n">generate_one</span><span class="p">(</span><span class="n">page</span><span class="p">)</span> <span class="k">for</span> <span class="n">page</span> <span class="ow">in</span> <span class="n">pages</span><span class="p">])</span>
+</code></pre></div>
+
+<blockquote>
+<p><strong>Tip:</strong> The semaphore value should be tuned based on available system resources and the AI provider's rate limits. Each concurrent page generation spawns a separate CLI subprocess, consuming memory and (for API-backed providers) an API connection.</p>
+</blockquote>
+<h2 id="multi-strategy-json-response-parsing">Multi-Strategy JSON Response Parsing</h2>
+<p>AI CLI tools return their output as raw text on stdout. When docsfy expects structured data — such as the <code>plan.json</code> documentation structure from the planning stage — it must extract valid JSON from output that often contains conversational preamble, markdown formatting, or trailing commentary.</p>
+<p>docsfy uses a <strong>multi-strategy extraction pipeline</strong> that tries four parsing approaches in order of specificity, falling through to the next strategy on failure.</p>
 <h3 id="strategy-1-direct-json-parse">Strategy 1: Direct JSON Parse</h3>
-<p>The simplest case — attempt to parse the entire output as valid JSON:</p>
-<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
-
-<span class="k">try</span><span class="p">:</span>
-    <span class="n">result</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">output</span><span class="p">)</span>
-<span class="k">except</span> <span class="n">json</span><span class="o">.</span><span class="n">JSONDecodeError</span><span class="p">:</span>
-    <span class="c1"># Fall through to next strategy</span>
-    <span class="k">pass</span>
+<p>The simplest case — the entire output is valid JSON:</p>
+<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">try_direct_parse</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">text</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+    <span class="k">except</span> <span class="n">json</span><span class="o">.</span><span class="n">JSONDecodeError</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
 </code></pre></div>
 
-<p>This succeeds when the AI returns nothing but a well-formed JSON object with no surrounding text.</p>
+<p>This succeeds when the AI CLI returns clean JSON with no surrounding text.</p>
 <h3 id="strategy-2-brace-matching-extraction">Strategy 2: Brace-Matching Extraction</h3>
-<p>When the AI includes explanatory text before or after the JSON, brace-matching locates the outermost <code>{...}</code> object:</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># Find the first &#39;{&#39; and match it to its closing &#39;}&#39;</span>
-<span class="n">start</span> <span class="o">=</span> <span class="n">output</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;{&#39;</span><span class="p">)</span>
-<span class="c1"># Walk forward, tracking brace depth, to find the matching close brace</span>
+<p>Finds the outermost <code>{...}</code> pair and attempts to parse the substring between them:</p>
+<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">try_brace_matching</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="n">start</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;{&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">start</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="n">depth</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">char</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">text</span><span class="p">[</span><span class="n">start</span><span class="p">:],</span> <span class="n">start</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">char</span> <span class="o">==</span> <span class="s2">&quot;{&quot;</span><span class="p">:</span>
+            <span class="n">depth</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">elif</span> <span class="n">char</span> <span class="o">==</span> <span class="s2">&quot;}&quot;</span><span class="p">:</span>
+            <span class="n">depth</span> <span class="o">-=</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="n">depth</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">text</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span>
+                <span class="k">except</span> <span class="n">json</span><span class="o">.</span><span class="n">JSONDecodeError</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">return</span> <span class="kc">None</span>
 </code></pre></div>
 
-<p>This handles responses like:</p>
-<div class="highlight"><pre><span></span><code>Here&#39;s the documentation plan:
-
+<p>This handles output like:</p>
+<div class="highlight"><pre><span></span><code>Here&#39;s the documentation plan I created:
 {&quot;pages&quot;: [...], &quot;navigation&quot;: [...]}
-
-Let me know if you&#39;d like any changes.
+Let me know if you need changes.
 </code></pre></div>
 
 <h3 id="strategy-3-markdown-code-block-extraction">Strategy 3: Markdown Code Block Extraction</h3>
-<p>LLMs frequently wrap JSON in markdown code fences. This strategy strips the fencing:</p>
-<div class="highlight"><pre><span></span><code>```json
+<p>AI tools frequently wrap JSON in markdown fenced code blocks. This strategy extracts content from <code>```json</code> or bare <code>```</code> blocks:</p>
+<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">try_code_block_extraction</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="n">pattern</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">&quot;```(?:json)?\s*\n(.*?)\n\s*```&quot;</span>
+    <span class="n">matches</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">DOTALL</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">match</span> <span class="ow">in</span> <span class="n">matches</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">match</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+        <span class="k">except</span> <span class="n">json</span><span class="o">.</span><span class="n">JSONDecodeError</span><span class="p">:</span>
+            <span class="k">continue</span>
+    <span class="k">return</span> <span class="kc">None</span>
+</code></pre></div>
+
+<p>This handles output like:</p>
+<div class="highlight"><pre><span></span><code>I&#39;ve analyzed the repository. Here&#39;s the plan:
+
+```json
 {
   &quot;pages&quot;: [
     {&quot;title&quot;: &quot;Getting Started&quot;, &quot;slug&quot;: &quot;getting-started&quot;}
@@ -463,195 +550,200 @@ Let me know if you&#39;d like any changes.
 ```
 </code></pre></div>
 
-<p>The parser extracts content between the opening <code>```json</code> (or <code>```</code>) and the closing <code>```</code> markers, then parses the inner text as JSON.</p>
-<h3 id="strategy-4-regex-recovery">Strategy 4: Regex Recovery</h3>
-<p>As a last resort, regex patterns attempt to extract and reconstruct JSON fragments from heavily malformed output. This handles edge cases like:</p>
-<ul>
-<li>Truncated JSON (missing closing braces)</li>
-<li>Multiple JSON fragments in the output</li>
-<li>JSON interleaved with commentary</li>
-</ul>
-<blockquote>
-<p><strong>Note:</strong> The parsing strategies are applied in order. As soon as one succeeds, the result is returned. This layered approach means clean AI output is parsed instantly (Strategy 1), while progressively messier output is handled by later strategies.</p>
-</blockquote>
-<h3 id="when-parsing-is-used">When Parsing Is Used</h3>
-<table>
-<thead>
-<tr>
-<th>Pipeline Stage</th>
-<th>Expected Output</th>
-<th>Parsing Required</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Stage 2: AI Planner</td>
-<td><code>plan.json</code> structure</td>
-<td>Yes — must extract structured JSON</td>
-</tr>
-<tr>
-<td>Stage 3: AI Content Generator</td>
-<td>Markdown text</td>
-<td>No — raw text output used directly</td>
-</tr>
-<tr>
-<td>Availability check</td>
-<td>Any text response</td>
-<td>No — only checks success/failure</td>
-</tr>
-</tbody>
-</table>
-<h2 id="timeout-handling">Timeout Handling</h2>
-<p>Long-running AI CLI processes are a real risk — a complex repository might take significant time to analyze, or a tool might hang indefinitely. docsfy uses a configurable timeout to guard against this.</p>
-<h3 id="configuration">Configuration</h3>
-<p>The timeout is controlled via the <code>AI_CLI_TIMEOUT</code> environment variable:</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># In .env or environment</span>
-<span class="nv">AI_CLI_TIMEOUT</span><span class="o">=</span><span class="m">60</span><span class="w">  </span><span class="c1"># timeout in minutes</span>
+<h3 id="strategy-4-regex-recovery-fallback">Strategy 4: Regex Recovery Fallback</h3>
+<p>A last-resort strategy that attempts to find JSON-like structures using pattern matching with more permissive rules:</p>
+<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">try_regex_recovery</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="c1"># Find anything that looks like a JSON object</span>
+    <span class="n">pattern</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;\{[^</span><span class="si">{}</span><span class="s1">]*(?:\{[^</span><span class="si">{}</span><span class="s1">]*\}[^</span><span class="si">{}</span><span class="s1">]*)*\}&#39;</span>
+    <span class="n">matches</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">DOTALL</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">match</span> <span class="ow">in</span> <span class="n">matches</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">match</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">json</span><span class="o">.</span><span class="n">JSONDecodeError</span><span class="p">:</span>
+            <span class="k">continue</span>
+    <span class="k">return</span> <span class="kc">None</span>
 </code></pre></div>
 
+<h3 id="combined-pipeline">Combined Pipeline</h3>
+<p>The strategies execute in sequence, returning the first successful result:</p>
+<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">extract_json</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+    <span class="n">strategies</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">(</span><span class="s2">&quot;direct_parse&quot;</span><span class="p">,</span> <span class="n">try_direct_parse</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;brace_matching&quot;</span><span class="p">,</span> <span class="n">try_brace_matching</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;code_block&quot;</span><span class="p">,</span> <span class="n">try_code_block_extraction</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;regex_recovery&quot;</span><span class="p">,</span> <span class="n">try_regex_recovery</span><span class="p">),</span>
+    <span class="p">]</span>
+
+    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">strategy</span> <span class="ow">in</span> <span class="n">strategies</span><span class="p">:</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">strategy</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">result</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;JSON extracted via </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> strategy&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">result</span>
+
+    <span class="k">raise</span> <span class="n">JSONExtractionError</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;Failed to extract JSON from AI response (</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="p">)</span><span class="si">}</span><span class="s2"> chars)&quot;</span>
+    <span class="p">)</span>
+</code></pre></div>
+
+<blockquote>
+<p><strong>Note:</strong> The ordering is deliberate. Direct parse is cheapest and handles the ideal case. Brace-matching handles most real-world outputs. Code block extraction catches markdown-wrapped responses. Regex recovery is the most permissive but also the most likely to produce false positives, so it runs last.</p>
+</blockquote>
+<h2 id="availability-checking">Availability Checking</h2>
+<p>Before starting a generation pipeline, docsfy verifies that the configured AI CLI tool is installed, accessible, and functional. This prevents long-running pipelines from failing minutes into execution because of a missing binary or expired credentials.</p>
+<h3 id="the-check">The Check</h3>
+<p>Availability is tested by running a lightweight prompt — a simple "Hi" — through the full invocation pipeline:</p>
+<div class="highlight"><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">check_ai_availability</span><span class="p">(</span><span class="n">provider</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Verify the AI CLI tool is installed and responding.&quot;&quot;&quot;</span>
+    <span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryDirectory</span><span class="p">()</span> <span class="k">as</span> <span class="n">tmpdir</span><span class="p">:</span>
+        <span class="n">success</span><span class="p">,</span> <span class="n">output</span> <span class="o">=</span> <span class="k">await</span> <span class="n">run_ai_cli_async</span><span class="p">(</span>
+            <span class="n">provider</span><span class="o">=</span><span class="n">provider</span><span class="p">,</span>
+            <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
+            <span class="n">prompt</span><span class="o">=</span><span class="s2">&quot;Hi&quot;</span><span class="p">,</span>
+            <span class="n">repo_path</span><span class="o">=</span><span class="n">Path</span><span class="p">(</span><span class="n">tmpdir</span><span class="p">),</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">success</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Provider &#39;</span><span class="si">{</span><span class="n">provider</span><span class="si">}</span><span class="s2">&#39; is available&quot;</span>
+        <span class="k">return</span> <span class="kc">False</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Provider &#39;</span><span class="si">{</span><span class="n">provider</span><span class="si">}</span><span class="s2">&#39; check failed: </span><span class="si">{</span><span class="n">output</span><span class="si">}</span><span class="s2">&quot;</span>
+</code></pre></div>
+
+<p>This check exercises the entire code path:</p>
+<ol>
+<li><strong>Binary resolution</strong> — verifies the CLI executable exists on <code>PATH</code></li>
+<li><strong>Authentication</strong> — confirms API keys or credentials are valid</li>
+<li><strong>Model access</strong> — validates the configured model is available to the account</li>
+<li><strong>Network connectivity</strong> — ensures the CLI can reach its backend API</li>
+</ol>
+<blockquote>
+<p><strong>Tip:</strong> The availability check uses a temporary directory as the <code>cwd</code> rather than an actual repository. This keeps the check fast and avoids side effects — no files are read or created in any project directory.</p>
+</blockquote>
+<h3 id="when-the-check-runs">When the Check Runs</h3>
+<p>The availability check executes at the start of every generation request, before the repository is cloned:</p>
+<div class="highlight"><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">generate_docs</span><span class="p">(</span><span class="n">repo_url</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">project_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="c1"># Step 0: Verify AI CLI is available</span>
+    <span class="n">available</span><span class="p">,</span> <span class="n">message</span> <span class="o">=</span> <span class="k">await</span> <span class="n">check_ai_availability</span><span class="p">(</span><span class="n">AI_PROVIDER</span><span class="p">,</span> <span class="n">AI_MODEL</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">available</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">AIProviderUnavailable</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+
+    <span class="c1"># Step 1: Clone repository</span>
+    <span class="n">repo_path</span> <span class="o">=</span> <span class="k">await</span> <span class="n">clone_repo</span><span class="p">(</span><span class="n">repo_url</span><span class="p">)</span>
+    <span class="c1"># ... continue pipeline</span>
+</code></pre></div>
+
+<p>This fail-fast approach provides immediate feedback through the API response rather than leaving a project stuck in <code>generating</code> status.</p>
+<h2 id="configuration">Configuration</h2>
+<h3 id="environment-variables">Environment Variables</h3>
 <table>
 <thead>
 <tr>
-<th>Setting</th>
+<th>Variable</th>
 <th>Default</th>
-<th>Unit</th>
 <th>Description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
+<td><code>AI_PROVIDER</code></td>
+<td><code>claude</code></td>
+<td>Which AI CLI to use (<code>claude</code>, <code>gemini</code>, or <code>cursor</code>)</td>
+</tr>
+<tr>
+<td><code>AI_MODEL</code></td>
+<td><code>claude-opus-4-6[1m]</code></td>
+<td>Model identifier passed to the CLI's <code>--model</code> flag</td>
+</tr>
+<tr>
 <td><code>AI_CLI_TIMEOUT</code></td>
 <td><code>60</code></td>
-<td>minutes</td>
-<td>Maximum time allowed for each AI CLI subprocess call</td>
-</tr>
-</tbody>
-</table>
-<blockquote>
-<p><strong>Tip:</strong> For large repositories with many files, consider increasing the timeout beyond the default 60 minutes. Conversely, for small projects or during development, a shorter timeout (e.g., 10-15 minutes) can help catch issues faster.</p>
-</blockquote>
-<h3 id="timeout-scope">Timeout Scope</h3>
-<p>The timeout applies independently to each AI CLI subprocess invocation, not to the overall pipeline:</p>
-<div class="highlight"><pre><span></span><code>Pipeline execution:
-├── Stage 2: AI Planner ................ ← AI_CLI_TIMEOUT applies
-└── Stage 3: AI Content Generator
-    ├── Page 1 ......................... ← AI_CLI_TIMEOUT applies
-    ├── Page 2 ......................... ← AI_CLI_TIMEOUT applies
-    └── Page N ......................... ← AI_CLI_TIMEOUT applies
-</code></pre></div>
-
-<p>This means:
-- A single page generation can take up to the full timeout duration
-- Total pipeline time can exceed <code>AI_CLI_TIMEOUT</code> when generating multiple pages
-- Each concurrent page generation task has its own independent timeout</p>
-<blockquote>
-<p><strong>Warning:</strong> With the default 60-minute timeout and many pages generating concurrently, the total generation time for a large project could be substantial. Monitor generation status via the <code>GET /api/status</code> endpoint.</p>
-</blockquote>
-<h2 id="default-configuration">Default Configuration</h2>
-<p>The complete set of AI CLI integration defaults:</p>
-<table>
-<thead>
-<tr>
-<th>Setting</th>
-<th>Default Value</th>
-<th>Environment Variable</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Provider</td>
-<td><code>claude</code></td>
-<td><code>AI_PROVIDER</code></td>
-</tr>
-<tr>
-<td>Model</td>
-<td><code>claude-opus-4-6[1m]</code></td>
-<td><code>AI_MODEL</code></td>
-</tr>
-<tr>
-<td>Timeout</td>
-<td><code>60</code> minutes</td>
-<td><code>AI_CLI_TIMEOUT</code></td>
+<td>Maximum execution time per CLI invocation, in <strong>minutes</strong></td>
 </tr>
 </tbody>
 </table>
 <h3 id="example-env-configuration">Example <code>.env</code> Configuration</h3>
-<div class="highlight"><pre><span></span><code><span class="c1"># Use Claude (default)</span>
+<div class="highlight"><pre><span></span><code><span class="c1"># Use Claude Code with Vertex AI backend</span>
 <span class="nv">AI_PROVIDER</span><span class="o">=</span>claude
 <span class="nv">AI_MODEL</span><span class="o">=</span>claude-opus-4-6<span class="o">[</span>1m<span class="o">]</span>
 <span class="nv">AI_CLI_TIMEOUT</span><span class="o">=</span><span class="m">60</span>
 
-<span class="c1"># Claude authentication — Option 1: API Key</span>
-<span class="nv">ANTHROPIC_API_KEY</span><span class="o">=</span>sk-ant-...
+<span class="c1"># Claude authentication via Vertex AI</span>
+<span class="nv">CLAUDE_CODE_USE_VERTEX</span><span class="o">=</span><span class="m">1</span>
+<span class="nv">CLOUD_ML_REGION</span><span class="o">=</span>us-east5
+<span class="nv">ANTHROPIC_VERTEX_PROJECT_ID</span><span class="o">=</span>my-gcp-project
 
-<span class="c1"># Claude authentication — Option 2: Vertex AI</span>
-<span class="c1"># CLAUDE_CODE_USE_VERTEX=1</span>
-<span class="c1"># CLOUD_ML_REGION=us-east5</span>
-<span class="c1"># ANTHROPIC_VERTEX_PROJECT_ID=my-project</span>
+<span class="c1"># Or use a direct API key instead</span>
+<span class="c1"># ANTHROPIC_API_KEY=sk-ant-...</span>
 </code></pre></div>
 
-<div class="highlight"><pre><span></span><code><span class="c1"># Use Gemini instead</span>
+<div class="highlight"><pre><span></span><code><span class="c1"># Use Gemini CLI</span>
 <span class="nv">AI_PROVIDER</span><span class="o">=</span>gemini
 <span class="nv">AI_MODEL</span><span class="o">=</span>gemini-2.5-pro
-<span class="nv">AI_CLI_TIMEOUT</span><span class="o">=</span><span class="m">90</span>
-<span class="nv">GEMINI_API_KEY</span><span class="o">=</span>...
+<span class="nv">AI_CLI_TIMEOUT</span><span class="o">=</span><span class="m">45</span>
+<span class="nv">GEMINI_API_KEY</span><span class="o">=</span>AIza...
 </code></pre></div>
 
-<div class="highlight"><pre><span></span><code><span class="c1"># Use Cursor instead</span>
+<div class="highlight"><pre><span></span><code><span class="c1"># Use Cursor Agent</span>
 <span class="nv">AI_PROVIDER</span><span class="o">=</span>cursor
-<span class="nv">AI_MODEL</span><span class="o">=</span>claude-opus-4-6
+<span class="nv">AI_MODEL</span><span class="o">=</span>claude-opus-4-6<span class="o">[</span>1m<span class="o">]</span>
 <span class="nv">AI_CLI_TIMEOUT</span><span class="o">=</span><span class="m">60</span>
-<span class="nv">CURSOR_API_KEY</span><span class="o">=</span>...
-</code></pre></div>
-
-<h2 id="provider-selection-at-runtime">Provider Selection at Runtime</h2>
-<p>The active provider is resolved from the <code>AI_PROVIDER</code> environment variable and looked up in a registry of <code>ProviderConfig</code> instances. This happens once at the start of each generation pipeline:</p>
-<div class="highlight"><pre><span></span><code>POST /api/generate
-    │
-    ▼
-Read AI_PROVIDER env var ──► Look up ProviderConfig
-    │
-    ▼
-Availability check (send &quot;Hi&quot; prompt)
-    │
-    ▼
-Run pipeline with selected provider
+<span class="nv">CURSOR_API_KEY</span><span class="o">=</span>cur_...
 </code></pre></div>
 
 <blockquote>
-<p><strong>Note:</strong> Changing <code>AI_PROVIDER</code> or <code>AI_MODEL</code> takes effect on the next generation request. In-progress generations continue using the provider that was active when they started.</p>
+<p><strong>Warning:</strong> The <code>AI_CLI_TIMEOUT</code> value is specified in <strong>minutes</strong>, not seconds. It is converted to seconds (<code>AI_CLI_TIMEOUT * 60</code>) before being passed to <code>subprocess.run(timeout=...)</code>. Setting this too low will cause generation failures on large repositories; setting it too high may leave zombie processes consuming resources.</p>
 </blockquote>
-<h2 id="concurrency-model">Concurrency Model</h2>
-<p>During Stage 3, multiple pages are generated concurrently to reduce total pipeline time. The concurrency model works as follows:</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># Semaphore limits how many AI CLI subprocesses run simultaneously</span>
-<span class="n">semaphore</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Semaphore</span><span class="p">(</span><span class="n">max_concurrent</span><span class="p">)</span>
+<h2 id="container-setup">Container Setup</h2>
+<p>The AI CLI tools are installed in the Docker image at build time. Since docsfy supports multiple providers, <strong>all three</strong> CLIs are installed regardless of which provider is configured at runtime:</p>
+<div class="highlight"><pre><span></span><code><span class="c"># Install Claude Code</span>
+<span class="k">RUN</span><span class="w"> </span>curl<span class="w"> </span>-fsSL<span class="w"> </span>https://claude.ai/install.sh<span class="w"> </span><span class="p">|</span><span class="w"> </span>bash
 
-<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">generate_page</span><span class="p">(</span><span class="n">page_info</span><span class="p">):</span>
-    <span class="k">async</span> <span class="k">with</span> <span class="n">semaphore</span><span class="p">:</span>
-        <span class="k">return</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">to_thread</span><span class="p">(</span>
-            <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">,</span> <span class="n">cmd</span><span class="p">,</span> <span class="nb">input</span><span class="o">=</span><span class="n">prompt</span><span class="p">,</span>
-            <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="kc">True</span>
-        <span class="p">)</span>
+<span class="c"># Install Cursor Agent</span>
+<span class="k">RUN</span><span class="w"> </span>curl<span class="w"> </span>-fsSL<span class="w"> </span>https://cursor.com/install<span class="w"> </span><span class="p">|</span><span class="w"> </span>bash
 
-<span class="c1"># Launch all page generation tasks concurrently</span>
-<span class="n">tasks</span> <span class="o">=</span> <span class="p">[</span><span class="n">generate_page</span><span class="p">(</span><span class="n">page</span><span class="p">)</span> <span class="k">for</span> <span class="n">page</span> <span class="ow">in</span> <span class="n">plan</span><span class="p">[</span><span class="s2">&quot;pages&quot;</span><span class="p">]]</span>
-<span class="n">results</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="o">*</span><span class="n">tasks</span><span class="p">)</span>
+<span class="c"># Install Gemini CLI</span>
+<span class="k">RUN</span><span class="w"> </span>npm<span class="w"> </span>install<span class="w"> </span>-g<span class="w"> </span>@google/gemini-cli
 </code></pre></div>
 
-<p>The semaphore prevents overloading the system by limiting the number of simultaneous AI CLI subprocesses. Each subprocess still has its own independent timeout via <code>AI_CLI_TIMEOUT</code>.</p>
+<blockquote>
+<p><strong>Warning:</strong> CLI tools are installed without version pinning (always latest). This means Docker image rebuilds may pull newer CLI versions with different behavior. For reproducible builds, consider pinning versions or using a fixed base image tag.</p>
+</blockquote>
+<h3 id="credential-mounting">Credential Mounting</h3>
+<p>AI CLI tools require authentication credentials at runtime. These are mounted as Docker volumes rather than baked into the image:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># docker-compose.yaml</span>
+<span class="nt">volumes</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">~/.config/gcloud:/home/appuser/.config/gcloud:ro</span><span class="w">  </span><span class="c1"># Gemini / Vertex AI</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./cursor:/home/appuser/.config/cursor</span><span class="w">              </span><span class="c1"># Cursor Agent</span>
+</code></pre></div>
+
+<p>API key-based authentication (Claude, Gemini) is configured through environment variables in the <code>.env</code> file.</p>
+<h2 id="adding-a-new-provider">Adding a New Provider</h2>
+<p>To add support for a new AI CLI tool, register a new entry in the <code>PROVIDERS</code> dictionary:</p>
+<div class="highlight"><pre><span></span><code><span class="n">PROVIDERS</span><span class="p">[</span><span class="s2">&quot;new-tool&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ProviderConfig</span><span class="p">(</span>
+    <span class="n">binary</span><span class="o">=</span><span class="s2">&quot;new-tool-cli&quot;</span><span class="p">,</span>
+    <span class="n">build_cmd</span><span class="o">=</span><span class="k">lambda</span> <span class="n">model</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;new-tool-cli&quot;</span><span class="p">,</span> <span class="s2">&quot;--model&quot;</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="s2">&quot;--noninteractive&quot;</span>
+    <span class="p">],</span>
+    <span class="n">uses_own_cwd</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>  <span class="c1"># True if the tool has its own workspace flag</span>
+<span class="p">)</span>
+</code></pre></div>
+
+<p>Then set the environment variables:</p>
+<div class="highlight"><pre><span></span><code><span class="nv">AI_PROVIDER</span><span class="o">=</span>new-tool
+<span class="nv">AI_MODEL</span><span class="o">=</span>preferred-model-name
+</code></pre></div>
+
+<p>No other code changes are needed. The provider pattern, subprocess invocation, JSON parsing, and availability checking all work generically across any CLI tool that accepts prompts on stdin and returns output on stdout.</p>
                 </div>
             </article>
             <nav class="page-nav">
                 
-                <a href="generation-pipeline.html" class="page-nav-link page-nav-prev">
+                <a href="html-renderer.html" class="page-nav-link page-nav-prev">
                     <span class="page-nav-label">Previous</span>
-                    <span class="page-nav-title">Generation Pipeline</span>
+                    <span class="page-nav-title">HTML Renderer &amp; Theming</span>
                 </a>
                 
                 
-                <a href="storage-and-database.html" class="page-nav-link page-nav-next">
+                <a href="api-generate.html" class="page-nav-link page-nav-next">
                     <span class="page-nav-label">Next</span>
-                    <span class="page-nav-title">Storage &amp; Database</span>
+                    <span class="page-nav-title">POST /api/generate</span>
                 </a>
                 
             </nav>
@@ -662,39 +754,45 @@ Run pipeline with selected provider
                     <div class="toc">
 <ul>
 <li><a href="#overview">Overview</a></li>
-<li><a href="#the-providerconfig-pattern">The ProviderConfig Pattern</a><ul>
-<li><a href="#field-reference">Field Reference</a></li>
-<li><a href="#provider-definitions">Provider Definitions</a></li>
-<li><a href="#provider-command-summary">Provider Command Summary</a></li>
-<li><a href="#working-directory-strategies">Working Directory Strategies</a></li>
+<li><a href="#provider-pattern">Provider Pattern</a><ul>
+<li><a href="#the-providerconfig-dataclass">The ProviderConfig Dataclass</a></li>
+<li><a href="#registered-providers">Registered Providers</a></li>
 </ul>
 </li>
-<li><a href="#subprocess-execution">Subprocess Execution</a><ul>
-<li><a href="#core-invocation">Core Invocation</a></li>
-<li><a href="#async-wrapping">Async Wrapping</a></li>
-<li><a href="#return-type">Return Type</a></li>
-<li><a href="#availability-check">Availability Check</a></li>
+<li><a href="#subprocess-invocation">Subprocess Invocation</a><ul>
+<li><a href="#execution-model">Execution Model</a></li>
+<li><a href="#return-convention">Return Convention</a></li>
 </ul>
 </li>
-<li><a href="#json-response-parsing">JSON Response Parsing</a><ul>
+<li><a href="#async-execution-via-asyncioto_thread">Async Execution via asyncio.to_thread</a><ul>
+<li><a href="#the-problem">The Problem</a></li>
+<li><a href="#the-solution">The Solution</a></li>
+<li><a href="#concurrent-page-generation">Concurrent Page Generation</a></li>
+</ul>
+</li>
+<li><a href="#multi-strategy-json-response-parsing">Multi-Strategy JSON Response Parsing</a><ul>
 <li><a href="#strategy-1-direct-json-parse">Strategy 1: Direct JSON Parse</a></li>
 <li><a href="#strategy-2-brace-matching-extraction">Strategy 2: Brace-Matching Extraction</a></li>
 <li><a href="#strategy-3-markdown-code-block-extraction">Strategy 3: Markdown Code Block Extraction</a></li>
-<li><a href="#strategy-4-regex-recovery">Strategy 4: Regex Recovery</a></li>
-<li><a href="#when-parsing-is-used">When Parsing Is Used</a></li>
+<li><a href="#strategy-4-regex-recovery-fallback">Strategy 4: Regex Recovery Fallback</a></li>
+<li><a href="#combined-pipeline">Combined Pipeline</a></li>
 </ul>
 </li>
-<li><a href="#timeout-handling">Timeout Handling</a><ul>
-<li><a href="#configuration">Configuration</a></li>
-<li><a href="#timeout-scope">Timeout Scope</a></li>
+<li><a href="#availability-checking">Availability Checking</a><ul>
+<li><a href="#the-check">The Check</a></li>
+<li><a href="#when-the-check-runs">When the Check Runs</a></li>
 </ul>
 </li>
-<li><a href="#default-configuration">Default Configuration</a><ul>
+<li><a href="#configuration">Configuration</a><ul>
+<li><a href="#environment-variables">Environment Variables</a></li>
 <li><a href="#example-env-configuration">Example .env Configuration</a></li>
 </ul>
 </li>
-<li><a href="#provider-selection-at-runtime">Provider Selection at Runtime</a></li>
-<li><a href="#concurrency-model">Concurrency Model</a></li>
+<li><a href="#container-setup">Container Setup</a><ul>
+<li><a href="#credential-mounting">Credential Mounting</a></li>
+</ul>
+</li>
+<li><a href="#adding-a-new-provider">Adding a New Provider</a></li>
 </ul>
 </div>
 

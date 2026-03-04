@@ -4,14 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>POST /api/generate - docsfy</title>
-    <meta name="description" content="AI-powered documentation generator that creates polished, Mintlify-quality static HTML sites from GitHub repositories.">
+    <meta name="description" content="AI-powered documentation generator that creates polished static HTML sites from GitHub repositories">
     <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <a href="index.html" class="sidebar-logo">docsfy</a>
-            <p class="sidebar-tagline">AI-powered documentation generator that creates polished, Mintlify-quality static HTML sites from GitHub repositories.</p>
+            <p class="sidebar-tagline">AI-powered documentation generator that creates polished static HTML sites from GitHub repositories</p>
         </div>
 
         <div class="sidebar-search">
@@ -68,9 +68,9 @@
                     </li>
                     
                     <li>
-                        <a href="docker-deployment.html"
+                        <a href="storage-and-data.html"
                            class="nav-link">
-                            Docker Deployment
+                            Storage &amp; Data
                         </a>
                     </li>
                     
@@ -89,9 +89,9 @@
                     </li>
                     
                     <li>
-                        <a href="incremental-updates.html"
+                        <a href="serving-docs.html"
                            class="nav-link">
-                            Incremental Updates
+                            Serving Documentation
                         </a>
                     </li>
                     
@@ -103,9 +103,9 @@
                     </li>
                     
                     <li>
-                        <a href="managing-projects.html"
+                        <a href="incremental-updates.html"
                            class="nav-link">
-                            Managing Projects
+                            Incremental Updates
                         </a>
                     </li>
                     
@@ -124,16 +124,16 @@
                     </li>
                     
                     <li>
-                        <a href="storage-and-database.html"
+                        <a href="html-renderer.html"
                            class="nav-link">
-                            Storage &amp; Database
+                            HTML Renderer &amp; Theming
                         </a>
                     </li>
                     
                     <li>
-                        <a href="html-theming.html"
+                        <a href="ai-cli-integration.html"
                            class="nav-link">
-                            HTML Theming &amp; Output
+                            AI CLI Integration
                         </a>
                     </li>
                     
@@ -145,13 +145,6 @@
                 <ul class="nav-group-pages">
                     
                     <li>
-                        <a href="api-overview.html"
-                           class="nav-link">
-                            API Overview
-                        </a>
-                    </li>
-                    
-                    <li>
                         <a href="api-generate.html"
                            class="nav-link active">
                             POST /api/generate
@@ -159,23 +152,16 @@
                     </li>
                     
                     <li>
-                        <a href="api-status.html"
+                        <a href="api-status-and-projects.html"
                            class="nav-link">
-                            GET /api/status
+                            GET /api/status &amp; Project Details
                         </a>
                     </li>
                     
                     <li>
-                        <a href="api-projects.html"
+                        <a href="api-download.html"
                            class="nav-link">
-                            Project Endpoints
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="api-docs-serving.html"
-                           class="nav-link">
-                            GET /docs/{project}/{path}
+                            GET /api/projects/{name}/download
                         </a>
                     </li>
                     
@@ -190,20 +176,41 @@
             </div>
             
             <div class="nav-group">
+                <h3 class="nav-group-title">Deployment</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="docker-deployment.html"
+                           class="nav-link">
+                            Docker Deployment
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="docker-compose.html"
+                           class="nav-link">
+                            Docker Compose Setup
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
                 <h3 class="nav-group-title">Development</h3>
                 <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="development-setup.html"
+                           class="nav-link">
+                            Development Setup
+                        </a>
+                    </li>
                     
                     <li>
                         <a href="contributing.html"
                            class="nav-link">
                             Contributing
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="project-structure.html"
-                           class="nav-link">
-                            Project Structure
                         </a>
                     </li>
                     
@@ -250,7 +257,7 @@
                 <h1 class="article-title">POST /api/generate</h1>
                 <div class="article-body">
                     <h1 id="post-apigenerate">POST /api/generate</h1>
-<p>Start documentation generation for a GitHub repository. This endpoint triggers docsfy's four-stage pipeline — clone, plan, generate, render — producing a polished static HTML documentation site from your repository's source code.</p>
+<p>Start documentation generation for a GitHub repository. This endpoint accepts a repository URL, clones the repository, and runs the full AI-powered generation pipeline to produce a polished static documentation site.</p>
 <h2 id="endpoint">Endpoint</h2>
 <div class="highlight"><pre><span></span><code>POST /api/generate
 </code></pre></div>
@@ -288,42 +295,35 @@
 <td><code>repo_url</code></td>
 <td><code>string</code></td>
 <td>Yes</td>
-<td>GitHub repository URL to generate documentation for. Supports both HTTPS and SSH formats.</td>
+<td>GitHub repository URL (HTTPS or SSH format)</td>
 </tr>
 </tbody>
 </table>
-<h4 id="supported-url-formats">Supported URL Formats</h4>
-<div class="highlight"><pre><span></span><code>https://github.com/owner/repo
-https://github.com/owner/repo.git
-git@github.com:owner/repo.git
+<h3 id="supported-repository-url-formats">Supported Repository URL Formats</h3>
+<p>docsfy supports both HTTPS and SSH URL formats for public and private repositories.</p>
+<p><strong>HTTPS URLs:</strong></p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;repo_url&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://github.com/owner/repo-name&quot;</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<p><strong>SSH URLs:</strong></p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;repo_url&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;git@github.com:owner/repo-name.git&quot;</span>
+<span class="p">}</span>
 </code></pre></div>
 
 <blockquote>
-<p><strong>Note:</strong> Private repositories are supported. The service uses system git credentials configured in the container environment for authentication.</p>
+<p><strong>Note:</strong> Private repositories require valid git credentials configured on the host system. When running in Docker, mount your SSH keys or configure credential helpers in the container. See <a href="#authentication-for-private-repositories">Container and Deployment</a> for details.</p>
 </blockquote>
-<h3 id="example-request">Example Request</h3>
-<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/api/generate<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{&quot;repo_url&quot;: &quot;https://github.com/owner/my-project&quot;}&#39;</span>
-</code></pre></div>
-
-<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">httpx</span>
-
-<span class="n">response</span> <span class="o">=</span> <span class="n">httpx</span><span class="o">.</span><span class="n">post</span><span class="p">(</span>
-    <span class="s2">&quot;http://localhost:8000/api/generate&quot;</span><span class="p">,</span>
-    <span class="n">json</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;repo_url&quot;</span><span class="p">:</span> <span class="s2">&quot;https://github.com/owner/my-project&quot;</span><span class="p">}</span>
-<span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">())</span>
-</code></pre></div>
-
 <h2 id="response">Response</h2>
 <h3 id="success-response">Success Response</h3>
-<p><strong>Status Code:</strong> <code>200 OK</code></p>
-<p>The endpoint returns a JSON object with the project metadata and generation status.</p>
+<p><strong>Status:</strong> <code>200 OK</code></p>
+<p>The endpoint returns the project name and its current generation status. Generation runs asynchronously through a four-stage pipeline in the background.</p>
 <div class="highlight"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;my-project&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;repo_url&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://github.com/owner/my-project&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;generating&quot;</span>
+<span class="w">  </span><span class="nt">&quot;project&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;repo-name&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;generating&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;repo_url&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://github.com/owner/repo-name&quot;</span>
 <span class="p">}</span>
 </code></pre></div>
 
@@ -337,23 +337,77 @@ git@github.com:owner/repo.git
 </thead>
 <tbody>
 <tr>
-<td><code>name</code></td>
+<td><code>project</code></td>
 <td><code>string</code></td>
-<td>Project name derived from the repository URL.</td>
-</tr>
-<tr>
-<td><code>repo_url</code></td>
-<td><code>string</code></td>
-<td>The repository URL provided in the request.</td>
+<td>Derived project name used to identify the generated docs</td>
 </tr>
 <tr>
 <td><code>status</code></td>
 <td><code>string</code></td>
-<td>Current generation status. One of <code>generating</code>, <code>ready</code>, or <code>error</code>.</td>
+<td>Current generation status: <code>generating</code>, <code>ready</code>, or <code>error</code></td>
+</tr>
+<tr>
+<td><code>repo_url</code></td>
+<td><code>string</code></td>
+<td>The repository URL as submitted</td>
 </tr>
 </tbody>
 </table>
-<h4 id="status-values">Status Values</h4>
+<h3 id="error-responses">Error Responses</h3>
+<table>
+<thead>
+<tr>
+<th>Status Code</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>422</code></td>
+<td>Invalid or missing <code>repo_url</code> in request body</td>
+</tr>
+<tr>
+<td><code>500</code></td>
+<td>Internal server error (clone failure, AI CLI unavailable, etc.)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="generation-pipeline">Generation Pipeline</h2>
+<p>When a request is accepted, the generation pipeline runs four sequential stages:</p>
+<div class="highlight"><pre><span></span><code>Clone Repository → AI Planner → AI Content Generator → HTML Renderer
+</code></pre></div>
+
+<h3 id="stage-1-clone-repository">Stage 1: Clone Repository</h3>
+<p>The repository is shallow-cloned (<code>--depth 1</code>) to a temporary directory. This minimizes bandwidth and disk usage while still providing the AI with full access to the current state of the codebase.</p>
+<h3 id="stage-2-ai-planner">Stage 2: AI Planner</h3>
+<p>The configured AI CLI analyzes the repository and produces a <code>plan.json</code> file containing the documentation structure — pages, sections, and navigation hierarchy.</p>
+<h3 id="stage-3-ai-content-generator">Stage 3: AI Content Generator</h3>
+<p>For each page defined in <code>plan.json</code>, the AI CLI explores the codebase and generates markdown content. Pages are generated concurrently using async execution with semaphore-limited concurrency. Output is cached at:</p>
+<div class="highlight"><pre><span></span><code>/data/projects/{project-name}/cache/pages/*.md
+</code></pre></div>
+
+<h3 id="stage-4-html-renderer">Stage 4: HTML Renderer</h3>
+<p>Markdown pages and <code>plan.json</code> are converted into a polished static HTML site using Jinja2 templates with bundled CSS/JS assets. The rendered site includes sidebar navigation, dark/light theme toggle, client-side search, code syntax highlighting, and responsive design. Output is written to:</p>
+<div class="highlight"><pre><span></span><code>/data/projects/{project-name}/site/
+</code></pre></div>
+
+<blockquote>
+<p><strong>Tip:</strong> Once generation completes with status <code>ready</code>, the docs are immediately available at <code>GET /docs/{project}/</code> or can be downloaded as a <code>.tar.gz</code> archive via <code>GET /api/projects/{project}/download</code>.</p>
+</blockquote>
+<h2 id="tracking-generation-status">Tracking Generation Status</h2>
+<p>Generation runs asynchronously. Poll the status endpoint to check progress:</p>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>http://localhost:8000/api/status
+</code></pre></div>
+
+<p>Or check a specific project:</p>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>http://localhost:8000/api/projects/repo-name
+</code></pre></div>
+
+<p>Project status transitions follow this lifecycle:</p>
+<div class="highlight"><pre><span></span><code>generating → ready
+generating → error
+</code></pre></div>
+
 <table>
 <thead>
 <tr>
@@ -364,174 +418,171 @@ git@github.com:owner/repo.git
 <tbody>
 <tr>
 <td><code>generating</code></td>
-<td>The documentation generation pipeline is currently running.</td>
+<td>Pipeline is currently running</td>
 </tr>
 <tr>
 <td><code>ready</code></td>
-<td>Documentation has been successfully generated and is available for viewing.</td>
+<td>Generation completed successfully; docs are served</td>
 </tr>
 <tr>
 <td><code>error</code></td>
-<td>Generation failed. Check the project details endpoint for error information.</td>
+<td>Generation failed; check project details for error logs</td>
 </tr>
 </tbody>
 </table>
-<blockquote>
-<p><strong>Note:</strong> Generation is an asynchronous process. The endpoint returns immediately with a <code>generating</code> status. Use <a href="/api/status"><code>GET /api/status</code></a> or <a href="/api/projects"><code>GET /api/projects/{name}</code></a> to poll for completion.</p>
-</blockquote>
-<h3 id="error-responses">Error Responses</h3>
-<p><strong>Status Code:</strong> <code>422 Unprocessable Entity</code></p>
-<p>Returned when the request body is invalid or missing required fields.</p>
-<div class="highlight"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;detail&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;loc&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;body&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;repo_url&quot;</span><span class="p">],</span>
-<span class="w">      </span><span class="nt">&quot;msg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;field required&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;value_error.missing&quot;</span>
-<span class="w">    </span><span class="p">}</span>
-<span class="w">  </span><span class="p">]</span>
-<span class="p">}</span>
-</code></pre></div>
-
-<p><strong>Status Code:</strong> <code>400 Bad Request</code></p>
-<p>Returned when the repository URL is malformed or unsupported.</p>
-<div class="highlight"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;detail&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Invalid repository URL format&quot;</span>
-<span class="p">}</span>
-</code></pre></div>
-
-<p><strong>Status Code:</strong> <code>500 Internal Server Error</code></p>
-<p>Returned when the server encounters an unexpected error during request processing (e.g., AI CLI unavailable, git clone failure).</p>
-<div class="highlight"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;detail&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Generation failed: &lt;error message&gt;&quot;</span>
-<span class="p">}</span>
-</code></pre></div>
-
-<h2 id="generation-pipeline">Generation Pipeline</h2>
-<p>When you call <code>POST /api/generate</code>, the service executes a four-stage pipeline:</p>
-<h3 id="stage-1-clone-repository">Stage 1: Clone Repository</h3>
-<p>The repository is shallow-cloned (<code>--depth 1</code>) to a temporary directory to minimize disk usage and clone time.</p>
-<h3 id="stage-2-ai-planner">Stage 2: AI Planner</h3>
-<p>The configured AI CLI analyzes the full repository and produces a <code>plan.json</code> file containing the documentation structure — pages, sections, and navigation hierarchy.</p>
-<h3 id="stage-3-ai-content-generator">Stage 3: AI Content Generator</h3>
-<p>For each page defined in <code>plan.json</code>, the AI CLI explores the codebase and generates a markdown file. Pages are generated concurrently using semaphore-limited concurrency for efficiency. Output is cached at:</p>
-<div class="highlight"><pre><span></span><code>/data/projects/{name}/cache/pages/*.md
-</code></pre></div>
-
-<h3 id="stage-4-html-renderer">Stage 4: HTML Renderer</h3>
-<p>Markdown pages and <code>plan.json</code> are converted into a polished static HTML site using Jinja2 templates with bundled assets. The final site includes sidebar navigation, dark/light theme toggle, client-side search, and code syntax highlighting via highlight.js.</p>
-<p>The rendered site is output to:</p>
-<div class="highlight"><pre><span></span><code>/data/projects/{name}/site/
-</code></pre></div>
-
-<blockquote>
-<p><strong>Tip:</strong> Once generation completes with status <code>ready</code>, view the docs at <code>GET /docs/{project}/</code> or download them as a <code>.tar.gz</code> archive via <code>GET /api/projects/{name}/download</code>.</p>
-</blockquote>
 <h2 id="incremental-updates">Incremental Updates</h2>
 <p>Calling <code>POST /api/generate</code> for a repository that has already been generated triggers an incremental update:</p>
 <ol>
-<li>The service fetches the repository and compares the current commit SHA against the stored SHA in the database.</li>
-<li>If the commit SHA has changed, the AI Planner re-evaluates whether the documentation structure has changed.</li>
-<li>Only pages whose content may be affected by the changes are regenerated.</li>
-<li>If the plan structure is unchanged and only specific files changed, only the relevant pages are regenerated.</li>
+<li>The current commit SHA is compared against the stored SHA from the previous generation</li>
+<li>If the repository has changed, the AI Planner re-evaluates the documentation structure</li>
+<li>Only pages whose content may be affected by the changes are regenerated</li>
+<li>If the plan structure is unchanged and only specific files changed, only relevant pages are regenerated</li>
 </ol>
-<p>This significantly reduces generation time for repositories that have already been documented.</p>
 <blockquote>
-<p><strong>Note:</strong> If the commit SHA has not changed since the last generation, the pipeline may skip regeneration entirely.</p>
+<p><strong>Note:</strong> If the repository has not changed since the last generation (same commit SHA), the pipeline may skip regeneration entirely and return the existing documentation.</p>
 </blockquote>
 <h2 id="ai-provider-configuration">AI Provider Configuration</h2>
-<p>The AI provider used during generation is controlled by environment variables. The configured provider affects all stages that invoke the AI CLI (planning and content generation).</p>
-<table>
-<thead>
-<tr>
-<th>Environment Variable</th>
-<th>Default</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>AI_PROVIDER</code></td>
-<td><code>claude</code></td>
-<td>AI CLI provider. One of <code>claude</code>, <code>gemini</code>, or <code>cursor</code>.</td>
-</tr>
-<tr>
-<td><code>AI_MODEL</code></td>
-<td><code>claude-opus-4-6[1m]</code></td>
-<td>Model identifier passed to the AI CLI.</td>
-</tr>
-<tr>
-<td><code>AI_CLI_TIMEOUT</code></td>
-<td><code>60</code></td>
-<td>Maximum time in minutes for each AI CLI invocation.</td>
-</tr>
-</tbody>
-</table>
-<p>The provider determines which binary and command flags are used:</p>
-<div class="highlight"><pre><span></span><code><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="k">class</span><span class="w"> </span><span class="nc">ProviderConfig</span><span class="p">:</span>
-    <span class="n">binary</span><span class="p">:</span> <span class="nb">str</span>
-    <span class="n">build_cmd</span><span class="p">:</span> <span class="n">Callable</span>
-    <span class="n">uses_own_cwd</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
-</code></pre></div>
-
+<p>The AI provider used for generation is configured via environment variables, not per-request. The following providers are supported:</p>
 <table>
 <thead>
 <tr>
 <th>Provider</th>
 <th>Binary</th>
-<th>Command Pattern</th>
+<th>Environment Variable for API Key</th>
 </tr>
 </thead>
 <tbody>
 <tr>
+<td>Claude (default)</td>
 <td><code>claude</code></td>
-<td><code>claude</code></td>
-<td><code>claude --model &lt;model&gt; --dangerously-skip-permissions -p</code></td>
+<td><code>ANTHROPIC_API_KEY</code> or Vertex AI credentials</td>
 </tr>
 <tr>
+<td>Gemini</td>
 <td><code>gemini</code></td>
-<td><code>gemini</code></td>
-<td><code>gemini --model &lt;model&gt; --yolo</code></td>
+<td><code>GEMINI_API_KEY</code></td>
 </tr>
 <tr>
-<td><code>cursor</code></td>
+<td>Cursor</td>
 <td><code>agent</code></td>
-<td><code>agent --force --model &lt;model&gt; --print --workspace &lt;path&gt;</code></td>
+<td><code>CURSOR_API_KEY</code></td>
 </tr>
 </tbody>
 </table>
-<blockquote>
-<p><strong>Warning:</strong> Before starting generation, the service runs a lightweight availability check against the configured AI CLI. If the CLI is not installed or credentials are not configured, the generation will fail.</p>
-</blockquote>
-<h2 id="monitoring-generation-progress">Monitoring Generation Progress</h2>
-<p>After submitting a generation request, use these endpoints to track progress:</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># List all projects and their statuses</span>
-curl<span class="w"> </span>http://localhost:8000/api/status
-
-<span class="c1"># Get details for a specific project</span>
-curl<span class="w"> </span>http://localhost:8000/api/projects/my-project
+<h3 id="default-settings">Default Settings</h3>
+<table>
+<thead>
+<tr>
+<th>Setting</th>
+<th>Environment Variable</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>AI Provider</td>
+<td><code>AI_PROVIDER</code></td>
+<td><code>claude</code></td>
+</tr>
+<tr>
+<td>AI Model</td>
+<td><code>AI_MODEL</code></td>
+<td><code>claude-opus-4-6[1m]</code></td>
+</tr>
+<tr>
+<td>CLI Timeout</td>
+<td><code>AI_CLI_TIMEOUT</code></td>
+<td><code>60</code> (minutes)</td>
+</tr>
+</tbody>
+</table>
+<p>Example <code>.env</code> configuration:</p>
+<div class="highlight"><pre><span></span><code><span class="nv">AI_PROVIDER</span><span class="o">=</span>claude
+<span class="nv">AI_MODEL</span><span class="o">=</span>claude-opus-4-6<span class="o">[</span>1m<span class="o">]</span>
+<span class="nv">AI_CLI_TIMEOUT</span><span class="o">=</span><span class="m">60</span>
+<span class="nv">ANTHROPIC_API_KEY</span><span class="o">=</span>sk-ant-...
 </code></pre></div>
 
-<p>The project details endpoint returns metadata including the last generated timestamp, commit SHA, and list of generated pages.</p>
-<h2 id="complete-example">Complete Example</h2>
-<div class="highlight"><pre><span></span><code><span class="c1"># 1. Start generation</span>
+<blockquote>
+<p><strong>Warning:</strong> The <code>AI_CLI_TIMEOUT</code> value is in minutes. Large repositories with many pages may require increasing this value beyond the default of 60 minutes.</p>
+</blockquote>
+<h2 id="authentication-for-private-repositories">Authentication for Private Repositories</h2>
+<p>Private repository access relies on the system git credentials available to the docsfy process.</p>
+<h3 id="docker-deployment">Docker Deployment</h3>
+<p>Mount your SSH keys or Google Cloud credentials into the container via <code>docker-compose.yaml</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">services</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">docsfy</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">build</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">.</span>
+<span class="w">    </span><span class="nt">ports</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;8000:8000&quot;</span>
+<span class="w">    </span><span class="nt">env_file</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">.env</span>
+<span class="w">    </span><span class="nt">volumes</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./data:/data</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">~/.ssh:/home/appuser/.ssh:ro</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">~/.config/gcloud:/home/appuser/.config/gcloud:ro</span>
+</code></pre></div>
+
+<blockquote>
+<p><strong>Warning:</strong> Ensure SSH keys mounted into the container have appropriate file permissions (<code>600</code>) and that the <code>known_hosts</code> file includes <code>github.com</code>.</p>
+</blockquote>
+<h2 id="examples">Examples</h2>
+<h3 id="generate-docs-for-a-public-repository-https">Generate docs for a public repository (HTTPS)</h3>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/api/generate<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{&quot;repo_url&quot;: &quot;https://github.com/owner/my-project&quot;}&#39;</span>
+</code></pre></div>
+
+<h3 id="generate-docs-for-a-private-repository-ssh">Generate docs for a private repository (SSH)</h3>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/api/generate<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{&quot;repo_url&quot;: &quot;git@github.com:owner/private-project.git&quot;}&#39;</span>
+</code></pre></div>
+
+<h3 id="full-workflow-generate-and-poll-until-ready">Full workflow: generate and poll until ready</h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Start generation</span>
 curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/api/generate<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{&quot;repo_url&quot;: &quot;https://github.com/owner/my-project&quot;}&#39;</span>
-<span class="c1"># Response: {&quot;name&quot;: &quot;my-project&quot;, &quot;repo_url&quot;: &quot;...&quot;, &quot;status&quot;: &quot;generating&quot;}</span>
 
-<span class="c1"># 2. Poll for completion</span>
-curl<span class="w"> </span>http://localhost:8000/api/projects/my-project
-<span class="c1"># Response includes &quot;status&quot;: &quot;ready&quot; when complete</span>
+<span class="c1"># Poll for completion</span>
+<span class="k">while</span><span class="w"> </span>true<span class="p">;</span><span class="w"> </span><span class="k">do</span>
+<span class="w">  </span><span class="nv">STATUS</span><span class="o">=</span><span class="k">$(</span>curl<span class="w"> </span>-s<span class="w"> </span>http://localhost:8000/api/projects/my-project<span class="w"> </span><span class="p">|</span><span class="w"> </span>jq<span class="w"> </span>-r<span class="w"> </span><span class="s1">&#39;.status&#39;</span><span class="k">)</span>
+<span class="w">  </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Status: </span><span class="nv">$STATUS</span><span class="s2">&quot;</span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="o">[</span><span class="w"> </span><span class="s2">&quot;</span><span class="nv">$STATUS</span><span class="s2">&quot;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;ready&quot;</span><span class="w"> </span><span class="o">]</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="o">[</span><span class="w"> </span><span class="s2">&quot;</span><span class="nv">$STATUS</span><span class="s2">&quot;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;error&quot;</span><span class="w"> </span><span class="o">]</span><span class="p">;</span><span class="w"> </span><span class="k">then</span>
+<span class="w">    </span><span class="k">break</span>
+<span class="w">  </span><span class="k">fi</span>
+<span class="w">  </span>sleep<span class="w"> </span><span class="m">10</span>
+<span class="k">done</span>
 
-<span class="c1"># 3. View the generated docs</span>
-<span class="c1"># Open in browser: http://localhost:8000/docs/my-project/</span>
-
-<span class="c1"># 4. Or download as a static site archive</span>
-curl<span class="w"> </span>-o<span class="w"> </span>docs.tar.gz<span class="w"> </span>http://localhost:8000/api/projects/my-project/download
+<span class="c1"># View the generated docs</span>
+open<span class="w"> </span>http://localhost:8000/docs/my-project/
 </code></pre></div>
 
+<h3 id="trigger-an-incremental-update">Trigger an incremental update</h3>
+<p>Re-submitting the same repository URL after upstream changes triggers an incremental update — only affected pages are regenerated:</p>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/api/generate<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{&quot;repo_url&quot;: &quot;https://github.com/owner/my-project&quot;}&#39;</span>
+</code></pre></div>
+
+<h2 id="storage-layout">Storage Layout</h2>
+<p>After successful generation, the project artifacts are stored as follows:</p>
+<div class="highlight"><pre><span></span><code>/data/projects/{project-name}/
+  plan.json             # Documentation structure from AI Planner
+  cache/
+    pages/*.md          # AI-generated markdown (cached for incremental updates)
+  site/                 # Final rendered static HTML
+    index.html
+    *.html
+    assets/
+      style.css
+      search.js
+      theme-toggle.js
+      highlight.js
+    search-index.json
+</code></pre></div>
+
+<p>Project metadata (name, repo URL, status, last commit SHA, generation history) is stored in the SQLite database at <code>/data/docsfy.db</code>.</p>
 <h2 id="related-endpoints">Related Endpoints</h2>
 <table>
 <thead>
@@ -550,22 +601,22 @@ curl<span class="w"> </span>-o<span class="w"> </span>docs.tar.gz<span class="w"
 <tr>
 <td><code>GET</code></td>
 <td><code>/api/projects/{name}</code></td>
-<td>Get project details</td>
+<td>Get project details including last commit SHA and page list</td>
 </tr>
 <tr>
 <td><code>DELETE</code></td>
 <td><code>/api/projects/{name}</code></td>
-<td>Remove a project and its generated docs</td>
+<td>Remove a project and all its generated docs</td>
 </tr>
 <tr>
 <td><code>GET</code></td>
 <td><code>/api/projects/{name}/download</code></td>
-<td>Download site as <code>.tar.gz</code> archive</td>
+<td>Download the generated site as a <code>.tar.gz</code> archive</td>
 </tr>
 <tr>
 <td><code>GET</code></td>
 <td><code>/docs/{project}/{path}</code></td>
-<td>Serve generated static HTML docs</td>
+<td>Serve the generated static HTML documentation</td>
 </tr>
 </tbody>
 </table>
@@ -573,15 +624,15 @@ curl<span class="w"> </span>-o<span class="w"> </span>docs.tar.gz<span class="w"
             </article>
             <nav class="page-nav">
                 
-                <a href="api-overview.html" class="page-nav-link page-nav-prev">
+                <a href="ai-cli-integration.html" class="page-nav-link page-nav-prev">
                     <span class="page-nav-label">Previous</span>
-                    <span class="page-nav-title">API Overview</span>
+                    <span class="page-nav-title">AI CLI Integration</span>
                 </a>
                 
                 
-                <a href="api-status.html" class="page-nav-link page-nav-next">
+                <a href="api-status-and-projects.html" class="page-nav-link page-nav-next">
                     <span class="page-nav-label">Next</span>
-                    <span class="page-nav-title">GET /api/status</span>
+                    <span class="page-nav-title">GET /api/status &amp; Project Details</span>
                 </a>
                 
             </nav>
@@ -595,7 +646,7 @@ curl<span class="w"> </span>-o<span class="w"> </span>docs.tar.gz<span class="w"
 <li><a href="#request">Request</a><ul>
 <li><a href="#headers">Headers</a></li>
 <li><a href="#request-body">Request Body</a></li>
-<li><a href="#example-request">Example Request</a></li>
+<li><a href="#supported-repository-url-formats">Supported Repository URL Formats</a></li>
 </ul>
 </li>
 <li><a href="#response">Response</a><ul>
@@ -610,10 +661,24 @@ curl<span class="w"> </span>-o<span class="w"> </span>docs.tar.gz<span class="w"
 <li><a href="#stage-4-html-renderer">Stage 4: HTML Renderer</a></li>
 </ul>
 </li>
+<li><a href="#tracking-generation-status">Tracking Generation Status</a></li>
 <li><a href="#incremental-updates">Incremental Updates</a></li>
-<li><a href="#ai-provider-configuration">AI Provider Configuration</a></li>
-<li><a href="#monitoring-generation-progress">Monitoring Generation Progress</a></li>
-<li><a href="#complete-example">Complete Example</a></li>
+<li><a href="#ai-provider-configuration">AI Provider Configuration</a><ul>
+<li><a href="#default-settings">Default Settings</a></li>
+</ul>
+</li>
+<li><a href="#authentication-for-private-repositories">Authentication for Private Repositories</a><ul>
+<li><a href="#docker-deployment">Docker Deployment</a></li>
+</ul>
+</li>
+<li><a href="#examples">Examples</a><ul>
+<li><a href="#generate-docs-for-a-public-repository-https">Generate docs for a public repository (HTTPS)</a></li>
+<li><a href="#generate-docs-for-a-private-repository-ssh">Generate docs for a private repository (SSH)</a></li>
+<li><a href="#full-workflow-generate-and-poll-until-ready">Full workflow: generate and poll until ready</a></li>
+<li><a href="#trigger-an-incremental-update">Trigger an incremental update</a></li>
+</ul>
+</li>
+<li><a href="#storage-layout">Storage Layout</a></li>
 <li><a href="#related-endpoints">Related Endpoints</a></li>
 </ul>
 </div>

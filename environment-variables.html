@@ -4,14 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Environment Variables - docsfy</title>
-    <meta name="description" content="AI-powered documentation generator that creates polished, Mintlify-quality static HTML sites from GitHub repositories.">
+    <meta name="description" content="AI-powered documentation generator that creates polished static HTML sites from GitHub repositories">
     <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <a href="index.html" class="sidebar-logo">docsfy</a>
-            <p class="sidebar-tagline">AI-powered documentation generator that creates polished, Mintlify-quality static HTML sites from GitHub repositories.</p>
+            <p class="sidebar-tagline">AI-powered documentation generator that creates polished static HTML sites from GitHub repositories</p>
         </div>
 
         <div class="sidebar-search">
@@ -68,9 +68,9 @@
                     </li>
                     
                     <li>
-                        <a href="docker-deployment.html"
+                        <a href="storage-and-data.html"
                            class="nav-link">
-                            Docker Deployment
+                            Storage &amp; Data
                         </a>
                     </li>
                     
@@ -89,9 +89,9 @@
                     </li>
                     
                     <li>
-                        <a href="incremental-updates.html"
+                        <a href="serving-docs.html"
                            class="nav-link">
-                            Incremental Updates
+                            Serving Documentation
                         </a>
                     </li>
                     
@@ -103,9 +103,9 @@
                     </li>
                     
                     <li>
-                        <a href="managing-projects.html"
+                        <a href="incremental-updates.html"
                            class="nav-link">
-                            Managing Projects
+                            Incremental Updates
                         </a>
                     </li>
                     
@@ -124,16 +124,16 @@
                     </li>
                     
                     <li>
-                        <a href="storage-and-database.html"
+                        <a href="html-renderer.html"
                            class="nav-link">
-                            Storage &amp; Database
+                            HTML Renderer &amp; Theming
                         </a>
                     </li>
                     
                     <li>
-                        <a href="html-theming.html"
+                        <a href="ai-cli-integration.html"
                            class="nav-link">
-                            HTML Theming &amp; Output
+                            AI CLI Integration
                         </a>
                     </li>
                     
@@ -145,13 +145,6 @@
                 <ul class="nav-group-pages">
                     
                     <li>
-                        <a href="api-overview.html"
-                           class="nav-link">
-                            API Overview
-                        </a>
-                    </li>
-                    
-                    <li>
                         <a href="api-generate.html"
                            class="nav-link">
                             POST /api/generate
@@ -159,23 +152,16 @@
                     </li>
                     
                     <li>
-                        <a href="api-status.html"
+                        <a href="api-status-and-projects.html"
                            class="nav-link">
-                            GET /api/status
+                            GET /api/status &amp; Project Details
                         </a>
                     </li>
                     
                     <li>
-                        <a href="api-projects.html"
+                        <a href="api-download.html"
                            class="nav-link">
-                            Project Endpoints
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="api-docs-serving.html"
-                           class="nav-link">
-                            GET /docs/{project}/{path}
+                            GET /api/projects/{name}/download
                         </a>
                     </li>
                     
@@ -190,20 +176,41 @@
             </div>
             
             <div class="nav-group">
+                <h3 class="nav-group-title">Deployment</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="docker-deployment.html"
+                           class="nav-link">
+                            Docker Deployment
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="docker-compose.html"
+                           class="nav-link">
+                            Docker Compose Setup
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
                 <h3 class="nav-group-title">Development</h3>
                 <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="development-setup.html"
+                           class="nav-link">
+                            Development Setup
+                        </a>
+                    </li>
                     
                     <li>
                         <a href="contributing.html"
                            class="nav-link">
                             Contributing
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="project-structure.html"
-                           class="nav-link">
-                            Project Structure
                         </a>
                     </li>
                     
@@ -250,7 +257,7 @@
                 <h1 class="article-title">Environment Variables</h1>
                 <div class="article-body">
                     <h1 id="environment-variables">Environment Variables</h1>
-<p>Complete reference for all environment variables used to configure docsfy. These variables control AI provider selection, authentication, CLI behavior, and logging.</p>
+<p>docsfy is configured entirely through environment variables. This page is a complete reference for every variable the service recognizes, organized by category.</p>
 <h2 id="quick-reference">Quick Reference</h2>
 <table>
 <thead>
@@ -258,90 +265,76 @@
 <th>Variable</th>
 <th>Default</th>
 <th>Required</th>
-<th>Category</th>
+<th>Description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><a href="#ai_provider"><code>AI_PROVIDER</code></a></td>
+<td><code>AI_PROVIDER</code></td>
 <td><code>claude</code></td>
 <td>No</td>
-<td>AI Configuration</td>
+<td>AI provider to use</td>
 </tr>
 <tr>
-<td><a href="#ai_model"><code>AI_MODEL</code></a></td>
+<td><code>AI_MODEL</code></td>
 <td><code>claude-opus-4-6[1m]</code></td>
 <td>No</td>
-<td>AI Configuration</td>
+<td>Model identifier</td>
 </tr>
 <tr>
-<td><a href="#ai_cli_timeout"><code>AI_CLI_TIMEOUT</code></a></td>
+<td><code>AI_CLI_TIMEOUT</code></td>
 <td><code>60</code></td>
 <td>No</td>
-<td>AI Configuration</td>
+<td>CLI timeout in minutes</td>
 </tr>
 <tr>
-<td><a href="#anthropic_api_key"><code>ANTHROPIC_API_KEY</code></a></td>
+<td><code>ANTHROPIC_API_KEY</code></td>
 <td>—</td>
 <td>Conditional</td>
-<td>Claude Authentication</td>
+<td>Claude API key</td>
 </tr>
 <tr>
-<td><a href="#claude_code_use_vertex"><code>CLAUDE_CODE_USE_VERTEX</code></a></td>
+<td><code>CLAUDE_CODE_USE_VERTEX</code></td>
 <td>—</td>
 <td>Conditional</td>
-<td>Claude Authentication</td>
+<td>Enable Vertex AI for Claude</td>
 </tr>
 <tr>
-<td><a href="#cloud_ml_region"><code>CLOUD_ML_REGION</code></a></td>
+<td><code>CLOUD_ML_REGION</code></td>
 <td>—</td>
 <td>Conditional</td>
-<td>Claude Authentication</td>
+<td>Google Cloud region</td>
 </tr>
 <tr>
-<td><a href="#anthropic_vertex_project_id"><code>ANTHROPIC_VERTEX_PROJECT_ID</code></a></td>
+<td><code>ANTHROPIC_VERTEX_PROJECT_ID</code></td>
 <td>—</td>
 <td>Conditional</td>
-<td>Claude Authentication</td>
+<td>GCP project ID</td>
 </tr>
 <tr>
-<td><a href="#gemini_api_key"><code>GEMINI_API_KEY</code></a></td>
-<td>Conditional</td>
-<td>Gemini Authentication</td>
-<td></td>
-</tr>
-<tr>
-<td><a href="#cursor_api_key"><code>CURSOR_API_KEY</code></a></td>
+<td><code>GEMINI_API_KEY</code></td>
 <td>—</td>
 <td>Conditional</td>
-<td>Cursor Authentication</td>
+<td>Gemini API key</td>
 </tr>
 <tr>
-<td><a href="#log_level"><code>LOG_LEVEL</code></a></td>
+<td><code>CURSOR_API_KEY</code></td>
+<td>—</td>
+<td>Conditional</td>
+<td>Cursor API key</td>
+</tr>
+<tr>
+<td><code>LOG_LEVEL</code></td>
 <td><code>INFO</code></td>
 <td>No</td>
-<td>Logging</td>
+<td>Application log level</td>
 </tr>
 </tbody>
 </table>
-<h2 id="setting-environment-variables">Setting Environment Variables</h2>
-<p>docsfy reads environment variables from a <code>.env</code> file at startup via <code>docker-compose.yaml</code>:</p>
-<div class="highlight"><pre><span></span><code><span class="nt">services</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">docsfy</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">build</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">.</span>
-<span class="w">    </span><span class="nt">ports</span><span class="p">:</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;8000:8000&quot;</span>
-<span class="w">    </span><span class="nt">env_file</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">.env</span>
-<span class="w">    </span><span class="nt">volumes</span><span class="p">:</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./data:/data</span>
-</code></pre></div>
-
-<p>Create a <code>.env</code> file in the project root based on the provided <code>.env.example</code> template. See the <a href="#complete-env-example">complete example</a> at the bottom of this page.</p>
-<hr />
-<h2 id="ai-configuration">AI Configuration</h2>
-<p>These variables control which AI provider and model docsfy uses for documentation generation, and how long CLI operations are allowed to run.</p>
+<h2 id="core-ai-configuration">Core AI Configuration</h2>
+<p>These variables control which AI provider and model docsfy uses for documentation generation.</p>
 <h3 id="ai_provider"><code>AI_PROVIDER</code></h3>
-<p>Selects the AI CLI tool used to analyze repositories and generate documentation content.</p>
+<p>Selects the AI CLI tool used for both the planning and content-generation stages of the pipeline.</p>
 <table>
 <thead>
 <tr>
@@ -391,15 +384,15 @@
 </tr>
 </tbody>
 </table>
-<p>The provider determines which authentication variables are required. See <a href="#authentication">Authentication</a> below.</p>
-<div class="highlight"><pre><span></span><code><span class="nv">AI_PROVIDER</span><span class="o">=</span>claude
+<div class="highlight"><pre><span></span><code><span class="c1"># Use Gemini as the AI provider</span>
+<span class="nv">AI_PROVIDER</span><span class="o">=</span>gemini
 </code></pre></div>
 
 <blockquote>
-<p><strong>Note:</strong> docsfy performs an availability check (a lightweight "Hi" prompt) before starting generation to verify the selected provider's CLI is installed and authenticated.</p>
+<p><strong>Note:</strong> The selected provider's CLI binary must be installed and available on <code>$PATH</code> inside the container. The default Dockerfile installs all three providers.</p>
 </blockquote>
 <h3 id="ai_model"><code>AI_MODEL</code></h3>
-<p>Specifies the AI model identifier passed to the selected provider's CLI via the <code>--model</code> flag.</p>
+<p>Specifies the model identifier passed to the AI CLI tool.</p>
 <table>
 <thead>
 <tr>
@@ -413,31 +406,28 @@
 <td><code>claude-opus-4-6[1m]</code></td>
 </tr>
 <tr>
-<td><strong>Accepted values</strong></td>
-<td>Any valid model identifier for the selected provider</td>
-</tr>
-<tr>
 <td><strong>Required</strong></td>
 <td>No</td>
 </tr>
 </tbody>
 </table>
-<p>The model identifier is passed directly to the provider binary. Use a model identifier supported by your chosen provider:</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># Claude (default)</span>
+<p>The value is passed directly to the provider's <code>--model</code> flag. Valid model identifiers depend on the provider you have selected.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Claude examples</span>
 <span class="nv">AI_MODEL</span><span class="o">=</span>claude-opus-4-6<span class="o">[</span>1m<span class="o">]</span>
+<span class="nv">AI_MODEL</span><span class="o">=</span>claude-sonnet-4-6
 
-<span class="c1"># Gemini example</span>
+<span class="c1"># Gemini examples</span>
 <span class="nv">AI_MODEL</span><span class="o">=</span>gemini-2.5-pro
 
-<span class="c1"># Cursor example</span>
-<span class="nv">AI_MODEL</span><span class="o">=</span>claude-opus-4-6
+<span class="c1"># Cursor examples</span>
+<span class="nv">AI_MODEL</span><span class="o">=</span>claude-sonnet-4-6
 </code></pre></div>
 
 <blockquote>
-<p><strong>Tip:</strong> The default model <code>claude-opus-4-6[1m]</code> uses Claude's 1M token context window, which allows the AI to analyze large repositories more effectively during the planning and content generation stages.</p>
+<p><strong>Tip:</strong> When using Vertex AI with Claude, confirm that your chosen model is available in your configured <code>CLOUD_ML_REGION</code>.</p>
 </blockquote>
 <h3 id="ai_cli_timeout"><code>AI_CLI_TIMEOUT</code></h3>
-<p>Maximum time in <strong>minutes</strong> that a single AI CLI subprocess is allowed to run before being terminated.</p>
+<p>Maximum time in <strong>minutes</strong> that a single AI CLI invocation is allowed to run before the process is terminated.</p>
 <table>
 <thead>
 <tr>
@@ -460,79 +450,18 @@
 </tr>
 </tbody>
 </table>
-<p>This timeout applies to each individual AI CLI invocation during the generation pipeline — both the planning stage (Stage 2) and each page generation call (Stage 3). Prompts are passed to the subprocess via stdin:</p>
-<div class="highlight"><pre><span></span><code><span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="nb">input</span><span class="o">=</span><span class="n">prompt</span><span class="p">,</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</code></pre></div>
-
-<div class="highlight"><pre><span></span><code><span class="nv">AI_CLI_TIMEOUT</span><span class="o">=</span><span class="m">60</span>
-</code></pre></div>
-
-<blockquote>
-<p><strong>Warning:</strong> Setting this value too low may cause generation to fail for large repositories that require extensive analysis. If you experience timeout errors, increase this value.</p>
-</blockquote>
-<hr />
-<h2 id="authentication">Authentication</h2>
-<p>Each AI provider requires its own authentication credentials. You only need to configure credentials for the provider specified by <code>AI_PROVIDER</code>.</p>
-<h3 id="claude-authentication">Claude Authentication</h3>
-<p>Claude supports two authentication methods. Use <strong>one</strong> of the following options.</p>
-<h4 id="option-1-direct-api-key">Option 1: Direct API Key</h4>
-<h5 id="anthropic_api_key"><code>ANTHROPIC_API_KEY</code></h5>
-<p>API key for direct authentication with the Anthropic API.</p>
-<table>
-<thead>
-<tr>
-<th></th>
-<th></th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><strong>Default</strong></td>
-<td>—</td>
-</tr>
-<tr>
-<td><strong>Required</strong></td>
-<td>Yes, if using Claude with direct API key authentication</td>
-</tr>
-</tbody>
-</table>
-<div class="highlight"><pre><span></span><code><span class="nv">ANTHROPIC_API_KEY</span><span class="o">=</span>sk-ant-...
+<p>This timeout applies individually to each CLI call — both planning and per-page content generation. Because the AI explores the full repository during generation, large codebases may need a higher timeout.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Allow up to 90 minutes per AI CLI call</span>
+<span class="nv">AI_CLI_TIMEOUT</span><span class="o">=</span><span class="m">90</span>
 </code></pre></div>
 
 <blockquote>
-<p><strong>Warning:</strong> Never commit API keys to version control. Always use the <code>.env</code> file or a secrets manager.</p>
+<p><strong>Warning:</strong> Setting this value too low may cause generation to fail on large repositories. The planner and each page generator run as separate CLI invocations, so the timeout applies per invocation, not to the entire pipeline.</p>
 </blockquote>
-<h4 id="option-2-google-cloud-vertex-ai">Option 2: Google Cloud Vertex AI</h4>
-<p>For organizations using Claude through Google Cloud's Vertex AI platform, set all three of the following variables:</p>
-<h5 id="claude_code_use_vertex"><code>CLAUDE_CODE_USE_VERTEX</code></h5>
-<p>Enables Vertex AI authentication mode for Claude Code CLI.</p>
-<table>
-<thead>
-<tr>
-<th></th>
-<th></th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><strong>Default</strong></td>
-<td>—</td>
-</tr>
-<tr>
-<td><strong>Accepted values</strong></td>
-<td><code>1</code> (to enable)</td>
-</tr>
-<tr>
-<td><strong>Required</strong></td>
-<td>Yes, if using Vertex AI authentication</td>
-</tr>
-</tbody>
-</table>
-<div class="highlight"><pre><span></span><code><span class="nv">CLAUDE_CODE_USE_VERTEX</span><span class="o">=</span><span class="m">1</span>
-</code></pre></div>
-
-<h5 id="cloud_ml_region"><code>CLOUD_ML_REGION</code></h5>
-<p>Google Cloud region where the Vertex AI endpoint is deployed.</p>
+<h2 id="authentication-keys">Authentication Keys</h2>
+<p>Each AI provider requires its own authentication credentials. You only need to configure credentials for the provider selected by <code>AI_PROVIDER</code>.</p>
+<h3 id="anthropic_api_key"><code>ANTHROPIC_API_KEY</code></h3>
+<p>API key for authenticating with Claude when using direct API access (not Vertex AI).</p>
 <table>
 <thead>
 <tr>
@@ -547,53 +476,18 @@
 </tr>
 <tr>
 <td><strong>Required</strong></td>
-<td>Yes, if <code>CLAUDE_CODE_USE_VERTEX=1</code></td>
+<td>Yes, when <code>AI_PROVIDER=claude</code> and Vertex AI is <strong>not</strong> configured</td>
 </tr>
 </tbody>
 </table>
-<div class="highlight"><pre><span></span><code><span class="nv">CLOUD_ML_REGION</span><span class="o">=</span>us-east5
-</code></pre></div>
-
-<h5 id="anthropic_vertex_project_id"><code>ANTHROPIC_VERTEX_PROJECT_ID</code></h5>
-<p>Google Cloud project ID that has Vertex AI enabled with Claude model access.</p>
-<table>
-<thead>
-<tr>
-<th></th>
-<th></th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><strong>Default</strong></td>
-<td>—</td>
-</tr>
-<tr>
-<td><strong>Required</strong></td>
-<td>Yes, if <code>CLAUDE_CODE_USE_VERTEX=1</code></td>
-</tr>
-</tbody>
-</table>
-<div class="highlight"><pre><span></span><code><span class="nv">ANTHROPIC_VERTEX_PROJECT_ID</span><span class="o">=</span>my-gcp-project-id
+<div class="highlight"><pre><span></span><code><span class="nv">ANTHROPIC_API_KEY</span><span class="o">=</span>sk-ant-api03-...
 </code></pre></div>
 
 <blockquote>
-<p><strong>Note:</strong> When using Vertex AI, you must also mount your Google Cloud credentials into the container. The <code>docker-compose.yaml</code> maps <code>~/.config/gcloud</code> as a read-only volume:
-<code>yaml
-volumes:
-  - ~/.config/gcloud:/home/appuser/.config/gcloud:ro</code></p>
+<p><strong>Note:</strong> This variable is ignored when Vertex AI authentication is enabled via <code>CLAUDE_CODE_USE_VERTEX=1</code>. You must use one authentication method or the other — not both.</p>
 </blockquote>
-<h4 id="complete-vertex-ai-example">Complete Vertex AI Example</h4>
-<div class="highlight"><pre><span></span><code><span class="nv">AI_PROVIDER</span><span class="o">=</span>claude
-<span class="nv">AI_MODEL</span><span class="o">=</span>claude-opus-4-6<span class="o">[</span>1m<span class="o">]</span>
-<span class="nv">CLAUDE_CODE_USE_VERTEX</span><span class="o">=</span><span class="m">1</span>
-<span class="nv">CLOUD_ML_REGION</span><span class="o">=</span>us-east5
-<span class="nv">ANTHROPIC_VERTEX_PROJECT_ID</span><span class="o">=</span>my-gcp-project-id
-</code></pre></div>
-
-<h3 id="gemini-authentication">Gemini Authentication</h3>
-<h5 id="gemini_api_key"><code>GEMINI_API_KEY</code></h5>
-<p>API key for authenticating with the Google Gemini CLI.</p>
+<h3 id="gemini_api_key"><code>GEMINI_API_KEY</code></h3>
+<p>API key for authenticating with the Gemini CLI.</p>
 <table>
 <thead>
 <tr>
@@ -608,16 +502,14 @@ volumes:
 </tr>
 <tr>
 <td><strong>Required</strong></td>
-<td>Yes, if <code>AI_PROVIDER=gemini</code></td>
+<td>Yes, when <code>AI_PROVIDER=gemini</code></td>
 </tr>
 </tbody>
 </table>
-<div class="highlight"><pre><span></span><code><span class="nv">AI_PROVIDER</span><span class="o">=</span>gemini
-<span class="nv">GEMINI_API_KEY</span><span class="o">=</span>AIza...
+<div class="highlight"><pre><span></span><code><span class="nv">GEMINI_API_KEY</span><span class="o">=</span>AIzaSy...
 </code></pre></div>
 
-<h3 id="cursor-authentication">Cursor Authentication</h3>
-<h5 id="cursor_api_key"><code>CURSOR_API_KEY</code></h5>
+<h3 id="cursor_api_key"><code>CURSOR_API_KEY</code></h3>
 <p>API key for authenticating with the Cursor Agent CLI.</p>
 <table>
 <thead>
@@ -633,21 +525,97 @@ volumes:
 </tr>
 <tr>
 <td><strong>Required</strong></td>
-<td>Yes, if <code>AI_PROVIDER=cursor</code></td>
+<td>Yes, when <code>AI_PROVIDER=cursor</code></td>
 </tr>
 </tbody>
 </table>
-<div class="highlight"><pre><span></span><code><span class="nv">AI_PROVIDER</span><span class="o">=</span>cursor
-<span class="nv">CURSOR_API_KEY</span><span class="o">=</span>cur-...
+<div class="highlight"><pre><span></span><code><span class="nv">CURSOR_API_KEY</span><span class="o">=</span>cur_...
+</code></pre></div>
+
+<h2 id="vertex-ai-settings-claude">Vertex AI Settings (Claude)</h2>
+<p>As an alternative to <code>ANTHROPIC_API_KEY</code>, Claude can authenticate through Google Cloud Vertex AI. When Vertex AI is enabled, all three variables in this section must be set.</p>
+<h3 id="claude_code_use_vertex"><code>CLAUDE_CODE_USE_VERTEX</code></h3>
+<p>Flag that switches Claude Code from direct API authentication to Vertex AI authentication.</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Default</strong></td>
+<td>— (disabled)</td>
+</tr>
+<tr>
+<td><strong>Accepted values</strong></td>
+<td><code>1</code> to enable</td>
+</tr>
+<tr>
+<td><strong>Required</strong></td>
+<td>No</td>
+</tr>
+</tbody>
+</table>
+<div class="highlight"><pre><span></span><code><span class="nv">CLAUDE_CODE_USE_VERTEX</span><span class="o">=</span><span class="m">1</span>
+</code></pre></div>
+
+<h3 id="cloud_ml_region"><code>CLOUD_ML_REGION</code></h3>
+<p>The Google Cloud region where Vertex AI requests are routed.</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Default</strong></td>
+<td>—</td>
+</tr>
+<tr>
+<td><strong>Required</strong></td>
+<td>Yes, when <code>CLAUDE_CODE_USE_VERTEX=1</code></td>
+</tr>
+</tbody>
+</table>
+<div class="highlight"><pre><span></span><code><span class="nv">CLOUD_ML_REGION</span><span class="o">=</span>us-east5
+</code></pre></div>
+
+<h3 id="anthropic_vertex_project_id"><code>ANTHROPIC_VERTEX_PROJECT_ID</code></h3>
+<p>The Google Cloud project ID that has the Vertex AI API enabled and contains your Claude model access.</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Default</strong></td>
+<td>—</td>
+</tr>
+<tr>
+<td><strong>Required</strong></td>
+<td>Yes, when <code>CLAUDE_CODE_USE_VERTEX=1</code></td>
+</tr>
+</tbody>
+</table>
+<div class="highlight"><pre><span></span><code><span class="nv">ANTHROPIC_VERTEX_PROJECT_ID</span><span class="o">=</span>my-gcp-project-123
 </code></pre></div>
 
 <blockquote>
-<p><strong>Note:</strong> Cursor uses the <code>--workspace</code> flag instead of setting the subprocess <code>cwd</code>, so its provider configuration sets <code>uses_own_cwd=True</code> internally.</p>
+<p><strong>Note:</strong> When using Vertex AI, the container also needs access to Google Cloud credentials. The default <code>docker-compose.yaml</code> mounts the host's <code>gcloud</code> config directory as a read-only volume:</p>
+<p><code>yaml
+volumes:
+  - ~/.config/gcloud:/home/appuser/.config/gcloud:ro</code></p>
 </blockquote>
-<hr />
 <h2 id="logging">Logging</h2>
 <h3 id="log_level"><code>LOG_LEVEL</code></h3>
-<p>Controls the verbosity of application logging output.</p>
+<p>Controls the verbosity of docsfy's application logs.</p>
 <table>
 <thead>
 <tr>
@@ -670,7 +638,8 @@ volumes:
 </tr>
 </tbody>
 </table>
-<div class="highlight"><pre><span></span><code><span class="nv">LOG_LEVEL</span><span class="o">=</span>INFO
+<div class="highlight"><pre><span></span><code><span class="c1"># Enable verbose debug output</span>
+<span class="nv">LOG_LEVEL</span><span class="o">=</span>DEBUG
 </code></pre></div>
 
 <table>
@@ -683,111 +652,90 @@ volumes:
 <tbody>
 <tr>
 <td><code>DEBUG</code></td>
-<td>Verbose output including AI CLI commands, subprocess I/O, and JSON parsing details. Useful for troubleshooting generation failures.</td>
+<td>Troubleshooting generation failures — logs full CLI commands, raw AI output, and template rendering details</td>
 </tr>
 <tr>
 <td><code>INFO</code></td>
-<td>Standard operational logging — generation requests, stage transitions, completion status.</td>
+<td>Normal operation — logs pipeline stage transitions, project status changes, and request handling</td>
 </tr>
 <tr>
 <td><code>WARNING</code></td>
-<td>Unexpected conditions that don't prevent operation, such as retried parsing attempts.</td>
+<td>Highlights non-fatal issues such as cache misses during incremental updates</td>
 </tr>
 <tr>
 <td><code>ERROR</code></td>
-<td>Failures in generation, CLI invocation errors, and database issues.</td>
+<td>Logs failures in individual pipeline stages or API requests</td>
 </tr>
 <tr>
 <td><code>CRITICAL</code></td>
-<td>Application-level failures that prevent the service from operating.</td>
+<td>Logs only unrecoverable startup or runtime failures</td>
 </tr>
 </tbody>
 </table>
 <blockquote>
-<p><strong>Tip:</strong> Set <code>LOG_LEVEL=DEBUG</code> when troubleshooting AI CLI integration issues. This will log the full commands being executed and the raw output from the AI provider, which is invaluable for diagnosing parsing or authentication failures.</p>
+<p><strong>Tip:</strong> Set <code>LOG_LEVEL=DEBUG</code> when diagnosing AI CLI failures. Debug output includes the full command invocation and raw CLI output, which makes it much easier to tell whether a problem is in the prompt, the model, or the authentication.</p>
 </blockquote>
-<hr />
-<h2 id="complete-env-example">Complete <code>.env</code> Example</h2>
-<p>A fully annotated <code>.env</code> file covering all available environment variables:</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># ===================</span>
-<span class="c1"># AI Configuration</span>
-<span class="c1"># ===================</span>
-
-<span class="c1"># AI provider: claude | gemini | cursor</span>
+<h2 id="example-env-file">Example <code>.env</code> File</h2>
+<p>A minimal configuration using Claude with a direct API key:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># AI Configuration</span>
 <span class="nv">AI_PROVIDER</span><span class="o">=</span>claude
-
-<span class="c1"># Model identifier passed to the provider&#39;s --model flag</span>
 <span class="nv">AI_MODEL</span><span class="o">=</span>claude-opus-4-6<span class="o">[</span>1m<span class="o">]</span>
-
-<span class="c1"># Timeout (in minutes) for each AI CLI subprocess invocation</span>
 <span class="nv">AI_CLI_TIMEOUT</span><span class="o">=</span><span class="m">60</span>
 
-<span class="c1"># ===================</span>
-<span class="c1"># Claude - Option 1: API Key</span>
-<span class="c1"># ===================</span>
-<span class="c1"># ANTHROPIC_API_KEY=sk-ant-...</span>
+<span class="c1"># Claude - API Key</span>
+<span class="nv">ANTHROPIC_API_KEY</span><span class="o">=</span>sk-ant-api03-...
 
-<span class="c1"># ===================</span>
-<span class="c1"># Claude - Option 2: Vertex AI</span>
-<span class="c1"># ===================</span>
-<span class="c1"># CLAUDE_CODE_USE_VERTEX=1</span>
-<span class="c1"># CLOUD_ML_REGION=us-east5</span>
-<span class="c1"># ANTHROPIC_VERTEX_PROJECT_ID=my-gcp-project-id</span>
-
-<span class="c1"># ===================</span>
-<span class="c1"># Gemini</span>
-<span class="c1"># ===================</span>
-<span class="c1"># GEMINI_API_KEY=AIza...</span>
-
-<span class="c1"># ===================</span>
-<span class="c1"># Cursor</span>
-<span class="c1"># ===================</span>
-<span class="c1"># CURSOR_API_KEY=cur-...</span>
-
-<span class="c1"># ===================</span>
 <span class="c1"># Logging</span>
-<span class="c1"># ===================</span>
 <span class="nv">LOG_LEVEL</span><span class="o">=</span>INFO
 </code></pre></div>
 
-<hr />
-<h2 id="provider-configuration-summary">Provider Configuration Summary</h2>
-<p>The following table shows which environment variables are relevant for each provider:</p>
+<p>A configuration using Claude through Vertex AI:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># AI Configuration</span>
+<span class="nv">AI_PROVIDER</span><span class="o">=</span>claude
+<span class="nv">AI_MODEL</span><span class="o">=</span>claude-opus-4-6<span class="o">[</span>1m<span class="o">]</span>
+<span class="nv">AI_CLI_TIMEOUT</span><span class="o">=</span><span class="m">60</span>
+
+<span class="c1"># Claude - Vertex AI</span>
+<span class="nv">CLAUDE_CODE_USE_VERTEX</span><span class="o">=</span><span class="m">1</span>
+<span class="nv">CLOUD_ML_REGION</span><span class="o">=</span>us-east5
+<span class="nv">ANTHROPIC_VERTEX_PROJECT_ID</span><span class="o">=</span>my-gcp-project-123
+
+<span class="c1"># Logging</span>
+<span class="nv">LOG_LEVEL</span><span class="o">=</span>INFO
+</code></pre></div>
+
+<p>A configuration using Gemini:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># AI Configuration</span>
+<span class="nv">AI_PROVIDER</span><span class="o">=</span>gemini
+<span class="nv">AI_MODEL</span><span class="o">=</span>gemini-2.5-pro
+<span class="nv">AI_CLI_TIMEOUT</span><span class="o">=</span><span class="m">60</span>
+
+<span class="c1"># Gemini</span>
+<span class="nv">GEMINI_API_KEY</span><span class="o">=</span>AIzaSy...
+
+<span class="c1"># Logging</span>
+<span class="nv">LOG_LEVEL</span><span class="o">=</span>INFO
+</code></pre></div>
+
+<blockquote>
+<p><strong>Warning:</strong> Never commit <code>.env</code> files containing real API keys to version control. The repository includes a <code>.env.example</code> template with placeholder values that is safe to commit.</p>
+</blockquote>
+<h2 id="provider-authentication-summary">Provider Authentication Summary</h2>
+<p>The table below shows which authentication variables are required for each provider.</p>
 <table>
 <thead>
 <tr>
 <th>Variable</th>
-<th style="text-align: center;">Claude (API Key)</th>
-<th style="text-align: center;">Claude (Vertex)</th>
-<th style="text-align: center;">Gemini</th>
-<th style="text-align: center;">Cursor</th>
+<th style="text-align: center;"><code>claude</code> (API key)</th>
+<th style="text-align: center;"><code>claude</code> (Vertex AI)</th>
+<th style="text-align: center;"><code>gemini</code></th>
+<th style="text-align: center;"><code>cursor</code></th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>AI_PROVIDER</code></td>
-<td style="text-align: center;"><code>claude</code></td>
-<td style="text-align: center;"><code>claude</code></td>
-<td style="text-align: center;"><code>gemini</code></td>
-<td style="text-align: center;"><code>cursor</code></td>
-</tr>
-<tr>
-<td><code>AI_MODEL</code></td>
-<td style="text-align: center;">Yes</td>
-<td style="text-align: center;">Yes</td>
-<td style="text-align: center;">Yes</td>
-<td style="text-align: center;">Yes</td>
-</tr>
-<tr>
-<td><code>AI_CLI_TIMEOUT</code></td>
-<td style="text-align: center;">Yes</td>
-<td style="text-align: center;">Yes</td>
-<td style="text-align: center;">Yes</td>
-<td style="text-align: center;">Yes</td>
-</tr>
-<tr>
 <td><code>ANTHROPIC_API_KEY</code></td>
-<td style="text-align: center;"><strong>Required</strong></td>
+<td style="text-align: center;">Required</td>
 <td style="text-align: center;">—</td>
 <td style="text-align: center;">—</td>
 <td style="text-align: center;">—</td>
@@ -795,21 +743,21 @@ volumes:
 <tr>
 <td><code>CLAUDE_CODE_USE_VERTEX</code></td>
 <td style="text-align: center;">—</td>
-<td style="text-align: center;"><strong>Required</strong></td>
+<td style="text-align: center;">Required (<code>1</code>)</td>
 <td style="text-align: center;">—</td>
 <td style="text-align: center;">—</td>
 </tr>
 <tr>
 <td><code>CLOUD_ML_REGION</code></td>
 <td style="text-align: center;">—</td>
-<td style="text-align: center;"><strong>Required</strong></td>
+<td style="text-align: center;">Required</td>
 <td style="text-align: center;">—</td>
 <td style="text-align: center;">—</td>
 </tr>
 <tr>
 <td><code>ANTHROPIC_VERTEX_PROJECT_ID</code></td>
 <td style="text-align: center;">—</td>
-<td style="text-align: center;"><strong>Required</strong></td>
+<td style="text-align: center;">Required</td>
 <td style="text-align: center;">—</td>
 <td style="text-align: center;">—</td>
 </tr>
@@ -817,7 +765,7 @@ volumes:
 <td><code>GEMINI_API_KEY</code></td>
 <td style="text-align: center;">—</td>
 <td style="text-align: center;">—</td>
-<td style="text-align: center;"><strong>Required</strong></td>
+<td style="text-align: center;">Required</td>
 <td style="text-align: center;">—</td>
 </tr>
 <tr>
@@ -825,14 +773,7 @@ volumes:
 <td style="text-align: center;">—</td>
 <td style="text-align: center;">—</td>
 <td style="text-align: center;">—</td>
-<td style="text-align: center;"><strong>Required</strong></td>
-</tr>
-<tr>
-<td><code>LOG_LEVEL</code></td>
-<td style="text-align: center;">Yes</td>
-<td style="text-align: center;">Yes</td>
-<td style="text-align: center;">Yes</td>
-<td style="text-align: center;">Yes</td>
+<td style="text-align: center;">Required</td>
 </tr>
 </tbody>
 </table>
@@ -859,25 +800,30 @@ volumes:
                     <div class="toc">
 <ul>
 <li><a href="#quick-reference">Quick Reference</a></li>
-<li><a href="#setting-environment-variables">Setting Environment Variables</a></li>
-<li><a href="#ai-configuration">AI Configuration</a><ul>
+<li><a href="#core-ai-configuration">Core AI Configuration</a><ul>
 <li><a href="#ai_provider">AI_PROVIDER</a></li>
 <li><a href="#ai_model">AI_MODEL</a></li>
 <li><a href="#ai_cli_timeout">AI_CLI_TIMEOUT</a></li>
 </ul>
 </li>
-<li><a href="#authentication">Authentication</a><ul>
-<li><a href="#claude-authentication">Claude Authentication</a></li>
-<li><a href="#gemini-authentication">Gemini Authentication</a></li>
-<li><a href="#cursor-authentication">Cursor Authentication</a></li>
+<li><a href="#authentication-keys">Authentication Keys</a><ul>
+<li><a href="#anthropic_api_key">ANTHROPIC_API_KEY</a></li>
+<li><a href="#gemini_api_key">GEMINI_API_KEY</a></li>
+<li><a href="#cursor_api_key">CURSOR_API_KEY</a></li>
+</ul>
+</li>
+<li><a href="#vertex-ai-settings-claude">Vertex AI Settings (Claude)</a><ul>
+<li><a href="#claude_code_use_vertex">CLAUDE_CODE_USE_VERTEX</a></li>
+<li><a href="#cloud_ml_region">CLOUD_ML_REGION</a></li>
+<li><a href="#anthropic_vertex_project_id">ANTHROPIC_VERTEX_PROJECT_ID</a></li>
 </ul>
 </li>
 <li><a href="#logging">Logging</a><ul>
 <li><a href="#log_level">LOG_LEVEL</a></li>
 </ul>
 </li>
-<li><a href="#complete-env-example">Complete .env Example</a></li>
-<li><a href="#provider-configuration-summary">Provider Configuration Summary</a></li>
+<li><a href="#example-env-file">Example .env File</a></li>
+<li><a href="#provider-authentication-summary">Provider Authentication Summary</a></li>
 </ul>
 </div>
 

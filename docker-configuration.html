@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Docker &amp; Deployment - docsfy</title>
+    <meta name="description" content="AI-powered documentation site generator that turns GitHub repositories into polished, Mintlify-quality static HTML docs">
+    <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <a href="index.html" class="sidebar-logo">docsfy</a>
+            <p class="sidebar-tagline">AI-powered documentation site generator that turns GitHub repositories into polished, Mintlify-quality static HTML docs</p>
+        </div>
+
+        <div class="sidebar-search">
+            <input type="text" id="search-input" placeholder="Search... (⌘K)" autocomplete="off" readonly>
+            <div id="search-results" class="search-results"></div>
+        </div>
+
+        <nav class="sidebar-nav">
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Getting Started</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="introduction.html"
+                           class="nav-link">
+                            Introduction
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="quickstart.html"
+                           class="nav-link">
+                            Quickstart
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="installation.html"
+                           class="nav-link">
+                            Installation
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Configuration</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="environment-variables.html"
+                           class="nav-link">
+                            Environment Variables
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="ai-providers.html"
+                           class="nav-link">
+                            AI Provider Setup
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="docker-configuration.html"
+                           class="nav-link active">
+                            Docker &amp; Deployment
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Usage</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="generating-docs.html"
+                           class="nav-link">
+                            Generating Documentation
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="serving-and-hosting.html"
+                           class="nav-link">
+                            Serving &amp; Hosting
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="incremental-updates.html"
+                           class="nav-link">
+                            Incremental Updates
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="managing-projects.html"
+                           class="nav-link">
+                            Managing Projects
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Architecture</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="generation-pipeline.html"
+                           class="nav-link">
+                            Generation Pipeline
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="storage-and-data.html"
+                           class="nav-link">
+                            Storage &amp; Data Model
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="html-renderer.html"
+                           class="nav-link">
+                            HTML Renderer &amp; Theming
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="ai-cli-integration.html"
+                           class="nav-link">
+                            AI CLI Integration
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">API Reference</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="api-generate.html"
+                           class="nav-link">
+                            POST /api/generate
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="api-status-and-projects.html"
+                           class="nav-link">
+                            Project Status &amp; Details
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="api-download-and-delete.html"
+                           class="nav-link">
+                            Download &amp; Delete
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="api-health-and-docs.html"
+                           class="nav-link">
+                            Health Check &amp; Doc Serving
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Development</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="development-setup.html"
+                           class="nav-link">
+                            Development Setup
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="contributing.html"
+                           class="nav-link">
+                            Contributing
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+        </nav>
+    </aside>
+
+    <div class="main-wrapper">
+        <header class="top-bar">
+            <div class="top-bar-left">
+                <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebar">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                </button>
+                <a href="index.html" class="top-bar-title">docsfy</a>
+            </div>
+            <div class="top-bar-spacer"></div>
+            <div class="top-bar-right">
+                <button class="top-bar-search-btn" id="search-trigger" aria-label="Search">
+                    <kbd>&#8984;K</kbd> Search
+                </button>
+                
+                <a href="https://github.com/myk-org/docsfy" target="_blank" rel="noopener noreferrer" class="top-bar-github" id="github-link" data-repo-url="https://github.com/myk-org/docsfy">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                    <span class="github-stars" id="github-stars"></span>
+                </a>
+                
+                <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+                    <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                    </svg>
+                    <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <main class="content">
+            <article class="article">
+                <h1 class="article-title">Docker &amp; Deployment</h1>
+                <div class="article-body">
+                    <h1 id="docker-deployment">Docker &amp; Deployment</h1>
+<p>docsfy ships as a single Docker container that bundles the FastAPI service, AI CLI tools, and all runtime dependencies. This page covers the Dockerfile internals, docker-compose configuration, persistent storage, health checks, and running in OpenShift or other restricted environments.</p>
+<h2 id="dockerfile">Dockerfile</h2>
+<p>The image uses a multi-stage build on <code>python:3.12-slim</code> with <code>uv</code> as the package manager.</p>
+<h3 id="base-image-and-system-dependencies">Base Image and System Dependencies</h3>
+<div class="highlight"><pre><span></span><code><span class="k">FROM</span><span class="w"> </span><span class="s">python:3.12-slim</span>
+
+<span class="k">RUN</span><span class="w"> </span>apt-get<span class="w"> </span>update<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>apt-get<span class="w"> </span>install<span class="w"> </span>-y<span class="w"> </span>--no-install-recommends<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>bash<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>git<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>curl<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>nodejs<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>npm<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>ca-certificates<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span><span class="o">&amp;&amp;</span><span class="w"> </span>rm<span class="w"> </span>-rf<span class="w"> </span>/var/lib/apt/lists/*
+</code></pre></div>
+
+<p>The image includes <code>git</code> for repository cloning, <code>curl</code> for health checks and CLI installers, and <code>nodejs</code>/<code>npm</code> for the Gemini CLI.</p>
+<h3 id="ai-cli-installation">AI CLI Installation</h3>
+<p>All three supported AI CLI tools are installed at build time. Versions are unpinned to always pull the latest release:</p>
+<div class="highlight"><pre><span></span><code><span class="c"># Claude Code</span>
+<span class="k">RUN</span><span class="w"> </span>curl<span class="w"> </span>-fsSL<span class="w"> </span>https://claude.ai/install.sh<span class="w"> </span><span class="p">|</span><span class="w"> </span>bash
+
+<span class="c"># Cursor Agent</span>
+<span class="k">RUN</span><span class="w"> </span>curl<span class="w"> </span>-fsSL<span class="w"> </span>https://cursor.com/install<span class="w"> </span><span class="p">|</span><span class="w"> </span>bash
+
+<span class="c"># Gemini CLI</span>
+<span class="k">RUN</span><span class="w"> </span>npm<span class="w"> </span>install<span class="w"> </span>-g<span class="w"> </span>@google/gemini-cli
+</code></pre></div>
+
+<blockquote>
+<p><strong>Note:</strong> Because CLI versions are unpinned, image builds are not fully reproducible. Pin to a specific version in production if you need deterministic builds.</p>
+</blockquote>
+<h3 id="non-root-user-openshift-compatible">Non-root User (OpenShift Compatible)</h3>
+<p>The image creates a non-root user <code>appuser</code> with GID 0, which is required for OpenShift compatibility:</p>
+<div class="highlight"><pre><span></span><code><span class="k">RUN</span><span class="w"> </span>groupadd<span class="w"> </span>-r<span class="w"> </span>appuser<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>useradd<span class="w"> </span>-r<span class="w"> </span>-g<span class="w"> </span><span class="m">0</span><span class="w"> </span>-m<span class="w"> </span>-d<span class="w"> </span>/home/appuser<span class="w"> </span>-s<span class="w"> </span>/bin/bash<span class="w"> </span>appuser<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>mkdir<span class="w"> </span>-p<span class="w"> </span>/data<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>chown<span class="w"> </span>-R<span class="w"> </span>appuser:0<span class="w"> </span>/data<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>chmod<span class="w"> </span>-R<span class="w"> </span><span class="nv">g</span><span class="o">=</span>u<span class="w"> </span>/data<span class="w"> </span>/home/appuser
+
+<span class="k">USER</span><span class="w"> </span><span class="s">appuser</span>
+<span class="k">WORKDIR</span><span class="w"> </span><span class="s">/home/appuser</span>
+</code></pre></div>
+
+<p>Setting the group to <code>0</code> (root GID) allows OpenShift's arbitrary UID assignment to work correctly — the container runs as a non-root user, but files remain accessible because the group permissions mirror user permissions (<code>g=u</code>).</p>
+<h3 id="package-installation-with-uv">Package Installation with uv</h3>
+<div class="highlight"><pre><span></span><code><span class="k">COPY</span><span class="w"> </span>--chown<span class="o">=</span>appuser:0<span class="w"> </span>pyproject.toml<span class="w"> </span>uv.lock<span class="w"> </span>./
+<span class="k">RUN</span><span class="w"> </span>uv<span class="w"> </span>sync<span class="w"> </span>--frozen<span class="w"> </span>--no-dev
+
+<span class="k">COPY</span><span class="w"> </span>--chown<span class="o">=</span>appuser:0<span class="w"> </span>.<span class="w"> </span>.
+<span class="k">RUN</span><span class="w"> </span>uv<span class="w"> </span>sync<span class="w"> </span>--frozen<span class="w"> </span>--no-dev
+</code></pre></div>
+
+<blockquote>
+<p><strong>Tip:</strong> The two-step <code>COPY</code> + <code>uv sync</code> pattern leverages Docker layer caching — dependency layers are only rebuilt when <code>pyproject.toml</code> or <code>uv.lock</code> change, not on every source code edit.</p>
+</blockquote>
+<h3 id="entrypoint">Entrypoint</h3>
+<p>The container starts uvicorn bound to all interfaces on port 8000:</p>
+<div class="highlight"><pre><span></span><code><span class="k">EXPOSE</span><span class="w"> </span><span class="s">8000</span>
+
+<span class="k">ENTRYPOINT</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;uv&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;run&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;--no-sync&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;uvicorn&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;docsfy.main:app&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;--host&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;0.0.0.0&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;--port&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;8000&quot;</span><span class="p">]</span>
+</code></pre></div>
+
+<p>The <code>--no-sync</code> flag skips dependency resolution at startup since packages were already installed during the build.</p>
+<h3 id="health-check">Health Check</h3>
+<div class="highlight"><pre><span></span><code><span class="k">HEALTHCHECK</span><span class="w"> </span>--interval<span class="o">=</span>30s<span class="w"> </span>--timeout<span class="o">=</span>10s<span class="w"> </span>--retries<span class="o">=</span><span class="m">3</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span><span class="k">CMD</span><span class="w"> </span>curl<span class="w"> </span>-f<span class="w"> </span>http://localhost:8000/health<span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="nb">exit</span><span class="w"> </span><span class="m">1</span>
+</code></pre></div>
+
+<p>The <code>/health</code> endpoint returns a simple status response that Docker uses to determine container health.</p>
+<h2 id="docker-composeyaml">docker-compose.yaml</h2>
+<p>The full Compose configuration for running docsfy:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">services</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">docsfy</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">build</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">.</span>
+<span class="w">    </span><span class="nt">ports</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;8000:8000&quot;</span>
+<span class="w">    </span><span class="nt">env_file</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">.env</span>
+<span class="w">    </span><span class="nt">volumes</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./data:/data</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">~/.config/gcloud:/home/appuser/.config/gcloud:ro</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./cursor:/home/appuser/.config/cursor</span>
+<span class="w">    </span><span class="nt">healthcheck</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">test</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;CMD&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;curl&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;-f&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;http://localhost:8000/health&quot;</span><span class="p p-Indicator">]</span>
+<span class="w">      </span><span class="nt">interval</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">30s</span>
+<span class="w">      </span><span class="nt">timeout</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10s</span>
+<span class="w">      </span><span class="nt">retries</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3</span>
+</code></pre></div>
+
+<p>Start the service:</p>
+<div class="highlight"><pre><span></span><code>docker<span class="w"> </span>compose<span class="w"> </span>up<span class="w"> </span>-d
+</code></pre></div>
+
+<p>Rebuild after code changes:</p>
+<div class="highlight"><pre><span></span><code>docker<span class="w"> </span>compose<span class="w"> </span>up<span class="w"> </span>-d<span class="w"> </span>--build
+</code></pre></div>
+
+<h2 id="volume-mounts">Volume Mounts</h2>
+<p>docsfy uses three volume mounts for persistent data and credentials.</p>
+<h3 id="data-volume-datadata">Data Volume (<code>./data:/data</code>)</h3>
+<p>The primary persistent volume stores all generated documentation and the SQLite database:</p>
+<div class="highlight"><pre><span></span><code>/data/
+  docsfy.db                          # SQLite metadata database
+  projects/
+    {project-name}/
+      plan.json                      # AI-generated doc structure
+      cache/
+        pages/*.md                   # AI-generated markdown (cached for incremental updates)
+      site/                          # Final rendered static HTML
+        index.html
+        *.html
+        assets/
+          style.css
+          search.js
+          theme-toggle.js
+          highlight.js
+        search-index.json
+</code></pre></div>
+
+<p>The SQLite database at <code>/data/docsfy.db</code> tracks:</p>
+<ul>
+<li>Project name and repository URL</li>
+<li>Generation status (<code>generating</code>, <code>ready</code>, or <code>error</code>)</li>
+<li>Last generated timestamp and commit SHA</li>
+<li>Generation history and logs</li>
+</ul>
+<blockquote>
+<p><strong>Warning:</strong> The <code>./data</code> directory must be writable by the container user. If running with a non-root UID (e.g., on OpenShift), ensure the directory has group-writable permissions: <code>chmod -R g+w ./data</code>.</p>
+</blockquote>
+<h3 id="google-cloud-credentials-configgcloudhomeappuserconfiggcloudro">Google Cloud Credentials (<code>~/.config/gcloud:/home/appuser/.config/gcloud:ro</code>)</h3>
+<p>Mounted read-only (<code>:ro</code>) when using Claude via Vertex AI. This volume passes your local <code>gcloud</code> Application Default Credentials into the container.</p>
+<p>This mount is only needed when <code>CLAUDE_CODE_USE_VERTEX=1</code> is set. If you use API key authentication instead, this volume can be omitted.</p>
+<h3 id="cursor-configuration-cursorhomeappuserconfigcursor">Cursor Configuration (<code>./cursor:/home/appuser/.config/cursor</code>)</h3>
+<p>Stores Cursor CLI configuration and credentials. This mount is read-write so the Cursor agent can persist session state.</p>
+<p>This mount is only needed when <code>AI_PROVIDER=cursor</code>. It can be omitted for other providers.</p>
+<blockquote>
+<p><strong>Tip:</strong> Only mount the credential volumes you actually need. If you're using Claude with an API key, you can simplify your Compose file to just the data volume:
+<code>yaml
+volumes:
+  - ./data:/data</code></p>
+</blockquote>
+<h2 id="environment-variables">Environment Variables</h2>
+<p>Create a <code>.env</code> file from the example template. All variables have sensible defaults except provider-specific API keys.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># AI Configuration</span>
+<span class="nv">AI_PROVIDER</span><span class="o">=</span>claude<span class="w">                    </span><span class="c1"># Options: claude, gemini, cursor</span>
+<span class="nv">AI_MODEL</span><span class="o">=</span>claude-opus-4-6<span class="o">[</span>1m<span class="o">]</span><span class="w">         </span><span class="c1"># Model identifier for the chosen provider</span>
+<span class="nv">AI_CLI_TIMEOUT</span><span class="o">=</span><span class="m">60</span><span class="w">                     </span><span class="c1"># Timeout in minutes (default: 60)</span>
+
+<span class="c1"># Claude - Option 1: API Key</span>
+<span class="c1"># ANTHROPIC_API_KEY=sk-ant-...</span>
+
+<span class="c1"># Claude - Option 2: Vertex AI</span>
+<span class="c1"># CLAUDE_CODE_USE_VERTEX=1</span>
+<span class="c1"># CLOUD_ML_REGION=us-central1</span>
+<span class="c1"># ANTHROPIC_VERTEX_PROJECT_ID=my-project</span>
+
+<span class="c1"># Gemini</span>
+<span class="c1"># GEMINI_API_KEY=...</span>
+
+<span class="c1"># Cursor</span>
+<span class="c1"># CURSOR_API_KEY=...</span>
+
+<span class="c1"># Logging</span>
+<span class="nv">LOG_LEVEL</span><span class="o">=</span>INFO<span class="w">                        </span><span class="c1"># Options: DEBUG, INFO, WARNING, ERROR</span>
+</code></pre></div>
+
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>AI_PROVIDER</code></td>
+<td><code>claude</code></td>
+<td>AI backend: <code>claude</code>, <code>gemini</code>, or <code>cursor</code></td>
+</tr>
+<tr>
+<td><code>AI_MODEL</code></td>
+<td><code>claude-opus-4-6[1m]</code></td>
+<td>Model identifier passed to the AI CLI</td>
+</tr>
+<tr>
+<td><code>AI_CLI_TIMEOUT</code></td>
+<td><code>60</code></td>
+<td>Maximum minutes per AI CLI invocation</td>
+</tr>
+<tr>
+<td><code>ANTHROPIC_API_KEY</code></td>
+<td>—</td>
+<td>Claude API key (mutually exclusive with Vertex AI)</td>
+</tr>
+<tr>
+<td><code>CLAUDE_CODE_USE_VERTEX</code></td>
+<td>—</td>
+<td>Set to <code>1</code> to use Vertex AI for Claude</td>
+</tr>
+<tr>
+<td><code>CLOUD_ML_REGION</code></td>
+<td>—</td>
+<td>Google Cloud region for Vertex AI</td>
+</tr>
+<tr>
+<td><code>ANTHROPIC_VERTEX_PROJECT_ID</code></td>
+<td>—</td>
+<td>Google Cloud project ID for Vertex AI</td>
+</tr>
+<tr>
+<td><code>GEMINI_API_KEY</code></td>
+<td>—</td>
+<td>API key for Gemini CLI</td>
+</tr>
+<tr>
+<td><code>CURSOR_API_KEY</code></td>
+<td>—</td>
+<td>API key for Cursor Agent</td>
+</tr>
+<tr>
+<td><code>LOG_LEVEL</code></td>
+<td><code>INFO</code></td>
+<td>Application log level</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Warning:</strong> Never commit your <code>.env</code> file to version control. Add it to <code>.gitignore</code> and distribute credentials through a secrets manager in production.</p>
+</blockquote>
+<h2 id="health-checks">Health Checks</h2>
+<p>The <code>/health</code> endpoint provides a lightweight liveness check for container orchestrators.</p>
+<h3 id="docker-health-check">Docker Health Check</h3>
+<p>The Dockerfile and <code>docker-compose.yaml</code> both configure the same health check:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">healthcheck</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">test</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;CMD&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;curl&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;-f&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;http://localhost:8000/health&quot;</span><span class="p p-Indicator">]</span>
+<span class="w">  </span><span class="nt">interval</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">30s</span>
+<span class="w">  </span><span class="nt">timeout</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10s</span>
+<span class="w">  </span><span class="nt">retries</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3</span>
+</code></pre></div>
+
+<ul>
+<li><strong>interval</strong>: Checks every 30 seconds</li>
+<li><strong>timeout</strong>: Each check must respond within 10 seconds</li>
+<li><strong>retries</strong>: The container is marked unhealthy after 3 consecutive failures</li>
+</ul>
+<p>Inspect health status:</p>
+<div class="highlight"><pre><span></span><code>docker<span class="w"> </span>inspect<span class="w"> </span>--format<span class="o">=</span><span class="s1">&#39;{{.State.Health.Status}}&#39;</span><span class="w"> </span>docsfy-docsfy-1
+</code></pre></div>
+
+<h3 id="kubernetes-openshift-probes">Kubernetes / OpenShift Probes</h3>
+<p>When deploying to Kubernetes or OpenShift, map the health endpoint to liveness and readiness probes:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">livenessProbe</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">httpGet</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/health</span>
+<span class="w">    </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">8000</span>
+<span class="w">  </span><span class="nt">initialDelaySeconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10</span>
+<span class="w">  </span><span class="nt">periodSeconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">30</span>
+<span class="w">  </span><span class="nt">timeoutSeconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10</span>
+<span class="w">  </span><span class="nt">failureThreshold</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3</span>
+
+<span class="nt">readinessProbe</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">httpGet</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/health</span>
+<span class="w">    </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">8000</span>
+<span class="w">  </span><span class="nt">initialDelaySeconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span>
+<span class="w">  </span><span class="nt">periodSeconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10</span>
+<span class="w">  </span><span class="nt">timeoutSeconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span>
+<span class="w">  </span><span class="nt">failureThreshold</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3</span>
+</code></pre></div>
+
+<h2 id="openshift-compatible-non-root-setup">OpenShift-Compatible Non-root Setup</h2>
+<p>docsfy is designed to run on OpenShift, which assigns an arbitrary UID at runtime for security. The key requirements are:</p>
+<ol>
+<li>
+<p><strong>GID 0 membership</strong> — The <code>appuser</code> is created with group <code>0</code> (root). OpenShift assigns a random UID but always uses GID 0.</p>
+</li>
+<li>
+<p><strong>Group-equals-user permissions</strong> — All writable directories use <code>chmod g=u</code>, meaning the group has the same permissions as the owner. This ensures the arbitrary UID can read and write through the group.</p>
+</li>
+<li>
+<p><strong>No hardcoded UID</strong> — The <code>USER</code> directive sets the default, but the container does not assume a specific UID at runtime.</p>
+</li>
+</ol>
+<p>The following directories must be writable by GID 0:</p>
+<table>
+<thead>
+<tr>
+<th>Path</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/data</code></td>
+<td>SQLite database and generated documentation</td>
+</tr>
+<tr>
+<td><code>/home/appuser</code></td>
+<td>AI CLI configurations and cache</td>
+</tr>
+</tbody>
+</table>
+<h3 id="openshift-deploymentconfig-example">OpenShift DeploymentConfig Example</h3>
+<div class="highlight"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">apps/v1</span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Deployment</span>
+<span class="nt">metadata</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">docsfy</span>
+<span class="nt">spec</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">replicas</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
+<span class="w">  </span><span class="nt">selector</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">matchLabels</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">app</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">docsfy</span>
+<span class="w">  </span><span class="nt">template</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">metadata</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">labels</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">app</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">docsfy</span>
+<span class="w">    </span><span class="nt">spec</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">securityContext</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">runAsNonRoot</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">      </span><span class="nt">containers</span><span class="p">:</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">docsfy</span>
+<span class="w">          </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">docsfy:latest</span>
+<span class="w">          </span><span class="nt">ports</span><span class="p">:</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">containerPort</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">8000</span>
+<span class="w">          </span><span class="nt">envFrom</span><span class="p">:</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">secretRef</span><span class="p">:</span>
+<span class="w">                </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">docsfy-secrets</span>
+<span class="w">          </span><span class="nt">volumeMounts</span><span class="p">:</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">data</span>
+<span class="w">              </span><span class="nt">mountPath</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/data</span>
+<span class="w">          </span><span class="nt">securityContext</span><span class="p">:</span>
+<span class="w">            </span><span class="nt">allowPrivilegeEscalation</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="w">            </span><span class="nt">capabilities</span><span class="p">:</span>
+<span class="w">              </span><span class="nt">drop</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;ALL&quot;</span><span class="p p-Indicator">]</span>
+<span class="w">          </span><span class="nt">livenessProbe</span><span class="p">:</span>
+<span class="w">            </span><span class="nt">httpGet</span><span class="p">:</span>
+<span class="w">              </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/health</span>
+<span class="w">              </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">8000</span>
+<span class="w">            </span><span class="nt">initialDelaySeconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10</span>
+<span class="w">            </span><span class="nt">periodSeconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">30</span>
+<span class="w">          </span><span class="nt">readinessProbe</span><span class="p">:</span>
+<span class="w">            </span><span class="nt">httpGet</span><span class="p">:</span>
+<span class="w">              </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/health</span>
+<span class="w">              </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">8000</span>
+<span class="w">            </span><span class="nt">initialDelaySeconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span>
+<span class="w">            </span><span class="nt">periodSeconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10</span>
+<span class="w">          </span><span class="nt">resources</span><span class="p">:</span>
+<span class="w">            </span><span class="nt">requests</span><span class="p">:</span>
+<span class="w">              </span><span class="nt">memory</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;512Mi&quot;</span>
+<span class="w">              </span><span class="nt">cpu</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;250m&quot;</span>
+<span class="w">            </span><span class="nt">limits</span><span class="p">:</span>
+<span class="w">              </span><span class="nt">memory</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;2Gi&quot;</span>
+<span class="w">              </span><span class="nt">cpu</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;2000m&quot;</span>
+<span class="w">      </span><span class="nt">volumes</span><span class="p">:</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">data</span>
+<span class="w">          </span><span class="nt">persistentVolumeClaim</span><span class="p">:</span>
+<span class="w">            </span><span class="nt">claimName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">docsfy-data</span>
+</code></pre></div>
+
+<blockquote>
+<p><strong>Note:</strong> AI documentation generation is CPU- and memory-intensive. The resource limits above are starting points — adjust based on the size of repositories you plan to document.</p>
+</blockquote>
+<h3 id="kubernetes-secret-for-credentials">Kubernetes Secret for Credentials</h3>
+<p>Store API keys in a Kubernetes Secret rather than environment variables:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">v1</span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Secret</span>
+<span class="nt">metadata</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">docsfy-secrets</span>
+<span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Opaque</span>
+<span class="nt">stringData</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">AI_PROVIDER</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">claude</span>
+<span class="w">  </span><span class="nt">AI_MODEL</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">claude-opus-4-6[1m]</span>
+<span class="w">  </span><span class="nt">ANTHROPIC_API_KEY</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sk-ant-...</span>
+<span class="w">  </span><span class="nt">LOG_LEVEL</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">INFO</span>
+</code></pre></div>
+
+<h3 id="persistentvolumeclaim-for-data">PersistentVolumeClaim for Data</h3>
+<div class="highlight"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">v1</span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PersistentVolumeClaim</span>
+<span class="nt">metadata</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">docsfy-data</span>
+<span class="nt">spec</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">accessModes</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ReadWriteOnce</span>
+<span class="w">  </span><span class="nt">resources</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">requests</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">storage</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10Gi</span>
+</code></pre></div>
+
+<h2 id="building-the-image">Building the Image</h2>
+<h3 id="local-build">Local Build</h3>
+<div class="highlight"><pre><span></span><code>docker<span class="w"> </span>build<span class="w"> </span>-t<span class="w"> </span>docsfy:latest<span class="w"> </span>.
+</code></pre></div>
+
+<h3 id="multi-platform-build">Multi-platform Build</h3>
+<p>To build for both <code>amd64</code> and <code>arm64</code>:</p>
+<div class="highlight"><pre><span></span><code>docker<span class="w"> </span>buildx<span class="w"> </span>build<span class="w"> </span>--platform<span class="w"> </span>linux/amd64,linux/arm64<span class="w"> </span>-t<span class="w"> </span>docsfy:latest<span class="w"> </span>.
+</code></pre></div>
+
+<h3 id="build-arguments">Build Arguments</h3>
+<p>Override the default Python version or other base image settings using build args if the Dockerfile supports them:</p>
+<div class="highlight"><pre><span></span><code>docker<span class="w"> </span>build<span class="w"> </span>--build-arg<span class="w"> </span><span class="nv">PYTHON_VERSION</span><span class="o">=</span><span class="m">3</span>.12<span class="w"> </span>-t<span class="w"> </span>docsfy:latest<span class="w"> </span>.
+</code></pre></div>
+
+<h2 id="quick-start">Quick Start</h2>
+<ol>
+<li>
+<p><strong>Clone the repository:</strong>
+   <code>bash
+   git clone https://github.com/myk-org/docsfy.git
+   cd docsfy</code></p>
+</li>
+<li>
+<p><strong>Create your environment file:</strong>
+   <code>bash
+   cp .env.example .env
+   # Edit .env with your API key(s)</code></p>
+</li>
+<li>
+<p><strong>Start the service:</strong>
+   <code>bash
+   docker compose up -d</code></p>
+</li>
+<li>
+<p><strong>Verify it's running:</strong>
+   <code>bash
+   curl http://localhost:8000/health</code></p>
+</li>
+<li>
+<p><strong>Generate documentation for a repository:</strong>
+   <code>bash
+   curl -X POST http://localhost:8000/api/generate \
+     -H "Content-Type: application/json" \
+     -d '{"repo_url": "https://github.com/owner/repo"}'</code></p>
+</li>
+<li>
+<p><strong>View generated docs:</strong>
+   Open <code>http://localhost:8000/docs/{project-name}/</code> in your browser, or download the static site:
+   <code>bash
+   curl -o docs.tar.gz http://localhost:8000/api/projects/{project-name}/download</code></p>
+</li>
+</ol>
+                </div>
+            </article>
+            <nav class="page-nav">
+                
+                <a href="ai-providers.html" class="page-nav-link page-nav-prev">
+                    <span class="page-nav-label">Previous</span>
+                    <span class="page-nav-title">AI Provider Setup</span>
+                </a>
+                
+                
+                <a href="generating-docs.html" class="page-nav-link page-nav-next">
+                    <span class="page-nav-label">Next</span>
+                    <span class="page-nav-title">Generating Documentation</span>
+                </a>
+                
+            </nav>
+            
+            <aside class="toc-sidebar">
+                <div class="toc-container">
+                    <h3>On this page</h3>
+                    <div class="toc">
+<ul>
+<li><a href="#dockerfile">Dockerfile</a><ul>
+<li><a href="#base-image-and-system-dependencies">Base Image and System Dependencies</a></li>
+<li><a href="#ai-cli-installation">AI CLI Installation</a></li>
+<li><a href="#non-root-user-openshift-compatible">Non-root User (OpenShift Compatible)</a></li>
+<li><a href="#package-installation-with-uv">Package Installation with uv</a></li>
+<li><a href="#entrypoint">Entrypoint</a></li>
+<li><a href="#health-check">Health Check</a></li>
+</ul>
+</li>
+<li><a href="#docker-composeyaml">docker-compose.yaml</a></li>
+<li><a href="#volume-mounts">Volume Mounts</a><ul>
+<li><a href="#data-volume-datadata">Data Volume (./data:/data)</a></li>
+<li><a href="#google-cloud-credentials-configgcloudhomeappuserconfiggcloudro">Google Cloud Credentials (~/.config/gcloud:/home/appuser/.config/gcloud:ro)</a></li>
+<li><a href="#cursor-configuration-cursorhomeappuserconfigcursor">Cursor Configuration (./cursor:/home/appuser/.config/cursor)</a></li>
+</ul>
+</li>
+<li><a href="#environment-variables">Environment Variables</a></li>
+<li><a href="#health-checks">Health Checks</a><ul>
+<li><a href="#docker-health-check">Docker Health Check</a></li>
+<li><a href="#kubernetes-openshift-probes">Kubernetes / OpenShift Probes</a></li>
+</ul>
+</li>
+<li><a href="#openshift-compatible-non-root-setup">OpenShift-Compatible Non-root Setup</a><ul>
+<li><a href="#openshift-deploymentconfig-example">OpenShift DeploymentConfig Example</a></li>
+<li><a href="#kubernetes-secret-for-credentials">Kubernetes Secret for Credentials</a></li>
+<li><a href="#persistentvolumeclaim-for-data">PersistentVolumeClaim for Data</a></li>
+</ul>
+</li>
+<li><a href="#building-the-image">Building the Image</a><ul>
+<li><a href="#local-build">Local Build</a></li>
+<li><a href="#multi-platform-build">Multi-platform Build</a></li>
+<li><a href="#build-arguments">Build Arguments</a></li>
+</ul>
+</li>
+<li><a href="#quick-start">Quick Start</a></li>
+</ul>
+</div>
+
+                </div>
+            </aside>
+            
+        </main>
+
+        <footer class="footer">
+            <p>Built with <a href="https://github.com/docsfy/docsfy">docsfy</a></p>
+        </footer>
+    </div>
+
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <script src="assets/theme.js"></script>
+    <script src="assets/search.js"></script>
+    <script src="assets/copy.js"></script>
+    <script src="assets/callouts.js"></script>
+    <script src="assets/scrollspy.js"></script>
+    <script src="assets/codelabels.js"></script>
+    <script src="assets/github.js"></script>
+    <script>
+    (function() {
+        var toggle = document.getElementById('sidebar-toggle');
+        var sidebar = document.getElementById('sidebar');
+        var overlay = document.getElementById('sidebar-overlay');
+        if (toggle && sidebar) {
+            toggle.addEventListener('click', function() {
+                sidebar.classList.toggle('open');
+                if (overlay) overlay.classList.toggle('open');
+            });
+        }
+        if (overlay) {
+            overlay.addEventListener('click', function() {
+                sidebar.classList.remove('open');
+                overlay.classList.remove('open');
+            });
+        }
+    })();
+    </script>
+</body>
+</html>

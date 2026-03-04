@@ -4,14 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Generation Pipeline - docsfy</title>
-    <meta name="description" content="AI-powered documentation generator that creates polished, Mintlify-quality static HTML sites from GitHub repositories.">
+    <meta name="description" content="AI-powered documentation generator that creates polished static HTML sites from GitHub repositories">
     <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <a href="index.html" class="sidebar-logo">docsfy</a>
-            <p class="sidebar-tagline">AI-powered documentation generator that creates polished, Mintlify-quality static HTML sites from GitHub repositories.</p>
+            <p class="sidebar-tagline">AI-powered documentation generator that creates polished static HTML sites from GitHub repositories</p>
         </div>
 
         <div class="sidebar-search">
@@ -68,9 +68,9 @@
                     </li>
                     
                     <li>
-                        <a href="docker-deployment.html"
+                        <a href="storage-and-data.html"
                            class="nav-link">
-                            Docker Deployment
+                            Storage &amp; Data
                         </a>
                     </li>
                     
@@ -89,9 +89,9 @@
                     </li>
                     
                     <li>
-                        <a href="incremental-updates.html"
+                        <a href="serving-docs.html"
                            class="nav-link">
-                            Incremental Updates
+                            Serving Documentation
                         </a>
                     </li>
                     
@@ -103,9 +103,9 @@
                     </li>
                     
                     <li>
-                        <a href="managing-projects.html"
+                        <a href="incremental-updates.html"
                            class="nav-link">
-                            Managing Projects
+                            Incremental Updates
                         </a>
                     </li>
                     
@@ -124,16 +124,16 @@
                     </li>
                     
                     <li>
-                        <a href="storage-and-database.html"
+                        <a href="html-renderer.html"
                            class="nav-link">
-                            Storage &amp; Database
+                            HTML Renderer &amp; Theming
                         </a>
                     </li>
                     
                     <li>
-                        <a href="html-theming.html"
+                        <a href="ai-cli-integration.html"
                            class="nav-link">
-                            HTML Theming &amp; Output
+                            AI CLI Integration
                         </a>
                     </li>
                     
@@ -145,13 +145,6 @@
                 <ul class="nav-group-pages">
                     
                     <li>
-                        <a href="api-overview.html"
-                           class="nav-link">
-                            API Overview
-                        </a>
-                    </li>
-                    
-                    <li>
                         <a href="api-generate.html"
                            class="nav-link">
                             POST /api/generate
@@ -159,23 +152,16 @@
                     </li>
                     
                     <li>
-                        <a href="api-status.html"
+                        <a href="api-status-and-projects.html"
                            class="nav-link">
-                            GET /api/status
+                            GET /api/status &amp; Project Details
                         </a>
                     </li>
                     
                     <li>
-                        <a href="api-projects.html"
+                        <a href="api-download.html"
                            class="nav-link">
-                            Project Endpoints
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="api-docs-serving.html"
-                           class="nav-link">
-                            GET /docs/{project}/{path}
+                            GET /api/projects/{name}/download
                         </a>
                     </li>
                     
@@ -190,20 +176,41 @@
             </div>
             
             <div class="nav-group">
+                <h3 class="nav-group-title">Deployment</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="docker-deployment.html"
+                           class="nav-link">
+                            Docker Deployment
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="docker-compose.html"
+                           class="nav-link">
+                            Docker Compose Setup
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
                 <h3 class="nav-group-title">Development</h3>
                 <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="development-setup.html"
+                           class="nav-link">
+                            Development Setup
+                        </a>
+                    </li>
                     
                     <li>
                         <a href="contributing.html"
                            class="nav-link">
                             Contributing
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="project-structure.html"
-                           class="nav-link">
-                            Project Structure
                         </a>
                     </li>
                     
@@ -250,117 +257,104 @@
                 <h1 class="article-title">Generation Pipeline</h1>
                 <div class="article-body">
                     <h1 id="generation-pipeline">Generation Pipeline</h1>
-<p>The docsfy generation pipeline transforms a GitHub repository URL into a polished static HTML documentation site through four sequential stages. Each stage builds on the output of the previous one, progressing from raw source code to a fully rendered, searchable documentation website.</p>
-<div class="highlight"><pre><span></span><code>POST /api/generate { &quot;repo_url&quot;: &quot;...&quot; }
-         │
-         ▼
-┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
-│  Stage 1: Clone │────▶│  Stage 2: Plan  │────▶│  Stage 3: Gen   │────▶│  Stage 4: Render │
-│  Repository     │     │  (AI Planner)   │     │  (AI Content)   │     │  (Jinja2 + HTML) │
-└─────────────────┘     └─────────────────┘     └─────────────────┘     └─────────────────┘
-     git clone            plan.json              cache/pages/*.md        site/*.html
-     --depth 1            (doc structure)        (markdown per page)     (static site)
-</code></pre></div>
-
 <h2 id="overview">Overview</h2>
-<p>When a user submits a repository URL via <code>POST /api/generate</code>, the pipeline executes these four stages sequentially:</p>
-<table>
-<thead>
-<tr>
-<th>Stage</th>
-<th>Input</th>
-<th>Process</th>
-<th>Output</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><strong>1. Clone</strong></td>
-<td>GitHub repo URL</td>
-<td>Shallow git clone</td>
-<td>Temporary directory with source code</td>
-</tr>
-<tr>
-<td><strong>2. Plan</strong></td>
-<td>Cloned repository</td>
-<td>AI analyzes codebase structure</td>
-<td><code>plan.json</code> (documentation hierarchy)</td>
-</tr>
-<tr>
-<td><strong>3. Generate</strong></td>
-<td><code>plan.json</code> + cloned repo</td>
-<td>AI writes content per page (concurrent)</td>
-<td>Markdown files in <code>cache/pages/*.md</code></td>
-</tr>
-<tr>
-<td><strong>4. Render</strong></td>
-<td>Markdown files + <code>plan.json</code></td>
-<td>Jinja2 templating + asset bundling</td>
-<td>Static HTML site in <code>site/</code></td>
-</tr>
-</tbody>
-</table>
-<p>The pipeline status is tracked in SQLite throughout execution, transitioning from <code>generating</code> to either <code>ready</code> or <code>error</code> upon completion.</p>
-<hr />
+<p>Every documentation site produced by docsfy flows through a four-stage generation pipeline. When a <code>POST /api/generate</code> request arrives with a repository URL, the pipeline executes each stage sequentially — cloning the repository, planning the documentation structure with AI, generating page content concurrently, and rendering the final static HTML site.</p>
+<div class="highlight"><pre><span></span><code>POST /api/generate { repo_url }
+        │
+        ▼
+┌──────────────┐     ┌──────────────┐     ┌──────────────┐     ┌──────────────┐
+│  Stage 1     │     │  Stage 2     │     │  Stage 3     │     │  Stage 4     │
+│  Clone Repo  │────▶│  AI Planner  │────▶│  AI Content  │────▶│    HTML      │
+│              │     │  (plan.json) │     │  Generator   │     │  Renderer    │
+└──────────────┘     └──────────────┘     └──────────────┘     └──────────────┘
+   temp dir              plan.json          cache/pages/*.md     site/*.html
+</code></pre></div>
+
+<p>The pipeline stores all intermediate and final artifacts under <code>/data/projects/{project-name}/</code>, making each stage's output inspectable and cacheable for incremental updates.</p>
 <h2 id="stage-1-repository-cloning">Stage 1: Repository Cloning</h2>
-<p>The first stage acquires the source code that will be documented. docsfy performs a <strong>shallow clone</strong> to minimize bandwidth and disk usage — only the latest commit is needed since documentation reflects the current state of the codebase.</p>
+<p>The first stage acquires the source code by performing a <strong>shallow clone</strong> of the target repository into a temporary directory.</p>
 <h3 id="how-it-works">How It Works</h3>
-<div class="highlight"><pre><span></span><code>Input:  GitHub repository URL (SSH or HTTPS)
-Output: Temporary directory containing the cloned repository
+<p>docsfy uses a <code>--depth 1</code> shallow clone to minimize bandwidth and disk usage. Only the latest commit on the default branch is fetched — historical commits are unnecessary since the AI analyzes the current state of the codebase.</p>
+<div class="highlight"><pre><span></span><code>git<span class="w"> </span>clone<span class="w"> </span>--depth<span class="w"> </span><span class="m">1</span><span class="w"> </span>&lt;repo_url&gt;<span class="w"> </span>/tmp/&lt;temp_dir&gt;
 </code></pre></div>
 
-<p>The clone operation uses <code>--depth 1</code> to fetch only the most recent commit:</p>
-<div class="highlight"><pre><span></span><code>git<span class="w"> </span>clone<span class="w"> </span>--depth<span class="w"> </span><span class="m">1</span><span class="w"> </span>&lt;repo_url&gt;<span class="w"> </span>&lt;temp_directory&gt;
-</code></pre></div>
-
-<h3 id="supported-url-formats">Supported URL Formats</h3>
-<p>Both SSH and HTTPS URLs are supported for public and private repositories:</p>
+<h3 id="url-support">URL Support</h3>
+<p>Both major Git transport protocols are supported:</p>
 <table>
 <thead>
 <tr>
-<th>Format</th>
+<th>Protocol</th>
 <th>Example</th>
 <th>Authentication</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>HTTPS (public)</td>
+<td>HTTPS</td>
 <td><code>https://github.com/org/repo.git</code></td>
-<td>None required</td>
-</tr>
-<tr>
-<td>HTTPS (private)</td>
-<td><code>https://github.com/org/repo.git</code></td>
-<td>System git credentials</td>
+<td>Public repos work out of the box; private repos use system git credential helpers</td>
 </tr>
 <tr>
 <td>SSH</td>
 <td><code>git@github.com:org/repo.git</code></td>
-<td>SSH keys configured on host</td>
+<td>Uses SSH keys available to the container's <code>appuser</code></td>
 </tr>
 </tbody>
 </table>
-<p>Private repository access relies on the git credentials available in the container environment. When running via Docker, SSH keys or credential helpers must be mounted into the container.</p>
-<h3 id="execution-model">Execution Model</h3>
-<p>The clone runs asynchronously using <code>asyncio.to_thread</code> to avoid blocking the FastAPI event loop:</p>
-<div class="highlight"><pre><span></span><code><span class="n">asyncio</span><span class="o">.</span><span class="n">to_thread</span><span class="p">(</span><span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;git&quot;</span><span class="p">,</span> <span class="s2">&quot;clone&quot;</span><span class="p">,</span> <span class="s2">&quot;--depth&quot;</span><span class="p">,</span> <span class="s2">&quot;1&quot;</span><span class="p">,</span> <span class="n">repo_url</span><span class="p">,</span> <span class="n">temp_dir</span><span class="p">],</span> <span class="o">...</span><span class="p">)</span>
-</code></pre></div>
-
+<h3 id="temporary-directory-lifecycle">Temporary Directory Lifecycle</h3>
+<p>The cloned repository lives in a temporary directory for the duration of the pipeline. This directory serves as the <strong>working directory</strong> for both Stage 2 (planning) and Stage 3 (content generation), giving the AI CLI full filesystem access to explore source code, configuration files, tests, and any other repository artifacts. The temporary directory is cleaned up after the pipeline completes.</p>
 <blockquote>
-<p><strong>Note:</strong> The cloned repository is stored in a temporary directory for the duration of the pipeline. After all stages complete, this temporary directory can be cleaned up. For incremental updates, docsfy tracks the last commit SHA in SQLite to determine if regeneration is needed.</p>
+<p><strong>Note:</strong> The shallow clone captures only the repository's current state. If your documentation needs to reference version history or changelogs, that content should be maintained in files within the repository itself (e.g., <code>CHANGELOG.md</code>).</p>
 </blockquote>
-<hr />
-<h2 id="stage-2-ai-driven-planning">Stage 2: AI-Driven Planning</h2>
-<p>The planning stage is where AI analyzes the entire repository and produces a structured documentation plan. This is the architectural blueprint that determines what pages will be generated, how they're organized, and what the navigation hierarchy looks like.</p>
-<h3 id="how-it-works_1">How It Works</h3>
-<div class="highlight"><pre><span></span><code>Input:  Cloned repository directory
-Output: plan.json (documentation structure with pages, sections, and navigation)
+<h2 id="stage-2-ai-driven-documentation-planning">Stage 2: AI-Driven Documentation Planning</h2>
+<p>The second stage is where AI analyzes the entire repository and produces a structured documentation plan. This plan determines what pages will be generated, how they're organized, and what navigation hierarchy the final site will have.</p>
+<h3 id="ai-cli-invocation">AI CLI Invocation</h3>
+<p>The AI CLI is executed as a subprocess with the cloned repository set as the working directory. This gives the AI full access to explore every file in the repo:</p>
+<div class="highlight"><pre><span></span><code><span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+    <span class="n">cmd</span><span class="p">,</span>
+    <span class="nb">input</span><span class="o">=</span><span class="n">prompt</span><span class="p">,</span>
+    <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">text</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">cwd</span><span class="o">=</span><span class="n">repo_path</span><span class="p">,</span>       <span class="c1"># AI can explore the entire cloned repo</span>
+    <span class="n">timeout</span><span class="o">=</span><span class="n">ai_cli_timeout</span> <span class="o">*</span> <span class="mi">60</span>
+<span class="p">)</span>
 </code></pre></div>
 
-<p>The AI CLI is invoked with its <strong>working directory set to the cloned repository</strong>, giving it full access to explore every file, read source code, examine configuration, and understand the project's architecture.</p>
-<h3 id="ai-provider-configuration">AI Provider Configuration</h3>
-<p>docsfy supports three AI providers, each configured through the <code>ProviderConfig</code> dataclass:</p>
+<p>For asynchronous execution within the FastAPI service, the blocking subprocess call is wrapped with <code>asyncio.to_thread</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="n">success</span><span class="p">,</span> <span class="n">output</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">to_thread</span><span class="p">(</span>
+    <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">,</span> <span class="n">cmd</span><span class="p">,</span> <span class="nb">input</span><span class="o">=</span><span class="n">prompt</span><span class="p">,</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="n">repo_path</span>
+<span class="p">)</span>
+</code></pre></div>
+
+<p>The prompt instructs the AI to analyze the repository structure — reading source files, configs, tests, CI/CD pipelines, and any existing documentation — then output a <code>plan.json</code> that defines the complete documentation site structure.</p>
+<h3 id="provider-specific-commands">Provider-Specific Commands</h3>
+<p>The command constructed depends on the configured AI provider:</p>
+<table>
+<thead>
+<tr>
+<th>Provider</th>
+<th>Command</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Claude</td>
+<td><code>claude --model &lt;model&gt; --dangerously-skip-permissions -p</code></td>
+</tr>
+<tr>
+<td>Gemini</td>
+<td><code>gemini --model &lt;model&gt; --yolo</code></td>
+</tr>
+<tr>
+<td>Cursor</td>
+<td><code>agent --force --model &lt;model&gt; --print --workspace &lt;repo_path&gt;</code></td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Note:</strong> Cursor uses a <code>--workspace</code> flag instead of subprocess <code>cwd</code> to point the AI at the repository. This is handled by the <code>uses_own_cwd</code> flag in the provider configuration.</p>
+</blockquote>
+<p>Each provider is defined through a common configuration pattern:</p>
 <div class="highlight"><pre><span></span><code><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">ProviderConfig</span><span class="p">:</span>
     <span class="n">binary</span><span class="p">:</span> <span class="nb">str</span>
@@ -368,194 +362,99 @@ Output: plan.json (documentation structure with pages, sections, and navigation)
     <span class="n">uses_own_cwd</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
 </code></pre></div>
 
-<p>The <code>uses_own_cwd</code> flag controls how the repository path is communicated to the AI CLI:</p>
-<ul>
-<li><strong><code>False</code> (default):</strong> The subprocess <code>cwd</code> is set to the repository path. Used by Claude and Gemini.</li>
-<li><strong><code>True</code>:</strong> The repository path is passed via a CLI flag (e.g., <code>--workspace</code>). Used by Cursor.</li>
-</ul>
-<h3 id="provider-commands">Provider Commands</h3>
-<p>Each provider has a specific invocation pattern:</p>
-<table>
-<thead>
-<tr>
-<th>Provider</th>
-<th>Binary</th>
-<th>Command</th>
-<th>CWD Handling</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Claude (default)</td>
-<td><code>claude</code></td>
-<td><code>claude --model &lt;model&gt; --dangerously-skip-permissions -p</code></td>
-<td>subprocess <code>cwd</code> = repo path</td>
-</tr>
-<tr>
-<td>Gemini</td>
-<td><code>gemini</code></td>
-<td><code>gemini --model &lt;model&gt; --yolo</code></td>
-<td>subprocess <code>cwd</code> = repo path</td>
-</tr>
-<tr>
-<td>Cursor</td>
-<td><code>agent</code></td>
-<td><code>agent --force --model &lt;model&gt; --print --workspace &lt;path&gt;</code></td>
-<td><code>--workspace</code> flag, <code>uses_own_cwd=True</code></td>
-</tr>
-</tbody>
-</table>
-<h3 id="invocation-pattern">Invocation Pattern</h3>
-<p>Prompts are passed to the AI CLI via stdin, and the response is captured from stdout:</p>
-<div class="highlight"><pre><span></span><code><span class="n">asyncio</span><span class="o">.</span><span class="n">to_thread</span><span class="p">(</span>
-    <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">,</span>
-    <span class="n">cmd</span><span class="p">,</span>
-    <span class="nb">input</span><span class="o">=</span><span class="n">prompt</span><span class="p">,</span>
-    <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">text</span><span class="o">=</span><span class="kc">True</span>
-<span class="p">)</span>
-<span class="c1"># Returns: tuple[bool, str] (success, output)</span>
-</code></pre></div>
-
-<blockquote>
-<p><strong>Tip:</strong> Before starting a full generation, docsfy performs an availability check by sending a lightweight <code>"Hi"</code> prompt to verify the AI CLI is properly configured and responding. This catches authentication or configuration issues early, before committing to the full pipeline.</p>
-</blockquote>
-<h3 id="json-response-parsing">JSON Response Parsing</h3>
-<p>AI models don't always return clean JSON. docsfy uses a multi-strategy extraction approach (with a cascading fallback chain) to reliably extract the <code>plan.json</code> structure from the AI response:</p>
-<ol>
-<li><strong>Direct JSON parse</strong> — Try <code>json.loads()</code> on the raw output</li>
-<li><strong>Brace-matching</strong> — Find the outermost <code>{...}</code> JSON object in the response</li>
-<li><strong>Markdown code block extraction</strong> — Extract JSON from triple-backtick code blocks</li>
-<li><strong>Regex recovery</strong> — Last-resort pattern matching to salvage JSON fragments</li>
-</ol>
-<div class="highlight"><pre><span></span><code>AI Response                          Extraction Strategy
-─────────────────────────────────    ─────────────────────
-&#39;{&quot;pages&quot;: [...]}&#39;               →  Strategy 1: Direct parse ✓
-&#39;Here is the plan: {&quot;pages&quot;:..}&#39; →  Strategy 2: Brace-matching ✓
-&#39;```json\n{&quot;pages&quot;: [...]}\n```&#39; →  Strategy 3: Code block extraction ✓
-&#39;The plan has {&quot;pages&quot;:[...&#39;     →  Strategy 4: Regex recovery ✓
-</code></pre></div>
-
 <h3 id="the-planjson-output">The plan.json Output</h3>
-<p>The planner produces a <code>plan.json</code> file that defines the complete documentation structure. This file is saved at <code>/data/projects/{project-name}/plan.json</code> and serves as the contract between the planning and generation stages. It contains:</p>
-<ul>
-<li><strong>Pages</strong> — Individual documentation pages with titles and descriptions</li>
-<li><strong>Sections</strong> — Logical groupings of related pages</li>
-<li><strong>Navigation hierarchy</strong> — The sidebar structure and page ordering</li>
-</ul>
-<h3 id="default-configuration">Default Configuration</h3>
-<table>
-<thead>
-<tr>
-<th>Setting</th>
-<th>Default Value</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>AI_PROVIDER</code></td>
-<td><code>claude</code></td>
-<td>Which AI CLI to use</td>
-</tr>
-<tr>
-<td><code>AI_MODEL</code></td>
-<td><code>claude-opus-4-6[1m]</code></td>
-<td>Model identifier passed to the CLI</td>
-</tr>
-<tr>
-<td><code>AI_CLI_TIMEOUT</code></td>
-<td><code>60</code> (minutes)</td>
-<td>Maximum time for a single AI invocation</td>
-</tr>
-</tbody>
-</table>
-<p>These are configured via environment variables:</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># .env</span>
-<span class="nv">AI_PROVIDER</span><span class="o">=</span>claude
-<span class="nv">AI_MODEL</span><span class="o">=</span>claude-opus-4-6<span class="o">[</span>1m<span class="o">]</span>
-<span class="nv">AI_CLI_TIMEOUT</span><span class="o">=</span><span class="m">60</span>
+<p>The AI's response is parsed using a multi-strategy JSON extraction approach that handles the variety of output formats AI CLIs can produce:</p>
+<ol>
+<li><strong>Direct JSON parse</strong> — attempt to parse the entire output as JSON</li>
+<li><strong>Brace-matching</strong> — find the outermost <code>{...}</code> JSON object in the output</li>
+<li><strong>Markdown code block extraction</strong> — extract JSON from <code>```json ```</code> blocks</li>
+<li><strong>Regex fallback</strong> — recover JSON fragments using pattern matching</li>
+</ol>
+<p>The resulting <code>plan.json</code> is saved to <code>/data/projects/{project-name}/plan.json</code> and defines the documentation structure:</p>
+<div class="highlight"><pre><span></span><code>/data/projects/{project-name}/
+  plan.json             # Documentation structure from AI
 </code></pre></div>
 
-<blockquote>
-<p><strong>Warning:</strong> The <code>--dangerously-skip-permissions</code> flag (Claude) and <code>--yolo</code> flag (Gemini) grant the AI CLI unrestricted access within the cloned repository. This is intentional — the AI needs to freely explore the codebase to produce accurate documentation. The clone is performed in an isolated temporary directory to limit the blast radius.</p>
-</blockquote>
-<hr />
-<h2 id="stage-3-concurrent-content-generation">Stage 3: Concurrent Content Generation</h2>
-<p>The content generation stage is where the bulk of the work happens. For each page defined in <code>plan.json</code>, an AI CLI session explores the codebase and writes comprehensive markdown documentation.</p>
-<h3 id="how-it-works_2">How It Works</h3>
-<div class="highlight"><pre><span></span><code>Input:  plan.json (page definitions) + cloned repository
-Output: Markdown files at /data/projects/{name}/cache/pages/*.md
-</code></pre></div>
-
+<p>The plan contains pages, sections, and the navigation hierarchy that will drive both Stage 3 (what content to generate) and Stage 4 (how to render the site navigation).</p>
+<h3 id="availability-check">Availability Check</h3>
+<p>Before starting a generation pipeline, docsfy verifies that the configured AI CLI is functional by running a lightweight "Hi" prompt. This fast-fails the pipeline if the AI provider is unavailable or misconfigured, rather than discovering the problem after the clone stage has already completed.</p>
+<h2 id="stage-3-concurrent-page-content-generation">Stage 3: Concurrent Page Content Generation</h2>
+<p>The third stage iterates over every page defined in <code>plan.json</code> and generates the markdown content for each one. This is the most time-intensive stage, and docsfy uses <strong>async concurrency with semaphore-limited parallelism</strong> to accelerate it.</p>
 <h3 id="concurrency-model">Concurrency Model</h3>
-<p>Pages are generated <strong>concurrently</strong> using Python's async capabilities with semaphore-limited concurrency. This dramatically reduces total generation time for projects with many documentation pages:</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># Conceptual model:</span>
-<span class="c1"># Each page generation is an independent async task</span>
-<span class="c1"># A semaphore limits how many AI CLI processes run simultaneously</span>
+<p>Each page generation is an independent AI CLI invocation — the AI explores the codebase and writes markdown for that specific page. Since these invocations are independent, they can run concurrently.</p>
+<p>docsfy uses an <code>asyncio.Semaphore</code> to control the level of parallelism:</p>
+<div class="highlight"><pre><span></span><code><span class="n">semaphore</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Semaphore</span><span class="p">(</span><span class="n">max_concurrent_pages</span><span class="p">)</span>
 
-<span class="k">async</span> <span class="k">with</span> <span class="n">semaphore</span><span class="p">:</span>
-    <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">to_thread</span><span class="p">(</span>
-        <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">,</span>
-        <span class="n">cmd</span><span class="p">,</span>
-        <span class="nb">input</span><span class="o">=</span><span class="n">page_prompt</span><span class="p">,</span>
-        <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-        <span class="n">text</span><span class="o">=</span><span class="kc">True</span>
-    <span class="p">)</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">generate_page</span><span class="p">(</span><span class="n">page_def</span><span class="p">):</span>
+    <span class="k">async</span> <span class="k">with</span> <span class="n">semaphore</span><span class="p">:</span>
+        <span class="n">prompt</span> <span class="o">=</span> <span class="n">build_page_prompt</span><span class="p">(</span><span class="n">page_def</span><span class="p">,</span> <span class="n">plan</span><span class="p">)</span>
+        <span class="n">success</span><span class="p">,</span> <span class="n">markdown</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">to_thread</span><span class="p">(</span>
+            <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">,</span> <span class="n">cmd</span><span class="p">,</span> <span class="nb">input</span><span class="o">=</span><span class="n">prompt</span><span class="p">,</span>
+            <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="n">repo_path</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">page_def</span><span class="p">,</span> <span class="n">markdown</span>
 </code></pre></div>
 
-<div class="highlight"><pre><span></span><code>                    plan.json
-                       │
-          ┌────────────┼────────────┐
-          ▼            ▼            ▼
-    ┌──────────┐ ┌──────────┐ ┌──────────┐
-    │ Page 1   │ │ Page 2   │ │ Page 3   │  ... (concurrent, semaphore-limited)
-    │ AI CLI   │ │ AI CLI   │ │ AI CLI   │
-    └────┬─────┘ └────┬─────┘ └────┬─────┘
-         ▼            ▼            ▼
-    page-1.md    page-2.md    page-3.md
+<p>The semaphore ensures that no more than <code>max_concurrent_pages</code> AI CLI processes run simultaneously. This prevents resource exhaustion (CPU, memory, API rate limits) while still achieving significant speedup over sequential generation.</p>
+<p>All page tasks are gathered and executed concurrently:</p>
+<div class="highlight"><pre><span></span><code><span class="n">tasks</span> <span class="o">=</span> <span class="p">[</span><span class="n">generate_page</span><span class="p">(</span><span class="n">page</span><span class="p">)</span> <span class="k">for</span> <span class="n">page</span> <span class="ow">in</span> <span class="n">plan</span><span class="p">[</span><span class="s2">&quot;pages&quot;</span><span class="p">]]</span>
+<span class="n">results</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="o">*</span><span class="n">tasks</span><span class="p">)</span>
 </code></pre></div>
 
-<p>Each AI CLI invocation runs with <code>cwd</code> set to the cloned repository (or <code>--workspace</code> for Cursor), giving the AI full access to explore the codebase as needed for that specific page. The AI receives a prompt that includes the page title, description, and any context from the plan about what the page should cover.</p>
-<h3 id="caching-strategy">Caching Strategy</h3>
-<p>Generated markdown files are cached at:</p>
-<div class="highlight"><pre><span></span><code>/data/projects/{project-name}/cache/pages/*.md
-</code></pre></div>
-
-<p>This cache serves two purposes:</p>
-<ol>
-<li><strong>Resilience</strong> — If the pipeline fails partway through, already-generated pages don't need to be regenerated</li>
-<li><strong>Incremental updates</strong> — When a repository changes, only affected pages need regeneration (see <a href="#incremental-updates">Incremental Updates</a> below)</li>
-</ol>
-<h3 id="output-format">Output Format</h3>
-<p>Each page is generated as a standalone markdown file containing:</p>
+<h3 id="per-page-ai-invocation">Per-Page AI Invocation</h3>
+<p>For each page, the AI CLI runs with <code>cwd</code> set to the cloned repository, just like the planning stage. The prompt provides:</p>
 <ul>
-<li>Prose explanations of concepts and architecture</li>
-<li>Code examples drawn from the actual repository</li>
-<li>Configuration snippets and usage instructions</li>
-<li>Cross-references to other documentation pages</li>
+<li>The page's title and description from <code>plan.json</code></li>
+<li>The section it belongs to</li>
+<li>Instructions to explore the codebase as needed and produce comprehensive markdown</li>
 </ul>
-<blockquote>
-<p><strong>Note:</strong> The AI has full access to explore the repository for each page it generates. This means it can read source files, examine tests, check configuration, and follow import chains to produce accurate, codebase-specific documentation — not generic boilerplate.</p>
-</blockquote>
-<hr />
-<h2 id="stage-4-html-rendering-with-jinja2">Stage 4: HTML Rendering with Jinja2</h2>
-<p>The final stage transforms raw markdown into a polished, interactive static HTML documentation site. This is a deterministic process — no AI is involved — that uses Jinja2 templates and bundled front-end assets.</p>
-<h3 id="how-it-works_3">How It Works</h3>
-<div class="highlight"><pre><span></span><code>Input:  Markdown pages (cache/pages/*.md) + plan.json + CSS/JS assets
-Output: Static HTML site at /data/projects/{name}/site/
+<p>This means the AI can read any file in the repository — source code, tests, configuration — to produce accurate, code-grounded documentation for each page.</p>
+<h3 id="markdown-caching">Markdown Caching</h3>
+<p>Generated markdown files are cached at:</p>
+<div class="highlight"><pre><span></span><code>/data/projects/{project-name}/
+  cache/
+    pages/*.md          # AI-generated markdown (one file per page)
 </code></pre></div>
 
-<h3 id="rendering-pipeline">Rendering Pipeline</h3>
-<p>The renderer performs these operations:</p>
+<p>This cache serves a critical purpose for <strong>incremental updates</strong>. When a repository is re-generated after changes:</p>
 <ol>
-<li><strong>Markdown-to-HTML conversion</strong> — Using the Python <code>markdown</code> library</li>
-<li><strong>Template rendering</strong> — Jinja2 templates wrap HTML content with navigation, headers, and layout</li>
-<li><strong>Asset bundling</strong> — CSS, JavaScript, and other static assets are copied to the output directory</li>
-<li><strong>Search index generation</strong> — A JSON search index is built for client-side full-text search</li>
+<li>docsfy compares the current commit SHA against the stored SHA in SQLite</li>
+<li>If the plan structure is unchanged, only pages affected by code changes are regenerated</li>
+<li>Unchanged pages are served from the markdown cache, avoiding redundant AI invocations</li>
 </ol>
-<h3 id="site-features">Site Features</h3>
-<p>The rendered HTML site includes a rich set of features out of the box:</p>
+<blockquote>
+<p><strong>Tip:</strong> The markdown cache means that re-generating documentation after small code changes is significantly faster than the initial generation. Only the affected pages trigger new AI CLI calls.</p>
+</blockquote>
+<h3 id="return-value-convention">Return Value Convention</h3>
+<p>Each AI CLI invocation returns a <code>tuple[bool, str]</code> — a success boolean and the output string. This consistent interface allows uniform error handling across all three providers:</p>
+<div class="highlight"><pre><span></span><code><span class="n">success</span><span class="p">,</span> <span class="n">output</span> <span class="o">=</span> <span class="k">await</span> <span class="n">run_ai_cli</span><span class="p">(</span><span class="n">prompt</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="n">repo_path</span><span class="p">)</span>
+<span class="k">if</span> <span class="ow">not</span> <span class="n">success</span><span class="p">:</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Page generation failed: </span><span class="si">{</span><span class="n">output</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+
+<h2 id="stage-4-html-rendering-with-jinja2">Stage 4: HTML Rendering with Jinja2</h2>
+<p>The final stage transforms the markdown content and navigation plan into a polished static HTML documentation site.</p>
+<h3 id="rendering-process">Rendering Process</h3>
+<p>The renderer takes two inputs:</p>
+<ul>
+<li><strong><code>plan.json</code></strong> — defines the navigation hierarchy (sections, pages, ordering)</li>
+<li><strong><code>cache/pages/*.md</code></strong> — the AI-generated markdown content for each page</li>
+</ul>
+<p>Each markdown file is converted to HTML using the Python <code>markdown</code> library, then wrapped in a Jinja2 template that provides the complete page shell — header, sidebar navigation, content area, and footer.</p>
+<h3 id="jinja2-templates">Jinja2 Templates</h3>
+<p>docsfy uses Jinja2 as its templating engine to produce the final HTML. Templates receive the rendered HTML content, navigation structure, page metadata, and project information as context variables:</p>
+<div class="highlight"><pre><span></span><code><span class="n">template</span> <span class="o">=</span> <span class="n">jinja_env</span><span class="o">.</span><span class="n">get_template</span><span class="p">(</span><span class="s2">&quot;page.html&quot;</span><span class="p">)</span>
+<span class="n">html</span> <span class="o">=</span> <span class="n">template</span><span class="o">.</span><span class="n">render</span><span class="p">(</span>
+    <span class="n">content</span><span class="o">=</span><span class="n">rendered_markdown</span><span class="p">,</span>
+    <span class="n">navigation</span><span class="o">=</span><span class="n">plan</span><span class="p">[</span><span class="s2">&quot;pages&quot;</span><span class="p">],</span>
+    <span class="n">page_title</span><span class="o">=</span><span class="n">page</span><span class="p">[</span><span class="s2">&quot;title&quot;</span><span class="p">],</span>
+    <span class="n">project_name</span><span class="o">=</span><span class="n">project_name</span><span class="p">,</span>
+    <span class="c1"># ... additional context</span>
+<span class="p">)</span>
+</code></pre></div>
+
+<h3 id="built-in-features">Built-in Features</h3>
+<p>The rendered HTML site includes several features out of the box, powered by bundled CSS and JavaScript assets:</p>
 <table>
 <thead>
 <tr>
@@ -570,192 +469,166 @@ Output: Static HTML site at /data/projects/{name}/site/
 </tr>
 <tr>
 <td>Dark/light theme toggle</td>
-<td><code>theme-toggle.js</code></td>
+<td><code>theme-toggle.js</code> with CSS custom properties</td>
 </tr>
 <tr>
 <td>Client-side search</td>
-<td><code>search.js</code> + <code>search-index.json</code> (lunr.js or similar)</td>
+<td><code>search.js</code> powered by a pre-built <code>search-index.json</code></td>
 </tr>
 <tr>
 <td>Code syntax highlighting</td>
-<td><code>highlight.js</code></td>
-</tr>
-<tr>
-<td>Responsive design</td>
-<td>Custom CSS</td>
+<td><code>highlight.js</code> for fenced code blocks</td>
 </tr>
 <tr>
 <td>Card layouts</td>
-<td>CSS component styles</td>
+<td>CSS grid-based component cards</td>
 </tr>
 <tr>
 <td>Callout boxes</td>
-<td>Note, warning, and info styled blocks</td>
+<td>Styled note, warning, and info blocks</td>
+</tr>
+<tr>
+<td>Responsive design</td>
+<td>Mobile-friendly layout with CSS media queries</td>
 </tr>
 </tbody>
 </table>
 <h3 id="output-structure">Output Structure</h3>
-<p>The final static site follows this directory layout:</p>
-<div class="highlight"><pre><span></span><code>/data/projects/{project-name}/site/
-  index.html              # Landing page
-  *.html                  # Generated documentation pages
-  assets/
-    style.css             # Bundled stylesheet
-    search.js             # Client-side search functionality
-    theme-toggle.js       # Dark/light mode toggle
-    highlight.js          # Code syntax highlighting
-  search-index.json       # Pre-built search index
+<p>The rendered site is written to <code>/data/projects/{project-name}/site/</code>:</p>
+<div class="highlight"><pre><span></span><code>/data/projects/{project-name}/
+  site/
+    index.html            # Landing page
+    *.html                # One HTML file per documentation page
+    assets/
+      style.css           # Theme and layout styles
+      search.js           # Client-side search engine
+      theme-toggle.js     # Dark/light mode toggle
+      highlight.js        # Code syntax highlighting
+    search-index.json     # Pre-built search index for client-side search
 </code></pre></div>
 
 <h3 id="serving-and-distribution">Serving and Distribution</h3>
-<p>Once rendered, the static site can be accessed in two ways:</p>
-<ol>
-<li>
-<p><strong>Served directly</strong> via docsfy's built-in route:
-   <code>GET /docs/{project}/{path}</code></p>
-</li>
-<li>
-<p><strong>Downloaded</strong> as a <code>.tar.gz</code> archive for self-hosting:
-   <code>GET /api/projects/{name}/download</code></p>
-</li>
-</ol>
+<p>Once the site is generated, it can be accessed in two ways:</p>
+<ul>
+<li><strong>Direct serving</strong> — Access pages via <code>GET /docs/{project}/{path}</code>, where docsfy serves the static files directly from the FastAPI server</li>
+<li><strong>Download and self-host</strong> — Download the entire site as a <code>.tar.gz</code> archive via <code>GET /api/projects/{name}/download</code> and deploy it to any static hosting provider (Nginx, S3, Cloudflare Pages, GitHub Pages, etc.)</li>
+</ul>
 <blockquote>
-<p><strong>Tip:</strong> The downloaded archive is a fully self-contained static site. You can host it on any static file server — GitHub Pages, Netlify, S3, nginx, or any CDN — with no docsfy dependency required.</p>
+<p><strong>Tip:</strong> The generated site is fully self-contained with all assets bundled inline. No external CDN dependencies are required, making it suitable for air-gapped or intranet deployments.</p>
 </blockquote>
-<hr />
-<h2 id="incremental-updates">Incremental Updates</h2>
-<p>docsfy avoids regenerating documentation from scratch when a repository changes. The incremental update strategy minimizes AI usage and generation time:</p>
-<ol>
-<li><strong>SHA tracking</strong> — The last commit SHA is stored per project in SQLite</li>
-<li><strong>Change detection</strong> — On re-generate, the repository is fetched and the current SHA is compared against the stored SHA</li>
-<li><strong>Plan comparison</strong> — If the SHA has changed, the AI Planner re-runs to check if the documentation structure changed</li>
-<li><strong>Selective regeneration</strong> — Only pages whose content may be affected by the changes are regenerated</li>
-<li><strong>Cache reuse</strong> — Unaffected pages are served directly from <code>cache/pages/*.md</code></li>
-</ol>
-<div class="highlight"><pre><span></span><code>Re-generate Request
-       │
-       ▼
-  Compare SHA ──── Same? ──── No regeneration needed
-       │
-    Different
-       │
-       ▼
-  Re-run Planner
-       │
-       ├── Plan unchanged ──── Regenerate only affected pages
-       │
-       └── Plan changed ──── Regenerate all pages
-</code></pre></div>
+<h2 id="configuration">Configuration</h2>
+<p>The generation pipeline is controlled by environment variables:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># AI provider selection: claude, gemini, or cursor</span>
+<span class="nv">AI_PROVIDER</span><span class="o">=</span>claude
 
-<blockquote>
-<p><strong>Note:</strong> The incremental update strategy relies on the AI Planner's ability to determine which pages are affected by code changes. For significant architectural changes to a repository, a full regeneration may still be triggered.</p>
-</blockquote>
-<hr />
-<h2 id="pipeline-configuration-reference">Pipeline Configuration Reference</h2>
-<p>All pipeline behavior is controlled through environment variables:</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># .env</span>
+<span class="c1"># Model to use for the selected provider</span>
+<span class="nv">AI_MODEL</span><span class="o">=</span>claude-opus-4-6<span class="o">[</span>1m<span class="o">]</span>
 
-<span class="c1"># AI Provider Selection</span>
-<span class="nv">AI_PROVIDER</span><span class="o">=</span>claude<span class="w">                    </span><span class="c1"># Options: claude, gemini, cursor</span>
-<span class="nv">AI_MODEL</span><span class="o">=</span>claude-opus-4-6<span class="o">[</span>1m<span class="o">]</span><span class="w">         </span><span class="c1"># Model identifier</span>
-<span class="nv">AI_CLI_TIMEOUT</span><span class="o">=</span><span class="m">60</span><span class="w">                     </span><span class="c1"># Timeout per AI invocation (minutes)</span>
+<span class="c1"># Timeout for each AI CLI invocation (in minutes)</span>
+<span class="nv">AI_CLI_TIMEOUT</span><span class="o">=</span><span class="m">60</span>
 
-<span class="c1"># Claude Authentication (Option 1: API Key)</span>
-<span class="nv">ANTHROPIC_API_KEY</span><span class="o">=</span>sk-ant-...
-
-<span class="c1"># Claude Authentication (Option 2: Vertex AI)</span>
-<span class="nv">CLAUDE_CODE_USE_VERTEX</span><span class="o">=</span><span class="m">1</span>
-<span class="nv">CLOUD_ML_REGION</span><span class="o">=</span>us-central1
-<span class="nv">ANTHROPIC_VERTEX_PROJECT_ID</span><span class="o">=</span>my-project
-
-<span class="c1"># Gemini Authentication</span>
-<span class="nv">GEMINI_API_KEY</span><span class="o">=</span>...
-
-<span class="c1"># Cursor Authentication</span>
-<span class="nv">CURSOR_API_KEY</span><span class="o">=</span>...
-
-<span class="c1"># Logging</span>
+<span class="c1"># Logging verbosity</span>
 <span class="nv">LOG_LEVEL</span><span class="o">=</span>INFO
 </code></pre></div>
 
-<h3 id="storage-paths">Storage Paths</h3>
+<h3 id="provider-authentication">Provider Authentication</h3>
+<p>Each provider requires its own authentication setup:</p>
 <table>
 <thead>
 <tr>
-<th>Path</th>
-<th>Purpose</th>
+<th>Provider</th>
+<th>Authentication Options</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>/data/docsfy.db</code></td>
-<td>SQLite database for project metadata and status</td>
+<td><strong>Claude</strong></td>
+<td><code>ANTHROPIC_API_KEY</code> for direct API access, or Vertex AI via <code>CLAUDE_CODE_USE_VERTEX=1</code> with <code>CLOUD_ML_REGION</code> and <code>ANTHROPIC_VERTEX_PROJECT_ID</code></td>
 </tr>
 <tr>
-<td><code>/data/projects/{name}/plan.json</code></td>
-<td>Documentation structure from AI Planner</td>
+<td><strong>Gemini</strong></td>
+<td><code>GEMINI_API_KEY</code></td>
 </tr>
 <tr>
-<td><code>/data/projects/{name}/cache/pages/*.md</code></td>
-<td>Cached AI-generated markdown</td>
-</tr>
-<tr>
-<td><code>/data/projects/{name}/site/</code></td>
-<td>Final rendered static HTML site</td>
-</tr>
-</tbody>
-</table>
-<hr />
-<h2 id="error-handling">Error Handling</h2>
-<p>If any stage in the pipeline fails, the project status in SQLite is set to <code>error</code> and the failure is logged. The pipeline does not automatically retry — the user must re-trigger generation via <code>POST /api/generate</code>.</p>
-<p>Key failure modes by stage:</p>
-<table>
-<thead>
-<tr>
-<th>Stage</th>
-<th>Common Failures</th>
-<th>Effect</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Clone</td>
-<td>Invalid URL, auth failure, network timeout</td>
-<td>Pipeline aborts before AI invocation</td>
-</tr>
-<tr>
-<td>Plan</td>
-<td>AI CLI unavailable, timeout, unparseable response</td>
-<td>No <code>plan.json</code> produced</td>
-</tr>
-<tr>
-<td>Generate</td>
-<td>Individual page timeout, AI error</td>
-<td>Partial cache (successful pages preserved)</td>
-</tr>
-<tr>
-<td>Render</td>
-<td>Template error, disk full</td>
-<td>No <code>site/</code> directory produced</td>
+<td><strong>Cursor</strong></td>
+<td><code>CURSOR_API_KEY</code></td>
 </tr>
 </tbody>
 </table>
 <blockquote>
-<p><strong>Tip:</strong> Use the availability check (lightweight <code>"Hi"</code> prompt) before starting a full generation to catch AI CLI configuration issues early. This prevents wasting time on a clone operation only to discover the AI provider is not accessible.</p>
+<p><strong>Warning:</strong> The <code>AI_CLI_TIMEOUT</code> applies per invocation — once for the planner stage and once for each page in the content generation stage. For large repositories with many pages, the total pipeline time can be significantly longer than this single-invocation timeout.</p>
+</blockquote>
+<h2 id="pipeline-state-tracking">Pipeline State Tracking</h2>
+<p>docsfy tracks the state of each project's generation pipeline in a SQLite database at <code>/data/docsfy.db</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Project name</td>
+<td>Derived from the repository URL</td>
+</tr>
+<tr>
+<td>Repository URL</td>
+<td>The source repository</td>
+</tr>
+<tr>
+<td>Status</td>
+<td><code>generating</code>, <code>ready</code>, or <code>error</code></td>
+</tr>
+<tr>
+<td>Last generated</td>
+<td>Timestamp of the most recent successful generation</td>
+</tr>
+<tr>
+<td>Last commit SHA</td>
+<td>The HEAD commit of the last processed clone</td>
+</tr>
+<tr>
+<td>Generation logs</td>
+<td>Diagnostic output from the pipeline stages</td>
+</tr>
+</tbody>
+</table>
+<p>The status field transitions through the pipeline:</p>
+<div class="highlight"><pre><span></span><code>POST /api/generate
+    │
+    ▼
+generating ──────▶ ready     (on success)
+    │
+    └────────────▶ error     (on failure at any stage)
+</code></pre></div>
+
+<p>You can query the current status of all projects via <code>GET /api/status</code> or get detailed information about a specific project with <code>GET /api/projects/{name}</code>.</p>
+<h2 id="incremental-updates">Incremental Updates</h2>
+<p>When <code>POST /api/generate</code> is called for a repository that has already been generated, docsfy performs an <strong>incremental update</strong> rather than a full regeneration:</p>
+<ol>
+<li><strong>SHA comparison</strong> — The current HEAD commit SHA is compared against the stored SHA in SQLite</li>
+<li><strong>Plan re-evaluation</strong> — If the SHA has changed, the AI Planner re-runs to check whether the documentation structure needs updating</li>
+<li><strong>Selective regeneration</strong> — Only pages whose content may be affected by the code changes are regenerated; unchanged pages are served from the markdown cache</li>
+<li><strong>Re-render</strong> — Stage 4 always runs to produce a fresh HTML site from the (updated) markdown files</li>
+</ol>
+<p>This approach dramatically reduces the cost and time of keeping documentation up to date with a rapidly evolving codebase.</p>
+<blockquote>
+<p><strong>Note:</strong> The incremental update strategy relies on the AI planner's ability to identify which pages are affected by code changes. For maximum accuracy, ensure your <code>plan.json</code> pages have clear, well-scoped topics that map to identifiable areas of the codebase.</p>
 </blockquote>
                 </div>
             </article>
             <nav class="page-nav">
                 
-                <a href="managing-projects.html" class="page-nav-link page-nav-prev">
+                <a href="incremental-updates.html" class="page-nav-link page-nav-prev">
                     <span class="page-nav-label">Previous</span>
-                    <span class="page-nav-title">Managing Projects</span>
+                    <span class="page-nav-title">Incremental Updates</span>
                 </a>
                 
                 
-                <a href="storage-and-database.html" class="page-nav-link page-nav-next">
+                <a href="html-renderer.html" class="page-nav-link page-nav-next">
                     <span class="page-nav-label">Next</span>
-                    <span class="page-nav-title">Storage &amp; Database</span>
+                    <span class="page-nav-title">HTML Renderer &amp; Theming</span>
                 </a>
                 
             </nav>
@@ -768,41 +641,38 @@ Output: Static HTML site at /data/projects/{name}/site/
 <li><a href="#overview">Overview</a></li>
 <li><a href="#stage-1-repository-cloning">Stage 1: Repository Cloning</a><ul>
 <li><a href="#how-it-works">How It Works</a></li>
-<li><a href="#supported-url-formats">Supported URL Formats</a></li>
-<li><a href="#execution-model">Execution Model</a></li>
+<li><a href="#url-support">URL Support</a></li>
+<li><a href="#temporary-directory-lifecycle">Temporary Directory Lifecycle</a></li>
 </ul>
 </li>
-<li><a href="#stage-2-ai-driven-planning">Stage 2: AI-Driven Planning</a><ul>
-<li><a href="#how-it-works_1">How It Works</a></li>
-<li><a href="#ai-provider-configuration">AI Provider Configuration</a></li>
-<li><a href="#provider-commands">Provider Commands</a></li>
-<li><a href="#invocation-pattern">Invocation Pattern</a></li>
-<li><a href="#json-response-parsing">JSON Response Parsing</a></li>
+<li><a href="#stage-2-ai-driven-documentation-planning">Stage 2: AI-Driven Documentation Planning</a><ul>
+<li><a href="#ai-cli-invocation">AI CLI Invocation</a></li>
+<li><a href="#provider-specific-commands">Provider-Specific Commands</a></li>
 <li><a href="#the-planjson-output">The plan.json Output</a></li>
-<li><a href="#default-configuration">Default Configuration</a></li>
+<li><a href="#availability-check">Availability Check</a></li>
 </ul>
 </li>
-<li><a href="#stage-3-concurrent-content-generation">Stage 3: Concurrent Content Generation</a><ul>
-<li><a href="#how-it-works_2">How It Works</a></li>
+<li><a href="#stage-3-concurrent-page-content-generation">Stage 3: Concurrent Page Content Generation</a><ul>
 <li><a href="#concurrency-model">Concurrency Model</a></li>
-<li><a href="#caching-strategy">Caching Strategy</a></li>
-<li><a href="#output-format">Output Format</a></li>
+<li><a href="#per-page-ai-invocation">Per-Page AI Invocation</a></li>
+<li><a href="#markdown-caching">Markdown Caching</a></li>
+<li><a href="#return-value-convention">Return Value Convention</a></li>
 </ul>
 </li>
 <li><a href="#stage-4-html-rendering-with-jinja2">Stage 4: HTML Rendering with Jinja2</a><ul>
-<li><a href="#how-it-works_3">How It Works</a></li>
-<li><a href="#rendering-pipeline">Rendering Pipeline</a></li>
-<li><a href="#site-features">Site Features</a></li>
+<li><a href="#rendering-process">Rendering Process</a></li>
+<li><a href="#jinja2-templates">Jinja2 Templates</a></li>
+<li><a href="#built-in-features">Built-in Features</a></li>
 <li><a href="#output-structure">Output Structure</a></li>
 <li><a href="#serving-and-distribution">Serving and Distribution</a></li>
 </ul>
 </li>
-<li><a href="#incremental-updates">Incremental Updates</a></li>
-<li><a href="#pipeline-configuration-reference">Pipeline Configuration Reference</a><ul>
-<li><a href="#storage-paths">Storage Paths</a></li>
+<li><a href="#configuration">Configuration</a><ul>
+<li><a href="#provider-authentication">Provider Authentication</a></li>
 </ul>
 </li>
-<li><a href="#error-handling">Error Handling</a></li>
+<li><a href="#pipeline-state-tracking">Pipeline State Tracking</a></li>
+<li><a href="#incremental-updates">Incremental Updates</a></li>
 </ul>
 </div>
 

@@ -1,91 +1,107 @@
 # Downloading & Self-Hosting
 
-docsfy can serve your generated documentation directly from its built-in API, but you can also download the entire static site as a `.tar.gz` archive and deploy it to any hosting provider. This page covers how to download your documentation and deploy it yourself.
+docsfy supports two hosting models: serving documentation directly from the API, or downloading the generated static site as a `.tar.gz` archive to host on your own infrastructure. This page covers the download API, the structure of the archive, and how to deploy the static site to common hosting platforms.
 
-## How the Static Site Works
+## Prerequisites
 
-When docsfy generates documentation for a repository, the final output is a fully self-contained static HTML site stored at `/data/projects/{project-name}/site/`. This site requires no server-side processing — it's plain HTML, CSS, and JavaScript that can be served by any web server or static hosting provider.
+Before downloading documentation, you need a docsfy instance running and at least one project with a `ready` status. Generate documentation for a repository first:
 
-The generated site includes:
-
-```
-site/
-  index.html            # Main entry point
-  *.html                # Individual documentation pages
-  assets/
-    style.css           # Bundled stylesheet
-    search.js           # Client-side search functionality
-    theme-toggle.js     # Dark/light theme toggle
-    highlight.js        # Code syntax highlighting
-  search-index.json     # Pre-built search index
+```bash
+curl -X POST http://localhost:8000/api/generate \
+  -H "Content-Type: application/json" \
+  -d '{"url": "https://github.com/your-org/your-repo"}'
 ```
 
-All assets are bundled — there are no external CDN dependencies. The site works offline and can be hosted anywhere.
+Verify the project status is `ready` before attempting to download:
+
+```bash
+curl http://localhost:8000/api/status
+```
+
+The response includes the status of each project. Only projects with `"status": "ready"` have a complete static site available for download.
 
 ## Downloading the Archive
 
-### Via the API
-
-Use the download endpoint to retrieve the generated site as a `.tar.gz` archive:
+### Download Endpoint
 
 ```
 GET /api/projects/{name}/download
 ```
 
-For example, using `curl`:
+This endpoint returns the generated documentation site as a `.tar.gz` archive. The `{name}` parameter is the project name assigned during generation.
+
+### Using curl
 
 ```bash
-curl -O http://localhost:8000/api/projects/my-project/download
+curl -O http://localhost:8000/api/projects/your-project/download \
+  --output your-project-docs.tar.gz
 ```
 
-This downloads a `my-project.tar.gz` file containing the complete static site.
-
-> **Note:** The project must have a status of `ready` before you can download it. Check the project status first if the download fails.
-
-### Checking Project Status Before Download
-
-Before downloading, verify that documentation generation has completed:
+### Using wget
 
 ```bash
-# List all projects and their statuses
-curl http://localhost:8000/api/status
-
-# Check a specific project
-curl http://localhost:8000/api/projects/my-project
+wget http://localhost:8000/api/projects/your-project/download \
+  -O your-project-docs.tar.gz
 ```
 
-A project can be in one of three states:
+### Using Python
 
-| Status | Description |
-|--------|-------------|
-| `generating` | Documentation is still being generated — download not yet available |
-| `ready` | Generation complete — archive is available for download |
-| `error` | Generation failed — check logs for details |
+```python
+import httpx
 
-> **Warning:** Attempting to download a project that is still in the `generating` state will fail. Wait until the status changes to `ready`.
+response = httpx.get("http://localhost:8000/api/projects/your-project/download")
+with open("your-project-docs.tar.gz", "wb") as f:
+    f.write(response.content)
+```
+
+> **Tip:** Use the `GET /api/projects/{name}` endpoint to retrieve project details — including the last generated timestamp and commit SHA — before downloading. This helps you determine whether you need a fresh copy.
+
+## Archive Contents
+
+The `.tar.gz` archive contains the complete static site from `/data/projects/{project-name}/site/`. Once extracted, the directory structure looks like this:
+
+```
+site/
+├── index.html
+├── *.html
+├── assets/
+│   ├── style.css
+│   ├── search.js
+│   ├── theme-toggle.js
+│   └── highlight.js
+└── search-index.json
+```
+
+| File / Directory | Description |
+|-----------------|-------------|
+| `index.html` | Landing page for the documentation site |
+| `*.html` | Individual documentation pages generated from the AI content pipeline |
+| `assets/style.css` | Theme styles supporting dark and light modes |
+| `assets/search.js` | Client-side search powered by lunr.js |
+| `assets/theme-toggle.js` | Dark/light theme toggle functionality |
+| `assets/highlight.js` | Code syntax highlighting |
+| `search-index.json` | Pre-built search index for client-side search |
+
+The site is entirely self-contained — all CSS, JavaScript, and search index data are bundled in the archive. No external CDN dependencies are required at runtime.
 
 ## Extracting the Archive
 
-Once downloaded, extract the archive:
-
 ```bash
-tar -xzf my-project.tar.gz
+mkdir -p ./docs-site
+tar -xzf your-project-docs.tar.gz -C ./docs-site
 ```
 
-This produces a directory containing the full static site with `index.html` at the root.
-
-You can preview it locally before deploying:
+Verify the extraction:
 
 ```bash
-cd my-project/site
-python3 -m http.server 3000
+ls ./docs-site/site/
 ```
 
-Then open `http://localhost:3000` in your browser.
+You should see `index.html`, the `assets/` directory, and the other HTML pages.
 
-## Deploying to Hosting Providers
+## Hosting on Your Own Infrastructure
 
-Since the downloaded archive is a standard static site, it works with any hosting provider that serves HTML files.
+Since the downloaded archive is a fully static site, it can be served by any HTTP server or static hosting platform.
 
 ### Nginx
 
@@ -96,7 +112,7 @@ server {
     listen 80;
     server_name docs.example.com;
 
-    root /var/www/my-project/site;
+    root /var/www/docs-site/site;
     index index.html;
 
     location / {
@@ -105,177 +121,238 @@ server {
 
     # Cache static assets
     location /assets/ {
-        expires 1y;
+        expires 30d;
         add_header Cache-Control "public, immutable";
     }
 }
 ```
 
-Then copy the site files and reload Nginx:
+Copy the extracted files and reload Nginx:
 
 ```bash
-tar -xzf my-project.tar.gz -C /var/www/my-project
+cp -r ./docs-site/site/ /var/www/docs-site/site/
 sudo nginx -s reload
 ```
 
 ### Apache
 
-Use an `.htaccess` file or virtual host configuration:
-
 ```apache
 <VirtualHost *:80>
     ServerName docs.example.com
-    DocumentRoot /var/www/my-project/site
+    DocumentRoot /var/www/docs-site/site
 
-    <Directory /var/www/my-project/site>
+    <Directory /var/www/docs-site/site>
         Options -Indexes +FollowSymLinks
         AllowOverride None
         Require all granted
     </Directory>
 
     # Cache static assets
-    <LocationMatch "/assets/">
-        ExpiresActive On
-        ExpiresDefault "access plus 1 year"
-    </LocationMatch>
+    <Directory /var/www/docs-site/site/assets>
+        Header set Cache-Control "public, max-age=2592000, immutable"
+    </Directory>
 </VirtualHost>
 ```
 
-### GitHub Pages
+### Python (Quick Preview)
 
-Push the extracted site contents to a GitHub Pages branch:
+For local preview or development, use Python's built-in HTTP server:
+
+```bash
+cd ./docs-site/site
+python3 -m http.server 3000
+```
+
+Then open `http://localhost:3000` in your browser.
+
+## Deploying to Cloud & CDN Providers
+
+### AWS S3 + CloudFront
 
 ```bash
 # Extract the archive
-tar -xzf my-project.tar.gz
+tar -xzf your-project-docs.tar.gz -C ./docs-site
 
-# Initialize a repo or use an existing one
-cd my-project/site
-git init
-git checkout -b gh-pages
-git add .
-git commit -m "Deploy documentation"
-git remote add origin git@github.com:yourorg/yourproject-docs.git
-git push -u origin gh-pages
+# Sync to S3
+aws s3 sync ./docs-site/site/ s3://your-docs-bucket/ \
+  --delete
+
+# Set cache headers for assets
+aws s3 cp s3://your-docs-bucket/assets/ s3://your-docs-bucket/assets/ \
+  --recursive \
+  --cache-control "public, max-age=2592000, immutable" \
+  --metadata-directive REPLACE
 ```
 
-Then enable GitHub Pages in your repository settings, selecting the `gh-pages` branch as the source.
+Configure the S3 bucket for static website hosting and point a CloudFront distribution at it for HTTPS and edge caching.
 
-> **Tip:** Automate this with a CI/CD pipeline that periodically fetches the latest archive from docsfy and deploys it to GitHub Pages.
+### GitHub Pages
+
+```bash
+# Extract into a repository configured for GitHub Pages
+tar -xzf your-project-docs.tar.gz -C ./docs-site
+
+# Copy site content to the repo root (or /docs depending on your config)
+cp -r ./docs-site/site/* ./your-pages-repo/
+
+cd ./your-pages-repo
+git add .
+git commit -m "Update documentation"
+git push origin main
+```
+
+> **Note:** GitHub Pages serves from the repository root or a `/docs` folder. Adjust the copy destination to match your repository's Pages configuration.
 
 ### Netlify
 
-Deploy using the Netlify CLI:
-
 ```bash
-tar -xzf my-project.tar.gz
+# Extract the archive
+tar -xzf your-project-docs.tar.gz -C ./docs-site
 
-# Install the Netlify CLI if needed
-npm install -g netlify-cli
-
-# Deploy the site directory
-netlify deploy --prod --dir=my-project/site
+# Deploy with the Netlify CLI
+netlify deploy --dir=./docs-site/site --prod
 ```
-
-Or use drag-and-drop: extract the archive locally and drag the `site/` folder into the Netlify dashboard.
 
 ### Cloudflare Pages
 
-Deploy using the Wrangler CLI:
+```bash
+# Extract the archive
+tar -xzf your-project-docs.tar.gz -C ./docs-site
+
+# Deploy with Wrangler
+npx wrangler pages deploy ./docs-site/site --project-name=your-docs
+```
+
+## Automating Downloads with CI/CD
+
+You can automate the download-and-deploy workflow in your CI/CD pipeline. Here is an example using GitHub Actions:
+
+```yaml
+name: Update Documentation
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  update-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger documentation generation
+        run: |
+          curl -X POST ${{ secrets.DOCSFY_URL }}/api/generate \
+            -H "Content-Type: application/json" \
+            -d '{"url": "https://github.com/${{ github.repository }}"}'
+
+      - name: Wait for generation to complete
+        run: |
+          PROJECT_NAME="${{ github.event.repository.name }}"
+          for i in $(seq 1 60); do
+            STATUS=$(curl -s "${{ secrets.DOCSFY_URL }}/api/projects/${PROJECT_NAME}" | jq -r '.status')
+            if [ "$STATUS" = "ready" ]; then
+              echo "Documentation is ready"
+              break
+            elif [ "$STATUS" = "error" ]; then
+              echo "Generation failed"
+              exit 1
+            fi
+            echo "Status: $STATUS - waiting..."
+            sleep 30
+          done
+
+      - name: Download documentation archive
+        run: |
+          PROJECT_NAME="${{ github.event.repository.name }}"
+          curl -o docs.tar.gz \
+            "${{ secrets.DOCSFY_URL }}/api/projects/${PROJECT_NAME}/download"
+          tar -xzf docs.tar.gz -C ./docs-output
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./docs-output/site
+```
+
+> **Warning:** AI-powered documentation generation can take several minutes depending on repository size and complexity. The `AI_CLI_TIMEOUT` defaults to 60 minutes. Make sure your CI/CD job timeout accommodates the generation time.
+
+## Incremental Updates
+
+docsfy tracks the last commit SHA for each project. When you call `POST /api/generate` for a project that already exists, it:
+
+1. Fetches the latest code and compares the current commit SHA against the stored SHA
+2. Re-runs the AI Planner to detect structural changes to the documentation
+3. Regenerates only pages whose content may be affected by the changes
+4. Rebuilds the static site with updated pages
+
+This means subsequent downloads after incremental updates will be faster to generate. You can check whether documentation needs regeneration by comparing the commit SHA:
 
 ```bash
-tar -xzf my-project.tar.gz
+# Get the current project state
+curl -s http://localhost:8000/api/projects/your-project | jq '.last_commit_sha'
 
-npm install -g wrangler
-wrangler pages deploy my-project/site --project-name=my-docs
+# Compare against your repo's latest commit
+git ls-remote https://github.com/your-org/your-repo HEAD
 ```
 
-### Amazon S3 + CloudFront
+> **Tip:** For repositories that change frequently, set up a webhook or scheduled CI job to trigger `POST /api/generate` and re-download the archive only when the commit SHA has changed.
 
-Upload the static site to an S3 bucket configured for static hosting:
+## Verifying the Downloaded Site
+
+After extracting the archive, verify that all expected files are present and the site works correctly:
 
 ```bash
-tar -xzf my-project.tar.gz
+# Check the file structure
+find ./docs-site/site -type f | head -20
 
-aws s3 sync my-project/site/ s3://my-docs-bucket/ --delete
+# Verify key files exist
+test -f ./docs-site/site/index.html && echo "index.html: OK"
+test -f ./docs-site/site/assets/style.css && echo "style.css: OK"
+test -f ./docs-site/site/search-index.json && echo "search-index.json: OK"
+
+# Quick local preview
+cd ./docs-site/site && python3 -m http.server 3000
 ```
 
-Configure the S3 bucket for static website hosting and optionally place a CloudFront distribution in front of it for HTTPS and caching.
+Open `http://localhost:3000` to verify:
+- Pages render correctly with sidebar navigation
+- Dark/light theme toggle works
+- Client-side search returns results
+- Code blocks have syntax highlighting
 
-## Automating Downloads
+## Troubleshooting
 
-You can script periodic downloads to keep your self-hosted docs in sync with the latest generated output. The following example uses `curl` to download and extract the archive whenever the project has been regenerated:
+### Download returns 404
+
+The project either doesn't exist or hasn't finished generating. Check the project status:
 
 ```bash
-#!/usr/bin/env bash
-set -euo pipefail
-
-DOCSFY_URL="http://localhost:8000"
-PROJECT="my-project"
-DEPLOY_DIR="/var/www/${PROJECT}/site"
-
-# Check if project is ready
-status=$(curl -s "${DOCSFY_URL}/api/projects/${PROJECT}" | python3 -c "import sys,json; print(json.load(sys.stdin)['status'])")
-
-if [ "$status" != "ready" ]; then
-  echo "Project not ready (status: ${status}), skipping."
-  exit 0
-fi
-
-# Download and extract
-curl -s "${DOCSFY_URL}/api/projects/${PROJECT}/download" -o /tmp/${PROJECT}.tar.gz
-tar -xzf /tmp/${PROJECT}.tar.gz -C /tmp/${PROJECT}-new
-
-# Swap into place
-rm -rf "${DEPLOY_DIR}"
-mv /tmp/${PROJECT}-new/site "${DEPLOY_DIR}"
-rm -rf /tmp/${PROJECT}.tar.gz /tmp/${PROJECT}-new
-
-echo "Documentation deployed successfully."
+curl http://localhost:8000/api/projects/your-project
 ```
 
-> **Tip:** Run this script on a cron schedule or trigger it via a webhook after calling `POST /api/generate` to regenerate documentation when your repository changes.
+If the status is `generating`, wait for it to complete. If the status is `error`, check the generation logs and retry with `POST /api/generate`.
 
-## Serving Directly from docsfy
+### Archive is empty or incomplete
 
-If you prefer not to self-host, docsfy serves the generated documentation directly:
+Ensure the generation completed successfully (status is `ready`). A project in `error` state may have partial output. Delete and regenerate:
 
-```
-GET /docs/{project}/{path}
-```
-
-For example, once a project named `my-project` has been generated, its documentation is available at:
-
-```
-http://localhost:8000/docs/my-project/
-http://localhost:8000/docs/my-project/getting-started.html
+```bash
+curl -X DELETE http://localhost:8000/api/projects/your-project
+curl -X POST http://localhost:8000/api/generate \
+  -H "Content-Type: application/json" \
+  -d '{"url": "https://github.com/your-org/your-repo"}'
 ```
 
-This is useful for development or internal use. For production, you can expose the docsfy service behind a reverse proxy:
+### Search not working on self-hosted site
 
-```nginx
-server {
-    listen 80;
-    server_name docs.example.com;
+Client-side search requires the `search-index.json` file to be served with the correct MIME type (`application/json`). Most web servers handle this correctly by default. If search isn't working, verify the file is accessible:
 
-    location / {
-        proxy_pass http://localhost:8000/docs/my-project/;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-    }
-}
+```bash
+curl -I http://docs.example.com/search-index.json
 ```
 
-> **Note:** When serving directly from docsfy, the service must remain running. For zero-downtime documentation hosting, downloading and self-hosting the static site is recommended.
+The `Content-Type` header should be `application/json`.
 
-## Comparison: Direct Serving vs. Self-Hosting
+### CORS issues when hosting on a CDN
 
-| | Direct Serving | Self-Hosting |
-|---|---|---|
-| **Setup** | No extra setup needed | Requires a web server or hosting provider |
-| **Availability** | Requires docsfy to be running | Independent of docsfy |
-| **Performance** | Served through FastAPI | Optimized static file serving |
-| **CDN support** | Requires separate configuration | Native support on most platforms |
-| **Custom domain** | Via reverse proxy | Native support |
-| **Offline access** | No | Yes (after download) |
-| **Best for** | Development, internal use | Production, public-facing docs |
+If you're serving the documentation from a different domain than your application, you may need to configure CORS headers on your hosting provider. The search functionality loads `search-index.json` via fetch, which requires CORS when cross-origin.

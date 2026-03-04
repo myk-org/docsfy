@@ -1,6 +1,6 @@
 # POST /api/generate
 
-Start documentation generation for a GitHub repository. This endpoint triggers docsfy's four-stage pipeline — clone, plan, generate, render — producing a polished static HTML documentation site from your repository's source code.
+Start documentation generation for a GitHub repository. This endpoint accepts a repository URL, clones the repository, and runs the full AI-powered generation pipeline to produce a polished static documentation site.
 
 ## Endpoint
 
@@ -20,219 +20,261 @@ POST /api/generate
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `repo_url` | `string` | Yes | GitHub repository URL to generate documentation for. Supports both HTTPS and SSH formats. |
+| `repo_url` | `string` | Yes | GitHub repository URL (HTTPS or SSH format) |
 
-#### Supported URL Formats
+### Supported Repository URL Formats
 
-```
-https://github.com/owner/repo
-https://github.com/owner/repo.git
-git@github.com:owner/repo.git
-```
+docsfy supports both HTTPS and SSH URL formats for public and private repositories.
 
-> **Note:** Private repositories are supported. The service uses system git credentials configured in the container environment for authentication.
+**HTTPS URLs:**
 
-### Example Request
-
-```bash
-curl -X POST http://localhost:8000/api/generate \
-  -H "Content-Type: application/json" \
-  -d '{"repo_url": "https://github.com/owner/my-project"}'
+```json
+{
+  "repo_url": "https://github.com/owner/repo-name"
+}
 ```
 
-```python
-import httpx
+**SSH URLs:**
 
-response = httpx.post(
-    "http://localhost:8000/api/generate",
-    json={"repo_url": "https://github.com/owner/my-project"}
-)
-print(response.json())
+```json
+{
+  "repo_url": "git@github.com:owner/repo-name.git"
+}
 ```
+
+> **Note:** Private repositories require valid git credentials configured on the host system. When running in Docker, mount your SSH keys or configure credential helpers in the container. See [Container and Deployment](#authentication-for-private-repositories) for details.
 
 ## Response
 
 ### Success Response
 
-**Status Code:** `200 OK`
+**Status:** `200 OK`
 
-The endpoint returns a JSON object with the project metadata and generation status.
+The endpoint returns the project name and its current generation status. Generation runs asynchronously through a four-stage pipeline in the background.
 
 ```json
 {
-  "name": "my-project",
-  "repo_url": "https://github.com/owner/my-project",
-  "status": "generating"
+  "project": "repo-name",
+  "status": "generating",
+  "repo_url": "https://github.com/owner/repo-name"
 }
 ```
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `name` | `string` | Project name derived from the repository URL. |
-| `repo_url` | `string` | The repository URL provided in the request. |
-| `status` | `string` | Current generation status. One of `generating`, `ready`, or `error`. |
-
-#### Status Values
-
-| Status | Description |
-|--------|-------------|
-| `generating` | The documentation generation pipeline is currently running. |
-| `ready` | Documentation has been successfully generated and is available for viewing. |
-| `error` | Generation failed. Check the project details endpoint for error information. |
-
-> **Note:** Generation is an asynchronous process. The endpoint returns immediately with a `generating` status. Use [`GET /api/status`](/api/status) or [`GET /api/projects/{name}`](/api/projects) to poll for completion.
+| `project` | `string` | Derived project name used to identify the generated docs |
+| `status` | `string` | Current generation status: `generating`, `ready`, or `error` |
+| `repo_url` | `string` | The repository URL as submitted |
 
 ### Error Responses
 
-**Status Code:** `422 Unprocessable Entity`
-
-Returned when the request body is invalid or missing required fields.
-
-```json
-{
-  "detail": [
-    {
-      "loc": ["body", "repo_url"],
-      "msg": "field required",
-      "type": "value_error.missing"
-    }
-  ]
-}
-```
-
-**Status Code:** `400 Bad Request`
-
-Returned when the repository URL is malformed or unsupported.
-
-```json
-{
-  "detail": "Invalid repository URL format"
-}
-```
-
-**Status Code:** `500 Internal Server Error`
-
-Returned when the server encounters an unexpected error during request processing (e.g., AI CLI unavailable, git clone failure).
-
-```json
-{
-  "detail": "Generation failed: <error message>"
-}
-```
+| Status Code | Description |
+|-------------|-------------|
+| `422` | Invalid or missing `repo_url` in request body |
+| `500` | Internal server error (clone failure, AI CLI unavailable, etc.) |
 
 ## Generation Pipeline
 
-When you call `POST /api/generate`, the service executes a four-stage pipeline:
+When a request is accepted, the generation pipeline runs four sequential stages:
+
+```
+Clone Repository → AI Planner → AI Content Generator → HTML Renderer
+```
 
 ### Stage 1: Clone Repository
 
-The repository is shallow-cloned (`--depth 1`) to a temporary directory to minimize disk usage and clone time.
+The repository is shallow-cloned (`--depth 1`) to a temporary directory. This minimizes bandwidth and disk usage while still providing the AI with full access to the current state of the codebase.
 
 ### Stage 2: AI Planner
 
-The configured AI CLI analyzes the full repository and produces a `plan.json` file containing the documentation structure — pages, sections, and navigation hierarchy.
+The configured AI CLI analyzes the repository and produces a `plan.json` file containing the documentation structure — pages, sections, and navigation hierarchy.
 
 ### Stage 3: AI Content Generator
 
-For each page defined in `plan.json`, the AI CLI explores the codebase and generates a markdown file. Pages are generated concurrently using semaphore-limited concurrency for efficiency. Output is cached at:
+For each page defined in `plan.json`, the AI CLI explores the codebase and generates markdown content. Pages are generated concurrently using async execution with semaphore-limited concurrency. Output is cached at:
 
 ```
-/data/projects/{name}/cache/pages/*.md
+/data/projects/{project-name}/cache/pages/*.md
 ```
 
 ### Stage 4: HTML Renderer
 
-Markdown pages and `plan.json` are converted into a polished static HTML site using Jinja2 templates with bundled assets. The final site includes sidebar navigation, dark/light theme toggle, client-side search, and code syntax highlighting via highlight.js.
-
-The rendered site is output to:
+Markdown pages and `plan.json` are converted into a polished static HTML site using Jinja2 templates with bundled CSS/JS assets. The rendered site includes sidebar navigation, dark/light theme toggle, client-side search, code syntax highlighting, and responsive design. Output is written to:
 
 ```
-/data/projects/{name}/site/
+/data/projects/{project-name}/site/
 ```
 
-> **Tip:** Once generation completes with status `ready`, view the docs at `GET /docs/{project}/` or download them as a `.tar.gz` archive via `GET /api/projects/{name}/download`.
+> **Tip:** Once generation completes with status `ready`, the docs are immediately available at `GET /docs/{project}/` or can be downloaded as a `.tar.gz` archive via `GET /api/projects/{project}/download`.
+
+## Tracking Generation Status
+
+Generation runs asynchronously. Poll the status endpoint to check progress:
+
+```bash
+curl http://localhost:8000/api/status
+```
+
+Or check a specific project:
+
+```bash
+curl http://localhost:8000/api/projects/repo-name
+```
+
+Project status transitions follow this lifecycle:
+
+```
+generating → ready
+generating → error
+```
+
+| Status | Description |
+|--------|-------------|
+| `generating` | Pipeline is currently running |
+| `ready` | Generation completed successfully; docs are served |
+| `error` | Generation failed; check project details for error logs |
 
 ## Incremental Updates
 
 Calling `POST /api/generate` for a repository that has already been generated triggers an incremental update:
 
-1. The service fetches the repository and compares the current commit SHA against the stored SHA in the database.
-2. If the commit SHA has changed, the AI Planner re-evaluates whether the documentation structure has changed.
-3. Only pages whose content may be affected by the changes are regenerated.
-4. If the plan structure is unchanged and only specific files changed, only the relevant pages are regenerated.
+1. The current commit SHA is compared against the stored SHA from the previous generation
+2. If the repository has changed, the AI Planner re-evaluates the documentation structure
+3. Only pages whose content may be affected by the changes are regenerated
+4. If the plan structure is unchanged and only specific files changed, only relevant pages are regenerated
 
-This significantly reduces generation time for repositories that have already been documented.
-
-> **Note:** If the commit SHA has not changed since the last generation, the pipeline may skip regeneration entirely.
+> **Note:** If the repository has not changed since the last generation (same commit SHA), the pipeline may skip regeneration entirely and return the existing documentation.
 
 ## AI Provider Configuration
 
-The AI provider used during generation is controlled by environment variables. The configured provider affects all stages that invoke the AI CLI (planning and content generation).
+The AI provider used for generation is configured via environment variables, not per-request. The following providers are supported:
 
-| Environment Variable | Default | Description |
-|---------------------|---------|-------------|
-| `AI_PROVIDER` | `claude` | AI CLI provider. One of `claude`, `gemini`, or `cursor`. |
-| `AI_MODEL` | `claude-opus-4-6[1m]` | Model identifier passed to the AI CLI. |
-| `AI_CLI_TIMEOUT` | `60` | Maximum time in minutes for each AI CLI invocation. |
+| Provider | Binary | Environment Variable for API Key |
+|----------|--------|----------------------------------|
+| Claude (default) | `claude` | `ANTHROPIC_API_KEY` or Vertex AI credentials |
+| Gemini | `gemini` | `GEMINI_API_KEY` |
+| Cursor | `agent` | `CURSOR_API_KEY` |
 
-The provider determines which binary and command flags are used:
+### Default Settings
 
-```python
-@dataclass(frozen=True)
-class ProviderConfig:
-    binary: str
-    build_cmd: Callable
-    uses_own_cwd: bool = False
-```
+| Setting | Environment Variable | Default |
+|---------|---------------------|---------|
+| AI Provider | `AI_PROVIDER` | `claude` |
+| AI Model | `AI_MODEL` | `claude-opus-4-6[1m]` |
+| CLI Timeout | `AI_CLI_TIMEOUT` | `60` (minutes) |
 
-| Provider | Binary | Command Pattern |
-|----------|--------|----------------|
-| `claude` | `claude` | `claude --model <model> --dangerously-skip-permissions -p` |
-| `gemini` | `gemini` | `gemini --model <model> --yolo` |
-| `cursor` | `agent` | `agent --force --model <model> --print --workspace <path>` |
-
-> **Warning:** Before starting generation, the service runs a lightweight availability check against the configured AI CLI. If the CLI is not installed or credentials are not configured, the generation will fail.
-
-## Monitoring Generation Progress
-
-After submitting a generation request, use these endpoints to track progress:
+Example `.env` configuration:
 
 ```bash
-# List all projects and their statuses
-curl http://localhost:8000/api/status
-
-# Get details for a specific project
-curl http://localhost:8000/api/projects/my-project
+AI_PROVIDER=claude
+AI_MODEL=claude-opus-4-6[1m]
+AI_CLI_TIMEOUT=60
+ANTHROPIC_API_KEY=sk-ant-...
 ```
 
-The project details endpoint returns metadata including the last generated timestamp, commit SHA, and list of generated pages.
+> **Warning:** The `AI_CLI_TIMEOUT` value is in minutes. Large repositories with many pages may require increasing this value beyond the default of 60 minutes.
 
-## Complete Example
+## Authentication for Private Repositories
+
+Private repository access relies on the system git credentials available to the docsfy process.
+
+### Docker Deployment
+
+Mount your SSH keys or Google Cloud credentials into the container via `docker-compose.yaml`:
+
+```yaml
+services:
+  docsfy:
+    build: .
+    ports:
+      - "8000:8000"
+    env_file: .env
+    volumes:
+      - ./data:/data
+      - ~/.ssh:/home/appuser/.ssh:ro
+      - ~/.config/gcloud:/home/appuser/.config/gcloud:ro
+```
+
+> **Warning:** Ensure SSH keys mounted into the container have appropriate file permissions (`600`) and that the `known_hosts` file includes `github.com`.
+
+## Examples
+
+### Generate docs for a public repository (HTTPS)
 
 ```bash
-# 1. Start generation
 curl -X POST http://localhost:8000/api/generate \
   -H "Content-Type: application/json" \
   -d '{"repo_url": "https://github.com/owner/my-project"}'
-# Response: {"name": "my-project", "repo_url": "...", "status": "generating"}
-
-# 2. Poll for completion
-curl http://localhost:8000/api/projects/my-project
-# Response includes "status": "ready" when complete
-
-# 3. View the generated docs
-# Open in browser: http://localhost:8000/docs/my-project/
-
-# 4. Or download as a static site archive
-curl -o docs.tar.gz http://localhost:8000/api/projects/my-project/download
 ```
+
+### Generate docs for a private repository (SSH)
+
+```bash
+curl -X POST http://localhost:8000/api/generate \
+  -H "Content-Type: application/json" \
+  -d '{"repo_url": "git@github.com:owner/private-project.git"}'
+```
+
+### Full workflow: generate and poll until ready
+
+```bash
+# Start generation
+curl -X POST http://localhost:8000/api/generate \
+  -H "Content-Type: application/json" \
+  -d '{"repo_url": "https://github.com/owner/my-project"}'
+
+# Poll for completion
+while true; do
+  STATUS=$(curl -s http://localhost:8000/api/projects/my-project | jq -r '.status')
+  echo "Status: $STATUS"
+  if [ "$STATUS" = "ready" ] || [ "$STATUS" = "error" ]; then
+    break
+  fi
+  sleep 10
+done
+
+# View the generated docs
+open http://localhost:8000/docs/my-project/
+```
+
+### Trigger an incremental update
+
+Re-submitting the same repository URL after upstream changes triggers an incremental update — only affected pages are regenerated:
+
+```bash
+curl -X POST http://localhost:8000/api/generate \
+  -H "Content-Type: application/json" \
+  -d '{"repo_url": "https://github.com/owner/my-project"}'
+```
+
+## Storage Layout
+
+After successful generation, the project artifacts are stored as follows:
+
+```
+/data/projects/{project-name}/
+  plan.json             # Documentation structure from AI Planner
+  cache/
+    pages/*.md          # AI-generated markdown (cached for incremental updates)
+  site/                 # Final rendered static HTML
+    index.html
+    *.html
+    assets/
+      style.css
+      search.js
+      theme-toggle.js
+      highlight.js
+    search-index.json
+```
+
+Project metadata (name, repo URL, status, last commit SHA, generation history) is stored in the SQLite database at `/data/docsfy.db`.
 
 ## Related Endpoints
 
 | Method | Path | Description |
 |--------|------|-------------|
 | `GET` | `/api/status` | List all projects and their generation status |
-| `GET` | `/api/projects/{name}` | Get project details |
-| `DELETE` | `/api/projects/{name}` | Remove a project and its generated docs |
-| `GET` | `/api/projects/{name}/download` | Download site as `.tar.gz` archive |
-| `GET` | `/docs/{project}/{path}` | Serve generated static HTML docs |
+| `GET` | `/api/projects/{name}` | Get project details including last commit SHA and page list |
+| `DELETE` | `/api/projects/{name}` | Remove a project and all its generated docs |
+| `GET` | `/api/projects/{name}/download` | Download the generated site as a `.tar.gz` archive |
+| `GET` | `/docs/{project}/{path}` | Serve the generated static HTML documentation |

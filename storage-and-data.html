@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GET /health - docsfy</title>
+    <title>Storage &amp; Data - docsfy</title>
     <meta name="description" content="AI-powered documentation generator that creates polished static HTML sites from GitHub repositories">
     <link rel="stylesheet" href="assets/style.css">
 </head>
@@ -69,7 +69,7 @@
                     
                     <li>
                         <a href="storage-and-data.html"
-                           class="nav-link">
+                           class="nav-link active">
                             Storage &amp; Data
                         </a>
                     </li>
@@ -167,7 +167,7 @@
                     
                     <li>
                         <a href="api-health.html"
-                           class="nav-link active">
+                           class="nav-link">
                             GET /health
                         </a>
                     </li>
@@ -254,39 +254,23 @@
 
         <main class="content">
             <article class="article">
-                <h1 class="article-title">GET /health</h1>
+                <h1 class="article-title">Storage &amp; Data</h1>
                 <div class="article-body">
-                    <h1 id="get-health">GET /health</h1>
-<p>Health check endpoint for monitoring and container orchestration. Returns the operational status of the docsfy service, enabling Docker, Kubernetes, and external monitoring tools to verify the application is running and responsive.</p>
-<h2 id="endpoint">Endpoint</h2>
-<div class="highlight"><pre><span></span><code>GET /health
+                    <h1 id="storage-data">Storage &amp; Data</h1>
+<p>docsfy uses a dual-storage architecture: <strong>SQLite</strong> for project metadata and <strong>the filesystem</strong> for generated documentation artifacts. Both live under the <code>/data</code> directory, making backups and container volume mounts straightforward.</p>
+<div class="highlight"><pre><span></span><code>/data/
+├── docsfy.db              # SQLite database (metadata)
+└── projects/              # Filesystem (generated docs)
+    ├── my-api/
+    ├── frontend-sdk/
+    └── ...
 </code></pre></div>
 
-<p>No authentication or parameters required.</p>
-<h2 id="response">Response</h2>
-<p><strong>Status Code:</strong> <code>200 OK</code></p>
-<div class="highlight"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;healthy&quot;</span>
-<span class="p">}</span>
-</code></pre></div>
-
-<p>A successful response indicates the FastAPI server is running and able to handle requests on port <code>8000</code>.</p>
-<h2 id="usage">Usage</h2>
-<h3 id="curl">curl</h3>
-<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-f<span class="w"> </span>http://localhost:8000/health
-</code></pre></div>
-
-<p>The <code>-f</code> flag causes curl to return a non-zero exit code on HTTP errors, which is critical for use in health check scripts and container orchestration.</p>
-<h3 id="python-requests">Python (requests)</h3>
-<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
-
-<span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;http://localhost:8000/health&quot;</span><span class="p">)</span>
-<span class="n">response</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">())</span>  <span class="c1"># {&quot;status&quot;: &quot;healthy&quot;}</span>
-</code></pre></div>
-
-<h2 id="docker-health-check">Docker Health Check</h2>
-<p>The <code>docker-compose.yaml</code> configures automatic health monitoring using this endpoint:</p>
+<blockquote>
+<p><strong>Note:</strong> The entire <code>/data</code> directory is mounted as a Docker volume, so all project data persists across container restarts.</p>
+</blockquote>
+<h2 id="volume-configuration">Volume Configuration</h2>
+<p>The <code>docker-compose.yaml</code> maps a local <code>./data</code> directory into the container at <code>/data</code>:</p>
 <div class="highlight"><pre><span></span><code><span class="nt">services</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">docsfy</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">build</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">.</span>
@@ -304,233 +288,329 @@
 <span class="w">      </span><span class="nt">retries</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3</span>
 </code></pre></div>
 
+<p>The <code>/data</code> volume holds both the SQLite database and all generated project files. The other volume mounts (<code>gcloud</code>, <code>cursor</code>) provide AI provider credentials and are read-only where possible.</p>
+<hr />
+<h2 id="sqlite-database">SQLite Database</h2>
+<h3 id="location">Location</h3>
+<div class="highlight"><pre><span></span><code>/data/docsfy.db
+</code></pre></div>
+
+<p>docsfy uses SQLite via <code>aiosqlite</code> for async-compatible database operations within the FastAPI application. SQLite was chosen for its zero-configuration setup, single-file portability, and suitability for the single-writer workload that docsfy produces.</p>
+<h3 id="schema">Schema</h3>
+<p>The database stores project metadata — not the documentation content itself. It tracks:</p>
 <table>
 <thead>
 <tr>
-<th>Parameter</th>
-<th>Value</th>
+<th>Field</th>
 <th>Description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>test</code></td>
-<td><code>curl -f http://localhost:8000/health</code></td>
-<td>Command to run inside the container</td>
+<td><strong>Project name</strong></td>
+<td>Unique identifier derived from the repository</td>
 </tr>
 <tr>
-<td><code>interval</code></td>
-<td><code>30s</code></td>
-<td>Time between health checks</td>
+<td><strong>Repository URL</strong></td>
+<td>The source GitHub repo (SSH or HTTPS)</td>
 </tr>
 <tr>
-<td><code>timeout</code></td>
-<td><code>10s</code></td>
-<td>Maximum time to wait for a response</td>
+<td><strong>Status</strong></td>
+<td>Current generation state</td>
 </tr>
 <tr>
-<td><code>retries</code></td>
-<td><code>3</code></td>
-<td>Consecutive failures before marking unhealthy</td>
+<td><strong>Last generated timestamp</strong></td>
+<td>When documentation was last built</td>
+</tr>
+<tr>
+<td><strong>Last commit SHA</strong></td>
+<td>The Git commit the docs were generated from</td>
+</tr>
+<tr>
+<td><strong>Generation history</strong></td>
+<td>Log of past generation runs</td>
 </tr>
 </tbody>
 </table>
-<blockquote>
-<p><strong>Note:</strong> The container image includes <code>curl</code> as a system dependency (installed in the Dockerfile alongside bash, git, nodejs, npm, and ca-certificates), so it is always available for health checks.</p>
-</blockquote>
-<h3 id="container-health-states">Container Health States</h3>
-<p>Docker tracks three health states based on the check results:</p>
+<h3 id="project-status-values">Project Status Values</h3>
+<p>A project transitions through three statuses during its lifecycle:</p>
 <table>
 <thead>
 <tr>
-<th>State</th>
+<th>Status</th>
 <th>Meaning</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>starting</code></td>
-<td>Container started, initial health check not yet run</td>
+<td><code>generating</code></td>
+<td>Pipeline is actively running (clone, plan, generate, render)</td>
 </tr>
 <tr>
-<td><code>healthy</code></td>
-<td>Last health check succeeded (HTTP 200 from <code>/health</code>)</td>
+<td><code>ready</code></td>
+<td>Documentation has been generated and is available for serving</td>
 </tr>
 <tr>
-<td><code>unhealthy</code></td>
-<td>3 consecutive health checks failed (no response or non-200 status)</td>
+<td><code>error</code></td>
+<td>Generation failed — check generation logs for details</td>
 </tr>
 </tbody>
 </table>
-<p>Check the current health status of the container:</p>
-<div class="highlight"><pre><span></span><code>docker<span class="w"> </span>inspect<span class="w"> </span>--format<span class="o">=</span><span class="s1">&#39;{{.State.Health.Status}}&#39;</span><span class="w"> </span>docsfy-docsfy-1
-</code></pre></div>
-
-<p>Or view it in the container listing:</p>
-<div class="highlight"><pre><span></span><code>docker<span class="w"> </span>ps
-</code></pre></div>
-
-<p>The <code>STATUS</code> column will show <code>(healthy)</code> or <code>(unhealthy)</code> next to the uptime.</p>
-<h2 id="kubernetes-probes">Kubernetes Probes</h2>
-<p>When deploying to Kubernetes, use the <code>/health</code> endpoint for liveness and readiness probes:</p>
-<div class="highlight"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">apps/v1</span>
-<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Deployment</span>
-<span class="nt">metadata</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">docsfy</span>
-<span class="nt">spec</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">template</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">spec</span><span class="p">:</span>
-<span class="w">      </span><span class="nt">containers</span><span class="p">:</span>
-<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">docsfy</span>
-<span class="w">          </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">docsfy:latest</span>
-<span class="w">          </span><span class="nt">ports</span><span class="p">:</span>
-<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">containerPort</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">8000</span>
-<span class="w">          </span><span class="nt">livenessProbe</span><span class="p">:</span>
-<span class="w">            </span><span class="nt">httpGet</span><span class="p">:</span>
-<span class="w">              </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/health</span>
-<span class="w">              </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">8000</span>
-<span class="w">            </span><span class="nt">initialDelaySeconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span>
-<span class="w">            </span><span class="nt">periodSeconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">30</span>
-<span class="w">            </span><span class="nt">timeoutSeconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10</span>
-<span class="w">            </span><span class="nt">failureThreshold</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3</span>
-<span class="w">          </span><span class="nt">readinessProbe</span><span class="p">:</span>
-<span class="w">            </span><span class="nt">httpGet</span><span class="p">:</span>
-<span class="w">              </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/health</span>
-<span class="w">              </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">8000</span>
-<span class="w">            </span><span class="nt">initialDelaySeconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3</span>
-<span class="w">            </span><span class="nt">periodSeconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10</span>
-<span class="w">            </span><span class="nt">timeoutSeconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span>
-<span class="w">            </span><span class="nt">failureThreshold</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span>
-</code></pre></div>
-
-<blockquote>
-<p><strong>Tip:</strong> Set <code>initialDelaySeconds</code> on the liveness probe high enough for uvicorn to finish startup. The default entrypoint (<code>uv run --no-sync uvicorn docsfy.main:app --host 0.0.0.0 --port 8000</code>) typically starts within a few seconds.</p>
-</blockquote>
+<h3 id="database-operations">Database Operations</h3>
+<p>The API endpoints map directly to CRUD operations on the database:</p>
 <table>
 <thead>
 <tr>
-<th>Probe</th>
-<th>Purpose</th>
-<th>Behavior on Failure</th>
+<th>Endpoint</th>
+<th>Operation</th>
+<th>Description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><strong>Liveness</strong></td>
-<td>Is the process alive?</td>
-<td>Kubernetes restarts the container</td>
+<td><code>POST /api/generate</code></td>
+<td><strong>Create / Update</strong></td>
+<td>Inserts a new project record or updates an existing one; sets status to <code>generating</code></td>
 </tr>
 <tr>
-<td><strong>Readiness</strong></td>
-<td>Can it serve traffic?</td>
-<td>Kubernetes removes the pod from Service endpoints</td>
+<td><code>GET /api/status</code></td>
+<td><strong>Read</strong></td>
+<td>Lists all projects with their current status</td>
+</tr>
+<tr>
+<td><code>GET /api/projects/{name}</code></td>
+<td><strong>Read</strong></td>
+<td>Returns full project details including last commit SHA and page list</td>
+</tr>
+<tr>
+<td><code>DELETE /api/projects/{name}</code></td>
+<td><strong>Delete</strong></td>
+<td>Removes the project record <em>and</em> its filesystem artifacts</td>
 </tr>
 </tbody>
 </table>
-<h2 id="architecture-context">Architecture Context</h2>
-<p>The <code>/health</code> endpoint sits alongside the core docsfy API:</p>
-<div class="highlight"><pre><span></span><code>FastAPI Server (:8000)
-├── POST   /api/generate                  # Start doc generation
-├── GET    /api/status                    # List all projects
-├── GET    /api/projects/{name}           # Project details
-├── DELETE /api/projects/{name}           # Remove a project
-├── GET    /api/projects/{name}/download  # Download site as .tar.gz
-├── GET    /docs/{project}/{path}         # Serve generated HTML
-└── GET    /health                        # Health check  ← this endpoint
+<blockquote>
+<p><strong>Warning:</strong> <code>DELETE /api/projects/{name}</code> removes both the database record and the entire project directory under <code>/data/projects/{name}/</code>. This action is irreversible.</p>
+</blockquote>
+<hr />
+<h2 id="filesystem-storage">Filesystem Storage</h2>
+<h3 id="directory-structure">Directory Structure</h3>
+<p>Each project gets its own directory under <code>/data/projects/</code>. The directory name matches the project name stored in SQLite.</p>
+<div class="highlight"><pre><span></span><code>/data/projects/{project-name}/
+├── plan.json                # Documentation structure from AI planning stage
+├── cache/
+│   └── pages/
+│       ├── getting-started.md
+│       ├── installation.md
+│       ├── api-reference.md
+│       └── ...              # One markdown file per documentation page
+└── site/                    # Final rendered static HTML site
+    ├── index.html
+    ├── getting-started.html
+    ├── installation.html
+    ├── api-reference.html
+    ├── assets/
+    │   ├── style.css        # Theme styles (dark/light mode)
+    │   ├── search.js        # Client-side search logic
+    │   ├── theme-toggle.js  # Dark/light theme switcher
+    │   └── highlight.js     # Code syntax highlighting
+    └── search-index.json    # Pre-built search index
 </code></pre></div>
 
-<p>The health endpoint is intentionally lightweight — it confirms the FastAPI/uvicorn process is responding to HTTP requests without performing expensive operations like database queries or filesystem checks.</p>
-<h2 id="monitoring-integration">Monitoring Integration</h2>
-<h3 id="uptime-monitoring">Uptime Monitoring</h3>
-<p>Point any HTTP uptime monitor at the health endpoint:</p>
-<div class="highlight"><pre><span></span><code>https://your-domain.com/health
+<h3 id="the-three-layers">The Three Layers</h3>
+<p>The filesystem stores three distinct layers of data, each produced by a different pipeline stage:</p>
+<h4 id="1-planjson-documentation-blueprint">1. <code>plan.json</code> — Documentation Blueprint</h4>
+<p>Created by the <strong>AI Planner</strong> stage. Contains the documentation structure: pages, sections, navigation hierarchy, and ordering. This file drives both content generation and HTML rendering.</p>
+<p>The AI CLI runs with <code>cwd</code> set to the cloned repository, giving it full access to explore the codebase and determine what documentation pages to create.</p>
+<h4 id="2-cachepagesmd-generated-markdown">2. <code>cache/pages/*.md</code> — Generated Markdown</h4>
+<p>Created by the <strong>AI Content Generator</strong> stage. One markdown file per page defined in <code>plan.json</code>. These files are cached to support incremental updates — if a page doesn't need regeneration, its cached markdown is reused.</p>
+<p>Pages can be generated concurrently using async execution with semaphore-limited concurrency:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Pages generated via AI CLI subprocess calls</span>
+<span class="c1"># Async execution via asyncio.to_thread(subprocess.run, ...)</span>
+<span class="c1"># Returns tuple[bool, str] (success, output)</span>
 </code></pre></div>
 
-<p>Configure your monitor to:
-- Expect HTTP status <code>200</code>
-- Check at 30-second intervals (matching the Docker health check)
-- Alert after 3 consecutive failures</p>
-<h3 id="docker-compose-restart-policy">Docker Compose Restart Policy</h3>
-<p>Pair the health check with a restart policy so Docker automatically recovers from failures:</p>
-<div class="highlight"><pre><span></span><code><span class="nt">services</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">docsfy</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">restart</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">unless-stopped</span>
-<span class="w">    </span><span class="nt">healthcheck</span><span class="p">:</span>
-<span class="w">      </span><span class="nt">test</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;CMD&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;curl&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;-f&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;http://localhost:8000/health&quot;</span><span class="p p-Indicator">]</span>
-<span class="w">      </span><span class="nt">interval</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">30s</span>
-<span class="w">      </span><span class="nt">timeout</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10s</span>
-<span class="w">      </span><span class="nt">retries</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3</span>
+<h4 id="3-site-rendered-html">3. <code>site/</code> — Rendered HTML</h4>
+<p>Created by the <strong>HTML Renderer</strong> stage. The final static site built from <code>plan.json</code> + cached markdown using Jinja2 templates and bundled CSS/JS assets.</p>
+<p>This is what gets served at <code>GET /docs/{project}/{path}</code> and packaged for download at <code>GET /api/projects/{name}/download</code> (as a <code>.tar.gz</code> archive).</p>
+<blockquote>
+<p><strong>Tip:</strong> You can download any project's static site as a tar.gz archive via the <code>/api/projects/{name}/download</code> endpoint and host it anywhere — no docsfy server required.</p>
+</blockquote>
+<hr />
+<h2 id="how-data-flows-through-the-pipeline">How Data Flows Through the Pipeline</h2>
+<p>The generation pipeline produces data in four sequential stages. Each stage writes to a specific part of the storage hierarchy:</p>
+<div class="highlight"><pre><span></span><code>POST /api/generate (repo URL)
+        │
+        ▼
+┌─────────────────┐
+│  Stage 1: Clone │──▶ Temporary directory (cleaned up after pipeline)
+│  Repository     │
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│  Stage 2: AI    │──▶ /data/projects/{name}/plan.json
+│  Planner        │
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│  Stage 3: AI    │──▶ /data/projects/{name}/cache/pages/*.md
+│  Content Gen    │
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│  Stage 4: HTML  │──▶ /data/projects/{name}/site/
+│  Renderer       │
+└─────────────────┘
+         │
+         ▼
+  SQLite status ──▶ &quot;ready&quot;
+</code></pre></div>
+
+<p>At each stage, the project's status in SQLite is <code>generating</code>. Once the pipeline completes successfully, the status is updated to <code>ready</code>. If any stage fails, the status is set to <code>error</code>.</p>
+<hr />
+<h2 id="incremental-updates">Incremental Updates</h2>
+<p>docsfy avoids regenerating entire documentation sites by tracking changes at the Git commit level. The incremental update strategy ties together both storage systems:</p>
+<ol>
+<li>
+<p><strong>SHA comparison</strong> — The last commit SHA is stored in SQLite. On re-generation, docsfy fetches the repository and compares the current HEAD SHA against the stored SHA.</p>
+</li>
+<li>
+<p><strong>Plan diffing</strong> — If the SHA has changed, the AI Planner runs again to check whether the documentation structure has changed.</p>
+</li>
+<li>
+<p><strong>Selective regeneration</strong> — Only pages whose content may be affected by the code changes are regenerated. Unchanged pages reuse their cached markdown from <code>cache/pages/</code>.</p>
+</li>
+<li>
+<p><strong>Skip entirely</strong> — If the plan structure is unchanged and no relevant files changed, regeneration is skipped altogether.</p>
+</li>
+</ol>
+<div class="highlight"><pre><span></span><code>Re-generate request
+        │
+        ▼
+  Compare HEAD SHA with stored SHA
+        │
+   ┌────┴────┐
+   │ Same    │ Different
+   │         ▼
+   │    Re-run AI Planner
+   │         │
+   │    ┌────┴────┐
+   │    │ Plan    │ Plan
+   │    │ same    │ changed
+   │    │         ▼
+   │    │    Regenerate affected pages
+   │    ▼
+   │    Regenerate only changed pages
+   ▼
+  Skip (no-op)
 </code></pre></div>
 
 <blockquote>
-<p><strong>Warning:</strong> Without a restart policy, Docker will mark the container as <code>unhealthy</code> but will <strong>not</strong> automatically restart it. Add <code>restart: unless-stopped</code> or <code>restart: always</code> to enable automatic recovery.</p>
+<p><strong>Note:</strong> The cached markdown files in <code>cache/pages/</code> are the key to incremental updates. Deleting this directory forces a full regeneration of all pages on the next run.</p>
 </blockquote>
-<h2 id="troubleshooting">Troubleshooting</h2>
-<h3 id="health-check-failing">Health Check Failing</h3>
-<ol>
-<li><strong>Verify the server is running:</strong></li>
-</ol>
-<p><code>bash
-   docker logs docsfy-docsfy-1</code></p>
-<p>Look for the uvicorn startup message:
-   <code>INFO:     Uvicorn running on http://0.0.0.0:8000</code></p>
-<ol>
-<li><strong>Test from inside the container:</strong></li>
-</ol>
-<p><code>bash
-   docker exec docsfy-docsfy-1 curl -f http://localhost:8000/health</code></p>
-<ol>
-<li><strong>Check port binding:</strong></li>
-</ol>
-<p><code>bash
-   docker port docsfy-docsfy-1</code></p>
-<p>Expected output: <code>8000/tcp -&gt; 0.0.0.0:8000</code></p>
-<ol>
-<li><strong>Review health check history:</strong></li>
-</ol>
-<p><code>bash
-   docker inspect --format='{{json .State.Health}}' docsfy-docsfy-1 | python3 -m json.tool</code></p>
-<p>This shows the last 5 health check results, including timestamps and any error output.</p>
-<h3 id="common-causes">Common Causes</h3>
+<hr />
+<h2 id="relationship-between-sqlite-and-filesystem">Relationship Between SQLite and Filesystem</h2>
+<p>The two storage systems serve complementary purposes:</p>
 <table>
 <thead>
 <tr>
-<th>Symptom</th>
-<th>Likely Cause</th>
-<th>Fix</th>
+<th>Concern</th>
+<th>SQLite (<code>docsfy.db</code>)</th>
+<th>Filesystem (<code>projects/</code>)</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Connection refused</td>
-<td>uvicorn hasn't started yet</td>
-<td>Increase <code>start_period</code> in health check config</td>
+<td><strong>What it stores</strong></td>
+<td>Metadata about projects</td>
+<td>Actual documentation content</td>
 </tr>
 <tr>
-<td>Timeout</td>
-<td>Server overloaded (long-running generation)</td>
-<td>The health endpoint should still respond; check for event loop blocking</td>
+<td><strong>Query patterns</strong></td>
+<td>List projects, check status, get commit SHA</td>
+<td>Serve HTML, download archives</td>
 </tr>
 <tr>
-<td>curl not found</td>
-<td>Custom image missing dependencies</td>
-<td>Ensure <code>curl</code> is installed in the Dockerfile</td>
+<td><strong>Size</strong></td>
+<td>Small (KB)</td>
+<td>Large (MB per project)</td>
+</tr>
+<tr>
+<td><strong>Access pattern</strong></td>
+<td>Random read/write</td>
+<td>Sequential write, random read</td>
+</tr>
+<tr>
+<td><strong>Backup strategy</strong></td>
+<td>Copy single file</td>
+<td>Copy directory tree</td>
 </tr>
 </tbody>
 </table>
+<p>The project name acts as the join key between the two systems: the <code>name</code> column in SQLite corresponds to the directory name under <code>/data/projects/</code>.</p>
+<hr />
+<h2 id="serving-generated-documentation">Serving Generated Documentation</h2>
+<p>The rendered HTML in <code>site/</code> is served directly by FastAPI as static files:</p>
+<table>
+<thead>
+<tr>
+<th>Endpoint</th>
+<th>Source</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GET /docs/{project}/{path}</code></td>
+<td><code>/data/projects/{project}/site/{path}</code></td>
+</tr>
+<tr>
+<td><code>GET /api/projects/{name}/download</code></td>
+<td><code>/data/projects/{name}/site/</code> packaged as <code>.tar.gz</code></td>
+</tr>
+</tbody>
+</table>
+<p>The static site includes all assets (CSS, JS, search index) needed to run independently. Downloaded archives can be deployed to any static hosting provider without modification.</p>
+<hr />
+<h2 id="backup-and-recovery">Backup and Recovery</h2>
+<p>Since all data lives under <code>/data</code>, backup is straightforward:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Full backup — captures both database and all project files</span>
+cp<span class="w"> </span>-r<span class="w"> </span>/data<span class="w"> </span>/backup/docsfy-<span class="k">$(</span>date<span class="w"> </span>+%Y%m%d<span class="k">)</span>
+
+<span class="c1"># Database-only backup</span>
+cp<span class="w"> </span>/data/docsfy.db<span class="w"> </span>/backup/docsfy-db-<span class="k">$(</span>date<span class="w"> </span>+%Y%m%d<span class="k">)</span>.db
+
+<span class="c1"># Single project backup</span>
+tar<span class="w"> </span>czf<span class="w"> </span>my-project-backup.tar.gz<span class="w"> </span>/data/projects/my-project/
+</code></pre></div>
+
+<blockquote>
+<p><strong>Tip:</strong> Since SQLite is a single file, you can also use <code>sqlite3 /data/docsfy.db ".backup /backup/docsfy.db"</code> for a safe online backup that handles write-ahead log (WAL) files correctly.</p>
+</blockquote>
+<p>To restore, stop the container, replace the <code>/data</code> directory (or specific files), and restart:</p>
+<div class="highlight"><pre><span></span><code>docker<span class="w"> </span>compose<span class="w"> </span>down
+cp<span class="w"> </span>-r<span class="w"> </span>/backup/docsfy-20260304/<span class="w"> </span>./data
+docker<span class="w"> </span>compose<span class="w"> </span>up<span class="w"> </span>-d
+</code></pre></div>
+
+<blockquote>
+<p><strong>Warning:</strong> Always stop the docsfy container before restoring the SQLite database to avoid corruption from concurrent writes.</p>
+</blockquote>
                 </div>
             </article>
             <nav class="page-nav">
                 
-                <a href="api-download.html" class="page-nav-link page-nav-prev">
+                <a href="ai-providers.html" class="page-nav-link page-nav-prev">
                     <span class="page-nav-label">Previous</span>
-                    <span class="page-nav-title">GET /api/projects/{name}/download</span>
+                    <span class="page-nav-title">AI Providers</span>
                 </a>
                 
                 
-                <a href="docker-deployment.html" class="page-nav-link page-nav-next">
+                <a href="generating-docs.html" class="page-nav-link page-nav-next">
                     <span class="page-nav-label">Next</span>
-                    <span class="page-nav-title">Docker Deployment</span>
+                    <span class="page-nav-title">Generating Documentation</span>
                 </a>
                 
             </nav>
@@ -540,29 +620,24 @@
                     <h3>On this page</h3>
                     <div class="toc">
 <ul>
-<li><a href="#endpoint">Endpoint</a></li>
-<li><a href="#response">Response</a></li>
-<li><a href="#usage">Usage</a><ul>
-<li><a href="#curl">curl</a></li>
-<li><a href="#python-requests">Python (requests)</a></li>
+<li><a href="#volume-configuration">Volume Configuration</a></li>
+<li><a href="#sqlite-database">SQLite Database</a><ul>
+<li><a href="#location">Location</a></li>
+<li><a href="#schema">Schema</a></li>
+<li><a href="#project-status-values">Project Status Values</a></li>
+<li><a href="#database-operations">Database Operations</a></li>
 </ul>
 </li>
-<li><a href="#docker-health-check">Docker Health Check</a><ul>
-<li><a href="#container-health-states">Container Health States</a></li>
+<li><a href="#filesystem-storage">Filesystem Storage</a><ul>
+<li><a href="#directory-structure">Directory Structure</a></li>
+<li><a href="#the-three-layers">The Three Layers</a></li>
 </ul>
 </li>
-<li><a href="#kubernetes-probes">Kubernetes Probes</a></li>
-<li><a href="#architecture-context">Architecture Context</a></li>
-<li><a href="#monitoring-integration">Monitoring Integration</a><ul>
-<li><a href="#uptime-monitoring">Uptime Monitoring</a></li>
-<li><a href="#docker-compose-restart-policy">Docker Compose Restart Policy</a></li>
-</ul>
-</li>
-<li><a href="#troubleshooting">Troubleshooting</a><ul>
-<li><a href="#health-check-failing">Health Check Failing</a></li>
-<li><a href="#common-causes">Common Causes</a></li>
-</ul>
-</li>
+<li><a href="#how-data-flows-through-the-pipeline">How Data Flows Through the Pipeline</a></li>
+<li><a href="#incremental-updates">Incremental Updates</a></li>
+<li><a href="#relationship-between-sqlite-and-filesystem">Relationship Between SQLite and Filesystem</a></li>
+<li><a href="#serving-generated-documentation">Serving Generated Documentation</a></li>
+<li><a href="#backup-and-recovery">Backup and Recovery</a></li>
 </ul>
 </div>
 

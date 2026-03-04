@@ -4,14 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Contributing - docsfy</title>
-    <meta name="description" content="AI-powered documentation generator that creates polished, Mintlify-quality static HTML sites from GitHub repositories.">
+    <meta name="description" content="AI-powered documentation generator that creates polished static HTML sites from GitHub repositories">
     <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <a href="index.html" class="sidebar-logo">docsfy</a>
-            <p class="sidebar-tagline">AI-powered documentation generator that creates polished, Mintlify-quality static HTML sites from GitHub repositories.</p>
+            <p class="sidebar-tagline">AI-powered documentation generator that creates polished static HTML sites from GitHub repositories</p>
         </div>
 
         <div class="sidebar-search">
@@ -68,9 +68,9 @@
                     </li>
                     
                     <li>
-                        <a href="docker-deployment.html"
+                        <a href="storage-and-data.html"
                            class="nav-link">
-                            Docker Deployment
+                            Storage &amp; Data
                         </a>
                     </li>
                     
@@ -89,9 +89,9 @@
                     </li>
                     
                     <li>
-                        <a href="incremental-updates.html"
+                        <a href="serving-docs.html"
                            class="nav-link">
-                            Incremental Updates
+                            Serving Documentation
                         </a>
                     </li>
                     
@@ -103,9 +103,9 @@
                     </li>
                     
                     <li>
-                        <a href="managing-projects.html"
+                        <a href="incremental-updates.html"
                            class="nav-link">
-                            Managing Projects
+                            Incremental Updates
                         </a>
                     </li>
                     
@@ -124,16 +124,16 @@
                     </li>
                     
                     <li>
-                        <a href="storage-and-database.html"
+                        <a href="html-renderer.html"
                            class="nav-link">
-                            Storage &amp; Database
+                            HTML Renderer &amp; Theming
                         </a>
                     </li>
                     
                     <li>
-                        <a href="html-theming.html"
+                        <a href="ai-cli-integration.html"
                            class="nav-link">
-                            HTML Theming &amp; Output
+                            AI CLI Integration
                         </a>
                     </li>
                     
@@ -145,13 +145,6 @@
                 <ul class="nav-group-pages">
                     
                     <li>
-                        <a href="api-overview.html"
-                           class="nav-link">
-                            API Overview
-                        </a>
-                    </li>
-                    
-                    <li>
                         <a href="api-generate.html"
                            class="nav-link">
                             POST /api/generate
@@ -159,23 +152,16 @@
                     </li>
                     
                     <li>
-                        <a href="api-status.html"
+                        <a href="api-status-and-projects.html"
                            class="nav-link">
-                            GET /api/status
+                            GET /api/status &amp; Project Details
                         </a>
                     </li>
                     
                     <li>
-                        <a href="api-projects.html"
+                        <a href="api-download.html"
                            class="nav-link">
-                            Project Endpoints
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="api-docs-serving.html"
-                           class="nav-link">
-                            GET /docs/{project}/{path}
+                            GET /api/projects/{name}/download
                         </a>
                     </li>
                     
@@ -190,20 +176,41 @@
             </div>
             
             <div class="nav-group">
+                <h3 class="nav-group-title">Deployment</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="docker-deployment.html"
+                           class="nav-link">
+                            Docker Deployment
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="docker-compose.html"
+                           class="nav-link">
+                            Docker Compose Setup
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
                 <h3 class="nav-group-title">Development</h3>
                 <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="development-setup.html"
+                           class="nav-link">
+                            Development Setup
+                        </a>
+                    </li>
                     
                     <li>
                         <a href="contributing.html"
                            class="nav-link active">
                             Contributing
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="project-structure.html"
-                           class="nav-link">
-                            Project Structure
                         </a>
                     </li>
                     
@@ -250,413 +257,304 @@
                 <h1 class="article-title">Contributing</h1>
                 <div class="article-body">
                     <h1 id="contributing">Contributing</h1>
+<p>Thank you for your interest in contributing to docsfy! This guide covers everything you need to set up your development environment, follow project conventions, and submit high-quality contributions.</p>
 <h2 id="prerequisites">Prerequisites</h2>
-<p>Before contributing to docsfy, ensure you have the following installed:</p>
 <ul>
 <li><strong>Python 3.12+</strong></li>
-<li><strong><a href="https://docs.astral.sh/uv/">uv</a></strong> — the project's sole package manager (pip is not used)</li>
-<li><strong>git</strong></li>
-<li><strong><a href="https://pre-commit.com/">pre-commit</a></strong></li>
+<li><strong><a href="https://docs.astral.sh/uv/">uv</a></strong> — the only supported package manager (do not use pip)</li>
+<li><strong>Git</strong></li>
+<li><strong>Node.js and npm</strong> — required for AI CLI tools and client-side dependencies</li>
 </ul>
-<p>Install uv if you don't already have it:</p>
-<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-LsSf<span class="w"> </span>https://astral.sh/uv/install.sh<span class="w"> </span><span class="p">|</span><span class="w"> </span>sh
+<blockquote>
+<p><strong>Warning:</strong> docsfy does not support pip-based workflows. All dependency management, virtual environment creation, and script execution must go through <code>uv</code>.</p>
+</blockquote>
+<h2 id="development-setup">Development Setup</h2>
+<h3 id="1-clone-the-repository">1. Clone the Repository</h3>
+<div class="highlight"><pre><span></span><code>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/myk-org/docsfy.git
+<span class="nb">cd</span><span class="w"> </span>docsfy
 </code></pre></div>
 
-<h2 id="setting-up-the-development-environment">Setting Up the Development Environment</h2>
-<ol>
-<li><strong>Clone the repository:</strong></li>
-</ol>
-<p><code>bash
-   git clone git@github.com:your-org/docsfy.git
-   cd docsfy</code></p>
-<ol>
-<li><strong>Install dependencies with uv:</strong></li>
-</ol>
-<p><code>bash
-   uv sync --all-extras</code></p>
-<blockquote>
-<p><strong>Note:</strong> docsfy uses <code>uv</code> exclusively for dependency management. Do not use <code>pip install</code> — all dependencies and virtual environments are managed through <code>uv</code>.</p>
-</blockquote>
-<ol>
-<li><strong>Install pre-commit hooks:</strong></li>
-</ol>
-<p><code>bash
-   uv run pre-commit install</code></p>
-<p>This registers the hooks so they run automatically on every <code>git commit</code>.</p>
-<h2 id="development-workflow">Development Workflow</h2>
-<h3 id="branch-strategy">Branch Strategy</h3>
-<ol>
-<li>Create a feature branch from <code>main</code>:</li>
-</ol>
-<p><code>bash
-   git checkout -b feature/my-feature main</code></p>
-<ol>
-<li>Make your changes, ensuring all pre-commit hooks pass.</li>
-<li>Write or update tests for your changes.</li>
-<li>Push your branch and open a pull request against <code>main</code>.</li>
-</ol>
-<h3 id="build-system">Build System</h3>
-<p>docsfy uses <strong>hatchling</strong> as its build backend. The project metadata and build configuration live in <code>pyproject.toml</code>:</p>
+<h3 id="2-install-dependencies">2. Install Dependencies</h3>
+<p>Use <code>uv</code> to create a virtual environment and install all dependencies, including development extras:</p>
+<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>sync
+</code></pre></div>
+
+<h3 id="3-install-pre-commit-hooks">3. Install Pre-commit Hooks</h3>
+<p>Pre-commit hooks are mandatory. They enforce code quality on every commit:</p>
+<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>run<span class="w"> </span>pre-commit<span class="w"> </span>install
+</code></pre></div>
+
+<p>To verify your setup, run the hooks against all files:</p>
+<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>run<span class="w"> </span>pre-commit<span class="w"> </span>run<span class="w"> </span>--all-files
+</code></pre></div>
+
+<h2 id="build-system">Build System</h2>
+<p>docsfy uses <strong><a href="https://hatch.pypa.io/">hatchling</a></strong> as its build backend. The project metadata and build configuration live in <code>pyproject.toml</code>:</p>
 <div class="highlight"><pre><span></span><code><span class="k">[build-system]</span>
 <span class="n">requires</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;hatchling&quot;</span><span class="p">]</span>
 <span class="n">build-backend</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;hatchling.build&quot;</span>
-
-<span class="k">[project]</span>
-<span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;docsfy&quot;</span>
-<span class="n">requires-python</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;&gt;=3.12&quot;</span>
 </code></pre></div>
 
-<h3 id="running-the-application-locally">Running the Application Locally</h3>
-<p>Start the FastAPI development server:</p>
-<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>run<span class="w"> </span>uvicorn<span class="w"> </span>docsfy.main:app<span class="w"> </span>--host<span class="w"> </span><span class="m">0</span>.0.0.0<span class="w"> </span>--port<span class="w"> </span><span class="m">8000</span><span class="w"> </span>--reload
-</code></pre></div>
-
-<p>Or use Docker Compose:</p>
-<div class="highlight"><pre><span></span><code><span class="nt">services</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">docsfy</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">build</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">.</span>
-<span class="w">    </span><span class="nt">ports</span><span class="p">:</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;8000:8000&quot;</span>
-<span class="w">    </span><span class="nt">env_file</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">.env</span>
-<span class="w">    </span><span class="nt">volumes</span><span class="p">:</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./data:/data</span>
-</code></pre></div>
-
-<div class="highlight"><pre><span></span><code>docker<span class="w"> </span>compose<span class="w"> </span>up<span class="w"> </span>--build
-</code></pre></div>
-
-<h2 id="code-style-conventions">Code Style Conventions</h2>
-<p>docsfy enforces consistent code quality through automated tooling. All style checks run as pre-commit hooks and in CI.</p>
-<h3 id="ruff-linting-and-formatting">Ruff (Linting and Formatting)</h3>
-<p><a href="https://docs.astral.sh/ruff/">Ruff</a> handles both linting and code formatting, replacing tools like black, isort, and most flake8 rules. It is configured in <code>pyproject.toml</code>:</p>
-<div class="highlight"><pre><span></span><code><span class="k">[tool.ruff]</span>
-<span class="n">line-length</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">120</span>
-<span class="n">target-version</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;py312&quot;</span>
-
-<span class="k">[tool.ruff.format]</span>
-<span class="n">skip-magic-trailing-comma</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
-</code></pre></div>
-
-<p>Run ruff manually:</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># Check for lint violations</span>
-uv<span class="w"> </span>run<span class="w"> </span>ruff<span class="w"> </span>check<span class="w"> </span>.
-
-<span class="c1"># Auto-fix lint violations where possible</span>
-uv<span class="w"> </span>run<span class="w"> </span>ruff<span class="w"> </span>check<span class="w"> </span>--fix<span class="w"> </span>.
-
-<span class="c1"># Check formatting</span>
-uv<span class="w"> </span>run<span class="w"> </span>ruff<span class="w"> </span>format<span class="w"> </span>--check<span class="w"> </span>.
-
-<span class="c1"># Apply formatting</span>
-uv<span class="w"> </span>run<span class="w"> </span>ruff<span class="w"> </span>format<span class="w"> </span>.
-</code></pre></div>
-
-<h3 id="mypy-static-type-checking">Mypy (Static Type Checking)</h3>
-<p>docsfy uses <strong>mypy in strict mode</strong> to enforce thorough type annotations. Configuration is in <code>pyproject.toml</code>:</p>
-<div class="highlight"><pre><span></span><code><span class="k">[tool.mypy]</span>
-<span class="n">python_version</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;3.12&quot;</span>
-<span class="n">strict</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
-<span class="n">warn_return_any</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
-<span class="n">warn_unused_configs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
-<span class="n">disallow_untyped_defs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
-</code></pre></div>
-
-<p>Run mypy manually:</p>
-<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>run<span class="w"> </span>mypy<span class="w"> </span>docsfy/
+<p>To build the package:</p>
+<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>build
 </code></pre></div>
 
 <blockquote>
-<p><strong>Tip:</strong> All function signatures must include type annotations. Mypy strict mode rejects untyped definitions, so every function parameter and return type needs an explicit annotation.</p>
+<p><strong>Note:</strong> Since <code>uv</code> is the only supported package manager, always use <code>uv run</code> to execute project scripts and tools rather than activating a virtual environment manually.</p>
 </blockquote>
-<h3 id="flake8">Flake8</h3>
-<p>Flake8 provides additional lint coverage for patterns not caught by ruff. It is configured via a <code>.flake8</code> file:</p>
-<div class="highlight"><pre><span></span><code><span class="k">[flake8]</span>
-<span class="na">max-line-length</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">120</span>
-<span class="na">extend-ignore</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">E203, W503</span>
+<h2 id="code-style-and-linting">Code Style and Linting</h2>
+<p>docsfy enforces consistent code style through pre-commit hooks that run automatically on every commit. The following tools are configured:</p>
+<h3 id="ruff-lint-format">Ruff (Lint + Format)</h3>
+<p><a href="https://docs.astral.sh/ruff/">Ruff</a> handles both linting and code formatting in a single tool. It replaces the need for separate formatters like Black.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Check for lint errors</span>
+uv<span class="w"> </span>run<span class="w"> </span>ruff<span class="w"> </span>check<span class="w"> </span>.
+
+<span class="c1"># Auto-fix lint errors where possible</span>
+uv<span class="w"> </span>run<span class="w"> </span>ruff<span class="w"> </span>check<span class="w"> </span>--fix<span class="w"> </span>.
+
+<span class="c1"># Format code</span>
+uv<span class="w"> </span>run<span class="w"> </span>ruff<span class="w"> </span>format<span class="w"> </span>.
+
+<span class="c1"># Check formatting without modifying files</span>
+uv<span class="w"> </span>run<span class="w"> </span>ruff<span class="w"> </span>format<span class="w"> </span>--check<span class="w"> </span>.
 </code></pre></div>
 
-<p>Run flake8 manually:</p>
-<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>run<span class="w"> </span>flake8<span class="w"> </span>docsfy/
+<h3 id="mypy-strict-mode">mypy (Strict Mode)</h3>
+<p>Type checking is enforced in <strong>strict mode</strong>. All code must include type annotations:</p>
+<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>run<span class="w"> </span>mypy<span class="w"> </span>.
 </code></pre></div>
 
-<h3 id="general-style-guidelines">General Style Guidelines</h3>
+<blockquote>
+<p><strong>Tip:</strong> When adding new functions or methods, always include complete type annotations for parameters and return values. Strict mode requires explicit types — <code>Any</code> should be avoided unless truly necessary.</p>
+</blockquote>
+<h3 id="flake8">flake8</h3>
+<p>flake8 provides additional lint checks beyond what Ruff covers:</p>
+<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>run<span class="w"> </span>flake8<span class="w"> </span>.
+</code></pre></div>
+
+<h3 id="security-scanning">Security Scanning</h3>
+<p>Two tools scan for secrets accidentally committed to the repository:</p>
 <ul>
-<li><strong>Line length:</strong> 120 characters maximum.</li>
-<li><strong>Python version:</strong> Use Python 3.12+ features freely (type unions with <code>|</code>, <code>match</code> statements, etc.).</li>
-<li><strong>Type hints:</strong> Required on all public and private functions (enforced by mypy strict).</li>
-<li><strong>Imports:</strong> Sorted and grouped automatically by ruff.</li>
-<li><strong>Docstrings:</strong> Use them for public APIs; keep internal helpers self-documenting with clear names.</li>
+<li><strong><a href="https://github.com/gitleaks/gitleaks">gitleaks</a></strong> — scans git history for hardcoded secrets</li>
+<li><strong><a href="https://github.com/Yelp/detect-secrets">detect-secrets</a></strong> — prevents new secrets from being committed</li>
 </ul>
-<h2 id="pre-commit-hooks">Pre-commit Hooks</h2>
-<p>Pre-commit hooks run automatically before every commit to catch issues early. The project uses the following hooks, configured in <code>.pre-commit-config.yaml</code>:</p>
-<h3 id="hook-overview">Hook Overview</h3>
+<blockquote>
+<p><strong>Warning:</strong> Never commit API keys, tokens, or credentials. If a pre-commit hook flags a secret, remove it from your code and rotate the exposed credential immediately.</p>
+</blockquote>
+<h3 id="standard-pre-commit-hooks">Standard Pre-commit Hooks</h3>
+<p>The configuration also includes standard hooks such as:</p>
+<ul>
+<li>Trailing whitespace removal</li>
+<li>End-of-file fixer</li>
+<li>YAML/TOML syntax validation</li>
+<li>Large file checks</li>
+</ul>
+<h3 id="running-all-checks">Running All Checks</h3>
+<p>To run the full pre-commit suite manually:</p>
+<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>run<span class="w"> </span>pre-commit<span class="w"> </span>run<span class="w"> </span>--all-files
+</code></pre></div>
+
+<h2 id="running-tests">Running Tests</h2>
+<h3 id="unit-tests">Unit Tests</h3>
+<p>Tests are run through <strong>tox</strong>, which uses <code>uv</code> under the hood:</p>
+<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>run<span class="w"> </span>tox
+</code></pre></div>
+
+<p>To run only the unit test environment:</p>
+<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>run<span class="w"> </span>tox<span class="w"> </span>-e<span class="w"> </span>tests
+</code></pre></div>
+
+<p>You can also run pytest directly for faster iteration during development:</p>
+<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>run<span class="w"> </span>pytest
+</code></pre></div>
+
+<p>To run a specific test file or test function:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Run a specific test file</span>
+uv<span class="w"> </span>run<span class="w"> </span>pytest<span class="w"> </span>tests/test_renderer.py
+
+<span class="c1"># Run a specific test by name</span>
+uv<span class="w"> </span>run<span class="w"> </span>pytest<span class="w"> </span>tests/test_renderer.py::test_markdown_to_html<span class="w"> </span>-v
+</code></pre></div>
+
+<h3 id="unused-code-check">Unused Code Check</h3>
+<p>Tox includes an environment for detecting unused code:</p>
+<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>run<span class="w"> </span>tox<span class="w"> </span>-e<span class="w"> </span>unused-code
+</code></pre></div>
+
+<blockquote>
+<p><strong>Tip:</strong> Run the unused-code check before submitting a pull request. Dead code should be removed, not left commented out.</p>
+</blockquote>
+<h2 id="project-structure">Project Structure</h2>
+<p>docsfy follows a <code>src</code>-layout Python package structure:</p>
+<div class="highlight"><pre><span></span><code>docsfy/
+├── docs/
+│   └── plans/                  # Design documents
+├── src/
+│   └── docsfy/
+│       ├── main.py             # FastAPI application entry point
+│       └── ...                 # Application modules
+├── tests/                      # Unit and integration tests
+├── pyproject.toml              # Project metadata and build config
+├── .pre-commit-config.yaml     # Pre-commit hook definitions
+├── tox.ini                     # Tox test environments
+├── Dockerfile                  # Container build
+└── docker-compose.yaml         # Local development with Docker
+</code></pre></div>
+
+<p>Key application components from the design:</p>
 <table>
 <thead>
 <tr>
-<th>Hook</th>
-<th>Purpose</th>
+<th>Module Area</th>
+<th>Responsibility</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><strong>ruff</strong> (lint)</td>
-<td>Catches code quality issues, import ordering, unused imports</td>
+<td>API layer</td>
+<td>FastAPI routes for <code>/api/generate</code>, <code>/api/status</code>, <code>/api/projects</code>, <code>/health</code></td>
 </tr>
 <tr>
-<td><strong>ruff</strong> (format)</td>
-<td>Enforces consistent code formatting</td>
+<td>Pipeline</td>
+<td>Clone → AI Planner → AI Content Generator → HTML Renderer</td>
 </tr>
 <tr>
-<td><strong>mypy</strong></td>
-<td>Static type checking in strict mode</td>
+<td>AI CLI integration</td>
+<td>Provider abstraction for Claude, Gemini, and Cursor</td>
 </tr>
 <tr>
-<td><strong>flake8</strong></td>
-<td>Supplementary linting rules</td>
+<td>HTML renderer</td>
+<td>Jinja2 templates with bundled CSS/JS assets</td>
 </tr>
 <tr>
-<td><strong>gitleaks</strong></td>
-<td>Scans for accidentally committed secrets (API keys, tokens, passwords)</td>
-</tr>
-<tr>
-<td><strong>detect-secrets</strong></td>
-<td>Additional secret detection layer</td>
-</tr>
-<tr>
-<td><strong>standard hooks</strong></td>
-<td>Trailing whitespace, end-of-file fixer, YAML validation, large file checks</td>
+<td>Storage</td>
+<td>SQLite for metadata, filesystem for generated docs</td>
 </tr>
 </tbody>
 </table>
-<h3 id="configuration">Configuration</h3>
-<p>The <code>.pre-commit-config.yaml</code> follows this structure:</p>
-<div class="highlight"><pre><span></span><code><span class="nt">repos</span><span class="p">:</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">repo</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://github.com/pre-commit/pre-commit-hooks</span>
-<span class="w">    </span><span class="nt">rev</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">v5.0.0</span>
-<span class="w">    </span><span class="nt">hooks</span><span class="p">:</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">trailing-whitespace</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">end-of-file-fixer</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">check-yaml</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">check-added-large-files</span>
-
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">repo</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://github.com/astral-sh/ruff-pre-commit</span>
-<span class="w">    </span><span class="nt">rev</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">v0.11.0</span>
-<span class="w">    </span><span class="nt">hooks</span><span class="p">:</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ruff</span>
-<span class="w">        </span><span class="nt">args</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">--fix</span><span class="p p-Indicator">]</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ruff-format</span>
-
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">repo</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://github.com/pre-commit/mirrors-mypy</span>
-<span class="w">    </span><span class="nt">rev</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">v1.15.0</span>
-<span class="w">    </span><span class="nt">hooks</span><span class="p">:</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mypy</span>
-<span class="w">        </span><span class="nt">additional_dependencies</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">fastapi</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">uvicorn</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">aiosqlite</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">jinja2</span><span class="p p-Indicator">]</span>
-
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">repo</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://github.com/PyCQA/flake8</span>
-<span class="w">    </span><span class="nt">rev</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;7.1.0&quot;</span>
-<span class="w">    </span><span class="nt">hooks</span><span class="p">:</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">flake8</span>
-
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">repo</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://github.com/gitleaks/gitleaks</span>
-<span class="w">    </span><span class="nt">rev</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">v8.24.0</span>
-<span class="w">    </span><span class="nt">hooks</span><span class="p">:</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gitleaks</span>
-
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">repo</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://github.com/Yelp/detect-secrets</span>
-<span class="w">    </span><span class="nt">rev</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">v1.5.0</span>
-<span class="w">    </span><span class="nt">hooks</span><span class="p">:</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">detect-secrets</span>
+<h2 id="conventions">Conventions</h2>
+<h3 id="python-version">Python Version</h3>
+<p>All code must be compatible with Python 3.12+. Use modern Python features (type unions with <code>|</code>, <code>match</code> statements, etc.) where appropriate.</p>
+<h3 id="async-first">Async First</h3>
+<p>docsfy is built on FastAPI. Use <code>async def</code> for route handlers and I/O-bound operations. CPU-bound work (like subprocess calls to AI CLIs) should be offloaded with <code>asyncio.to_thread()</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">to_thread</span><span class="p">(</span><span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">,</span> <span class="n">cmd</span><span class="p">,</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </code></pre></div>
 
-<h3 id="running-hooks-manually">Running Hooks Manually</h3>
-<p>Run all hooks against every file (not just staged changes):</p>
-<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>run<span class="w"> </span>pre-commit<span class="w"> </span>run<span class="w"> </span>--all-files
+<h3 id="type-annotations">Type Annotations</h3>
+<p>With mypy in strict mode, all functions require complete type annotations:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Good</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">generate_page</span><span class="p">(</span><span class="n">project_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">page_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+    <span class="o">...</span>
+
+<span class="c1"># Bad — will fail mypy strict</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">generate_page</span><span class="p">(</span><span class="n">project_name</span><span class="p">,</span> <span class="n">page_id</span><span class="p">):</span>
+    <span class="o">...</span>
 </code></pre></div>
 
-<p>Run a specific hook:</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># Run only ruff linting</span>
-uv<span class="w"> </span>run<span class="w"> </span>pre-commit<span class="w"> </span>run<span class="w"> </span>ruff<span class="w"> </span>--all-files
+<h3 id="dataclasses-for-configuration">Dataclasses for Configuration</h3>
+<p>Use frozen dataclasses for configuration objects, following the established provider pattern:</p>
+<div class="highlight"><pre><span></span><code><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">ProviderConfig</span><span class="p">:</span>
+    <span class="n">binary</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">build_cmd</span><span class="p">:</span> <span class="n">Callable</span>
+    <span class="n">uses_own_cwd</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+</code></pre></div>
 
-<span class="c1"># Run only mypy</span>
-uv<span class="w"> </span>run<span class="w"> </span>pre-commit<span class="w"> </span>run<span class="w"> </span>mypy<span class="w"> </span>--all-files
+<h3 id="environment-variables">Environment Variables</h3>
+<p>Configuration is read from environment variables. Use descriptive names with a clear prefix pattern:</p>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>AI_PROVIDER</code></td>
+<td><code>claude</code></td>
+<td>AI CLI provider to use</td>
+</tr>
+<tr>
+<td><code>AI_MODEL</code></td>
+<td><code>claude-opus-4-6</code></td>
+<td>Model identifier</td>
+</tr>
+<tr>
+<td><code>AI_CLI_TIMEOUT</code></td>
+<td><code>60</code></td>
+<td>Timeout in minutes</td>
+</tr>
+<tr>
+<td><code>LOG_LEVEL</code></td>
+<td><code>INFO</code></td>
+<td>Logging verbosity</td>
+</tr>
+</tbody>
+</table>
+<h3 id="error-handling">Error Handling</h3>
+<p>Functions that invoke AI CLI subprocesses return <code>tuple[bool, str]</code> — a success flag and the output or error message. Follow this pattern for consistency.</p>
+<h2 id="docker-development">Docker Development</h2>
+<p>For running the full stack locally:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Build and start the service</span>
+docker<span class="w"> </span>compose<span class="w"> </span>up<span class="w"> </span>--build
 
-<span class="c1"># Run only gitleaks</span>
-uv<span class="w"> </span>run<span class="w"> </span>pre-commit<span class="w"> </span>run<span class="w"> </span>gitleaks<span class="w"> </span>--all-files
+<span class="c1"># Health check</span>
+curl<span class="w"> </span>http://localhost:8000/health
+</code></pre></div>
+
+<p>Create a <code>.env</code> file from the example for local configuration:</p>
+<div class="highlight"><pre><span></span><code>cp<span class="w"> </span>.env.example<span class="w"> </span>.env
+<span class="c1"># Edit .env with your API keys</span>
 </code></pre></div>
 
 <blockquote>
-<p><strong>Warning:</strong> Never bypass pre-commit hooks with <code>git commit --no-verify</code>. If a hook is failing, fix the underlying issue rather than skipping the check. If you believe a hook produces a false positive, open an issue to discuss updating the configuration.</p>
+<p><strong>Warning:</strong> Never commit your <code>.env</code> file. It is listed in <code>.gitignore</code> to prevent accidental exposure of API keys.</p>
 </blockquote>
-<h3 id="handling-secret-detection-gitleaks-detect-secrets">Handling Secret Detection (gitleaks / detect-secrets)</h3>
-<p>If gitleaks or detect-secrets flags a false positive:</p>
+<h2 id="submitting-changes">Submitting Changes</h2>
 <ol>
-<li>Verify the flagged string is not actually a secret.</li>
-<li>Add an inline comment to suppress the finding:</li>
+<li>
+<p><strong>Create a feature branch</strong> from <code>main</code>:
+   <code>bash
+   git checkout -b feature/your-feature-name</code></p>
+</li>
+<li>
+<p><strong>Make your changes</strong> following the conventions above.</p>
+</li>
+<li>
+<p><strong>Run the full check suite</strong> before committing:
+   <code>bash
+   uv run pre-commit run --all-files
+   uv run tox</code></p>
+</li>
+<li>
+<p><strong>Commit with clear messages</strong> describing <em>what</em> changed and <em>why</em>.</p>
+</li>
+<li>
+<p><strong>Open a pull request</strong> against <code>main</code> with a clear description of the changes.</p>
+</li>
 </ol>
-<p><code>python
-   EXAMPLE_PLACEHOLDER = "not-a-real-key"  # gitleaks:allow</code></p>
-<ol>
-<li>Or add the pattern to <code>.gitleaksignore</code> for gitleaks.</li>
-</ol>
-<blockquote>
-<p><strong>Warning:</strong> Never commit real secrets, API keys, or credentials to the repository. Use environment variables and <code>.env</code> files (which are gitignored) for sensitive configuration. See the <code>.env.example</code> file for the expected variables.</p>
-</blockquote>
-<h2 id="running-the-test-suite-with-tox">Running the Test Suite with Tox</h2>
-<p><a href="https://tox.wiki/">Tox</a> orchestrates all testing and quality checks in isolated environments. It is the single entry point for running the full validation suite.</p>
-<h3 id="tox-configuration">Tox Configuration</h3>
-<p>Tox is configured in <code>tox.ini</code> (or in <code>pyproject.toml</code> under <code>[tool.tox]</code>), and uses <code>uv</code> as the package manager for creating virtual environments:</p>
-<div class="highlight"><pre><span></span><code><span class="k">[tox]</span>
-<span class="na">envlist</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">lint, type, unused, tests</span>
-
-<span class="k">[testenv:lint]</span>
-<span class="na">description</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">Run ruff linting and formatting checks</span>
-<span class="na">deps</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ruff</span>
-<span class="na">commands</span><span class="w"> </span><span class="o">=</span>
-<span class="w">    </span><span class="na">ruff check .</span>
-<span class="w">    </span><span class="na">ruff format --check .</span>
-
-<span class="k">[testenv:type]</span>
-<span class="na">description</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">Run mypy strict type checking</span>
-<span class="na">deps</span><span class="w"> </span><span class="o">=</span>
-<span class="w">    </span><span class="na">mypy</span>
-<span class="w">    </span><span class="na">fastapi</span>
-<span class="w">    </span><span class="na">uvicorn</span>
-<span class="w">    </span><span class="na">aiosqlite</span>
-<span class="w">    </span><span class="na">jinja2</span>
-<span class="na">commands</span><span class="w"> </span><span class="o">=</span>
-<span class="w">    </span><span class="na">mypy docsfy/</span>
-
-<span class="k">[testenv:unused]</span>
-<span class="na">description</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">Check for unused code (vulture)</span>
-<span class="na">deps</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">vulture</span>
-<span class="na">commands</span><span class="w"> </span><span class="o">=</span>
-<span class="w">    </span><span class="na">vulture docsfy/</span>
-
-<span class="k">[testenv:tests]</span>
-<span class="na">description</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">Run unit tests with pytest</span>
-<span class="na">deps</span><span class="w"> </span><span class="o">=</span>
-<span class="w">    </span><span class="na">pytest</span>
-<span class="w">    </span><span class="na">pytest-asyncio</span>
-<span class="w">    </span><span class="na">pytest-cov</span>
-<span class="w">    </span><span class="na">httpx</span>
-<span class="na">commands</span><span class="w"> </span><span class="o">=</span>
-<span class="w">    </span><span class="na">pytest tests/ -v --cov</span><span class="o">=</span><span class="s">docsfy --cov-report=term-missing</span>
-</code></pre></div>
-
-<h3 id="running-tests">Running Tests</h3>
-<p>Run the full tox suite:</p>
-<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>run<span class="w"> </span>tox
-</code></pre></div>
-
-<p>Run a specific tox environment:</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># Run only unit tests</span>
-uv<span class="w"> </span>run<span class="w"> </span>tox<span class="w"> </span>-e<span class="w"> </span>tests
-
-<span class="c1"># Run only linting</span>
-uv<span class="w"> </span>run<span class="w"> </span>tox<span class="w"> </span>-e<span class="w"> </span>lint
-
-<span class="c1"># Run only type checking</span>
-uv<span class="w"> </span>run<span class="w"> </span>tox<span class="w"> </span>-e<span class="w"> </span><span class="nb">type</span>
-
-<span class="c1"># Run unused-code detection</span>
-uv<span class="w"> </span>run<span class="w"> </span>tox<span class="w"> </span>-e<span class="w"> </span>unused
-</code></pre></div>
-
-<h3 id="running-pytest-directly">Running pytest Directly</h3>
-<p>For faster iteration during development, run pytest directly without tox:</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># Run all tests</span>
-uv<span class="w"> </span>run<span class="w"> </span>pytest<span class="w"> </span>tests/<span class="w"> </span>-v
-
-<span class="c1"># Run a specific test file</span>
-uv<span class="w"> </span>run<span class="w"> </span>pytest<span class="w"> </span>tests/test_renderer.py<span class="w"> </span>-v
-
-<span class="c1"># Run a specific test function</span>
-uv<span class="w"> </span>run<span class="w"> </span>pytest<span class="w"> </span>tests/test_renderer.py::test_markdown_to_html<span class="w"> </span>-v
-
-<span class="c1"># Run with coverage reporting</span>
-uv<span class="w"> </span>run<span class="w"> </span>pytest<span class="w"> </span>tests/<span class="w"> </span>-v<span class="w"> </span>--cov<span class="o">=</span>docsfy<span class="w"> </span>--cov-report<span class="o">=</span>term-missing
-
-<span class="c1"># Run only tests matching a keyword</span>
-uv<span class="w"> </span>run<span class="w"> </span>pytest<span class="w"> </span>tests/<span class="w"> </span>-v<span class="w"> </span>-k<span class="w"> </span><span class="s2">&quot;planner&quot;</span>
-</code></pre></div>
-
-<h3 id="writing-tests">Writing Tests</h3>
+<h3 id="pull-request-checklist">Pull Request Checklist</h3>
 <ul>
-<li>Place test files under <code>tests/</code> with the <code>test_</code> prefix.</li>
-<li>Use <code>pytest-asyncio</code> for testing async FastAPI endpoints and pipeline stages.</li>
-<li>Use <code>httpx.AsyncClient</code> with FastAPI's <code>TestClient</code> for API integration tests:</li>
-</ul>
-<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">pytest</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">httpx</span><span class="w"> </span><span class="kn">import</span> <span class="n">ASGITransport</span><span class="p">,</span> <span class="n">AsyncClient</span>
-
-<span class="kn">from</span><span class="w"> </span><span class="nn">docsfy.main</span><span class="w"> </span><span class="kn">import</span> <span class="n">app</span>
-
-
-<span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">asyncio</span>
-<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">test_health_endpoint</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-    <span class="k">async</span> <span class="k">with</span> <span class="n">AsyncClient</span><span class="p">(</span>
-        <span class="n">transport</span><span class="o">=</span><span class="n">ASGITransport</span><span class="p">(</span><span class="n">app</span><span class="o">=</span><span class="n">app</span><span class="p">),</span>
-        <span class="n">base_url</span><span class="o">=</span><span class="s2">&quot;http://test&quot;</span><span class="p">,</span>
-    <span class="p">)</span> <span class="k">as</span> <span class="n">client</span><span class="p">:</span>
-        <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/health&quot;</span><span class="p">)</span>
-        <span class="k">assert</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">200</span>
-</code></pre></div>
-
-<blockquote>
-<p><strong>Tip:</strong> Run <code>uv run pytest tests/ -v</code> frequently during development. The full <code>uv run tox</code> suite should pass before you push a branch or open a pull request.</p>
-</blockquote>
-<h2 id="continuous-integration">Continuous Integration</h2>
-<p>All pre-commit hooks and tox environments run in CI on every pull request. A PR cannot be merged unless:</p>
-<ol>
-<li>All pre-commit hooks pass (ruff, mypy, flake8, gitleaks, detect-secrets).</li>
-<li>All tox environments pass (lint, type checking, unused-code detection, unit tests).</li>
-<li>The code has been reviewed and approved.</li>
-</ol>
-<h2 id="project-structure">Project Structure</h2>
-<p>Understanding the project layout helps you place new code correctly:</p>
-<div class="highlight"><pre><span></span><code>docsfy/
-├── docsfy/                  # Application source code
-│   ├── main.py              # FastAPI app and endpoint definitions
-│   ├── pipeline/            # Generation pipeline stages
-│   ├── providers/           # AI CLI provider integrations
-│   ├── templates/           # Jinja2 HTML templates
-│   └── static/              # CSS, JS, and bundled assets
-├── tests/                   # Test suite
-├── docs/                    # Documentation and design documents
-│   └── plans/
-├── pyproject.toml           # Project metadata, dependencies, tool config
-├── tox.ini                  # Tox test environments
-├── .pre-commit-config.yaml  # Pre-commit hook definitions
-├── .flake8                  # Flake8 configuration
-├── Dockerfile               # Container build
-├── docker-compose.yaml      # Local development with Docker
-└── .env.example             # Template for environment variables
-</code></pre></div>
-
-<h2 id="summary-checklist">Summary Checklist</h2>
-<p>Before submitting a pull request, verify the following:</p>
-<ul>
-<li>[ ] <code>uv run pre-commit run --all-files</code> passes with no errors</li>
-<li>[ ] <code>uv run tox</code> passes all environments</li>
-<li>[ ] New code includes type annotations (mypy strict)</li>
-<li>[ ] New features or bug fixes include corresponding tests</li>
-<li>[ ] No secrets or credentials are committed (gitleaks/detect-secrets pass)</li>
-<li>[ ] Commit messages are descriptive and follow conventional style</li>
+<li>[ ] All pre-commit hooks pass (<code>uv run pre-commit run --all-files</code>)</li>
+<li>[ ] All tests pass (<code>uv run tox</code>)</li>
+<li>[ ] No unused code introduced (<code>uv run tox -e unused-code</code>)</li>
+<li>[ ] Type annotations added for all new functions</li>
+<li>[ ] New features include corresponding tests</li>
+<li>[ ] No secrets or credentials in the diff</li>
 </ul>
                 </div>
             </article>
             <nav class="page-nav">
                 
-                <a href="api-health.html" class="page-nav-link page-nav-prev">
+                <a href="development-setup.html" class="page-nav-link page-nav-prev">
                     <span class="page-nav-label">Previous</span>
-                    <span class="page-nav-title">GET /health</span>
+                    <span class="page-nav-title">Development Setup</span>
                 </a>
                 
                 
-                <a href="project-structure.html" class="page-nav-link page-nav-next">
-                    <span class="page-nav-label">Next</span>
-                    <span class="page-nav-title">Project Structure</span>
-                </a>
+                <div></div>
                 
             </nav>
             
@@ -666,37 +564,42 @@ uv<span class="w"> </span>run<span class="w"> </span>pytest<span class="w"> </sp
                     <div class="toc">
 <ul>
 <li><a href="#prerequisites">Prerequisites</a></li>
-<li><a href="#setting-up-the-development-environment">Setting Up the Development Environment</a></li>
-<li><a href="#development-workflow">Development Workflow</a><ul>
-<li><a href="#branch-strategy">Branch Strategy</a></li>
+<li><a href="#development-setup">Development Setup</a><ul>
+<li><a href="#1-clone-the-repository">1. Clone the Repository</a></li>
+<li><a href="#2-install-dependencies">2. Install Dependencies</a></li>
+<li><a href="#3-install-pre-commit-hooks">3. Install Pre-commit Hooks</a></li>
+</ul>
+</li>
 <li><a href="#build-system">Build System</a></li>
-<li><a href="#running-the-application-locally">Running the Application Locally</a></li>
+<li><a href="#code-style-and-linting">Code Style and Linting</a><ul>
+<li><a href="#ruff-lint-format">Ruff (Lint + Format)</a></li>
+<li><a href="#mypy-strict-mode">mypy (Strict Mode)</a></li>
+<li><a href="#flake8">flake8</a></li>
+<li><a href="#security-scanning">Security Scanning</a></li>
+<li><a href="#standard-pre-commit-hooks">Standard Pre-commit Hooks</a></li>
+<li><a href="#running-all-checks">Running All Checks</a></li>
 </ul>
 </li>
-<li><a href="#code-style-conventions">Code Style Conventions</a><ul>
-<li><a href="#ruff-linting-and-formatting">Ruff (Linting and Formatting)</a></li>
-<li><a href="#mypy-static-type-checking">Mypy (Static Type Checking)</a></li>
-<li><a href="#flake8">Flake8</a></li>
-<li><a href="#general-style-guidelines">General Style Guidelines</a></li>
+<li><a href="#running-tests">Running Tests</a><ul>
+<li><a href="#unit-tests">Unit Tests</a></li>
+<li><a href="#unused-code-check">Unused Code Check</a></li>
 </ul>
 </li>
-<li><a href="#pre-commit-hooks">Pre-commit Hooks</a><ul>
-<li><a href="#hook-overview">Hook Overview</a></li>
-<li><a href="#configuration">Configuration</a></li>
-<li><a href="#running-hooks-manually">Running Hooks Manually</a></li>
-<li><a href="#handling-secret-detection-gitleaks-detect-secrets">Handling Secret Detection (gitleaks / detect-secrets)</a></li>
-</ul>
-</li>
-<li><a href="#running-the-test-suite-with-tox">Running the Test Suite with Tox</a><ul>
-<li><a href="#tox-configuration">Tox Configuration</a></li>
-<li><a href="#running-tests">Running Tests</a></li>
-<li><a href="#running-pytest-directly">Running pytest Directly</a></li>
-<li><a href="#writing-tests">Writing Tests</a></li>
-</ul>
-</li>
-<li><a href="#continuous-integration">Continuous Integration</a></li>
 <li><a href="#project-structure">Project Structure</a></li>
-<li><a href="#summary-checklist">Summary Checklist</a></li>
+<li><a href="#conventions">Conventions</a><ul>
+<li><a href="#python-version">Python Version</a></li>
+<li><a href="#async-first">Async First</a></li>
+<li><a href="#type-annotations">Type Annotations</a></li>
+<li><a href="#dataclasses-for-configuration">Dataclasses for Configuration</a></li>
+<li><a href="#environment-variables">Environment Variables</a></li>
+<li><a href="#error-handling">Error Handling</a></li>
+</ul>
+</li>
+<li><a href="#docker-development">Docker Development</a></li>
+<li><a href="#submitting-changes">Submitting Changes</a><ul>
+<li><a href="#pull-request-checklist">Pull Request Checklist</a></li>
+</ul>
+</li>
 </ul>
 </div>
 
