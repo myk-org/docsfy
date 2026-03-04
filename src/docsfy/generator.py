@@ -1,0 +1,86 @@
+from __future__ import annotations
+
+import asyncio
+from pathlib import Path
+
+from simple_logger.logger import get_logger
+
+from docsfy.ai_client import call_ai_cli
+from docsfy.json_parser import parse_json_response
+from docsfy.prompts import build_page_prompt, build_planner_prompt
+
+logger = get_logger(name=__name__)
+
+MAX_CONCURRENT_PAGES = 5
+
+
+async def run_planner(
+    repo_path: Path, project_name: str, ai_provider: str, ai_model: str, ai_cli_timeout: int | None = None,
+) -> dict:
+    prompt = build_planner_prompt(project_name)
+    success, output = await call_ai_cli(
+        prompt=prompt, cwd=repo_path, ai_provider=ai_provider, ai_model=ai_model, ai_cli_timeout=ai_cli_timeout,
+    )
+    if not success:
+        msg = f"Planner failed: {output}"
+        raise RuntimeError(msg)
+
+    plan = parse_json_response(output)
+    if plan is None:
+        msg = "Failed to parse planner output as JSON"
+        raise RuntimeError(msg)
+
+    logger.info(f"Plan generated: {len(plan.get('navigation', []))} groups")
+    return plan
+
+
+async def generate_page(
+    repo_path: Path, slug: str, title: str, description: str, cache_dir: Path,
+    ai_provider: str, ai_model: str, ai_cli_timeout: int | None = None, use_cache: bool = False,
+) -> str:
+    cache_file = cache_dir / f"{slug}.md"
+    if use_cache and cache_file.exists():
+        logger.debug(f"Using cached page: {slug}")
+        return cache_file.read_text()
+
+    prompt = build_page_prompt(project_name=repo_path.name, page_title=title, page_description=description)
+    success, output = await call_ai_cli(
+        prompt=prompt, cwd=repo_path, ai_provider=ai_provider, ai_model=ai_model, ai_cli_timeout=ai_cli_timeout,
+    )
+    if not success:
+        logger.warning(f"Failed to generate page '{slug}': {output}")
+        output = f"# {title}\n\n*Documentation generation failed. Please re-run.*"
+
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    cache_file.write_text(output)
+    logger.info(f"Generated page: {slug} ({len(output)} chars)")
+    return output
+
+
+async def generate_all_pages(
+    repo_path: Path, plan: dict, cache_dir: Path, ai_provider: str, ai_model: str,
+    ai_cli_timeout: int | None = None, use_cache: bool = False,
+) -> dict[str, str]:
+    semaphore = asyncio.Semaphore(MAX_CONCURRENT_PAGES)
+    pages: dict[str, str] = {}
+
+    async def _gen(slug: str, title: str, description: str) -> tuple[str, str]:
+        async with semaphore:
+            md = await generate_page(
+                repo_path=repo_path, slug=slug, title=title, description=description,
+                cache_dir=cache_dir, ai_provider=ai_provider, ai_model=ai_model,
+                ai_cli_timeout=ai_cli_timeout, use_cache=use_cache,
+            )
+            return slug, md
+
+    tasks = []
+    for group in plan.get("navigation", []):
+        for page in group.get("pages", []):
+            tasks.append(_gen(page["slug"], page["title"], page.get("description", "")))
+
+    results = await asyncio.gather(*tasks)
+    for slug, md in results:
+        pages[slug] = md
+
+    logger.info(f"Generated {len(pages)} pages total")
+    return pages
