@@ -1,7 +1,7 @@
 [project]
 name = "docsfy"
 version = "0.1.0"
-description = "AI-powered documentation generator - generates Mintlify-quality static HTML docs from GitHub repos"
+description = "AI-powered documentation generator - generates polished static HTML docs from GitHub repos"
 requires-python = ">=3.12"
 dependencies = [
     "ai-cli-runner",

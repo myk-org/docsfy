@@ -2,7 +2,7 @@
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
-**Goal:** Build an AI-powered FastAPI service that generates Mintlify-quality static HTML documentation from GitHub repositories.
+**Goal:** Build an AI-powered FastAPI service that generates production-quality static HTML documentation from GitHub repositories.
 
 **Architecture:** Clone repo → AI plans doc structure → AI generates each page as markdown → Render to static HTML. FastAPI serves the docs and provides a download endpoint for self-hosting.
 
@@ -29,7 +29,7 @@
 [project]
 name = "docsfy"
 version = "0.1.0"
-description = "AI-powered documentation generator - generates Mintlify-quality static HTML docs from GitHub repos"
+description = "AI-powered documentation generator - generates polished static HTML docs from GitHub repos"
 requires-python = ">=3.12"
 dependencies = [
     "fastapi",
@@ -1711,7 +1711,7 @@ git commit -m "feat: add documentation generator with planner and concurrent pag
 - Create: `src/docsfy/static/search.js`
 - Create: `tests/test_renderer.py`
 
-This is the largest task. The HTML template and CSS create the Mintlify-level polish. Reference the site at https://myk-org-github-webhook-server.mintlify.app/introduction for design inspiration.
+This is the largest task. The HTML template and CSS create the production-quality polish.
 
 **Step 1: Write the failing test**
 

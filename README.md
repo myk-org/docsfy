@@ -1,6 +1,6 @@
 # docsfy
 
-AI-powered documentation generator that creates Mintlify-quality static HTML docs from GitHub repositories using Claude, Gemini, or Cursor CLI.
+AI-powered documentation generator that creates polished static HTML docs from GitHub repositories using Claude, Gemini, or Cursor CLI.
 
 [**Documentation**](https://myk-org.github.io/docsfy/) | [**GitHub**](https://github.com/myk-org/docsfy)
 
