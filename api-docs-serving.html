@@ -4,14 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GET /docs/{project}/{path} - docsfy</title>
-    <meta name="description" content="AI-powered documentation generator that creates polished, Mintlify-quality static HTML sites from GitHub repositories">
+    <meta name="description" content="AI-powered documentation generator that creates polished, Mintlify-quality static HTML sites from GitHub repositories.">
     <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <a href="index.html" class="sidebar-logo">docsfy</a>
-            <p class="sidebar-tagline">AI-powered documentation generator that creates polished, Mintlify-quality static HTML sites from GitHub repositories</p>
+            <p class="sidebar-tagline">AI-powered documentation generator that creates polished, Mintlify-quality static HTML sites from GitHub repositories.</p>
         </div>
 
         <div class="sidebar-search">
@@ -89,16 +89,23 @@
                     </li>
                     
                     <li>
-                        <a href="serving-docs.html"
+                        <a href="incremental-updates.html"
                            class="nav-link">
-                            Serving Documentation
+                            Incremental Updates
                         </a>
                     </li>
                     
                     <li>
-                        <a href="incremental-updates.html"
+                        <a href="downloading-and-self-hosting.html"
                            class="nav-link">
-                            Incremental Updates
+                            Downloading &amp; Self-Hosting
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="managing-projects.html"
+                           class="nav-link">
+                            Managing Projects
                         </a>
                     </li>
                     
@@ -117,13 +124,6 @@
                     </li>
                     
                     <li>
-                        <a href="ai-cli-integration.html"
-                           class="nav-link">
-                            AI CLI Integration
-                        </a>
-                    </li>
-                    
-                    <li>
                         <a href="storage-and-database.html"
                            class="nav-link">
                             Storage &amp; Database
@@ -131,9 +131,9 @@
                     </li>
                     
                     <li>
-                        <a href="html-renderer.html"
+                        <a href="html-theming.html"
                            class="nav-link">
-                            HTML Renderer
+                            HTML Theming &amp; Output
                         </a>
                     </li>
                     
@@ -143,6 +143,13 @@
             <div class="nav-group">
                 <h3 class="nav-group-title">API Reference</h3>
                 <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="api-overview.html"
+                           class="nav-link">
+                            API Overview
+                        </a>
+                    </li>
                     
                     <li>
                         <a href="api-generate.html"
@@ -161,21 +168,7 @@
                     <li>
                         <a href="api-projects.html"
                            class="nav-link">
-                            GET /api/projects/{name}
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="api-projects-delete.html"
-                           class="nav-link">
-                            DELETE /api/projects/{name}
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="api-projects-download.html"
-                           class="nav-link">
-                            GET /api/projects/{name}/download
+                            Project Endpoints
                         </a>
                     </li>
                     
@@ -208,9 +201,9 @@
                     </li>
                     
                     <li>
-                        <a href="tech-stack.html"
+                        <a href="project-structure.html"
                            class="nav-link">
-                            Technology Stack
+                            Project Structure
                         </a>
                     </li>
                     
@@ -257,11 +250,12 @@
                 <h1 class="article-title">GET /docs/{project}/{path}</h1>
                 <div class="article-body">
                     <h1 id="get-docsprojectpath">GET /docs/{project}/{path}</h1>
-<p>Serve generated static HTML documentation pages directly from the docsfy server.</p>
+<p>The <code>GET /docs/{project}/{path}</code> endpoint is docsfy's primary documentation serving route. It delivers generated HTML documentation directly to the browser, turning docsfy from a generation-only tool into a fully hosted documentation platform.</p>
 <h2 id="overview">Overview</h2>
-<p>The <code>GET /docs/{project}/{path}</code> endpoint serves the final rendered HTML documentation for a project. After docsfy's generation pipeline produces a static site, this endpoint makes it immediately browsable — no separate web server or download step required.</p>
-<p>Each project's documentation lives under its own URL namespace, making it easy to host multiple projects from a single docsfy instance.</p>
-<h2 id="url-parameters">URL Parameters</h2>
+<p>Once docsfy generates a documentation site for a project, the rendered HTML is stored on the filesystem under <code>/data/projects/{project-name}/site/</code>. This endpoint maps incoming URL paths to those static files, serving them with the correct content types so that browsers render full documentation sites — complete with navigation, search, syntax highlighting, and theme toggling.</p>
+<div class="highlight"><pre><span></span><code>GET /docs/{project}/{path}
+</code></pre></div>
+
 <table>
 <thead>
 <tr>
@@ -273,220 +267,282 @@
 <tbody>
 <tr>
 <td><code>project</code></td>
-<td><code>string</code></td>
-<td>The project name (derived from the repository name during generation)</td>
+<td>path</td>
+<td>The project name (as specified during generation)</td>
 </tr>
 <tr>
 <td><code>path</code></td>
-<td><code>string</code></td>
-<td>The path to a specific file within the generated site (e.g., <code>index.html</code>, <code>getting-started.html</code>, <code>assets/style.css</code>)</td>
+<td>path</td>
+<td>The file path within the project's rendered site directory</td>
 </tr>
 </tbody>
 </table>
-<h2 id="how-it-works">How It Works</h2>
-<p>When a request hits <code>/docs/{project}/{path}</code>, docsfy resolves the path against the project's generated site directory on the filesystem:</p>
-<div class="highlight"><pre><span></span><code>/data/projects/{project}/site/{path}
-</code></pre></div>
-
-<p>This directory is populated by Stage 4 (HTML Renderer) of the generation pipeline. The endpoint serves whatever file matches the requested path — HTML pages, CSS stylesheets, JavaScript files, search indexes, and any other static assets.</p>
-<h3 id="request-flow">Request Flow</h3>
-<div class="highlight"><pre><span></span><code>Client Request
-    GET /docs/my-project/getting-started.html
-         │
-         ▼
-    FastAPI Router
-         │
-         ▼
-    Resolve filesystem path
-    /data/projects/my-project/site/getting-started.html
-         │
-         ▼
-    Return file with appropriate Content-Type
-</code></pre></div>
-
-<h2 id="usage-examples">Usage Examples</h2>
-<h3 id="browse-a-projects-documentation">Browse a Project's Documentation</h3>
-<p>Navigate to the root page of a project's documentation:</p>
-<div class="highlight"><pre><span></span><code>GET /docs/my-project/index.html
-</code></pre></div>
-
-<h3 id="access-a-specific-page">Access a Specific Page</h3>
-<p>Each page defined in the project's <code>plan.json</code> becomes an HTML file in the site directory:</p>
-<div class="highlight"><pre><span></span><code>GET /docs/my-project/getting-started.html
-GET /docs/my-project/api-reference.html
-GET /docs/my-project/configuration.html
-</code></pre></div>
-
-<h3 id="load-static-assets">Load Static Assets</h3>
-<p>The generated site includes bundled CSS, JavaScript, and other assets under the <code>assets/</code> directory:</p>
-<div class="highlight"><pre><span></span><code>GET /docs/my-project/assets/style.css
-GET /docs/my-project/assets/search.js
-GET /docs/my-project/assets/theme-toggle.js
-GET /docs/my-project/assets/highlight.js
-</code></pre></div>
-
-<h3 id="fetch-the-search-index">Fetch the Search Index</h3>
-<p>Client-side search is powered by a JSON index that is also served through this endpoint:</p>
-<div class="highlight"><pre><span></span><code>GET /docs/my-project/search-index.json
-</code></pre></div>
-
-<h2 id="generated-site-structure">Generated Site Structure</h2>
-<p>Every project's site directory follows a consistent layout:</p>
-<div class="highlight"><pre><span></span><code>/data/projects/{project}/site/
-├── index.html              # Landing page
-├── getting-started.html    # Example documentation page
-├── api-reference.html      # Example documentation page
-├── ...                     # Additional pages from plan.json
-├── assets/
-│   ├── style.css           # Theme styles (dark/light mode)
-│   ├── search.js           # Client-side search (lunr.js)
-│   ├── theme-toggle.js     # Dark/light theme switcher
-│   └── highlight.js        # Code syntax highlighting
-└── search-index.json       # Search index for client-side search
-</code></pre></div>
-
-<blockquote>
-<p><strong>Note:</strong> The exact set of HTML pages varies per project. The AI Planner (Stage 2) determines the documentation structure, and the AI Content Generator (Stage 3) produces the content for each page. The HTML Renderer (Stage 4) then converts everything into the final static site.</p>
-</blockquote>
-<h2 id="site-features">Site Features</h2>
-<p>Pages served through this endpoint include the full set of docsfy rendering features:</p>
+<h2 id="url-routing">URL Routing</h2>
+<p>The FastAPI route captures two path parameters to resolve which file to serve:</p>
+<ol>
+<li><strong><code>{project}</code></strong> — identifies which project's documentation to serve, matching a subdirectory under <code>/data/projects/</code></li>
+<li><strong><code>{path}</code></strong> — the remaining URL segments, mapping to files within that project's <code>site/</code> directory</li>
+</ol>
+<h3 id="example-urls">Example URLs</h3>
 <table>
 <thead>
 <tr>
-<th>Feature</th>
-<th>Description</th>
+<th>URL</th>
+<th>Resolved File</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Sidebar navigation</td>
-<td>Hierarchical page navigation generated from <code>plan.json</code></td>
+<td><code>/docs/my-api/index.html</code></td>
+<td><code>/data/projects/my-api/site/index.html</code></td>
 </tr>
 <tr>
-<td>Dark/light theme</td>
-<td>Toggle between themes; preference persisted client-side</td>
+<td><code>/docs/my-api/getting-started.html</code></td>
+<td><code>/data/projects/my-api/site/getting-started.html</code></td>
 </tr>
 <tr>
-<td>Client-side search</td>
-<td>Full-text search across all pages using lunr.js</td>
+<td><code>/docs/my-api/assets/style.css</code></td>
+<td><code>/data/projects/my-api/site/assets/style.css</code></td>
 </tr>
 <tr>
-<td>Syntax highlighting</td>
-<td>Code blocks highlighted with highlight.js</td>
+<td><code>/docs/my-api/assets/search.js</code></td>
+<td><code>/data/projects/my-api/site/assets/search.js</code></td>
 </tr>
 <tr>
-<td>Responsive design</td>
-<td>Adapts to mobile, tablet, and desktop viewports</td>
-</tr>
-<tr>
-<td>Card layouts</td>
-<td>Visual grouping for related content</td>
-</tr>
-<tr>
-<td>Callout boxes</td>
-<td>Styled note, warning, and info blocks</td>
+<td><code>/docs/my-api/search-index.json</code></td>
+<td><code>/data/projects/my-api/site/search-index.json</code></td>
 </tr>
 </tbody>
 </table>
-<h2 id="relationship-to-the-generation-pipeline">Relationship to the Generation Pipeline</h2>
-<p>This endpoint only serves documentation that has completed the full generation pipeline. The pipeline stages are:</p>
-<ol>
-<li><strong>Clone Repository</strong> — Shallow clone of the source repo</li>
-<li><strong>AI Planner</strong> — Analyzes the repo and produces <code>plan.json</code></li>
-<li><strong>AI Content Generator</strong> — Writes markdown for each page</li>
-<li><strong>HTML Renderer</strong> — Converts markdown + plan into the static site served by this endpoint</li>
-</ol>
-<blockquote>
-<p><strong>Warning:</strong> If a project's status is <code>generating</code> or <code>error</code>, the documentation may not be available or may be incomplete. Check the project status via <code>GET /api/projects/{name}</code> before linking to documentation pages.</p>
-</blockquote>
-<h2 id="project-status-and-availability">Project Status and Availability</h2>
-<p>Before serving documentation, verify the project has completed generation:</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># Check project status</span>
-curl<span class="w"> </span>http://localhost:8000/api/projects/my-project
+<h2 id="path-resolution">Path Resolution</h2>
+<p>The endpoint resolves the requested path against the project's rendered site directory on the filesystem. The storage layout that backs this endpoint is:</p>
+<div class="highlight"><pre><span></span><code>/data/projects/{project-name}/
+  plan.json             # doc structure from AI
+  cache/
+    pages/*.md          # AI-generated markdown (cached for incremental updates)
+  site/                 # final rendered HTML — served by this endpoint
+    index.html
+    *.html
+    assets/
+      style.css
+      search.js
+      theme-toggle.js
+      highlight.js
+    search-index.json
 </code></pre></div>
 
+<p>The resolution flow works as follows:</p>
+<ol>
+<li>Extract <code>{project}</code> and <code>{path}</code> from the URL</li>
+<li>Construct the filesystem path: <code>/data/projects/{project}/site/{path}</code></li>
+<li>If the path points to a directory (or is empty), serve <code>index.html</code> from that directory</li>
+<li>Serve the resolved file with the appropriate <code>Content-Type</code> header</li>
+<li>Return <code>404 Not Found</code> if the project or file does not exist</li>
+</ol>
+<blockquote>
+<p><strong>Note:</strong> Only files inside the <code>site/</code> subdirectory are served. The <code>plan.json</code> and <code>cache/</code> directories are internal to the generation pipeline and are never exposed through this endpoint.</p>
+</blockquote>
+<h2 id="served-file-types">Served File Types</h2>
+<p>The rendered site includes several file types, all served through this single endpoint:</p>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Content-Type</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>*.html</code></td>
+<td><code>text/html</code></td>
+<td>Documentation pages generated from AI-written markdown</td>
+</tr>
+<tr>
+<td><code>style.css</code></td>
+<td><code>text/css</code></td>
+<td>Theme styles supporting dark/light mode, responsive layout</td>
+</tr>
+<tr>
+<td><code>search.js</code></td>
+<td><code>application/javascript</code></td>
+<td>Client-side search powered by lunr.js (or similar)</td>
+</tr>
+<tr>
+<td><code>theme-toggle.js</code></td>
+<td><code>application/javascript</code></td>
+<td>Dark/light theme switching logic</td>
+</tr>
+<tr>
+<td><code>highlight.js</code></td>
+<td><code>application/javascript</code></td>
+<td>Code syntax highlighting</td>
+</tr>
+<tr>
+<td><code>search-index.json</code></td>
+<td><code>application/json</code></td>
+<td>Pre-built search index for client-side search</td>
+</tr>
+</tbody>
+</table>
+<h2 id="how-content-gets-here">How Content Gets Here</h2>
+<p>Before this endpoint can serve anything, the project must go through docsfy's four-stage generation pipeline:</p>
+<div class="highlight"><pre><span></span><code>POST /api/generate (repo URL)
+        │
+        ▼
+   Clone Repository
+        │
+        ▼
+   AI Planner → plan.json
+        │
+        ▼
+   AI Content Generator → cache/pages/*.md
+        │
+        ▼
+   HTML Renderer → site/   ← served by GET /docs/{project}/{path}
+</code></pre></div>
+
+<p>The final <strong>HTML Renderer</strong> stage (Stage 4) converts the AI-generated markdown pages and the <code>plan.json</code> structure into a polished static site using Jinja2 templates with bundled CSS/JS assets. The rendered site includes:</p>
+<ul>
+<li>Sidebar navigation (derived from <code>plan.json</code> hierarchy)</li>
+<li>Dark/light theme toggle</li>
+<li>Client-side full-text search</li>
+<li>Code syntax highlighting via highlight.js</li>
+<li>Callout boxes (note, warning, info)</li>
+<li>Card layouts</li>
+<li>Responsive design</li>
+</ul>
+<h2 id="project-status-and-availability">Project Status and Availability</h2>
+<p>The endpoint only serves documentation for projects whose status is <code>ready</code> in the SQLite database (<code>/data/docsfy.db</code>). Projects can have one of three statuses:</p>
 <table>
 <thead>
 <tr>
 <th>Status</th>
-<th>Docs available?</th>
+<th>Docs Available</th>
 <th>Description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>ready</code></td>
-<td>Yes</td>
-<td>Generation completed successfully; docs are served</td>
+<td><code>generating</code></td>
+<td>No</td>
+<td>Pipeline is still running</td>
 </tr>
 <tr>
-<td><code>generating</code></td>
-<td>Partial/No</td>
-<td>Pipeline is still running</td>
+<td><code>ready</code></td>
+<td><strong>Yes</strong></td>
+<td>Generation complete, docs are served</td>
 </tr>
 <tr>
 <td><code>error</code></td>
 <td>No</td>
-<td>Generation failed; check logs for details</td>
+<td>Generation failed</td>
 </tr>
 </tbody>
 </table>
-<h2 id="error-responses">Error Responses</h2>
+<blockquote>
+<p><strong>Tip:</strong> Use <code>GET /api/projects/{name}</code> to check a project's status, last generated timestamp, and commit SHA before requesting its documentation.</p>
+</blockquote>
+<h2 id="usage-examples">Usage Examples</h2>
+<h3 id="browsing-documentation">Browsing Documentation</h3>
+<p>Point your browser directly at a project's documentation root:</p>
+<div class="highlight"><pre><span></span><code>http://localhost:8000/docs/my-api/index.html
+</code></pre></div>
+
+<p>This serves the full documentation site with working navigation, search, and theme toggling — just like any static documentation host.</p>
+<h3 id="fetching-assets-programmatically">Fetching Assets Programmatically</h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Fetch the main page</span>
+curl<span class="w"> </span>http://localhost:8000/docs/my-api/index.html
+
+<span class="c1"># Fetch the search index</span>
+curl<span class="w"> </span>http://localhost:8000/docs/my-api/search-index.json
+
+<span class="c1"># Fetch a specific documentation page</span>
+curl<span class="w"> </span>http://localhost:8000/docs/my-api/getting-started.html
+</code></pre></div>
+
+<h3 id="checking-if-documentation-exists">Checking if Documentation Exists</h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Check project status first</span>
+curl<span class="w"> </span>http://localhost:8000/api/projects/my-api
+
+<span class="c1"># Response includes:</span>
+<span class="c1"># {</span>
+<span class="c1">#   &quot;name&quot;: &quot;my-api&quot;,</span>
+<span class="c1">#   &quot;status&quot;: &quot;ready&quot;,</span>
+<span class="c1">#   &quot;last_generated&quot;: &quot;2026-03-04T12:00:00Z&quot;,</span>
+<span class="c1">#   &quot;last_commit_sha&quot;: &quot;abc123...&quot;</span>
+<span class="c1"># }</span>
+</code></pre></div>
+
+<h2 id="relationship-to-the-download-endpoint">Relationship to the Download Endpoint</h2>
+<p>docsfy provides two ways to access generated documentation:</p>
 <table>
 <thead>
 <tr>
-<th>Scenario</th>
-<th>Expected Behavior</th>
+<th>Method</th>
+<th>Endpoint</th>
+<th>Use Case</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Project does not exist</td>
-<td><code>404 Not Found</code></td>
+<td><strong>Hosted serving</strong></td>
+<td><code>GET /docs/{project}/{path}</code></td>
+<td>Browse docs directly from the docsfy server</td>
 </tr>
 <tr>
-<td>Path does not exist within a project's site</td>
-<td><code>404 Not Found</code></td>
-</tr>
-<tr>
-<td>Project is in <code>generating</code> state</td>
-<td>Docs may not yet be available</td>
-</tr>
-<tr>
-<td>Project is in <code>error</code> state</td>
-<td>Docs are unavailable</td>
+<td><strong>Static download</strong></td>
+<td><code>GET /api/projects/{name}/download</code></td>
+<td>Download docs as <code>.tar.gz</code> to self-host anywhere</td>
 </tr>
 </tbody>
 </table>
-<h2 id="self-hosting-alternative">Self-Hosting Alternative</h2>
-<p>If you prefer to serve documentation from your own infrastructure instead of through docsfy's built-in endpoint, download the complete site as a <code>.tar.gz</code> archive:</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># Download the static site for self-hosting</span>
-curl<span class="w"> </span>-O<span class="w"> </span>http://localhost:8000/api/projects/my-project/download
-</code></pre></div>
-
-<p>The archive contains the same files served by <code>GET /docs/{project}/{path}</code>, ready to deploy to any static file host (Nginx, Apache, S3, GitHub Pages, etc.).</p>
+<p>Both methods serve the same content from the same <code>site/</code> directory. The download endpoint packages the entire directory into an archive, while this endpoint serves files individually on demand.</p>
 <blockquote>
-<p><strong>Tip:</strong> Use <code>GET /docs/{project}/{path}</code> during development and testing for instant access. For production, consider downloading the static site and hosting it behind a CDN for optimal performance.</p>
+<p><strong>Tip:</strong> If you want to host the documentation on your own infrastructure (e.g., GitHub Pages, Netlify, S3), use the download endpoint to get the <code>.tar.gz</code> archive. If you want zero-config hosting, use this endpoint directly.</p>
 </blockquote>
-<h2 id="storage-configuration">Storage Configuration</h2>
-<p>The documentation files are stored in the persistent data volume. In the default Docker Compose configuration:</p>
+<h2 id="docker-volume-configuration">Docker Volume Configuration</h2>
+<p>When running docsfy in Docker, the <code>/data</code> directory must be mounted as a persistent volume so that generated documentation survives container restarts:</p>
 <div class="highlight"><pre><span></span><code><span class="nt">services</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">docsfy</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">build</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">.</span>
+<span class="w">    </span><span class="nt">ports</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;8000:8000&quot;</span>
+<span class="w">    </span><span class="nt">env_file</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">.env</span>
 <span class="w">    </span><span class="nt">volumes</span><span class="p">:</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./data:/data</span><span class="w">    </span><span class="c1"># All project data including generated sites</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./data:/data</span><span class="w">    </span><span class="c1"># persists generated docs across restarts</span>
 </code></pre></div>
 
-<p>This maps the container's <code>/data</code> directory — where all project sites live — to <code>./data</code> on the host. The generated sites persist across container restarts.</p>
+<p>The <code>./data/projects/</code> directory on the host will contain all generated sites, and the endpoint serves directly from this mounted path.</p>
 <blockquote>
-<p><strong>Note:</strong> Ensure the data volume has sufficient disk space. Each project's generated site includes HTML pages, CSS/JS assets, and a search index. Size varies based on the complexity of the documented repository.</p>
+<p><strong>Warning:</strong> If the <code>/data</code> volume is not mounted, generated documentation will be lost when the container stops. Always use a persistent volume or bind mount for production deployments.</p>
 </blockquote>
+<h2 id="error-responses">Error Responses</h2>
+<table>
+<thead>
+<tr>
+<th>Status Code</th>
+<th>Condition</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>200 OK</code></td>
+<td>File found and served successfully</td>
+</tr>
+<tr>
+<td><code>404 Not Found</code></td>
+<td>Project does not exist, project is not in <code>ready</code> status, or the requested file path does not exist within the project's <code>site/</code> directory</td>
+</tr>
+</tbody>
+</table>
                 </div>
             </article>
             <nav class="page-nav">
                 
-                <a href="api-projects-download.html" class="page-nav-link page-nav-prev">
+                <a href="api-projects.html" class="page-nav-link page-nav-prev">
                     <span class="page-nav-label">Previous</span>
-                    <span class="page-nav-title">GET /api/projects/{name}/download</span>
+                    <span class="page-nav-title">Project Endpoints</span>
                 </a>
                 
                 
@@ -503,25 +559,23 @@ curl<span class="w"> </span>-O<span class="w"> </span>http://localhost:8000/api/
                     <div class="toc">
 <ul>
 <li><a href="#overview">Overview</a></li>
-<li><a href="#url-parameters">URL Parameters</a></li>
-<li><a href="#how-it-works">How It Works</a><ul>
-<li><a href="#request-flow">Request Flow</a></li>
+<li><a href="#url-routing">URL Routing</a><ul>
+<li><a href="#example-urls">Example URLs</a></li>
 </ul>
 </li>
-<li><a href="#usage-examples">Usage Examples</a><ul>
-<li><a href="#browse-a-projects-documentation">Browse a Project's Documentation</a></li>
-<li><a href="#access-a-specific-page">Access a Specific Page</a></li>
-<li><a href="#load-static-assets">Load Static Assets</a></li>
-<li><a href="#fetch-the-search-index">Fetch the Search Index</a></li>
-</ul>
-</li>
-<li><a href="#generated-site-structure">Generated Site Structure</a></li>
-<li><a href="#site-features">Site Features</a></li>
-<li><a href="#relationship-to-the-generation-pipeline">Relationship to the Generation Pipeline</a></li>
+<li><a href="#path-resolution">Path Resolution</a></li>
+<li><a href="#served-file-types">Served File Types</a></li>
+<li><a href="#how-content-gets-here">How Content Gets Here</a></li>
 <li><a href="#project-status-and-availability">Project Status and Availability</a></li>
+<li><a href="#usage-examples">Usage Examples</a><ul>
+<li><a href="#browsing-documentation">Browsing Documentation</a></li>
+<li><a href="#fetching-assets-programmatically">Fetching Assets Programmatically</a></li>
+<li><a href="#checking-if-documentation-exists">Checking if Documentation Exists</a></li>
+</ul>
+</li>
+<li><a href="#relationship-to-the-download-endpoint">Relationship to the Download Endpoint</a></li>
+<li><a href="#docker-volume-configuration">Docker Volume Configuration</a></li>
 <li><a href="#error-responses">Error Responses</a></li>
-<li><a href="#self-hosting-alternative">Self-Hosting Alternative</a></li>
-<li><a href="#storage-configuration">Storage Configuration</a></li>
 </ul>
 </div>
 

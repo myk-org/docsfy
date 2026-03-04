@@ -4,14 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GET /health - docsfy</title>
-    <meta name="description" content="AI-powered documentation generator that creates polished, Mintlify-quality static HTML sites from GitHub repositories">
+    <meta name="description" content="AI-powered documentation generator that creates polished, Mintlify-quality static HTML sites from GitHub repositories.">
     <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <a href="index.html" class="sidebar-logo">docsfy</a>
-            <p class="sidebar-tagline">AI-powered documentation generator that creates polished, Mintlify-quality static HTML sites from GitHub repositories</p>
+            <p class="sidebar-tagline">AI-powered documentation generator that creates polished, Mintlify-quality static HTML sites from GitHub repositories.</p>
         </div>
 
         <div class="sidebar-search">
@@ -89,16 +89,23 @@
                     </li>
                     
                     <li>
-                        <a href="serving-docs.html"
+                        <a href="incremental-updates.html"
                            class="nav-link">
-                            Serving Documentation
+                            Incremental Updates
                         </a>
                     </li>
                     
                     <li>
-                        <a href="incremental-updates.html"
+                        <a href="downloading-and-self-hosting.html"
                            class="nav-link">
-                            Incremental Updates
+                            Downloading &amp; Self-Hosting
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="managing-projects.html"
+                           class="nav-link">
+                            Managing Projects
                         </a>
                     </li>
                     
@@ -117,13 +124,6 @@
                     </li>
                     
                     <li>
-                        <a href="ai-cli-integration.html"
-                           class="nav-link">
-                            AI CLI Integration
-                        </a>
-                    </li>
-                    
-                    <li>
                         <a href="storage-and-database.html"
                            class="nav-link">
                             Storage &amp; Database
@@ -131,9 +131,9 @@
                     </li>
                     
                     <li>
-                        <a href="html-renderer.html"
+                        <a href="html-theming.html"
                            class="nav-link">
-                            HTML Renderer
+                            HTML Theming &amp; Output
                         </a>
                     </li>
                     
@@ -143,6 +143,13 @@
             <div class="nav-group">
                 <h3 class="nav-group-title">API Reference</h3>
                 <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="api-overview.html"
+                           class="nav-link">
+                            API Overview
+                        </a>
+                    </li>
                     
                     <li>
                         <a href="api-generate.html"
@@ -161,21 +168,7 @@
                     <li>
                         <a href="api-projects.html"
                            class="nav-link">
-                            GET /api/projects/{name}
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="api-projects-delete.html"
-                           class="nav-link">
-                            DELETE /api/projects/{name}
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="api-projects-download.html"
-                           class="nav-link">
-                            GET /api/projects/{name}/download
+                            Project Endpoints
                         </a>
                     </li>
                     
@@ -208,9 +201,9 @@
                     </li>
                     
                     <li>
-                        <a href="tech-stack.html"
+                        <a href="project-structure.html"
                            class="nav-link">
-                            Technology Stack
+                            Project Structure
                         </a>
                     </li>
                     
@@ -257,34 +250,38 @@
                 <h1 class="article-title">GET /health</h1>
                 <div class="article-body">
                     <h1 id="get-health">GET /health</h1>
-<p>Health check endpoint for container orchestration and monitoring.</p>
+<p>Health check endpoint used for container orchestration, monitoring, and load balancer readiness probes.</p>
 <h2 id="overview">Overview</h2>
-<p>The <code>/health</code> endpoint provides a lightweight health check for the docsfy service. It is designed for use by container orchestration platforms (Docker, Kubernetes, OpenShift) and external monitoring systems to verify that the FastAPI server is running and accepting requests.</p>
+<p>The <code>/health</code> endpoint provides a lightweight mechanism to verify that the docsfy service is running and able to accept requests. It requires no authentication and returns immediately, making it suitable for automated health monitoring by container runtimes, orchestrators, and load balancers.</p>
 <h2 id="request">Request</h2>
 <div class="highlight"><pre><span></span><code>GET /health
 </code></pre></div>
 
-<p>No authentication, query parameters, or request body required.</p>
+<p><strong>Parameters:</strong> None</p>
+<p><strong>Authentication:</strong> Not required</p>
+<p><strong>Headers:</strong> No special headers required</p>
 <h2 id="response">Response</h2>
-<p><strong>Status Code:</strong> <code>200 OK</code></p>
-<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ok&quot;</span><span class="p">}</span>
+<h3 id="200-ok">200 OK</h3>
+<p>The service is healthy and ready to accept requests.</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;healthy&quot;</span><span class="p">}</span>
 </code></pre></div>
 
-<p>The endpoint returns a minimal JSON response confirming the service is operational. By design, this is a shallow health check — it verifies that the FastAPI application and uvicorn server are responsive without probing backend dependencies like the SQLite database or filesystem storage.</p>
-<blockquote>
-<p><strong>Note:</strong> This endpoint does not validate connectivity to <code>/data/docsfy.db</code> or the <code>/data/projects/</code> filesystem. It confirms only that the HTTP server is accepting connections on port 8000.</p>
-</blockquote>
+<h3 id="503-service-unavailable">503 Service Unavailable</h3>
+<p>The service is running but not ready to handle requests (e.g., during startup or shutdown).</p>
 <h2 id="usage-examples">Usage Examples</h2>
-<h3 id="curl">curl</h3>
+<h3 id="curl">cURL</h3>
 <div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-f<span class="w"> </span>http://localhost:8000/health
 </code></pre></div>
 
+<p>The <code>-f</code> flag causes curl to return a non-zero exit code on HTTP errors, which is the same approach used in the Docker health check configuration.</p>
 <h3 id="python-requests">Python (requests)</h3>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
 
 <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;http://localhost:8000/health&quot;</span><span class="p">)</span>
-<span class="n">response</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">())</span>  <span class="c1"># {&quot;status&quot;: &quot;ok&quot;}</span>
+<span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">200</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Service is healthy&quot;</span><span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Service is unhealthy&quot;</span><span class="p">)</span>
 </code></pre></div>
 
 <h3 id="python-httpx-async">Python (httpx, async)</h3>
@@ -292,12 +289,11 @@
 
 <span class="k">async</span> <span class="k">with</span> <span class="n">httpx</span><span class="o">.</span><span class="n">AsyncClient</span><span class="p">()</span> <span class="k">as</span> <span class="n">client</span><span class="p">:</span>
     <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;http://localhost:8000/health&quot;</span><span class="p">)</span>
-    <span class="n">response</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">())</span>  <span class="c1"># {&quot;status&quot;: &quot;ok&quot;}</span>
+    <span class="k">assert</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">200</span>
 </code></pre></div>
 
 <h2 id="docker-health-check">Docker Health Check</h2>
-<p>The <code>docker-compose.yaml</code> configures automatic health checking against this endpoint:</p>
+<p>The <code>/health</code> endpoint is configured as the Docker health check in <code>docker-compose.yaml</code>:</p>
 <div class="highlight"><pre><span></span><code><span class="nt">services</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">docsfy</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">build</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">.</span>
@@ -327,30 +323,30 @@
 <tr>
 <td><code>test</code></td>
 <td><code>curl -f http://localhost:8000/health</code></td>
-<td>Checks the health endpoint; <code>-f</code> makes curl return a non-zero exit code on HTTP errors</td>
+<td>Probes the health endpoint; fails on non-2xx responses</td>
 </tr>
 <tr>
 <td><code>interval</code></td>
 <td><code>30s</code></td>
-<td>Time between health check probes</td>
+<td>Time between consecutive health checks</td>
 </tr>
 <tr>
 <td><code>timeout</code></td>
 <td><code>10s</code></td>
-<td>Maximum time to wait for a response before marking the check as failed</td>
+<td>Maximum time to wait for a response before marking as failed</td>
 </tr>
 <tr>
 <td><code>retries</code></td>
 <td><code>3</code></td>
-<td>Number of consecutive failures before the container is marked <code>unhealthy</code></td>
+<td>Consecutive failures required before the container is marked <code>unhealthy</code></td>
 </tr>
 </tbody>
 </table>
 <blockquote>
-<p><strong>Tip:</strong> The <code>curl</code> binary is included in the container image (<code>python:3.12-slim</code> base with <code>curl</code> installed as a system dependency) specifically to support this health check.</p>
+<p><strong>Note:</strong> The <code>curl</code> binary is included in the container image (<code>python:3.12-slim</code> base with <code>curl</code> added as a system dependency) specifically to support this health check.</p>
 </blockquote>
-<h2 id="container-states">Container States</h2>
-<p>Docker reports three health states based on the <code>/health</code> endpoint:</p>
+<h3 id="container-health-states">Container Health States</h3>
+<p>Docker tracks three health states based on the results of the health check:</p>
 <table>
 <thead>
 <tr>
@@ -361,30 +357,28 @@
 <tbody>
 <tr>
 <td><code>starting</code></td>
-<td>Container started but the first health check has not yet run</td>
+<td>The container has started but the first health check has not yet run</td>
 </tr>
 <tr>
 <td><code>healthy</code></td>
-<td>The last 1+ health checks returned <code>200 OK</code></td>
+<td>The most recent health check returned a 2xx status code</td>
 </tr>
 <tr>
 <td><code>unhealthy</code></td>
-<td>3 consecutive health checks failed (non-200 response or timeout)</td>
+<td>Three consecutive health checks failed (non-2xx or timeout)</td>
 </tr>
 </tbody>
 </table>
-<p>Check the current health state with:</p>
-<div class="highlight"><pre><span></span><code>docker<span class="w"> </span>inspect<span class="w"> </span>--format<span class="o">=</span><span class="s1">&#39;{{.State.Health.Status}}&#39;</span><span class="w"> </span>docsfy-docsfy-1
+<p>You can inspect the current health state with:</p>
+<div class="highlight"><pre><span></span><code>docker<span class="w"> </span>inspect<span class="w"> </span>--format<span class="o">=</span><span class="s1">&#39;{{.State.Health.Status}}&#39;</span><span class="w"> </span>docsfy
 </code></pre></div>
 
-<p>Or via <code>docker ps</code>, which displays health status in the <code>STATUS</code> column:</p>
-<div class="highlight"><pre><span></span><code>docker<span class="w"> </span>ps
-<span class="c1"># CONTAINER ID  IMAGE   ...  STATUS                   PORTS</span>
-<span class="c1"># a1b2c3d4e5f6  docsfy  ...  Up 2 min (healthy)       0.0.0.0:8000-&gt;8000/tcp</span>
+<p>Or view health check logs:</p>
+<div class="highlight"><pre><span></span><code>docker<span class="w"> </span>inspect<span class="w"> </span>--format<span class="o">=</span><span class="s1">&#39;{{json .State.Health}}&#39;</span><span class="w"> </span>docsfy<span class="w"> </span><span class="p">|</span><span class="w"> </span>jq
 </code></pre></div>
 
-<h2 id="kubernetes-openshift">Kubernetes / OpenShift</h2>
-<p>For Kubernetes-based deployments, map the health endpoint to liveness and readiness probes:</p>
+<h2 id="kubernetes-integration">Kubernetes Integration</h2>
+<p>When deploying docsfy to Kubernetes, configure liveness and readiness probes to use the <code>/health</code> endpoint:</p>
 <div class="highlight"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">apps/v1</span>
 <span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Deployment</span>
 <span class="nt">metadata</span><span class="p">:</span>
@@ -412,57 +406,99 @@
 <span class="w">            </span><span class="nt">initialDelaySeconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3</span>
 <span class="w">            </span><span class="nt">periodSeconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10</span>
 <span class="w">            </span><span class="nt">timeoutSeconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span>
-<span class="w">            </span><span class="nt">failureThreshold</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
+<span class="w">            </span><span class="nt">failureThreshold</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span>
 </code></pre></div>
 
 <blockquote>
-<p><strong>Note:</strong> The docsfy container runs as a non-root user (<code>appuser</code>) with GID 0, making it compatible with OpenShift's restricted security context constraints.</p>
+<p><strong>Tip:</strong> Use a shorter <code>periodSeconds</code> for the readiness probe than for the liveness probe. The readiness probe controls traffic routing and should detect issues quickly, while the liveness probe triggers a container restart and should be more conservative to avoid unnecessary restarts.</p>
 </blockquote>
-<h2 id="monitoring-integration">Monitoring Integration</h2>
-<p>Use the health endpoint with external monitoring tools to alert on service downtime:</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># Nagios / Icinga check</span>
-check_http<span class="w"> </span>-H<span class="w"> </span>localhost<span class="w"> </span>-p<span class="w"> </span><span class="m">8000</span><span class="w"> </span>-u<span class="w"> </span>/health<span class="w"> </span>-e<span class="w"> </span><span class="m">200</span>
+<h2 id="load-balancer-configuration">Load Balancer Configuration</h2>
+<h3 id="nginx">NGINX</h3>
+<div class="highlight"><pre><span></span><code><span class="k">upstream</span><span class="w"> </span><span class="s">docsfy</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kn">server</span><span class="w"> </span><span class="n">127.0.0.1</span><span class="p">:</span><span class="mi">8000</span><span class="p">;</span>
+<span class="p">}</span>
 
-<span class="c1"># Prometheus Blackbox Exporter target</span>
--<span class="w"> </span>targets:
-<span class="w">  </span>-<span class="w"> </span>http://docsfy:8000/health
+<span class="k">server</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kn">location</span><span class="w"> </span><span class="s">/health</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="kn">proxy_pass</span><span class="w"> </span><span class="s">http://docsfy/health</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
 </code></pre></div>
 
-<h2 id="troubleshooting">Troubleshooting</h2>
+<h3 id="aws-application-load-balancer">AWS Application Load Balancer</h3>
+<p>Configure the target group health check:</p>
 <table>
 <thead>
 <tr>
-<th>Symptom</th>
-<th>Possible Cause</th>
-<th>Resolution</th>
+<th>Setting</th>
+<th>Value</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Connection refused</td>
-<td>uvicorn not started or crashed</td>
-<td>Check container logs: <code>docker logs docsfy-docsfy-1</code></td>
+<td>Protocol</td>
+<td>HTTP</td>
 </tr>
 <tr>
-<td>Timeout (no response)</td>
-<td>Server overloaded by active generation tasks</td>
-<td>Check CPU/memory usage; generation tasks run via <code>asyncio.to_thread</code> and are CPU-bound</td>
+<td>Path</td>
+<td><code>/health</code></td>
 </tr>
 <tr>
-<td>Container marked <code>unhealthy</code></td>
-<td>3 consecutive failures (see above causes)</td>
-<td>Inspect with <code>docker inspect</code> and review logs for errors during startup</td>
+<td>Port</td>
+<td>8000</td>
 </tr>
 <tr>
-<td><code>curl: (7) Failed to connect</code> in healthcheck</td>
-<td>Port mismatch or server binding to wrong interface</td>
-<td>Verify entrypoint uses <code>--host 0.0.0.0 --port 8000</code></td>
+<td>Healthy threshold</td>
+<td>2</td>
+</tr>
+<tr>
+<td>Unhealthy threshold</td>
+<td>3</td>
+</tr>
+<tr>
+<td>Timeout</td>
+<td>10 seconds</td>
+</tr>
+<tr>
+<td>Interval</td>
+<td>30 seconds</td>
+</tr>
+<tr>
+<td>Success codes</td>
+<td>200</td>
 </tr>
 </tbody>
 </table>
+<h2 id="architecture-context">Architecture Context</h2>
+<p>The <code>/health</code> endpoint sits at the FastAPI application level alongside the other API routes:</p>
+<div class="highlight"><pre><span></span><code>                    FastAPI Server
++--------------------------------------------------+
+|                                                  |
+|  POST /api/generate  &lt;-- repo URL                |
+|  GET  /api/status    &lt;-- project list            |
+|  GET  /docs/{project}/  &lt;-- serves HTML          |
+|  GET  /health           &lt;-- health check         |
+|                                                  |
+|  Storage:                                        |
+|  /data/docsfy.db  (SQLite: metadata)             |
+|  /data/projects/  (filesystem: docs)             |
++--------------------------------------------------+
+</code></pre></div>
+
+<p>The endpoint is served by <strong>uvicorn</strong> on port <code>8000</code> (all interfaces) as defined in the container entrypoint:</p>
+<div class="highlight"><pre><span></span><code>uv run --no-sync uvicorn docsfy.main:app --host 0.0.0.0 --port 8000
+</code></pre></div>
+
 <blockquote>
-<p><strong>Warning:</strong> If the container is repeatedly cycling between <code>healthy</code> and <code>unhealthy</code>, review resource limits. AI CLI subprocess execution (Claude Code, Cursor Agent, Gemini CLI) during documentation generation is resource-intensive and may temporarily starve the event loop, causing health check timeouts.</p>
+<p><strong>Warning:</strong> The health endpoint only confirms the FastAPI process is responding. It does not verify that external dependencies (AI CLI tools, storage volumes) are available. A healthy response means the HTTP server is accepting connections, not that documentation generation will succeed.</p>
 </blockquote>
+<h2 id="monitoring-best-practices">Monitoring Best Practices</h2>
+<ul>
+<li><strong>Alerting threshold</strong>: Alert when the endpoint is unreachable for more than 90 seconds (3 intervals at 30s each), matching the Docker retry configuration.</li>
+<li><strong>Dashboard integration</strong>: Track response times from <code>/health</code> to detect performance degradation before full failures occur.</li>
+<li><strong>Dependency checks</strong>: Complement the health endpoint with application-level monitoring of storage availability (<code>/data/docsfy.db</code>) and AI CLI tool readiness for full observability.</li>
+<li><strong>Log level</strong>: Health check requests are logged at <code>INFO</code> level by default. Set <code>LOG_LEVEL=WARNING</code> in your <code>.env</code> file to suppress health check noise in production logs if your monitoring generates high request volume.</li>
+</ul>
                 </div>
             </article>
             <nav class="page-nav">
@@ -487,18 +523,29 @@ check_http<span class="w"> </span>-H<span class="w"> </span>localhost<span class
 <ul>
 <li><a href="#overview">Overview</a></li>
 <li><a href="#request">Request</a></li>
-<li><a href="#response">Response</a></li>
+<li><a href="#response">Response</a><ul>
+<li><a href="#200-ok">200 OK</a></li>
+<li><a href="#503-service-unavailable">503 Service Unavailable</a></li>
+</ul>
+</li>
 <li><a href="#usage-examples">Usage Examples</a><ul>
-<li><a href="#curl">curl</a></li>
+<li><a href="#curl">cURL</a></li>
 <li><a href="#python-requests">Python (requests)</a></li>
 <li><a href="#python-httpx-async">Python (httpx, async)</a></li>
 </ul>
 </li>
-<li><a href="#docker-health-check">Docker Health Check</a></li>
-<li><a href="#container-states">Container States</a></li>
-<li><a href="#kubernetes-openshift">Kubernetes / OpenShift</a></li>
-<li><a href="#monitoring-integration">Monitoring Integration</a></li>
-<li><a href="#troubleshooting">Troubleshooting</a></li>
+<li><a href="#docker-health-check">Docker Health Check</a><ul>
+<li><a href="#container-health-states">Container Health States</a></li>
+</ul>
+</li>
+<li><a href="#kubernetes-integration">Kubernetes Integration</a></li>
+<li><a href="#load-balancer-configuration">Load Balancer Configuration</a><ul>
+<li><a href="#nginx">NGINX</a></li>
+<li><a href="#aws-application-load-balancer">AWS Application Load Balancer</a></li>
+</ul>
+</li>
+<li><a href="#architecture-context">Architecture Context</a></li>
+<li><a href="#monitoring-best-practices">Monitoring Best Practices</a></li>
 </ul>
 </div>
 

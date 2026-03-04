@@ -4,14 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Generating Documentation - docsfy</title>
-    <meta name="description" content="AI-powered documentation generator that creates polished, Mintlify-quality static HTML sites from GitHub repositories">
+    <meta name="description" content="AI-powered documentation generator that creates polished, Mintlify-quality static HTML sites from GitHub repositories.">
     <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <a href="index.html" class="sidebar-logo">docsfy</a>
-            <p class="sidebar-tagline">AI-powered documentation generator that creates polished, Mintlify-quality static HTML sites from GitHub repositories</p>
+            <p class="sidebar-tagline">AI-powered documentation generator that creates polished, Mintlify-quality static HTML sites from GitHub repositories.</p>
         </div>
 
         <div class="sidebar-search">
@@ -89,16 +89,23 @@
                     </li>
                     
                     <li>
-                        <a href="serving-docs.html"
+                        <a href="incremental-updates.html"
                            class="nav-link">
-                            Serving Documentation
+                            Incremental Updates
                         </a>
                     </li>
                     
                     <li>
-                        <a href="incremental-updates.html"
+                        <a href="downloading-and-self-hosting.html"
                            class="nav-link">
-                            Incremental Updates
+                            Downloading &amp; Self-Hosting
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="managing-projects.html"
+                           class="nav-link">
+                            Managing Projects
                         </a>
                     </li>
                     
@@ -117,13 +124,6 @@
                     </li>
                     
                     <li>
-                        <a href="ai-cli-integration.html"
-                           class="nav-link">
-                            AI CLI Integration
-                        </a>
-                    </li>
-                    
-                    <li>
                         <a href="storage-and-database.html"
                            class="nav-link">
                             Storage &amp; Database
@@ -131,9 +131,9 @@
                     </li>
                     
                     <li>
-                        <a href="html-renderer.html"
+                        <a href="html-theming.html"
                            class="nav-link">
-                            HTML Renderer
+                            HTML Theming &amp; Output
                         </a>
                     </li>
                     
@@ -143,6 +143,13 @@
             <div class="nav-group">
                 <h3 class="nav-group-title">API Reference</h3>
                 <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="api-overview.html"
+                           class="nav-link">
+                            API Overview
+                        </a>
+                    </li>
                     
                     <li>
                         <a href="api-generate.html"
@@ -161,21 +168,7 @@
                     <li>
                         <a href="api-projects.html"
                            class="nav-link">
-                            GET /api/projects/{name}
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="api-projects-delete.html"
-                           class="nav-link">
-                            DELETE /api/projects/{name}
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="api-projects-download.html"
-                           class="nav-link">
-                            GET /api/projects/{name}/download
+                            Project Endpoints
                         </a>
                     </li>
                     
@@ -208,9 +201,9 @@
                     </li>
                     
                     <li>
-                        <a href="tech-stack.html"
+                        <a href="project-structure.html"
                            class="nav-link">
-                            Technology Stack
+                            Project Structure
                         </a>
                     </li>
                     
@@ -257,196 +250,211 @@
                 <h1 class="article-title">Generating Documentation</h1>
                 <div class="article-body">
                     <h1 id="generating-documentation">Generating Documentation</h1>
-<p>Documentation generation in docsfy is triggered through a single API call. You provide a GitHub repository URL, and docsfy clones the repository, uses an AI CLI tool to analyze the codebase, and produces a polished static HTML documentation site.</p>
-<p>This page covers how to start generation, monitor progress, and access the finished docs for both public and private repositories.</p>
-<h2 id="quick-start">Quick Start</h2>
+<p>This guide covers how to trigger documentation generation for a GitHub repository, monitor its progress through the pipeline, and access the finished site.</p>
+<h2 id="prerequisites">Prerequisites</h2>
+<p>Before generating documentation, ensure docsfy is running and your AI provider is configured. See the <a href="configuration.md">Configuration</a> page for details on setting up your <code>.env</code> file.</p>
+<p>Verify the service is healthy:</p>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>http://localhost:8000/health
+</code></pre></div>
+
+<h2 id="triggering-generation">Triggering Generation</h2>
+<h3 id="start-a-generation-request">Start a Generation Request</h3>
 <p>To generate documentation for a repository, send a <code>POST</code> request to the <code>/api/generate</code> endpoint with the repository URL:</p>
 <div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/api/generate<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{&quot;url&quot;: &quot;https://github.com/your-org/your-repo&quot;}&#39;</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{&quot;repo_url&quot;: &quot;https://github.com/your-org/your-repo.git&quot;}&#39;</span>
 </code></pre></div>
 
-<p>docsfy will clone the repository and run through the full generation pipeline. You can monitor progress via the status endpoints and access the finished site once generation completes.</p>
-<h2 id="generation-pipeline">Generation Pipeline</h2>
-<p>Every generation request passes through four sequential stages:</p>
-<h3 id="stage-1-clone-repository">Stage 1: Clone Repository</h3>
-<p>docsfy performs a shallow clone (<code>--depth 1</code>) of the repository to a temporary directory. This keeps clone times fast, even for large repositories with extensive commit histories.</p>
-<h3 id="stage-2-ai-planner">Stage 2: AI Planner</h3>
-<p>The configured AI CLI runs with its working directory set to the cloned repo. It explores the entire repository and produces a <code>plan.json</code> file containing the documentation structure — pages, sections, and navigation hierarchy.</p>
-<h3 id="stage-3-ai-content-generator">Stage 3: AI Content Generator</h3>
-<p>For each page defined in <code>plan.json</code>, the AI CLI runs again with access to the full codebase. Pages are generated concurrently using async execution with semaphore-limited concurrency. Each page is output as a Markdown file and cached at <code>/data/projects/{name}/cache/pages/*.md</code>.</p>
-<h3 id="stage-4-html-renderer">Stage 4: HTML Renderer</h3>
-<p>Markdown pages and <code>plan.json</code> are converted into a polished static HTML site using Jinja2 templates with bundled CSS/JS assets. The final site includes sidebar navigation, dark/light theme toggle, client-side search, code syntax highlighting, and responsive design.</p>
-<h2 id="public-repositories">Public Repositories</h2>
-<p>Public repositories work out of the box with no additional configuration. Pass any public HTTPS URL:</p>
-<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/api/generate<span class="w"> </span><span class="se">\</span>
+<p>Both HTTPS and SSH URLs are supported:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># HTTPS (public or private with token)</span>
+curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/api/generate<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{&quot;url&quot;: &quot;https://github.com/fastapi/fastapi&quot;}&#39;</span>
-</code></pre></div>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{&quot;repo_url&quot;: &quot;https://github.com/your-org/your-repo.git&quot;}&#39;</span>
 
-<p>Both HTTPS and SSH URL formats are supported:</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># HTTPS</span>
-<span class="o">{</span><span class="s2">&quot;url&quot;</span>:<span class="w"> </span><span class="s2">&quot;https://github.com/your-org/your-repo&quot;</span><span class="o">}</span>
-
-<span class="c1"># SSH</span>
-<span class="o">{</span><span class="s2">&quot;url&quot;</span>:<span class="w"> </span><span class="s2">&quot;git@github.com:your-org/your-repo.git&quot;</span><span class="o">}</span>
-</code></pre></div>
-
-<h2 id="private-repositories">Private Repositories</h2>
-<p>Private repositories are supported through system git credentials. docsfy uses whatever git authentication is configured in the container environment.</p>
-<h3 id="ssh-key-authentication">SSH Key Authentication</h3>
-<p>Mount your SSH keys into the container so git can authenticate with GitHub over SSH:</p>
-<div class="highlight"><pre><span></span><code><span class="nt">services</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">docsfy</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">build</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">.</span>
-<span class="w">    </span><span class="nt">ports</span><span class="p">:</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;8000:8000&quot;</span>
-<span class="w">    </span><span class="nt">env_file</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">.env</span>
-<span class="w">    </span><span class="nt">volumes</span><span class="p">:</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./data:/data</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">~/.ssh:/home/appuser/.ssh:ro</span>
-</code></pre></div>
-
-<p>Then use an SSH URL for the repository:</p>
-<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/api/generate<span class="w"> </span><span class="se">\</span>
+<span class="c1"># SSH (private repos using system git credentials)</span>
+curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/api/generate<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{&quot;url&quot;: &quot;git@github.com:your-org/private-repo.git&quot;}&#39;</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{&quot;repo_url&quot;: &quot;git@github.com:your-org/your-repo.git&quot;}&#39;</span>
 </code></pre></div>
 
-<h3 id="https-with-stored-credentials">HTTPS with Stored Credentials</h3>
-<p>Alternatively, configure git credential storage in the container so HTTPS URLs can authenticate against private repositories. This can be done through git credential helpers or by mounting a <code>.gitconfig</code> with stored credentials.</p>
 <blockquote>
-<p><strong>Warning:</strong> When mounting credentials into the container, always use the <code>:ro</code> (read-only) flag to prevent accidental modification.</p>
+<p><strong>Note:</strong> Private repositories require valid git credentials on the host system. When running in Docker, mount your SSH keys or configure git credential helpers appropriately.</p>
 </blockquote>
-<h2 id="monitoring-generation-status">Monitoring Generation Status</h2>
+<h3 id="what-happens-during-generation">What Happens During Generation</h3>
+<p>The generation pipeline runs four sequential stages:</p>
+<div class="highlight"><pre><span></span><code>Clone Repository ──&gt; AI Planner ──&gt; AI Content Generator ──&gt; HTML Renderer
+                    (plan.json)     (concurrent pages)       (static site)
+</code></pre></div>
+
+<p><strong>Stage 1: Clone Repository</strong> — Performs a shallow clone (<code>--depth 1</code>) of the repository to a temporary directory. This keeps the clone fast and lightweight regardless of repository history.</p>
+<p><strong>Stage 2: AI Planner</strong> — The configured AI CLI explores the entire cloned repository and produces a <code>plan.json</code> file defining the documentation structure — pages, sections, and navigation hierarchy.</p>
+<p><strong>Stage 3: AI Content Generator</strong> — For each page defined in <code>plan.json</code>, the AI CLI runs with full access to the cloned repository. Pages are generated concurrently using async execution with semaphore-limited concurrency. Each page is output as a Markdown file and cached for incremental updates.</p>
+<p><strong>Stage 4: HTML Renderer</strong> — Converts the Markdown pages and <code>plan.json</code> into a polished static HTML site using Jinja2 templates with bundled CSS/JS assets. The finished site includes sidebar navigation, dark/light theme toggle, client-side search, and code syntax highlighting.</p>
+<blockquote>
+<p><strong>Tip:</strong> Page generation in Stage 3 runs concurrently, so repositories with many documentation pages benefit from parallelism. The semaphore prevents overwhelming system resources.</p>
+</blockquote>
+<h2 id="monitoring-progress">Monitoring Progress</h2>
 <h3 id="list-all-projects">List All Projects</h3>
-<p>Retrieve a list of all projects and their current generation status:</p>
+<p>Check the status of all projects with the <code>/api/status</code> endpoint:</p>
 <div class="highlight"><pre><span></span><code>curl<span class="w"> </span>http://localhost:8000/api/status
 </code></pre></div>
 
-<p>Each project has one of three statuses:</p>
+<p>This returns a list of all projects and their current generation status.</p>
+<h3 id="get-project-details">Get Project Details</h3>
+<p>For detailed information about a specific project, use the <code>/api/projects/{name}</code> endpoint:</p>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>http://localhost:8000/api/projects/your-repo
+</code></pre></div>
+
+<p>The response includes:</p>
 <table>
 <thead>
 <tr>
-<th>Status</th>
+<th>Field</th>
 <th>Description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>generating</code></td>
-<td>Pipeline is currently running</td>
+<td>Project name</td>
+<td>Derived from the repository name</td>
 </tr>
 <tr>
-<td><code>ready</code></td>
-<td>Documentation has been generated successfully</td>
+<td>Status</td>
+<td><code>generating</code>, <code>ready</code>, or <code>error</code></td>
 </tr>
 <tr>
-<td><code>error</code></td>
-<td>Generation failed — check logs for details</td>
+<td>Last generated</td>
+<td>Timestamp of the most recent generation</td>
+</tr>
+<tr>
+<td>Last commit SHA</td>
+<td>The commit SHA that was used for generation</td>
+</tr>
+<tr>
+<td>Pages</td>
+<td>List of generated documentation pages</td>
+</tr>
+<tr>
+<td>Generation history</td>
+<td>Log of past generation runs</td>
 </tr>
 </tbody>
 </table>
-<h3 id="get-project-details">Get Project Details</h3>
-<p>Retrieve details for a specific project, including last generated timestamp, commit SHA, and page list:</p>
-<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>http://localhost:8000/api/projects/<span class="o">{</span>name<span class="o">}</span>
-</code></pre></div>
-
+<h3 id="project-status-values">Project Status Values</h3>
+<table>
+<thead>
+<tr>
+<th>Status</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>generating</code></td>
+<td>The pipeline is currently running</td>
+</tr>
+<tr>
+<td><code>ready</code></td>
+<td>Documentation has been generated and is available</td>
+</tr>
+<tr>
+<td><code>error</code></td>
+<td>Generation failed — check the logs for details</td>
+</tr>
+</tbody>
+</table>
 <blockquote>
-<p><strong>Tip:</strong> The project name is derived from the repository name. For example, <code>https://github.com/your-org/my-app</code> produces a project named <code>my-app</code>.</p>
+<p><strong>Warning:</strong> Generation can take several minutes depending on repository size and the configured <code>AI_CLI_TIMEOUT</code> (default: 60 minutes). Large repositories with many pages will take longer due to multiple AI CLI invocations.</p>
 </blockquote>
 <h2 id="accessing-generated-documentation">Accessing Generated Documentation</h2>
-<h3 id="serve-directly">Serve Directly</h3>
-<p>Once generation completes, the documentation site is served directly from the docsfy API:</p>
-<div class="highlight"><pre><span></span><code>http://localhost:8000/docs/{project}/{path}
+<h3 id="browse-in-the-browser">Browse in the Browser</h3>
+<p>Once a project's status is <code>ready</code>, the generated documentation is served directly by docsfy:</p>
+<div class="highlight"><pre><span></span><code>http://localhost:8000/docs/{project-name}/
 </code></pre></div>
 
-<p>For example, to view the index page of a project called <code>my-app</code>:</p>
-<div class="highlight"><pre><span></span><code>http://localhost:8000/docs/my-app/index.html
+<p>For example, if you generated docs for a repository named <code>my-api</code>:</p>
+<div class="highlight"><pre><span></span><code>http://localhost:8000/docs/my-api/
 </code></pre></div>
 
-<h3 id="download-as-archive">Download as Archive</h3>
-<p>Download the entire generated site as a <code>.tar.gz</code> archive for self-hosting:</p>
-<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-O<span class="w"> </span>http://localhost:8000/api/projects/<span class="o">{</span>name<span class="o">}</span>/download
+<p>The static site includes:</p>
+<ul>
+<li>Sidebar navigation based on the AI-generated plan</li>
+<li>Dark/light theme toggle</li>
+<li>Client-side search powered by a generated <code>search-index.json</code></li>
+<li>Syntax-highlighted code blocks via highlight.js</li>
+<li>Responsive design for mobile and desktop</li>
+</ul>
+<h3 id="download-for-self-hosting">Download for Self-Hosting</h3>
+<p>To download the entire static site as a <code>.tar.gz</code> archive:</p>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-O<span class="w"> </span>http://localhost:8000/api/projects/your-repo/download
 </code></pre></div>
 
-<p>The archive contains a fully self-contained static HTML site that can be deployed to any static hosting provider (GitHub Pages, Netlify, S3, Nginx, etc.).</p>
+<p>This gives you a portable archive you can host on any static file server — GitHub Pages, Netlify, S3, Nginx, or anywhere else that serves HTML.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Extract and serve locally</span>
+tar<span class="w"> </span>-xzf<span class="w"> </span>your-repo.tar.gz
+<span class="nb">cd</span><span class="w"> </span>your-repo/site
+python<span class="w"> </span>-m<span class="w"> </span>http.server<span class="w"> </span><span class="m">3000</span>
+</code></pre></div>
+
 <h2 id="regenerating-documentation">Regenerating Documentation</h2>
-<p>To regenerate documentation for a repository that has already been processed, call <code>POST /api/generate</code> again with the same URL. docsfy uses an incremental update strategy:</p>
+<h3 id="incremental-updates">Incremental Updates</h3>
+<p>When you re-trigger generation for a repository that has already been generated, docsfy performs an incremental update:</p>
 <ol>
-<li>Fetches the repository and compares the current commit SHA against the stored SHA</li>
-<li>If the repository has changed, re-runs the AI Planner to check for structural changes</li>
-<li>Regenerates only pages whose content may be affected by the changes</li>
+<li>The repository is fetched and the current commit SHA is compared against the stored SHA</li>
+<li>If the repository has changed, the AI Planner re-runs to check if the documentation structure has changed</li>
+<li>Only pages whose content may be affected are regenerated</li>
 <li>If the plan structure is unchanged and only specific files changed, only the relevant pages are regenerated</li>
 </ol>
-<p>This makes subsequent generation runs significantly faster than the initial run.</p>
-<blockquote>
-<p><strong>Note:</strong> If you want a full regeneration from scratch, delete the project first with <code>DELETE /api/projects/{name}</code> and then trigger a new generation.</p>
-</blockquote>
-<h2 id="removing-a-project">Removing a Project</h2>
-<p>To remove a project and all its generated documentation:</p>
-<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-X<span class="w"> </span>DELETE<span class="w"> </span>http://localhost:8000/api/projects/<span class="o">{</span>name<span class="o">}</span>
-</code></pre></div>
-
-<p>This removes the project metadata from the database, deletes all cached Markdown, and removes the rendered HTML site.</p>
-<h2 id="ai-provider-configuration">AI Provider Configuration</h2>
-<p>docsfy supports three AI providers for documentation generation. Configure your provider using environment variables in your <code>.env</code> file.</p>
-<h3 id="claude-default">Claude (Default)</h3>
-<div class="highlight"><pre><span></span><code><span class="nv">AI_PROVIDER</span><span class="o">=</span>claude
-<span class="nv">AI_MODEL</span><span class="o">=</span>claude-opus-4-6<span class="o">[</span>1m<span class="o">]</span>
-</code></pre></div>
-
-<p>Authenticate with either an API key or Vertex AI:</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># Option 1: API Key</span>
-<span class="nv">ANTHROPIC_API_KEY</span><span class="o">=</span>sk-ant-...
-
-<span class="c1"># Option 2: Google Cloud Vertex AI</span>
-<span class="nv">CLAUDE_CODE_USE_VERTEX</span><span class="o">=</span><span class="m">1</span>
-<span class="nv">CLOUD_ML_REGION</span><span class="o">=</span>us-east5
-<span class="nv">ANTHROPIC_VERTEX_PROJECT_ID</span><span class="o">=</span>your-gcp-project
-</code></pre></div>
-
-<p>When using Vertex AI, mount your Google Cloud credentials into the container:</p>
-<div class="highlight"><pre><span></span><code><span class="nt">volumes</span><span class="p">:</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">~/.config/gcloud:/home/appuser/.config/gcloud:ro</span>
-</code></pre></div>
-
-<h3 id="gemini">Gemini</h3>
-<div class="highlight"><pre><span></span><code><span class="nv">AI_PROVIDER</span><span class="o">=</span>gemini
-<span class="nv">AI_MODEL</span><span class="o">=</span>gemini-2.5-pro
-<span class="nv">GEMINI_API_KEY</span><span class="o">=</span>your-api-key
-</code></pre></div>
-
-<h3 id="cursor">Cursor</h3>
-<div class="highlight"><pre><span></span><code><span class="nv">AI_PROVIDER</span><span class="o">=</span>cursor
-<span class="nv">AI_MODEL</span><span class="o">=</span>your-preferred-model
-<span class="nv">CURSOR_API_KEY</span><span class="o">=</span>your-api-key
-</code></pre></div>
-
-<p>Mount the Cursor configuration directory:</p>
-<div class="highlight"><pre><span></span><code><span class="nt">volumes</span><span class="p">:</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./cursor:/home/appuser/.config/cursor</span>
-</code></pre></div>
-
-<h3 id="timeout-configuration">Timeout Configuration</h3>
-<p>All providers share a configurable timeout for AI CLI operations:</p>
-<div class="highlight"><pre><span></span><code><span class="nv">AI_CLI_TIMEOUT</span><span class="o">=</span><span class="m">60</span><span class="w">  </span><span class="c1"># timeout in minutes (default: 60)</span>
+<div class="highlight"><pre><span></span><code><span class="c1"># Re-trigger generation — docsfy handles incrementality automatically</span>
+curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/api/generate<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{&quot;repo_url&quot;: &quot;https://github.com/your-org/your-repo.git&quot;}&#39;</span>
 </code></pre></div>
 
 <blockquote>
-<p><strong>Note:</strong> Large repositories with many files may require a longer timeout. Increase <code>AI_CLI_TIMEOUT</code> if generation is timing out before completion.</p>
+<p><strong>Tip:</strong> Incremental updates are significantly faster than full regeneration since cached Markdown files at <code>/data/projects/{name}/cache/pages/*.md</code> are reused when possible.</p>
 </blockquote>
-<h2 id="health-check">Health Check</h2>
-<p>Verify that the docsfy service is running and available:</p>
-<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>http://localhost:8000/health
+<h3 id="force-full-regeneration">Force Full Regeneration</h3>
+<p>To start fresh, delete the project first, then regenerate:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Delete existing project</span>
+curl<span class="w"> </span>-X<span class="w"> </span>DELETE<span class="w"> </span>http://localhost:8000/api/projects/your-repo
+
+<span class="c1"># Generate from scratch</span>
+curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/api/generate<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{&quot;repo_url&quot;: &quot;https://github.com/your-org/your-repo.git&quot;}&#39;</span>
 </code></pre></div>
 
-<p>This endpoint is also used by Docker's built-in health check mechanism as configured in <code>docker-compose.yaml</code>:</p>
-<div class="highlight"><pre><span></span><code><span class="nt">healthcheck</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">test</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;CMD&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;curl&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;-f&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;http://localhost:8000/health&quot;</span><span class="p p-Indicator">]</span>
-<span class="w">  </span><span class="nt">interval</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">30s</span>
-<span class="w">  </span><span class="nt">timeout</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10s</span>
-<span class="w">  </span><span class="nt">retries</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3</span>
+<blockquote>
+<p><strong>Warning:</strong> Deleting a project removes all generated documentation, cached Markdown files, and metadata. This action cannot be undone.</p>
+</blockquote>
+<h2 id="storage-layout">Storage Layout</h2>
+<p>Understanding where docsfy stores files helps with debugging and backups:</p>
+<div class="highlight"><pre><span></span><code>/data/
+├── docsfy.db                              # SQLite metadata database
+└── projects/
+    └── {project-name}/
+        ├── plan.json                      # Documentation structure from AI
+        ├── cache/
+        │   └── pages/
+        │       ├── getting-started.md     # Cached AI-generated markdown
+        │       ├── api-reference.md
+        │       └── *.md
+        └── site/                          # Final rendered HTML output
+            ├── index.html
+            ├── getting-started.html
+            ├── api-reference.html
+            ├── assets/
+            │   ├── style.css
+            │   ├── search.js
+            │   ├── theme-toggle.js
+            │   └── highlight.js
+            └── search-index.json
+</code></pre></div>
+
+<p>When running with Docker, the <code>/data</code> directory is persisted via a volume mount as defined in the <code>docker-compose.yaml</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">volumes</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./data:/data</span>
 </code></pre></div>
 
 <h2 id="api-reference-summary">API Reference Summary</h2>
@@ -472,17 +480,17 @@
 <tr>
 <td><code>GET</code></td>
 <td><code>/api/projects/{name}</code></td>
-<td>Get project details (last generated, commit SHA, pages)</td>
+<td>Get project details, history, and logs</td>
 </tr>
 <tr>
 <td><code>DELETE</code></td>
 <td><code>/api/projects/{name}</code></td>
-<td>Remove a project and its generated docs</td>
+<td>Remove a project and all its generated docs</td>
 </tr>
 <tr>
 <td><code>GET</code></td>
 <td><code>/api/projects/{name}/download</code></td>
-<td>Download the site as a <code>.tar.gz</code> archive</td>
+<td>Download the static site as a <code>.tar.gz</code> archive</td>
 </tr>
 <tr>
 <td><code>GET</code></td>
@@ -492,31 +500,37 @@
 <tr>
 <td><code>GET</code></td>
 <td><code>/health</code></td>
-<td>Health check</td>
+<td>Health check endpoint</td>
 </tr>
 </tbody>
 </table>
-<h2 id="storage-layout">Storage Layout</h2>
-<p>Generated documentation is stored on disk under <code>/data/projects/</code>:</p>
-<div class="highlight"><pre><span></span><code>/data/projects/{project-name}/
-  plan.json             # documentation structure from AI
-  cache/
-    pages/*.md          # AI-generated markdown (cached for incremental updates)
-  site/                 # final rendered HTML
-    index.html
-    *.html
-    assets/
-      style.css
-      search.js
-      theme-toggle.js
-      highlight.js
-    search-index.json
+<h2 id="troubleshooting">Troubleshooting</h2>
+<h3 id="generation-stuck-in-generating-status">Generation Stuck in <code>generating</code> Status</h3>
+<p>Check that the AI CLI is available and properly configured. docsfy performs an availability check before starting generation by sending a lightweight prompt. Verify your AI provider is reachable:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># For Claude</span>
+claude<span class="w"> </span>--model<span class="w"> </span>claude-opus-4-6<span class="w"> </span>--dangerously-skip-permissions<span class="w"> </span>-p<span class="w"> </span><span class="s2">&quot;Hi&quot;</span>
+
+<span class="c1"># For Gemini</span>
+gemini<span class="w"> </span>--model<span class="w"> </span>gemini-2.5-pro<span class="w"> </span>--yolo<span class="w"> </span><span class="s2">&quot;Hi&quot;</span>
+
+<span class="c1"># For Cursor</span>
+agent<span class="w"> </span>--force<span class="w"> </span>--model<span class="w"> </span>claude-opus-4-6<span class="w"> </span>--print<span class="w"> </span>--workspace<span class="w"> </span>/tmp<span class="w"> </span><span class="s2">&quot;Hi&quot;</span>
 </code></pre></div>
 
-<p>Project metadata (status, commit SHA, timestamps, generation history) is stored in a SQLite database at <code>/data/docsfy.db</code>.</p>
-<blockquote>
-<p><strong>Tip:</strong> Mount <code>/data</code> as a persistent volume to preserve generated documentation across container restarts. This is already configured in the default <code>docker-compose.yaml</code>.</p>
-</blockquote>
+<h3 id="generation-fails-with-error-status">Generation Fails with <code>error</code> Status</h3>
+<p>Retrieve the project details to inspect the logs:</p>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>http://localhost:8000/api/projects/your-repo
+</code></pre></div>
+
+<p>Common causes include:</p>
+<ul>
+<li><strong>AI CLI not installed</strong> — Ensure the AI CLI binary is on the system PATH</li>
+<li><strong>Invalid credentials</strong> — Check that your API keys or Vertex AI credentials are configured in <code>.env</code></li>
+<li><strong>Timeout</strong> — Increase <code>AI_CLI_TIMEOUT</code> in your <code>.env</code> file (default is 60 minutes)</li>
+<li><strong>Repository access denied</strong> — Verify git credentials for private repositories</li>
+</ul>
+<h3 id="no-pages-generated">No Pages Generated</h3>
+<p>If the AI Planner produces an empty or invalid <code>plan.json</code>, the content generator has nothing to work with. This can happen with very small repositories or those with minimal code. Check the plan file at <code>/data/projects/{name}/plan.json</code> to inspect the generated structure.</p>
                 </div>
             </article>
             <nav class="page-nav">
@@ -527,9 +541,9 @@
                 </a>
                 
                 
-                <a href="serving-docs.html" class="page-nav-link page-nav-next">
+                <a href="incremental-updates.html" class="page-nav-link page-nav-next">
                     <span class="page-nav-label">Next</span>
-                    <span class="page-nav-title">Serving Documentation</span>
+                    <span class="page-nav-title">Incremental Updates</span>
                 </a>
                 
             </nav>
@@ -539,42 +553,36 @@
                     <h3>On this page</h3>
                     <div class="toc">
 <ul>
-<li><a href="#quick-start">Quick Start</a></li>
-<li><a href="#generation-pipeline">Generation Pipeline</a><ul>
-<li><a href="#stage-1-clone-repository">Stage 1: Clone Repository</a></li>
-<li><a href="#stage-2-ai-planner">Stage 2: AI Planner</a></li>
-<li><a href="#stage-3-ai-content-generator">Stage 3: AI Content Generator</a></li>
-<li><a href="#stage-4-html-renderer">Stage 4: HTML Renderer</a></li>
+<li><a href="#prerequisites">Prerequisites</a></li>
+<li><a href="#triggering-generation">Triggering Generation</a><ul>
+<li><a href="#start-a-generation-request">Start a Generation Request</a></li>
+<li><a href="#what-happens-during-generation">What Happens During Generation</a></li>
 </ul>
 </li>
-<li><a href="#public-repositories">Public Repositories</a></li>
-<li><a href="#private-repositories">Private Repositories</a><ul>
-<li><a href="#ssh-key-authentication">SSH Key Authentication</a></li>
-<li><a href="#https-with-stored-credentials">HTTPS with Stored Credentials</a></li>
-</ul>
-</li>
-<li><a href="#monitoring-generation-status">Monitoring Generation Status</a><ul>
+<li><a href="#monitoring-progress">Monitoring Progress</a><ul>
 <li><a href="#list-all-projects">List All Projects</a></li>
 <li><a href="#get-project-details">Get Project Details</a></li>
+<li><a href="#project-status-values">Project Status Values</a></li>
 </ul>
 </li>
 <li><a href="#accessing-generated-documentation">Accessing Generated Documentation</a><ul>
-<li><a href="#serve-directly">Serve Directly</a></li>
-<li><a href="#download-as-archive">Download as Archive</a></li>
+<li><a href="#browse-in-the-browser">Browse in the Browser</a></li>
+<li><a href="#download-for-self-hosting">Download for Self-Hosting</a></li>
 </ul>
 </li>
-<li><a href="#regenerating-documentation">Regenerating Documentation</a></li>
-<li><a href="#removing-a-project">Removing a Project</a></li>
-<li><a href="#ai-provider-configuration">AI Provider Configuration</a><ul>
-<li><a href="#claude-default">Claude (Default)</a></li>
-<li><a href="#gemini">Gemini</a></li>
-<li><a href="#cursor">Cursor</a></li>
-<li><a href="#timeout-configuration">Timeout Configuration</a></li>
+<li><a href="#regenerating-documentation">Regenerating Documentation</a><ul>
+<li><a href="#incremental-updates">Incremental Updates</a></li>
+<li><a href="#force-full-regeneration">Force Full Regeneration</a></li>
 </ul>
 </li>
-<li><a href="#health-check">Health Check</a></li>
-<li><a href="#api-reference-summary">API Reference Summary</a></li>
 <li><a href="#storage-layout">Storage Layout</a></li>
+<li><a href="#api-reference-summary">API Reference Summary</a></li>
+<li><a href="#troubleshooting">Troubleshooting</a><ul>
+<li><a href="#generation-stuck-in-generating-status">Generation Stuck in generating Status</a></li>
+<li><a href="#generation-fails-with-error-status">Generation Fails with error Status</a></li>
+<li><a href="#no-pages-generated">No Pages Generated</a></li>
+</ul>
+</li>
 </ul>
 </div>
 

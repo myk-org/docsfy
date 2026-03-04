@@ -4,14 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Docker Deployment - docsfy</title>
-    <meta name="description" content="AI-powered documentation generator that creates polished, Mintlify-quality static HTML sites from GitHub repositories">
+    <meta name="description" content="AI-powered documentation generator that creates polished, Mintlify-quality static HTML sites from GitHub repositories.">
     <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <a href="index.html" class="sidebar-logo">docsfy</a>
-            <p class="sidebar-tagline">AI-powered documentation generator that creates polished, Mintlify-quality static HTML sites from GitHub repositories</p>
+            <p class="sidebar-tagline">AI-powered documentation generator that creates polished, Mintlify-quality static HTML sites from GitHub repositories.</p>
         </div>
 
         <div class="sidebar-search">
@@ -89,16 +89,23 @@
                     </li>
                     
                     <li>
-                        <a href="serving-docs.html"
+                        <a href="incremental-updates.html"
                            class="nav-link">
-                            Serving Documentation
+                            Incremental Updates
                         </a>
                     </li>
                     
                     <li>
-                        <a href="incremental-updates.html"
+                        <a href="downloading-and-self-hosting.html"
                            class="nav-link">
-                            Incremental Updates
+                            Downloading &amp; Self-Hosting
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="managing-projects.html"
+                           class="nav-link">
+                            Managing Projects
                         </a>
                     </li>
                     
@@ -117,13 +124,6 @@
                     </li>
                     
                     <li>
-                        <a href="ai-cli-integration.html"
-                           class="nav-link">
-                            AI CLI Integration
-                        </a>
-                    </li>
-                    
-                    <li>
                         <a href="storage-and-database.html"
                            class="nav-link">
                             Storage &amp; Database
@@ -131,9 +131,9 @@
                     </li>
                     
                     <li>
-                        <a href="html-renderer.html"
+                        <a href="html-theming.html"
                            class="nav-link">
-                            HTML Renderer
+                            HTML Theming &amp; Output
                         </a>
                     </li>
                     
@@ -143,6 +143,13 @@
             <div class="nav-group">
                 <h3 class="nav-group-title">API Reference</h3>
                 <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="api-overview.html"
+                           class="nav-link">
+                            API Overview
+                        </a>
+                    </li>
                     
                     <li>
                         <a href="api-generate.html"
@@ -161,21 +168,7 @@
                     <li>
                         <a href="api-projects.html"
                            class="nav-link">
-                            GET /api/projects/{name}
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="api-projects-delete.html"
-                           class="nav-link">
-                            DELETE /api/projects/{name}
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="api-projects-download.html"
-                           class="nav-link">
-                            GET /api/projects/{name}/download
+                            Project Endpoints
                         </a>
                     </li>
                     
@@ -208,9 +201,9 @@
                     </li>
                     
                     <li>
-                        <a href="tech-stack.html"
+                        <a href="project-structure.html"
                            class="nav-link">
-                            Technology Stack
+                            Project Structure
                         </a>
                     </li>
                     
@@ -257,49 +250,51 @@
                 <h1 class="article-title">Docker Deployment</h1>
                 <div class="article-body">
                     <h1 id="docker-deployment">Docker Deployment</h1>
-<p>docsfy is designed to run as a containerized service. This page covers the Dockerfile structure, docker-compose configuration, volume management, health checks, and production deployment best practices.</p>
-<h2 id="dockerfile-structure">Dockerfile Structure</h2>
-<p>docsfy uses a multi-stage build based on <code>python:3.12-slim</code> to keep the final image lean while including all necessary tooling.</p>
-<h3 id="base-image-and-system-dependencies">Base Image and System Dependencies</h3>
-<p>The container starts from <code>python:3.12-slim</code> and installs the system-level packages required for repository cloning, AI CLI tools, and health checks:</p>
+<p>docsfy is designed to run as a containerized service. This page covers building the Docker image, configuring Docker Compose, managing volumes and credentials, health checks, and production deployment best practices.</p>
+<h2 id="prerequisites">Prerequisites</h2>
+<ul>
+<li>Docker 20.10+ and Docker Compose v2</li>
+<li>An API key for your chosen AI provider (Claude, Gemini, or Cursor)</li>
+<li>For Vertex AI authentication: Google Cloud credentials configured on the host</li>
+</ul>
+<h2 id="dockerfile">Dockerfile</h2>
+<p>docsfy uses a multi-stage build based on <code>python:3.12-slim</code>. The image includes all three AI CLI tools so you can switch providers at runtime via environment variables.</p>
 <table>
 <thead>
 <tr>
-<th>Dependency</th>
-<th>Purpose</th>
+<th>Aspect</th>
+<th>Detail</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>bash</code></td>
-<td>Shell for AI CLI installers</td>
+<td>Base image</td>
+<td><code>python:3.12-slim</code> (multi-stage build)</td>
 </tr>
 <tr>
-<td><code>git</code></td>
-<td>Cloning target repositories</td>
+<td>Package manager</td>
+<td><code>uv</code> (no pip)</td>
 </tr>
 <tr>
-<td><code>curl</code></td>
-<td>Health checks and CLI installer downloads</td>
+<td>Non-root user</td>
+<td><code>appuser</code> with GID 0 (OpenShift compatible)</td>
 </tr>
 <tr>
-<td><code>nodejs</code>, <code>npm</code></td>
-<td>Gemini CLI runtime</td>
+<td>System dependencies</td>
+<td>bash, git, curl, nodejs, npm, ca-certificates</td>
 </tr>
 <tr>
-<td><code>ca-certificates</code></td>
-<td>TLS for HTTPS git remotes and API calls</td>
+<td>Entrypoint</td>
+<td><code>uv run --no-sync uvicorn docsfy.main:app --host 0.0.0.0 --port 8000</code></td>
+</tr>
+<tr>
+<td>Exposed port</td>
+<td><code>8000</code></td>
 </tr>
 </tbody>
 </table>
-<h3 id="package-management-with-uv">Package Management with uv</h3>
-<p>docsfy uses <code>uv</code> as its Python package manager — not pip. The entrypoint invokes <code>uv run --no-sync</code> to execute the application without re-resolving dependencies at startup:</p>
-<div class="highlight"><pre><span></span><code><span class="k">ENTRYPOINT</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;uv&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;run&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;--no-sync&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;uvicorn&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;docsfy.main:app&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;--host&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;0.0.0.0&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;--port&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;8000&quot;</span><span class="p">]</span>
-</code></pre></div>
-
-<p>This starts the FastAPI application via uvicorn, listening on all interfaces at port 8000.</p>
-<h3 id="ai-cli-installation">AI CLI Installation</h3>
-<p>All three supported AI CLIs are installed at build time. They are unpinned to always pull the latest version:</p>
+<h3 id="ai-cli-tools">AI CLI Tools</h3>
+<p>All three AI CLI tools are installed at build time (unpinned, always latest):</p>
 <div class="highlight"><pre><span></span><code><span class="c"># Claude Code</span>
 <span class="k">RUN</span><span class="w"> </span>curl<span class="w"> </span>-fsSL<span class="w"> </span>https://claude.ai/install.sh<span class="w"> </span><span class="p">|</span><span class="w"> </span>bash
 
@@ -311,20 +306,14 @@
 </code></pre></div>
 
 <blockquote>
-<p><strong>Note:</strong> Because the CLI versions are unpinned, rebuilding the image at different times may produce containers with different CLI versions. Pin versions in production if reproducibility is critical.</p>
+<p><strong>Note:</strong> AI CLI tools are installed without pinned versions to ensure you always get the latest capabilities. Rebuild the image periodically to pick up updates.</p>
 </blockquote>
-<h3 id="non-root-user">Non-Root User</h3>
-<p>The container runs as a non-root user <code>appuser</code> with OpenShift-compatible permissions (GID 0):</p>
-<div class="highlight"><pre><span></span><code><span class="k">RUN</span><span class="w"> </span>useradd<span class="w"> </span>-m<span class="w"> </span>-g<span class="w"> </span><span class="m">0</span><span class="w"> </span>appuser
-<span class="k">USER</span><span class="w"> </span><span class="s">appuser</span>
+<h3 id="building-the-image">Building the Image</h3>
+<div class="highlight"><pre><span></span><code>docker<span class="w"> </span>build<span class="w"> </span>-t<span class="w"> </span>docsfy<span class="w"> </span>.
 </code></pre></div>
 
-<p>This ensures compatibility with OpenShift's restricted security context constraints, which require containers to run with an arbitrary UID within group 0.</p>
-<blockquote>
-<p><strong>Warning:</strong> If you encounter permission errors with volume mounts, ensure the mounted directories are readable/writable by GID 0 on the host.</p>
-</blockquote>
-<h2 id="docker-composeyaml">docker-compose.yaml</h2>
-<p>The recommended way to run docsfy is with Docker Compose. The following configuration is defined in the project's <code>docker-compose.yaml</code>:</p>
+<h2 id="docker-compose">Docker Compose</h2>
+<p>The recommended way to run docsfy is with Docker Compose, which handles volume mounts, environment configuration, and health checks in a single declarative file.</p>
 <div class="highlight"><pre><span></span><code><span class="nt">services</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">docsfy</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">build</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">.</span>
@@ -342,77 +331,27 @@
 <span class="w">      </span><span class="nt">retries</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3</span>
 </code></pre></div>
 
-<h3 id="starting-the-service">Starting the Service</h3>
-<div class="highlight"><pre><span></span><code><span class="c1"># Build and start</span>
-docker<span class="w"> </span>compose<span class="w"> </span>up<span class="w"> </span>--build<span class="w"> </span>-d
-
-<span class="c1"># View logs</span>
-docker<span class="w"> </span>compose<span class="w"> </span>logs<span class="w"> </span>-f<span class="w"> </span>docsfy
-
-<span class="c1"># Stop the service</span>
-docker<span class="w"> </span>compose<span class="w"> </span>down
+<p>Start the service:</p>
+<div class="highlight"><pre><span></span><code>docker<span class="w"> </span>compose<span class="w"> </span>up<span class="w"> </span>-d
 </code></pre></div>
 
-<h3 id="port-configuration">Port Configuration</h3>
-<p>The service exposes port <strong>8000</strong> by default. To change the host-side port:</p>
-<div class="highlight"><pre><span></span><code><span class="nt">ports</span><span class="p">:</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;3000:8000&quot;</span><span class="w">   </span><span class="c1"># Access via http://localhost:3000</span>
+<p>Verify it's running:</p>
+<div class="highlight"><pre><span></span><code>docker<span class="w"> </span>compose<span class="w"> </span>ps
+curl<span class="w"> </span>http://localhost:8000/health
 </code></pre></div>
 
-<blockquote>
-<p><strong>Tip:</strong> If running behind a reverse proxy (e.g., nginx or Traefik), you can remove the <code>ports</code> mapping entirely and connect via the Docker network instead.</p>
-</blockquote>
-<h2 id="environment-variables">Environment Variables</h2>
-<p>Configuration is managed through a <code>.env</code> file referenced by <code>env_file: .env</code> in the compose file. Create it from the example template:</p>
-<div class="highlight"><pre><span></span><code>cp<span class="w"> </span>.env.example<span class="w"> </span>.env
-</code></pre></div>
-
-<h3 id="ai-provider-configuration">AI Provider Configuration</h3>
-<div class="highlight"><pre><span></span><code><span class="c1"># AI Configuration</span>
-<span class="nv">AI_PROVIDER</span><span class="o">=</span>claude<span class="w">                    </span><span class="c1"># Options: claude, cursor, gemini</span>
-<span class="nv">AI_MODEL</span><span class="o">=</span>claude-opus-4-6<span class="o">[</span>1m<span class="o">]</span><span class="w">         </span><span class="c1"># Model selection</span>
-<span class="nv">AI_CLI_TIMEOUT</span><span class="o">=</span><span class="m">60</span><span class="w">                    </span><span class="c1"># Timeout in minutes</span>
-</code></pre></div>
-
-<h3 id="authentication-variables">Authentication Variables</h3>
-<p>Only the variables for your chosen provider need to be set:</p>
-<p><strong>Claude (API Key):</strong></p>
-<div class="highlight"><pre><span></span><code><span class="nv">ANTHROPIC_API_KEY</span><span class="o">=</span>sk-ant-...
-</code></pre></div>
-
-<p><strong>Claude (Vertex AI):</strong></p>
-<div class="highlight"><pre><span></span><code><span class="nv">CLAUDE_CODE_USE_VERTEX</span><span class="o">=</span><span class="m">1</span>
-<span class="nv">CLOUD_ML_REGION</span><span class="o">=</span>us-central1
-<span class="nv">ANTHROPIC_VERTEX_PROJECT_ID</span><span class="o">=</span>my-gcp-project
-</code></pre></div>
-
-<p><strong>Gemini:</strong></p>
-<div class="highlight"><pre><span></span><code><span class="nv">GEMINI_API_KEY</span><span class="o">=</span>...
-</code></pre></div>
-
-<p><strong>Cursor:</strong></p>
-<div class="highlight"><pre><span></span><code><span class="nv">CURSOR_API_KEY</span><span class="o">=</span>...
-</code></pre></div>
-
-<h3 id="application-settings">Application Settings</h3>
-<div class="highlight"><pre><span></span><code><span class="nv">LOG_LEVEL</span><span class="o">=</span>INFO<span class="w">                        </span><span class="c1"># Options: DEBUG, INFO, WARNING, ERROR</span>
-</code></pre></div>
-
-<blockquote>
-<p><strong>Warning:</strong> Never commit your <code>.env</code> file to version control. It contains API keys and secrets. Ensure <code>.env</code> is listed in your <code>.gitignore</code>.</p>
-</blockquote>
 <h2 id="volume-mounts">Volume Mounts</h2>
-<p>docsfy uses three volume mounts, each serving a distinct purpose:</p>
+<p>docsfy uses three volume mounts to persist data and inject credentials into the container.</p>
 <h3 id="data-volume-datadata">Data Volume (<code>./data:/data</code>)</h3>
-<p>The primary persistent storage volume. Contains the SQLite database and all generated documentation:</p>
+<p>The primary storage volume. All generated documentation and the SQLite database live here.</p>
 <div class="highlight"><pre><span></span><code>/data/
-├── docsfy.db                          # SQLite metadata database
+├── docsfy.db                           # SQLite database (project metadata)
 └── projects/
     └── {project-name}/
-        ├── plan.json                  # Documentation structure from AI
+        ├── plan.json                   # Documentation structure from AI
         ├── cache/
-        │   └── pages/*.md             # AI-generated markdown (cached)
-        └── site/                      # Final rendered HTML
+        │   └── pages/*.md              # AI-generated markdown (cached)
+        └── site/                       # Final rendered HTML
             ├── index.html
             ├── *.html
             ├── assets/
@@ -423,225 +362,284 @@ docker<span class="w"> </span>compose<span class="w"> </span>down
             └── search-index.json
 </code></pre></div>
 
-<p>This volume is <strong>read-write</strong> and must persist across container restarts. Without it, all generated documentation and project metadata are lost.</p>
+<p>The SQLite database (<code>docsfy.db</code>) stores:</p>
+<ul>
+<li>Project name and repository URL</li>
+<li>Generation status (<code>generating</code>, <code>ready</code>, or <code>error</code>)</li>
+<li>Last generated timestamp and last commit SHA</li>
+<li>Generation history and logs</li>
+</ul>
 <blockquote>
-<p><strong>Tip:</strong> Back up the <code>./data</code> directory regularly in production. The SQLite database at <code>/data/docsfy.db</code> tracks project metadata including generation status, commit SHAs, and history.</p>
+<p><strong>Warning:</strong> Do not delete the <code>data</code> directory while the container is running. The SQLite database and cached markdown files are required for incremental updates.</p>
 </blockquote>
 <h3 id="google-cloud-credentials-configgcloudhomeappuserconfiggcloudro">Google Cloud Credentials (<code>~/.config/gcloud:/home/appuser/.config/gcloud:ro</code>)</h3>
-<p>Mounted <strong>read-only</strong> (<code>:ro</code>). Required only when using Gemini as the AI provider or Claude via Vertex AI. This bind-mounts your host's gcloud configuration into the container so the AI CLIs can authenticate with Google Cloud.</p>
-<p>If you are not using Google Cloud services, you can safely remove this mount:</p>
-<div class="highlight"><pre><span></span><code><span class="nt">volumes</span><span class="p">:</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./data:/data</span>
-<span class="w">  </span><span class="c1"># - ~/.config/gcloud:/home/appuser/.config/gcloud:ro  # Not needed</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./cursor:/home/appuser/.config/cursor</span>
+<p>Required only when using Claude via Vertex AI (<code>CLAUDE_CODE_USE_VERTEX=1</code>). This mount injects your host's Google Cloud SDK credentials into the container as <strong>read-only</strong>.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Ensure credentials exist on the host first</span>
+gcloud<span class="w"> </span>auth<span class="w"> </span>application-default<span class="w"> </span>login
 </code></pre></div>
 
+<blockquote>
+<p><strong>Tip:</strong> The <code>:ro</code> flag ensures the container cannot modify your host credentials.</p>
+</blockquote>
 <h3 id="cursor-configuration-cursorhomeappuserconfigcursor">Cursor Configuration (<code>./cursor:/home/appuser/.config/cursor</code>)</h3>
-<p>Stores Cursor CLI configuration. Required only when using Cursor as the AI provider. This is a <strong>read-write</strong> mount as the Cursor CLI may write runtime state.</p>
-<h2 id="health-checks">Health Checks</h2>
-<p>The container includes a built-in health check that probes the <code>/health</code> endpoint:</p>
-<div class="highlight"><pre><span></span><code><span class="nt">healthcheck</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">test</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;CMD&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;curl&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;-f&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;http://localhost:8000/health&quot;</span><span class="p p-Indicator">]</span>
-<span class="w">  </span><span class="nt">interval</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">30s</span>
-<span class="w">  </span><span class="nt">timeout</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10s</span>
-<span class="w">  </span><span class="nt">retries</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3</span>
+<p>Required only when using Cursor as the AI provider. This mount persists Cursor's configuration and authentication state across container restarts.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Create the directory before first run</span>
+mkdir<span class="w"> </span>-p<span class="w"> </span>./cursor
 </code></pre></div>
 
+<h2 id="environment-variables">Environment Variables</h2>
+<p>Create a <code>.env</code> file from the example template to configure your deployment:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># AI Configuration</span>
+<span class="nv">AI_PROVIDER</span><span class="o">=</span>claude<span class="w">                      </span><span class="c1"># Options: claude, cursor, gemini</span>
+<span class="nv">AI_MODEL</span><span class="o">=</span>claude-opus-4-6<span class="w">                </span><span class="c1"># Model specification</span>
+<span class="nv">AI_CLI_TIMEOUT</span><span class="o">=</span><span class="m">60</span><span class="w">                       </span><span class="c1"># Timeout per AI invocation (minutes)</span>
+
+<span class="c1"># Claude - Option 1: API Key Authentication</span>
+<span class="c1"># ANTHROPIC_API_KEY=sk-ant-...</span>
+
+<span class="c1"># Claude - Option 2: Vertex AI Authentication</span>
+<span class="c1"># CLAUDE_CODE_USE_VERTEX=1</span>
+<span class="c1"># CLOUD_ML_REGION=us-east5</span>
+<span class="c1"># ANTHROPIC_VERTEX_PROJECT_ID=my-gcp-project</span>
+
+<span class="c1"># Gemini</span>
+<span class="c1"># GEMINI_API_KEY=AIza...</span>
+
+<span class="c1"># Cursor</span>
+<span class="c1"># CURSOR_API_KEY=cur-...</span>
+
+<span class="c1"># Logging</span>
+<span class="nv">LOG_LEVEL</span><span class="o">=</span>INFO
+</code></pre></div>
+
+<h3 id="provider-specific-configuration">Provider-Specific Configuration</h3>
 <table>
 <thead>
 <tr>
-<th>Parameter</th>
-<th>Value</th>
-<th>Description</th>
+<th>Provider</th>
+<th>Required Variables</th>
+<th>Optional Volume</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>interval</code></td>
-<td>30s</td>
-<td>Time between health check probes</td>
+<td>Claude (API key)</td>
+<td><code>AI_PROVIDER=claude</code>, <code>ANTHROPIC_API_KEY</code></td>
+<td>—</td>
 </tr>
 <tr>
-<td><code>timeout</code></td>
-<td>10s</td>
-<td>Maximum wait time for a response</td>
+<td>Claude (Vertex AI)</td>
+<td><code>AI_PROVIDER=claude</code>, <code>CLAUDE_CODE_USE_VERTEX=1</code>, <code>CLOUD_ML_REGION</code>, <code>ANTHROPIC_VERTEX_PROJECT_ID</code></td>
+<td><code>~/.config/gcloud</code> (read-only)</td>
 </tr>
 <tr>
-<td><code>retries</code></td>
-<td>3</td>
-<td>Consecutive failures before marking unhealthy</td>
+<td>Gemini</td>
+<td><code>AI_PROVIDER=gemini</code>, <code>GEMINI_API_KEY</code></td>
+<td>—</td>
+</tr>
+<tr>
+<td>Cursor</td>
+<td><code>AI_PROVIDER=cursor</code>, <code>CURSOR_API_KEY</code></td>
+<td><code>./cursor</code></td>
 </tr>
 </tbody>
 </table>
-<p>The health check begins after the container starts. After 3 consecutive failures (90 seconds with default settings), Docker marks the container as <code>unhealthy</code>.</p>
-<h3 id="checking-health-status">Checking Health Status</h3>
-<div class="highlight"><pre><span></span><code><span class="c1"># View container health status</span>
-docker<span class="w"> </span>compose<span class="w"> </span>ps
-
-<span class="c1"># Inspect health check details</span>
-docker<span class="w"> </span>inspect<span class="w"> </span>--format<span class="o">=</span><span class="s1">&#39;{{json .State.Health}}&#39;</span><span class="w"> </span>docsfy-docsfy-1<span class="w"> </span><span class="p">|</span><span class="w"> </span>jq
+<blockquote>
+<p><strong>Warning:</strong> Never commit your <code>.env</code> file to version control. Add it to <code>.gitignore</code> and <code>.dockerignore</code>.</p>
+</blockquote>
+<h2 id="health-checks">Health Checks</h2>
+<p>docsfy exposes a <code>GET /health</code> endpoint for container orchestration and monitoring.</p>
+<h3 id="docker-compose-health-check">Docker Compose Health Check</h3>
+<p>The health check configuration in <code>docker-compose.yaml</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">healthcheck</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">test</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;CMD&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;curl&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;-f&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;http://localhost:8000/health&quot;</span><span class="p p-Indicator">]</span>
+<span class="w">  </span><span class="nt">interval</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">30s</span><span class="w">          </span><span class="c1"># Check every 30 seconds</span>
+<span class="w">  </span><span class="nt">timeout</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10s</span><span class="w">           </span><span class="c1"># Fail if no response within 10 seconds</span>
+<span class="w">  </span><span class="nt">retries</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3</span><span class="w">             </span><span class="c1"># Mark unhealthy after 3 consecutive failures</span>
 </code></pre></div>
 
-<h3 id="using-health-checks-with-orchestrators">Using Health Checks with Orchestrators</h3>
-<p>The health check integrates with orchestration tools:</p>
-<ul>
-<li><strong>Docker Compose:</strong> Use <code>depends_on</code> with <code>condition: service_healthy</code> to start dependent services only after docsfy is ready.</li>
-<li><strong>Kubernetes:</strong> Map the <code>/health</code> endpoint to a <code>livenessProbe</code> and <code>readinessProbe</code>.</li>
-<li><strong>Docker Swarm:</strong> Automatically restarts unhealthy containers.</li>
-</ul>
-<div class="highlight"><pre><span></span><code><span class="c1"># Example: dependent service waiting for docsfy</span>
-<span class="nt">services</span><span class="p">:</span>
+<h3 id="checking-health-status">Checking Health Status</h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Via Docker</span>
+docker<span class="w"> </span>inspect<span class="w"> </span>--format<span class="o">=</span><span class="s1">&#39;{{.State.Health.Status}}&#39;</span><span class="w"> </span>docsfy-docsfy-1
+
+<span class="c1"># Via curl</span>
+curl<span class="w"> </span>-f<span class="w"> </span>http://localhost:8000/health
+</code></pre></div>
+
+<h3 id="kubernetes-livenessreadiness-probes">Kubernetes Liveness/Readiness Probes</h3>
+<p>If deploying to Kubernetes, configure probes against the same endpoint:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">livenessProbe</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">httpGet</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/health</span>
+<span class="w">    </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">8000</span>
+<span class="w">  </span><span class="nt">initialDelaySeconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">15</span>
+<span class="w">  </span><span class="nt">periodSeconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">30</span>
+<span class="nt">readinessProbe</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">httpGet</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/health</span>
+<span class="w">    </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">8000</span>
+<span class="w">  </span><span class="nt">initialDelaySeconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span>
+<span class="w">  </span><span class="nt">periodSeconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10</span>
+</code></pre></div>
+
+<h2 id="production-deployment">Production Deployment</h2>
+<h3 id="running-with-a-pre-built-image">Running with a Pre-Built Image</h3>
+<p>For production, build and tag the image explicitly rather than using <code>build: .</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">services</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">docsfy</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">build</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">.</span>
+<span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">docsfy:1.0.0</span>
+<span class="w">    </span><span class="nt">ports</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;8000:8000&quot;</span>
+<span class="w">    </span><span class="nt">env_file</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">.env</span>
+<span class="w">    </span><span class="nt">volumes</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">docsfy-data:/data</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">~/.config/gcloud:/home/appuser/.config/gcloud:ro</span>
 <span class="w">    </span><span class="nt">healthcheck</span><span class="p">:</span>
 <span class="w">      </span><span class="nt">test</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;CMD&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;curl&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;-f&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;http://localhost:8000/health&quot;</span><span class="p p-Indicator">]</span>
 <span class="w">      </span><span class="nt">interval</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">30s</span>
 <span class="w">      </span><span class="nt">timeout</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10s</span>
 <span class="w">      </span><span class="nt">retries</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3</span>
-
-<span class="w">  </span><span class="nt">nginx</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">nginx:alpine</span>
-<span class="w">    </span><span class="nt">depends_on</span><span class="p">:</span>
-<span class="w">      </span><span class="nt">docsfy</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">condition</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">service_healthy</span>
-</code></pre></div>
-
-<h2 id="production-deployment-considerations">Production Deployment Considerations</h2>
-<h3 id="persistent-storage">Persistent Storage</h3>
-<p>For production, use named Docker volumes instead of bind mounts for the data directory:</p>
-<div class="highlight"><pre><span></span><code><span class="nt">services</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">docsfy</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">build</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">.</span>
-<span class="w">    </span><span class="nt">volumes</span><span class="p">:</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">docsfy-data:/data</span>
+<span class="w">    </span><span class="nt">restart</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">unless-stopped</span>
 
 <span class="nt">volumes</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">docsfy-data</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">driver</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">local</span>
-</code></pre></div>
-
-<p>Named volumes are managed by Docker and provide better performance on some platforms (notably Docker Desktop on macOS).</p>
-<h3 id="reverse-proxy">Reverse Proxy</h3>
-<p>In production, run docsfy behind a reverse proxy to handle TLS termination, rate limiting, and static asset caching:</p>
-<div class="highlight"><pre><span></span><code><span class="k">upstream</span><span class="w"> </span><span class="s">docsfy</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="kn">server</span><span class="w"> </span><span class="n">docsfy</span><span class="p">:</span><span class="mi">8000</span><span class="p">;</span>
-<span class="p">}</span>
-
-<span class="k">server</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="kn">listen</span><span class="w"> </span><span class="mi">443</span><span class="w"> </span><span class="s">ssl</span><span class="p">;</span>
-<span class="w">    </span><span class="kn">server_name</span><span class="w"> </span><span class="s">docs.example.com</span><span class="p">;</span>
-
-<span class="w">    </span><span class="kn">ssl_certificate</span><span class="w">     </span><span class="s">/etc/ssl/certs/cert.pem</span><span class="p">;</span>
-<span class="w">    </span><span class="kn">ssl_certificate_key</span><span class="w"> </span><span class="s">/etc/ssl/private/key.pem</span><span class="p">;</span>
-
-<span class="w">    </span><span class="kn">location</span><span class="w"> </span><span class="s">/</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="kn">proxy_pass</span><span class="w"> </span><span class="s">http://docsfy</span><span class="p">;</span>
-<span class="w">        </span><span class="kn">proxy_set_header</span><span class="w"> </span><span class="s">Host</span><span class="w"> </span><span class="nv">$host</span><span class="p">;</span>
-<span class="w">        </span><span class="kn">proxy_set_header</span><span class="w"> </span><span class="s">X-Real-IP</span><span class="w"> </span><span class="nv">$remote_addr</span><span class="p">;</span>
-<span class="w">        </span><span class="kn">proxy_set_header</span><span class="w"> </span><span class="s">X-Forwarded-For</span><span class="w"> </span><span class="nv">$proxy_add_x_forwarded_for</span><span class="p">;</span>
-<span class="w">        </span><span class="kn">proxy_set_header</span><span class="w"> </span><span class="s">X-Forwarded-Proto</span><span class="w"> </span><span class="nv">$scheme</span><span class="p">;</span>
-<span class="w">    </span><span class="p">}</span>
-
-<span class="w">    </span><span class="c1"># Cache generated static documentation assets</span>
-<span class="w">    </span><span class="kn">location</span><span class="w"> </span><span class="s">/docs/</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="kn">proxy_pass</span><span class="w"> </span><span class="s">http://docsfy</span><span class="p">;</span>
-<span class="w">        </span><span class="kn">proxy_cache_valid</span><span class="w"> </span><span class="mi">200</span><span class="w"> </span><span class="mi">10m</span><span class="p">;</span>
-<span class="w">    </span><span class="p">}</span>
-<span class="p">}</span>
-</code></pre></div>
-
-<h3 id="resource-limits">Resource Limits</h3>
-<p>AI CLI operations are resource-intensive. Set appropriate container resource limits:</p>
-<div class="highlight"><pre><span></span><code><span class="nt">services</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">docsfy</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">build</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">.</span>
-<span class="w">    </span><span class="nt">deploy</span><span class="p">:</span>
-<span class="w">      </span><span class="nt">resources</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">limits</span><span class="p">:</span>
-<span class="w">          </span><span class="nt">memory</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">4G</span>
-<span class="w">          </span><span class="nt">cpus</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;2.0&quot;</span>
-<span class="w">        </span><span class="nt">reservations</span><span class="p">:</span>
-<span class="w">          </span><span class="nt">memory</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1G</span>
-<span class="w">          </span><span class="nt">cpus</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;0.5&quot;</span>
 </code></pre></div>
 
 <blockquote>
-<p><strong>Note:</strong> The <code>AI_CLI_TIMEOUT</code> environment variable (default: 60 minutes) controls how long individual AI CLI invocations can run. Adjust this based on the size of repositories you expect to process.</p>
+<p><strong>Tip:</strong> Use a named volume (<code>docsfy-data</code>) instead of a bind mount for production deployments. Named volumes are managed by Docker and are less likely to encounter permission issues.</p>
 </blockquote>
-<h3 id="security-hardening">Security Hardening</h3>
-<ol>
-<li>
-<p><strong>Read-only root filesystem:</strong> Mount the container filesystem as read-only, with explicit writable mounts for <code>/data</code> and <code>/tmp</code>:</p>
-<p><code>yaml
-services:
-  docsfy:
-    build: .
-    read_only: true
-    tmpfs:
-      - /tmp
-    volumes:
-      - docsfy-data:/data</code></p>
-</li>
-<li>
-<p><strong>Drop capabilities:</strong> Reduce the container's Linux capabilities to the minimum needed:</p>
-<p><code>yaml
-services:
-  docsfy:
-    cap_drop:
-      - ALL
-    cap_add:
-      - NET_RAW    # Required for health check curl</code></p>
-</li>
-<li>
-<p><strong>Network isolation:</strong> Place docsfy in an internal network if it only needs to be reached via a reverse proxy:</p>
-<p>```yaml
-services:
-  docsfy:
-    networks:
-      - internal</p>
-<p>nginx:
-    networks:
-      - internal
-      - external</p>
-<p>networks:
-  internal:
-    internal: true
-  external:
-```</p>
-</li>
-</ol>
-<h3 id="backup-strategy">Backup Strategy</h3>
-<p>The SQLite database and cached markdown files should be backed up regularly:</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># Stop the service to ensure database consistency</span>
-docker<span class="w"> </span>compose<span class="w"> </span>stop<span class="w"> </span>docsfy
-
-<span class="c1"># Back up the data directory</span>
-tar<span class="w"> </span>czf<span class="w"> </span>docsfy-backup-<span class="k">$(</span>date<span class="w"> </span>+%Y%m%d<span class="k">)</span>.tar.gz<span class="w"> </span>./data/
-
-<span class="c1"># Restart the service</span>
-docker<span class="w"> </span>compose<span class="w"> </span>start<span class="w"> </span>docsfy
+<h3 id="restart-policy">Restart Policy</h3>
+<p>Always set a restart policy for production:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">restart</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">unless-stopped</span>
 </code></pre></div>
 
-<p>For zero-downtime backups, use SQLite's <code>.backup</code> command:</p>
-<div class="highlight"><pre><span></span><code>docker<span class="w"> </span>compose<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>docsfy<span class="w"> </span>sqlite3<span class="w"> </span>/data/docsfy.db<span class="w"> </span><span class="s2">&quot;.backup &#39;/data/docsfy-backup.db&#39;&quot;</span>
+<p>This ensures the container automatically recovers from crashes while still respecting manual <code>docker compose stop</code> commands.</p>
+<h3 id="resource-limits">Resource Limits</h3>
+<p>Documentation generation is CPU- and memory-intensive due to AI CLI invocations. Set appropriate resource constraints:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">services</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">docsfy</span><span class="p">:</span>
+<span class="w">    </span><span class="c1"># ...</span>
+<span class="w">    </span><span class="nt">deploy</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">resources</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">limits</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">cpus</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;4.0&quot;</span>
+<span class="w">          </span><span class="nt">memory</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">4G</span>
+<span class="w">        </span><span class="nt">reservations</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">cpus</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;1.0&quot;</span>
+<span class="w">          </span><span class="nt">memory</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1G</span>
+</code></pre></div>
+
+<h3 id="reverse-proxy">Reverse Proxy</h3>
+<p>In production, place docsfy behind a reverse proxy (nginx, Caddy, Traefik) to handle TLS termination, rate limiting, and static asset caching.</p>
+<p>Example with Traefik labels:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">services</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">docsfy</span><span class="p">:</span>
+<span class="w">    </span><span class="c1"># ...</span>
+<span class="w">    </span><span class="nt">labels</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;traefik.enable=true&quot;</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;traefik.http.routers.docsfy.rule=Host(`docs.example.com`)&quot;</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;traefik.http.routers.docsfy.tls.certresolver=letsencrypt&quot;</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;traefik.http.services.docsfy.loadbalancer.server.port=8000&quot;</span>
 </code></pre></div>
 
 <h3 id="logging">Logging</h3>
-<p>Configure log output for production observability:</p>
-<div class="highlight"><pre><span></span><code><span class="nt">services</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">docsfy</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">build</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">.</span>
-<span class="w">    </span><span class="nt">environment</span><span class="p">:</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">LOG_LEVEL=WARNING</span>
-<span class="w">    </span><span class="nt">logging</span><span class="p">:</span>
-<span class="w">      </span><span class="nt">driver</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">json-file</span>
-<span class="w">      </span><span class="nt">options</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">max-size</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;10m&quot;</span>
-<span class="w">        </span><span class="nt">max-file</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;3&quot;</span>
+<p>Control log verbosity via the <code>LOG_LEVEL</code> environment variable:</p>
+<div class="highlight"><pre><span></span><code><span class="nv">LOG_LEVEL</span><span class="o">=</span>INFO<span class="w">      </span><span class="c1"># Default — request logs and generation status</span>
+<span class="nv">LOG_LEVEL</span><span class="o">=</span>DEBUG<span class="w">     </span><span class="c1"># Verbose — includes AI CLI output and subprocess details</span>
+<span class="nv">LOG_LEVEL</span><span class="o">=</span>WARNING<span class="w">   </span><span class="c1"># Quiet — only warnings and errors</span>
 </code></pre></div>
 
+<p>View container logs:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Follow logs</span>
+docker<span class="w"> </span>compose<span class="w"> </span>logs<span class="w"> </span>-f<span class="w"> </span>docsfy
+
+<span class="c1"># Last 100 lines</span>
+docker<span class="w"> </span>compose<span class="w"> </span>logs<span class="w"> </span>--tail<span class="w"> </span><span class="m">100</span><span class="w"> </span>docsfy
+</code></pre></div>
+
+<h3 id="backup-strategy">Backup Strategy</h3>
+<p>Back up the <code>/data</code> volume regularly to preserve generated documentation and project metadata:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Stop the service to ensure SQLite consistency</span>
+docker<span class="w"> </span>compose<span class="w"> </span>stop<span class="w"> </span>docsfy
+
+<span class="c1"># Create a backup archive</span>
+tar<span class="w"> </span>-czf<span class="w"> </span>docsfy-backup-<span class="k">$(</span>date<span class="w"> </span>+%Y%m%d<span class="k">)</span>.tar.gz<span class="w"> </span>./data/
+
+<span class="c1"># Restart</span>
+docker<span class="w"> </span>compose<span class="w"> </span>start<span class="w"> </span>docsfy
+</code></pre></div>
+
+<blockquote>
+<p><strong>Tip:</strong> For zero-downtime backups, use SQLite's <code>.backup</code> command on the database file while the service is running, then archive the projects directory separately.</p>
+</blockquote>
+<h3 id="security-considerations">Security Considerations</h3>
+<p>The docsfy container follows security best practices:</p>
+<ul>
+<li><strong>Non-root execution</strong> — The container runs as <code>appuser</code> (not root), with GID 0 for OpenShift compatibility</li>
+<li><strong>Read-only credential mounts</strong> — GCP credentials are mounted with the <code>:ro</code> flag</li>
+<li><strong>No privileged mode</strong> — The container does not require <code>--privileged</code></li>
+<li><strong>Secrets via environment</strong> — API keys are injected through <code>.env</code> files, never baked into the image</li>
+</ul>
+<p>For additional hardening:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">services</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">docsfy</span><span class="p">:</span>
+<span class="w">    </span><span class="c1"># ...</span>
+<span class="w">    </span><span class="nt">security_opt</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">no-new-privileges:true</span>
+<span class="w">    </span><span class="nt">read_only</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">    </span><span class="nt">tmpfs</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/tmp</span>
+</code></pre></div>
+
+<blockquote>
+<p><strong>Warning:</strong> When using <code>read_only: true</code>, ensure the <code>/data</code> volume is properly mounted as writable, and add a <code>tmpfs</code> mount at <code>/tmp</code> since the generation pipeline uses temporary directories for cloning repositories.</p>
+</blockquote>
 <h3 id="openshift-deployment">OpenShift Deployment</h3>
-<p>docsfy is designed to be OpenShift-compatible. The <code>appuser</code> runs with GID 0, which satisfies OpenShift's restricted SCC. No additional configuration is required — the image works under OpenShift's arbitrary UID assignment out of the box.</p>
+<p>docsfy is designed for OpenShift compatibility. The <code>appuser</code> account uses GID 0, which allows OpenShift's random UID assignment to work correctly:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">securityContext</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">runAsNonRoot</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</code></pre></div>
+
+<p>No special SCCs (Security Context Constraints) are required.</p>
+<h2 id="quick-reference">Quick Reference</h2>
+<table>
+<thead>
+<tr>
+<th>Action</th>
+<th>Command</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Build image</td>
+<td><code>docker build -t docsfy .</code></td>
+</tr>
+<tr>
+<td>Start service</td>
+<td><code>docker compose up -d</code></td>
+</tr>
+<tr>
+<td>Stop service</td>
+<td><code>docker compose stop</code></td>
+</tr>
+<tr>
+<td>View logs</td>
+<td><code>docker compose logs -f docsfy</code></td>
+</tr>
+<tr>
+<td>Check health</td>
+<td><code>curl http://localhost:8000/health</code></td>
+</tr>
+<tr>
+<td>Rebuild image</td>
+<td><code>docker compose build --no-cache</code></td>
+</tr>
+<tr>
+<td>Remove everything</td>
+<td><code>docker compose down -v</code></td>
+</tr>
+</tbody>
+</table>
                 </div>
             </article>
             <nav class="page-nav">
@@ -664,45 +662,41 @@ docker<span class="w"> </span>compose<span class="w"> </span>start<span class="w
                     <h3>On this page</h3>
                     <div class="toc">
 <ul>
-<li><a href="#dockerfile-structure">Dockerfile Structure</a><ul>
-<li><a href="#base-image-and-system-dependencies">Base Image and System Dependencies</a></li>
-<li><a href="#package-management-with-uv">Package Management with uv</a></li>
-<li><a href="#ai-cli-installation">AI CLI Installation</a></li>
-<li><a href="#non-root-user">Non-Root User</a></li>
+<li><a href="#prerequisites">Prerequisites</a></li>
+<li><a href="#dockerfile">Dockerfile</a><ul>
+<li><a href="#ai-cli-tools">AI CLI Tools</a></li>
+<li><a href="#building-the-image">Building the Image</a></li>
 </ul>
 </li>
-<li><a href="#docker-composeyaml">docker-compose.yaml</a><ul>
-<li><a href="#starting-the-service">Starting the Service</a></li>
-<li><a href="#port-configuration">Port Configuration</a></li>
-</ul>
-</li>
-<li><a href="#environment-variables">Environment Variables</a><ul>
-<li><a href="#ai-provider-configuration">AI Provider Configuration</a></li>
-<li><a href="#authentication-variables">Authentication Variables</a></li>
-<li><a href="#application-settings">Application Settings</a></li>
-</ul>
-</li>
+<li><a href="#docker-compose">Docker Compose</a></li>
 <li><a href="#volume-mounts">Volume Mounts</a><ul>
 <li><a href="#data-volume-datadata">Data Volume (./data:/data)</a></li>
 <li><a href="#google-cloud-credentials-configgcloudhomeappuserconfiggcloudro">Google Cloud Credentials (~/.config/gcloud:/home/appuser/.config/gcloud:ro)</a></li>
 <li><a href="#cursor-configuration-cursorhomeappuserconfigcursor">Cursor Configuration (./cursor:/home/appuser/.config/cursor)</a></li>
 </ul>
 </li>
-<li><a href="#health-checks">Health Checks</a><ul>
-<li><a href="#checking-health-status">Checking Health Status</a></li>
-<li><a href="#using-health-checks-with-orchestrators">Using Health Checks with Orchestrators</a></li>
+<li><a href="#environment-variables">Environment Variables</a><ul>
+<li><a href="#provider-specific-configuration">Provider-Specific Configuration</a></li>
 </ul>
 </li>
-<li><a href="#production-deployment-considerations">Production Deployment Considerations</a><ul>
-<li><a href="#persistent-storage">Persistent Storage</a></li>
-<li><a href="#reverse-proxy">Reverse Proxy</a></li>
+<li><a href="#health-checks">Health Checks</a><ul>
+<li><a href="#docker-compose-health-check">Docker Compose Health Check</a></li>
+<li><a href="#checking-health-status">Checking Health Status</a></li>
+<li><a href="#kubernetes-livenessreadiness-probes">Kubernetes Liveness/Readiness Probes</a></li>
+</ul>
+</li>
+<li><a href="#production-deployment">Production Deployment</a><ul>
+<li><a href="#running-with-a-pre-built-image">Running with a Pre-Built Image</a></li>
+<li><a href="#restart-policy">Restart Policy</a></li>
 <li><a href="#resource-limits">Resource Limits</a></li>
-<li><a href="#security-hardening">Security Hardening</a></li>
-<li><a href="#backup-strategy">Backup Strategy</a></li>
+<li><a href="#reverse-proxy">Reverse Proxy</a></li>
 <li><a href="#logging">Logging</a></li>
+<li><a href="#backup-strategy">Backup Strategy</a></li>
+<li><a href="#security-considerations">Security Considerations</a></li>
 <li><a href="#openshift-deployment">OpenShift Deployment</a></li>
 </ul>
 </li>
+<li><a href="#quick-reference">Quick Reference</a></li>
 </ul>
 </div>
 

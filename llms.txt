@@ -1,43 +1,42 @@
 # docsfy
 
-> AI-powered documentation generator that creates polished, Mintlify-quality static HTML sites from GitHub repositories
+> AI-powered documentation generator that creates polished, Mintlify-quality static HTML sites from GitHub repositories.
 
 ## Getting Started
 
-- [Introduction](introduction.html): Overview of docsfy, what it does, why it exists, and how it uses AI CLI tools to generate professional documentation from GitHub repositories
-- [Quickstart](quickstart.html): Get docsfy running in under 5 minutes with Docker Compose, generate your first documentation site, and view the results
-- [Installation](installation.html): Detailed installation options including Docker, Docker Compose, and local development setup with uv and Python 3.12+
+- [Introduction](introduction.md): Overview of docsfy, what it does, why it exists, and how it uses AI CLI tools to generate professional documentation from GitHub repositories.
+- [Quickstart](quickstart.md): Get docsfy running in under 5 minutes: install prerequisites, configure an AI provider, and generate your first documentation site.
+- [Installation](installation.md): Detailed installation instructions covering Docker deployment, local development setup, Python and uv requirements, and AI CLI binary installation.
 
 ## Configuration
 
-- [Environment Variables](environment-variables.html): Complete reference for all environment variables including AI_PROVIDER, AI_MODEL, AI_CLI_TIMEOUT, authentication keys, and logging settings
-- [AI Providers](ai-providers.html): How to configure and switch between supported AI providers: Claude Code, Gemini CLI, and Cursor Agent, including authentication options for each
-- [Docker Deployment](docker-deployment.html): Dockerfile structure, docker-compose.yaml configuration, volume mounts, health checks, and production deployment considerations
+- [Environment Variables](environment-variables.md): Complete reference for all environment variables including AI_PROVIDER, AI_MODEL, AI_CLI_TIMEOUT, API keys, and logging configuration.
+- [AI Providers](ai-providers.md): How to configure and switch between supported AI providers: Claude Code, Gemini CLI, and Cursor Agent, including authentication setup for each.
+- [Docker Deployment](docker-deployment.md): Docker and Docker Compose configuration, volume mounts for data persistence and credentials, health checks, and production deployment guidance.
 
 ## Usage
 
-- [Generating Documentation](generating-docs.html): How to trigger documentation generation for a GitHub repository via the API, including public and private repo support
-- [Serving Documentation](serving-docs.html): How to serve generated documentation directly from docsfy or download as a tar.gz archive for self-hosting
-- [Incremental Updates](incremental-updates.html): How docsfy tracks repository changes via commit SHA and intelligently regenerates only affected pages for efficiency
+- [Generating Documentation](generating-docs.md): How to trigger documentation generation for a GitHub repository, monitor progress, and access the finished site via the API or browser.
+- [Incremental Updates](incremental-updates.md): How docsfy tracks repository commits and regenerates only affected pages, reducing generation time and AI usage on subsequent runs.
+- [Downloading & Self-Hosting](downloading-and-self-hosting.md): How to download generated documentation as a tar.gz archive and deploy the static HTML site to your own hosting provider.
+- [Managing Projects](managing-projects.md): Listing, inspecting, and deleting documentation projects through the API, including status tracking and generation history.
 
 ## Architecture
 
-- [Generation Pipeline](generation-pipeline.html): Deep dive into the four-stage pipeline: repository cloning, AI planning (plan.json), AI content generation, and HTML rendering
-- [AI CLI Integration](ai-cli-integration.html): How docsfy invokes AI CLI tools, the ProviderConfig pattern, subprocess execution, JSON response parsing strategies, and timeout handling
-- [Storage & Database](storage-and-database.html): SQLite database schema for project metadata, filesystem layout for cached markdown and rendered HTML sites, and the search index
-- [HTML Renderer](html-renderer.html): Jinja2 templating, bundled CSS/JS assets, sidebar navigation, dark/light theme toggle, client-side search, code highlighting, and responsive design
+- [Generation Pipeline](generation-pipeline.md): Deep dive into the four-stage pipeline: repository cloning, AI-driven planning, concurrent content generation, and HTML rendering with Jinja2.
+- [Storage & Database](storage-and-database.md): How docsfy stores data using SQLite for project metadata and the filesystem for cached markdown, plan files, and rendered HTML sites.
+- [HTML Theming & Output](html-theming.md): Overview of the generated HTML site features: sidebar navigation, dark/light theme toggle, client-side search, syntax highlighting, callout boxes, and responsive design.
 
 ## API Reference
 
-- [POST /api/generate](api-generate.html): Start documentation generation for a GitHub repository URL, including request body format and response structure
-- [GET /api/status](api-status.html): List all projects and their current generation status (generating, ready, or error)
-- [GET /api/projects/{name}](api-projects.html): Retrieve project details including last generated timestamp, commit SHA, and list of generated pages
-- [DELETE /api/projects/{name}](api-projects-delete.html): Remove a project and all its generated documentation from the server
-- [GET /api/projects/{name}/download](api-projects-download.html): Download the complete generated documentation site as a .tar.gz archive for self-hosting
-- [GET /docs/{project}/{path}](api-docs-serving.html): Serve generated static HTML documentation pages directly from the docsfy server
-- [GET /health](api-health.html): Health check endpoint for container orchestration and monitoring
+- [API Overview](api-overview.md): Introduction to the docsfy REST API, base URL, request/response formats, and authentication requirements.
+- [POST /api/generate](api-generate.md): Start documentation generation for a GitHub repository URL, including request body schema, response format, and error handling.
+- [GET /api/status](api-status.md): List all tracked projects with their current generation status, last generated timestamp, and commit SHA.
+- [Project Endpoints](api-projects.md): GET, DELETE, and download endpoints for individual projects: retrieve details, remove projects, and export sites as tar.gz archives.
+- [GET /docs/{project}/{path}](api-docs-serving.md): How docsfy serves generated HTML documentation directly, including URL routing and path resolution.
+- [GET /health](api-health.md): Health check endpoint used for container orchestration, monitoring, and load balancer readiness probes.
 
 ## Development
 
-- [Contributing](contributing.html): Development setup, pre-commit hooks (ruff, mypy, flake8, gitleaks), tox test runner, code quality standards, and how to submit changes
-- [Technology Stack](tech-stack.html): Overview of core technologies: FastAPI, Jinja2, SQLite, hatchling, uv, highlight.js, and client-side search implementation
+- [Contributing](contributing.md): Development workflow, code style conventions, pre-commit hooks (ruff, mypy, flake8, gitleaks), and how to run the test suite with tox.
+- [Project Structure](project-structure.md): Directory layout, module organization, key source files, and how the FastAPI application, AI provider integrations, and rendering engine fit together.

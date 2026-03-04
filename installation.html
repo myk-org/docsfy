@@ -4,14 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Installation - docsfy</title>
-    <meta name="description" content="AI-powered documentation generator that creates polished, Mintlify-quality static HTML sites from GitHub repositories">
+    <meta name="description" content="AI-powered documentation generator that creates polished, Mintlify-quality static HTML sites from GitHub repositories.">
     <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <a href="index.html" class="sidebar-logo">docsfy</a>
-            <p class="sidebar-tagline">AI-powered documentation generator that creates polished, Mintlify-quality static HTML sites from GitHub repositories</p>
+            <p class="sidebar-tagline">AI-powered documentation generator that creates polished, Mintlify-quality static HTML sites from GitHub repositories.</p>
         </div>
 
         <div class="sidebar-search">
@@ -89,16 +89,23 @@
                     </li>
                     
                     <li>
-                        <a href="serving-docs.html"
+                        <a href="incremental-updates.html"
                            class="nav-link">
-                            Serving Documentation
+                            Incremental Updates
                         </a>
                     </li>
                     
                     <li>
-                        <a href="incremental-updates.html"
+                        <a href="downloading-and-self-hosting.html"
                            class="nav-link">
-                            Incremental Updates
+                            Downloading &amp; Self-Hosting
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="managing-projects.html"
+                           class="nav-link">
+                            Managing Projects
                         </a>
                     </li>
                     
@@ -117,13 +124,6 @@
                     </li>
                     
                     <li>
-                        <a href="ai-cli-integration.html"
-                           class="nav-link">
-                            AI CLI Integration
-                        </a>
-                    </li>
-                    
-                    <li>
                         <a href="storage-and-database.html"
                            class="nav-link">
                             Storage &amp; Database
@@ -131,9 +131,9 @@
                     </li>
                     
                     <li>
-                        <a href="html-renderer.html"
+                        <a href="html-theming.html"
                            class="nav-link">
-                            HTML Renderer
+                            HTML Theming &amp; Output
                         </a>
                     </li>
                     
@@ -143,6 +143,13 @@
             <div class="nav-group">
                 <h3 class="nav-group-title">API Reference</h3>
                 <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="api-overview.html"
+                           class="nav-link">
+                            API Overview
+                        </a>
+                    </li>
                     
                     <li>
                         <a href="api-generate.html"
@@ -161,21 +168,7 @@
                     <li>
                         <a href="api-projects.html"
                            class="nav-link">
-                            GET /api/projects/{name}
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="api-projects-delete.html"
-                           class="nav-link">
-                            DELETE /api/projects/{name}
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="api-projects-download.html"
-                           class="nav-link">
-                            GET /api/projects/{name}/download
+                            Project Endpoints
                         </a>
                     </li>
                     
@@ -208,9 +201,9 @@
                     </li>
                     
                     <li>
-                        <a href="tech-stack.html"
+                        <a href="project-structure.html"
                            class="nav-link">
-                            Technology Stack
+                            Project Structure
                         </a>
                     </li>
                     
@@ -257,65 +250,44 @@
                 <h1 class="article-title">Installation</h1>
                 <div class="article-body">
                     <h1 id="installation">Installation</h1>
-<p>docsfy can be installed using Docker (recommended), Docker Compose, or directly from source for local development.</p>
+<p>docsfy can be deployed using Docker (recommended) or set up locally for development. This guide covers both approaches, along with the required AI CLI binary installation.</p>
 <h2 id="prerequisites">Prerequisites</h2>
 <p>Before installing docsfy, ensure you have the following:</p>
 <ul>
+<li><strong>Python 3.12+</strong></li>
+<li><strong><a href="https://docs.astral.sh/uv/">uv</a></strong> — the sole package manager (pip is not supported)</li>
 <li><strong>Git</strong> — for cloning repositories during documentation generation</li>
-<li>An API key or credentials for at least one supported AI provider:</li>
-<li><a href="https://claude.ai">Claude Code</a> (default) — requires <code>ANTHROPIC_API_KEY</code> or Vertex AI credentials</li>
-<li><a href="https://github.com/google-gemini/gemini-cli">Gemini CLI</a> — requires <code>GEMINI_API_KEY</code></li>
-<li><a href="https://cursor.com">Cursor Agent</a> — requires <code>CURSOR_API_KEY</code></li>
+<li><strong>Node.js and npm</strong> — required if using the Gemini CLI provider</li>
 </ul>
-<h2 id="docker-recommended">Docker (Recommended)</h2>
-<p>Docker is the recommended installation method. The image includes all system dependencies, AI CLI tools, and a non-root user configured for security.</p>
-<h3 id="build-the-image">Build the Image</h3>
+<p>For Docker deployment:</p>
+<ul>
+<li><strong>Docker</strong> and <strong>Docker Compose</strong></li>
+</ul>
+<h2 id="docker-deployment-recommended">Docker Deployment (Recommended)</h2>
+<p>Docker is the recommended way to run docsfy. The image includes all system dependencies, AI CLI binaries, and the application itself.</p>
+<h3 id="1-clone-the-repository">1. Clone the Repository</h3>
 <div class="highlight"><pre><span></span><code>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/your-org/docsfy.git
 <span class="nb">cd</span><span class="w"> </span>docsfy
-docker<span class="w"> </span>build<span class="w"> </span>-t<span class="w"> </span>docsfy<span class="w"> </span>.
 </code></pre></div>
 
-<p>The multi-stage Dockerfile uses <code>python:3.12-slim</code> as the base image and installs:</p>
-<ul>
-<li>System dependencies: <code>bash</code>, <code>git</code>, <code>curl</code>, <code>nodejs</code>, <code>npm</code>, <code>ca-certificates</code></li>
-<li>Python package manager: <code>uv</code></li>
-<li>AI CLI tools: Claude Code, Cursor Agent, and Gemini CLI</li>
-</ul>
-<h3 id="run-the-container">Run the Container</h3>
-<div class="highlight"><pre><span></span><code>docker<span class="w"> </span>run<span class="w"> </span>-d<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--name<span class="w"> </span>docsfy<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-p<span class="w"> </span><span class="m">8000</span>:8000<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-v<span class="w"> </span>./data:/data<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--env-file<span class="w"> </span>.env<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>docsfy
-</code></pre></div>
-
-<p>This maps port <code>8000</code> and mounts a local <code>./data</code> directory for persistent storage of the SQLite database and generated documentation sites.</p>
-<h3 id="verify-the-installation">Verify the Installation</h3>
-<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>http://localhost:8000/health
-</code></pre></div>
-
-<p>A healthy instance returns a success response on the <code>/health</code> endpoint.</p>
-<h2 id="docker-compose">Docker Compose</h2>
-<p>Docker Compose is the easiest way to run docsfy with all required volumes and configuration.</p>
-<h3 id="1-create-a-env-file">1. Create a <code>.env</code> File</h3>
-<p>Copy the environment template and configure your AI provider credentials:</p>
+<h3 id="2-configure-environment-variables">2. Configure Environment Variables</h3>
+<p>Copy the example environment file and fill in your credentials:</p>
 <div class="highlight"><pre><span></span><code>cp<span class="w"> </span>.env.example<span class="w"> </span>.env
 </code></pre></div>
 
-<p>Edit <code>.env</code> with your settings:</p>
+<p>Edit <code>.env</code> with your AI provider credentials:</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># AI Configuration</span>
 <span class="nv">AI_PROVIDER</span><span class="o">=</span>claude
 <span class="nv">AI_MODEL</span><span class="o">=</span>claude-opus-4-6<span class="o">[</span>1m<span class="o">]</span>
 <span class="nv">AI_CLI_TIMEOUT</span><span class="o">=</span><span class="m">60</span>
 
 <span class="c1"># Claude - Option 1: API Key</span>
-<span class="nv">ANTHROPIC_API_KEY</span><span class="o">=</span>sk-ant-...
+<span class="c1"># ANTHROPIC_API_KEY=</span>
 
 <span class="c1"># Claude - Option 2: Vertex AI</span>
 <span class="c1"># CLAUDE_CODE_USE_VERTEX=1</span>
-<span class="c1"># CLOUD_ML_REGION=us-central1</span>
-<span class="c1"># ANTHROPIC_VERTEX_PROJECT_ID=my-gcp-project</span>
+<span class="c1"># CLOUD_ML_REGION=</span>
+<span class="c1"># ANTHROPIC_VERTEX_PROJECT_ID=</span>
 
 <span class="c1"># Gemini</span>
 <span class="c1"># GEMINI_API_KEY=</span>
@@ -327,11 +299,14 @@ docker<span class="w"> </span>build<span class="w"> </span>-t<span class="w"> </
 <span class="nv">LOG_LEVEL</span><span class="o">=</span>INFO
 </code></pre></div>
 
-<h3 id="2-start-the-service">2. Start the Service</h3>
+<blockquote>
+<p><strong>Note:</strong> You only need to configure credentials for the AI provider you intend to use. The default provider is <code>claude</code>.</p>
+</blockquote>
+<h3 id="3-start-the-service">3. Start the Service</h3>
 <div class="highlight"><pre><span></span><code>docker<span class="w"> </span>compose<span class="w"> </span>up<span class="w"> </span>-d
 </code></pre></div>
 
-<p>This uses the following <code>docker-compose.yaml</code> configuration:</p>
+<p>This builds and starts the docsfy service using the following <code>docker-compose.yaml</code> configuration:</p>
 <div class="highlight"><pre><span></span><code><span class="nt">services</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">docsfy</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">build</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">.</span>
@@ -349,145 +324,189 @@ docker<span class="w"> </span>build<span class="w"> </span>-t<span class="w"> </
 <span class="w">      </span><span class="nt">retries</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3</span>
 </code></pre></div>
 
+<h3 id="4-verify-the-installation">4. Verify the Installation</h3>
+<p>Check that the service is healthy:</p>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>http://localhost:8000/health
+</code></pre></div>
+
+<p>Or check container status:</p>
+<div class="highlight"><pre><span></span><code>docker<span class="w"> </span>compose<span class="w"> </span>ps
+</code></pre></div>
+
 <h3 id="volume-mounts">Volume Mounts</h3>
+<p>The Docker setup uses three volume mounts:</p>
 <table>
 <thead>
 <tr>
-<th>Mount</th>
+<th>Host Path</th>
+<th>Container Path</th>
+<th>Mode</th>
 <th>Purpose</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>./data:/data</code></td>
-<td>Persistent storage for the SQLite database (<code>docsfy.db</code>) and generated project sites</td>
+<td><code>./data</code></td>
+<td><code>/data</code></td>
+<td>read-write</td>
+<td>SQLite database and generated project files</td>
 </tr>
 <tr>
-<td><code>~/.config/gcloud:/home/appuser/.config/gcloud:ro</code></td>
-<td>GCP credentials for Claude via Vertex AI (read-only)</td>
+<td><code>~/.config/gcloud</code></td>
+<td><code>/home/appuser/.config/gcloud</code></td>
+<td>read-only</td>
+<td>Google Cloud credentials (for Vertex AI)</td>
 </tr>
 <tr>
-<td><code>./cursor:/home/appuser/.config/cursor</code></td>
-<td>Cursor configuration directory</td>
+<td><code>./cursor</code></td>
+<td><code>/home/appuser/.config/cursor</code></td>
+<td>read-write</td>
+<td>Cursor CLI configuration</td>
 </tr>
 </tbody>
 </table>
 <blockquote>
-<p><strong>Tip:</strong> If you are using Claude with an API key (<code>ANTHROPIC_API_KEY</code>) rather than Vertex AI, you can omit the <code>gcloud</code> volume mount. Similarly, omit the <code>cursor</code> mount if you are not using the Cursor provider.</p>
+<p><strong>Tip:</strong> The <code>./data</code> directory is where all persistent state lives — the SQLite database at <code>/data/docsfy.db</code> and generated documentation sites under <code>/data/projects/</code>. Back up this directory to preserve your generated documentation.</p>
 </blockquote>
-<h3 id="3-check-service-health">3. Check Service Health</h3>
-<div class="highlight"><pre><span></span><code>docker<span class="w"> </span>compose<span class="w"> </span>ps
-</code></pre></div>
-
-<p>The health check polls <code>http://localhost:8000/health</code> every 30 seconds and marks the container as unhealthy after 3 consecutive failures.</p>
-<h2 id="local-development-setup">Local Development Setup</h2>
-<p>For contributing to docsfy or running it outside of Docker, you can set up a local development environment.</p>
-<h3 id="requirements">Requirements</h3>
+<h3 id="docker-image-details">Docker Image Details</h3>
+<p>The Dockerfile uses a multi-stage build with the following specifications:</p>
 <table>
 <thead>
 <tr>
-<th>Requirement</th>
-<th>Version</th>
+<th>Aspect</th>
+<th>Detail</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Python</td>
-<td>3.12+</td>
+<td>Base image</td>
+<td><code>python:3.12-slim</code></td>
 </tr>
 <tr>
-<td><a href="https://docs.astral.sh/uv/">uv</a></td>
-<td>Latest</td>
+<td>Package manager</td>
+<td><code>uv</code> (not pip)</td>
 </tr>
 <tr>
-<td>Node.js + npm</td>
-<td>For Gemini CLI (if used)</td>
+<td>Non-root user</td>
+<td><code>appuser</code> (OpenShift compatible, GID 0)</td>
 </tr>
 <tr>
-<td>Git</td>
-<td>Any recent version</td>
+<td>System dependencies</td>
+<td>bash, git, curl, nodejs, npm, ca-certificates</td>
+</tr>
+<tr>
+<td>Entrypoint</td>
+<td><code>uv run --no-sync uvicorn docsfy.main:app --host 0.0.0.0 --port 8000</code></td>
+</tr>
+<tr>
+<td>Exposed port</td>
+<td><code>8000</code></td>
+</tr>
+<tr>
+<td>Health check</td>
+<td><code>GET /health</code></td>
 </tr>
 </tbody>
 </table>
 <blockquote>
-<p><strong>Warning:</strong> docsfy uses <code>uv</code> exclusively as its package manager. Do not use <code>pip</code> to install dependencies — it is not supported.</p>
+<p><strong>Note:</strong> The container runs as a non-root user (<code>appuser</code>) with GID 0 for OpenShift compatibility. If you encounter permission issues with volume mounts, ensure the host directories are writable by GID 0.</p>
 </blockquote>
-<h3 id="1-install-uv">1. Install uv</h3>
-<p>If you don't have <code>uv</code> installed:</p>
+<h2 id="local-development-setup">Local Development Setup</h2>
+<h3 id="1-install-python-312">1. Install Python 3.12+</h3>
+<p>Ensure Python 3.12 or later is installed on your system:</p>
+<div class="highlight"><pre><span></span><code>python3<span class="w"> </span>--version
+</code></pre></div>
+
+<h3 id="2-install-uv">2. Install uv</h3>
+<p>docsfy uses <code>uv</code> exclusively as its package manager. Install it following the <a href="https://docs.astral.sh/uv/getting-started/installation/">official instructions</a>:</p>
 <div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-LsSf<span class="w"> </span>https://astral.sh/uv/install.sh<span class="w"> </span><span class="p">|</span><span class="w"> </span>sh
 </code></pre></div>
 
-<h3 id="2-clone-and-install">2. Clone and Install</h3>
+<blockquote>
+<p><strong>Warning:</strong> Do not use <code>pip</code> to manage docsfy dependencies. The project is configured to work with <code>uv</code> only. Using <code>pip</code> may result in dependency resolution issues.</p>
+</blockquote>
+<h3 id="3-clone-and-install-dependencies">3. Clone and Install Dependencies</h3>
 <div class="highlight"><pre><span></span><code>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/your-org/docsfy.git
 <span class="nb">cd</span><span class="w"> </span>docsfy
 uv<span class="w"> </span>sync
 </code></pre></div>
 
-<p><code>uv sync</code> installs all dependencies defined in <code>pyproject.toml</code> into a virtual environment managed by <code>uv</code>.</p>
-<h3 id="3-install-ai-cli-tools">3. Install AI CLI Tools</h3>
-<p>You need at least one AI CLI tool installed locally. Install the one matching your chosen <code>AI_PROVIDER</code>:</p>
-<p><strong>Claude Code</strong> (default):</p>
-<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-fsSL<span class="w"> </span>https://claude.ai/install.sh<span class="w"> </span><span class="p">|</span><span class="w"> </span>bash
+<p>The <code>uv sync</code> command reads the <code>pyproject.toml</code> and installs all dependencies into a virtual environment managed by <code>uv</code>. The project uses <code>hatchling</code> as its build system.</p>
+<h3 id="4-install-system-dependencies">4. Install System Dependencies</h3>
+<p>docsfy requires several system-level packages for full functionality:</p>
+<p><strong>Debian/Ubuntu:</strong></p>
+<div class="highlight"><pre><span></span><code>sudo<span class="w"> </span>apt-get<span class="w"> </span>update
+sudo<span class="w"> </span>apt-get<span class="w"> </span>install<span class="w"> </span>-y<span class="w"> </span>bash<span class="w"> </span>git<span class="w"> </span>curl<span class="w"> </span>nodejs<span class="w"> </span>npm<span class="w"> </span>ca-certificates
 </code></pre></div>
 
-<p><strong>Gemini CLI:</strong></p>
-<div class="highlight"><pre><span></span><code>npm<span class="w"> </span>install<span class="w"> </span>-g<span class="w"> </span>@google/gemini-cli
+<p><strong>Fedora/RHEL:</strong></p>
+<div class="highlight"><pre><span></span><code>sudo<span class="w"> </span>dnf<span class="w"> </span>install<span class="w"> </span>-y<span class="w"> </span>bash<span class="w"> </span>git<span class="w"> </span>curl<span class="w"> </span>nodejs<span class="w"> </span>npm<span class="w"> </span>ca-certificates
 </code></pre></div>
 
-<p><strong>Cursor Agent:</strong></p>
-<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-fsSL<span class="w"> </span>https://cursor.com/install<span class="w"> </span><span class="p">|</span><span class="w"> </span>bash
+<p><strong>macOS (Homebrew):</strong></p>
+<div class="highlight"><pre><span></span><code>brew<span class="w"> </span>install<span class="w"> </span>git<span class="w"> </span>curl<span class="w"> </span>node
 </code></pre></div>
 
-<h3 id="4-configure-environment-variables">4. Configure Environment Variables</h3>
+<h3 id="5-install-ai-cli-binaries">5. Install AI CLI Binaries</h3>
+<p>At least one AI CLI binary must be installed. See the <a href="#ai-cli-binary-installation">AI CLI Binary Installation</a> section below.</p>
+<h3 id="6-configure-environment">6. Configure Environment</h3>
+<p>Create your <code>.env</code> file from the example:</p>
 <div class="highlight"><pre><span></span><code>cp<span class="w"> </span>.env.example<span class="w"> </span>.env
 </code></pre></div>
 
-<p>Edit <code>.env</code> to set your AI provider and credentials. At minimum, set:</p>
-<div class="highlight"><pre><span></span><code><span class="nv">AI_PROVIDER</span><span class="o">=</span>claude
-<span class="nv">ANTHROPIC_API_KEY</span><span class="o">=</span>sk-ant-...
-</code></pre></div>
-
-<h3 id="5-create-the-data-directory">5. Create the Data Directory</h3>
-<div class="highlight"><pre><span></span><code>mkdir<span class="w"> </span>-p<span class="w"> </span>data
-</code></pre></div>
-
-<p>docsfy stores all project data under <code>/data</code> by default:</p>
-<div class="highlight"><pre><span></span><code>/data/
-  docsfy.db                # SQLite metadata database
-  projects/
-    {project-name}/
-      plan.json            # Documentation structure from AI
-      cache/
-        pages/*.md         # AI-generated markdown (cached)
-      site/                # Final rendered HTML site
-        index.html
-        *.html
-        assets/
-          style.css
-          search.js
-          theme-toggle.js
-          highlight.js
-        search-index.json
-</code></pre></div>
-
-<h3 id="6-run-the-server">6. Run the Server</h3>
-<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>run<span class="w"> </span>uvicorn<span class="w"> </span>docsfy.main:app<span class="w"> </span>--host<span class="w"> </span><span class="m">0</span>.0.0.0<span class="w"> </span>--port<span class="w"> </span><span class="m">8000</span>
-</code></pre></div>
-
-<p>The server starts on <code>http://localhost:8000</code>. For development with auto-reload:</p>
+<p>Edit the file to configure your chosen AI provider (see the environment variables table in the Docker section above).</p>
+<h3 id="7-run-the-development-server">7. Run the Development Server</h3>
 <div class="highlight"><pre><span></span><code>uv<span class="w"> </span>run<span class="w"> </span>uvicorn<span class="w"> </span>docsfy.main:app<span class="w"> </span>--host<span class="w"> </span><span class="m">0</span>.0.0.0<span class="w"> </span>--port<span class="w"> </span><span class="m">8000</span><span class="w"> </span>--reload
 </code></pre></div>
 
-<h3 id="7-verify">7. Verify</h3>
-<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>http://localhost:8000/health
+<p>The <code>--reload</code> flag enables auto-reload on code changes, which is useful during development.</p>
+<p>The service will be available at <code>http://localhost:8000</code>.</p>
+<h2 id="ai-cli-binary-installation">AI CLI Binary Installation</h2>
+<p>docsfy orchestrates AI CLI tools to generate documentation. You need to install at least one provider's CLI binary. The Docker image installs all three automatically, but for local development you can install only the one(s) you need.</p>
+<h3 id="claude-code-cli">Claude Code CLI</h3>
+<p>Claude is the default AI provider (<code>AI_PROVIDER=claude</code>).</p>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-fsSL<span class="w"> </span>https://claude.ai/install.sh<span class="w"> </span><span class="p">|</span><span class="w"> </span>bash
 </code></pre></div>
 
+<p>After installation, authenticate using either an API key or Vertex AI credentials:</p>
+<p><strong>Option 1 — API Key:</strong></p>
+<p>Set the <code>ANTHROPIC_API_KEY</code> environment variable in your <code>.env</code> file.</p>
+<p><strong>Option 2 — Google Vertex AI:</strong></p>
+<div class="highlight"><pre><span></span><code><span class="c1"># In your .env file:</span>
+<span class="nv">CLAUDE_CODE_USE_VERTEX</span><span class="o">=</span><span class="m">1</span>
+<span class="nv">CLOUD_ML_REGION</span><span class="o">=</span>your-region
+<span class="nv">ANTHROPIC_VERTEX_PROJECT_ID</span><span class="o">=</span>your-project-id
+</code></pre></div>
+
+<p>Ensure your Google Cloud credentials are available (e.g., via <code>gcloud auth application-default login</code>).</p>
+<p>The Claude CLI is invoked as:</p>
+<div class="highlight"><pre><span></span><code>claude --model &lt;model&gt; --dangerously-skip-permissions -p
+</code></pre></div>
+
+<h3 id="cursor-agent-cli">Cursor Agent CLI</h3>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-fsSL<span class="w"> </span>https://cursor.com/install<span class="w"> </span><span class="p">|</span><span class="w"> </span>bash
+</code></pre></div>
+
+<p>Set the <code>CURSOR_API_KEY</code> environment variable in your <code>.env</code> file.</p>
+<p>The Cursor agent is invoked with a <code>--workspace</code> flag pointing to the repository path:</p>
+<div class="highlight"><pre><span></span><code>agent --force --model &lt;model&gt; --print --workspace &lt;path&gt;
+</code></pre></div>
+
+<h3 id="gemini-cli">Gemini CLI</h3>
+<p>Gemini CLI requires Node.js and npm:</p>
+<div class="highlight"><pre><span></span><code>npm<span class="w"> </span>install<span class="w"> </span>-g<span class="w"> </span>@google/gemini-cli
+</code></pre></div>
+
+<p>Set the <code>GEMINI_API_KEY</code> environment variable in your <code>.env</code> file.</p>
+<p>The Gemini CLI is invoked as:</p>
+<div class="highlight"><pre><span></span><code>gemini --model &lt;model&gt; --yolo
+</code></pre></div>
+
+<blockquote>
+<p><strong>Warning:</strong> AI CLI binaries are installed unpinned (always fetching the latest version). In production, consider pinning to specific versions for reproducibility.</p>
+</blockquote>
 <h2 id="development-tooling">Development Tooling</h2>
-<p>docsfy uses several tools for code quality. Install the development dependencies and hooks:</p>
-<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>sync<span class="w"> </span>--all-extras
-pre-commit<span class="w"> </span>install
-</code></pre></div>
-
+<p>For contributors working on docsfy itself, the project includes a comprehensive development toolchain:</p>
 <table>
 <thead>
 <tr>
@@ -497,28 +516,36 @@ pre-commit<span class="w"> </span>install
 </thead>
 <tbody>
 <tr>
-<td><a href="https://pre-commit.com/">Pre-commit</a></td>
-<td>Runs ruff (lint + format), mypy (strict), flake8, gitleaks, and detect-secrets on each commit</td>
+<td><strong>Pre-commit</strong></td>
+<td>ruff (lint + format), mypy (strict), flake8, gitleaks, detect-secrets</td>
 </tr>
 <tr>
-<td><a href="https://tox.wiki/">Tox</a></td>
-<td>Runs unused-code checks and unit tests via <code>uv</code></td>
+<td><strong>Tox</strong></td>
+<td>Unused-code checks, unit tests (via uv)</td>
 </tr>
 <tr>
-<td><a href="https://hatch.pypa.io/">Hatchling</a></td>
+<td><strong>hatchling</strong></td>
 <td>Python build system</td>
+</tr>
+<tr>
+<td><strong>ruff</strong></td>
+<td>Linting and formatting</td>
+</tr>
+<tr>
+<td><strong>mypy</strong></td>
+<td>Static type checking (strict mode)</td>
 </tr>
 </tbody>
 </table>
-<p>Run the linters manually:</p>
-<div class="highlight"><pre><span></span><code>pre-commit<span class="w"> </span>run<span class="w"> </span>--all-files
+<p>Install pre-commit hooks:</p>
+<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>run<span class="w"> </span>pre-commit<span class="w"> </span>install
 </code></pre></div>
 
 <p>Run the test suite:</p>
-<div class="highlight"><pre><span></span><code>tox
+<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>run<span class="w"> </span>tox
 </code></pre></div>
 
-<h2 id="environment-variable-reference">Environment Variable Reference</h2>
+<h2 id="environment-variables-reference">Environment Variables Reference</h2>
 <table>
 <thead>
 <tr>
@@ -531,7 +558,7 @@ pre-commit<span class="w"> </span>install
 <tr>
 <td><code>AI_PROVIDER</code></td>
 <td><code>claude</code></td>
-<td>AI provider to use: <code>claude</code>, <code>gemini</code>, or <code>cursor</code></td>
+<td>AI provider to use (<code>claude</code>, <code>gemini</code>, or <code>cursor</code>)</td>
 </tr>
 <tr>
 <td><code>AI_MODEL</code></td>
@@ -546,22 +573,22 @@ pre-commit<span class="w"> </span>install
 <tr>
 <td><code>ANTHROPIC_API_KEY</code></td>
 <td>—</td>
-<td>API key for Claude (Option 1)</td>
+<td>API key for Claude (direct API access)</td>
 </tr>
 <tr>
 <td><code>CLAUDE_CODE_USE_VERTEX</code></td>
 <td>—</td>
-<td>Set to <code>1</code> to use Claude via Vertex AI (Option 2)</td>
+<td>Set to <code>1</code> to use Claude via Google Vertex AI</td>
 </tr>
 <tr>
 <td><code>CLOUD_ML_REGION</code></td>
 <td>—</td>
-<td>GCP region for Vertex AI</td>
+<td>Google Cloud region for Vertex AI</td>
 </tr>
 <tr>
 <td><code>ANTHROPIC_VERTEX_PROJECT_ID</code></td>
 <td>—</td>
-<td>GCP project ID for Vertex AI</td>
+<td>Google Cloud project ID for Vertex AI</td>
 </tr>
 <tr>
 <td><code>GEMINI_API_KEY</code></td>
@@ -576,59 +603,55 @@ pre-commit<span class="w"> </span>install
 <tr>
 <td><code>LOG_LEVEL</code></td>
 <td><code>INFO</code></td>
-<td>Logging verbosity: <code>DEBUG</code>, <code>INFO</code>, <code>WARNING</code>, <code>ERROR</code></td>
+<td>Logging level (<code>DEBUG</code>, <code>INFO</code>, <code>WARNING</code>, <code>ERROR</code>)</td>
 </tr>
 </tbody>
 </table>
-<h2 id="authentication-setup-by-provider">Authentication Setup by Provider</h2>
-<h3 id="claude-with-api-key">Claude with API Key</h3>
-<p>The simplest configuration. Set <code>AI_PROVIDER=claude</code> and provide your API key:</p>
-<div class="highlight"><pre><span></span><code><span class="nv">AI_PROVIDER</span><span class="o">=</span>claude
-<span class="nv">ANTHROPIC_API_KEY</span><span class="o">=</span>sk-ant-...
-</code></pre></div>
-
-<h3 id="claude-with-vertex-ai">Claude with Vertex AI</h3>
-<p>For organizations using Google Cloud, Claude can be accessed through Vertex AI:</p>
-<div class="highlight"><pre><span></span><code><span class="nv">AI_PROVIDER</span><span class="o">=</span>claude
-<span class="nv">CLAUDE_CODE_USE_VERTEX</span><span class="o">=</span><span class="m">1</span>
-<span class="nv">CLOUD_ML_REGION</span><span class="o">=</span>us-central1
-<span class="nv">ANTHROPIC_VERTEX_PROJECT_ID</span><span class="o">=</span>my-gcp-project
-</code></pre></div>
-
-<p>When running with Docker Compose, mount your GCP credentials as a read-only volume:</p>
-<div class="highlight"><pre><span></span><code><span class="nt">volumes</span><span class="p">:</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">~/.config/gcloud:/home/appuser/.config/gcloud:ro</span>
+<h2 id="storage-layout">Storage Layout</h2>
+<p>Once running, docsfy stores all data under the <code>/data</code> directory (or <code>./data</code> on the host when using Docker):</p>
+<div class="highlight"><pre><span></span><code>/data/
+  docsfy.db                         # SQLite database (project metadata)
+  projects/
+    {project-name}/
+      plan.json                     # Documentation structure from AI
+      cache/
+        pages/*.md                  # AI-generated markdown (cached)
+      site/                         # Final rendered HTML
+        index.html
+        *.html
+        assets/
+          style.css
+          search.js
+          theme-toggle.js
+          highlight.js
+        search-index.json
 </code></pre></div>
 
 <blockquote>
-<p><strong>Note:</strong> Ensure you have authenticated with <code>gcloud auth application-default login</code> on the host machine before starting the container.</p>
+<p><strong>Tip:</strong> The <code>cache/pages/</code> directory enables incremental updates. When regenerating documentation, docsfy compares the repository's commit SHA against the stored SHA and only regenerates pages whose content may have changed.</p>
 </blockquote>
-<h3 id="gemini">Gemini</h3>
-<div class="highlight"><pre><span></span><code><span class="nv">AI_PROVIDER</span><span class="o">=</span>gemini
-<span class="nv">GEMINI_API_KEY</span><span class="o">=</span>your-gemini-key
-</code></pre></div>
-
-<h3 id="cursor">Cursor</h3>
-<div class="highlight"><pre><span></span><code><span class="nv">AI_PROVIDER</span><span class="o">=</span>cursor
-<span class="nv">CURSOR_API_KEY</span><span class="o">=</span>your-cursor-key
-</code></pre></div>
-
-<p>When running with Docker Compose, mount the Cursor configuration directory:</p>
-<div class="highlight"><pre><span></span><code><span class="nt">volumes</span><span class="p">:</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./cursor:/home/appuser/.config/cursor</span>
-</code></pre></div>
-
-<h2 id="container-security">Container Security</h2>
-<p>The Docker image follows security best practices:</p>
-<ul>
-<li>Runs as a non-root user (<code>appuser</code>)</li>
-<li>Compatible with OpenShift (GID 0)</li>
-<li>AI CLI tools are installed at build time</li>
-<li>Health check endpoint available at <code>/health</code></li>
-</ul>
-<blockquote>
-<p><strong>Warning:</strong> The container requires network access to clone Git repositories and communicate with AI provider APIs. Ensure your firewall and network policies allow outbound HTTPS traffic.</p>
-</blockquote>
+<h2 id="verifying-your-installation">Verifying Your Installation</h2>
+<p>After completing the installation, verify everything is working:</p>
+<ol>
+<li><strong>Check the health endpoint:</strong></li>
+</ol>
+<p><code>bash
+   curl http://localhost:8000/health</code></p>
+<ol>
+<li><strong>Generate documentation for a test repository:</strong></li>
+</ol>
+<p><code>bash
+   curl -X POST http://localhost:8000/api/generate \
+     -H "Content-Type: application/json" \
+     -d '{"repo_url": "https://github.com/your-org/sample-repo"}'</code></p>
+<ol>
+<li><strong>Check generation status:</strong></li>
+</ol>
+<p><code>bash
+   curl http://localhost:8000/api/status</code></p>
+<ol>
+<li><strong>View generated documentation</strong> in your browser at <code>http://localhost:8000/docs/{project-name}/</code>.</li>
+</ol>
                 </div>
             </article>
             <nav class="page-nav">
@@ -652,40 +675,35 @@ pre-commit<span class="w"> </span>install
                     <div class="toc">
 <ul>
 <li><a href="#prerequisites">Prerequisites</a></li>
-<li><a href="#docker-recommended">Docker (Recommended)</a><ul>
-<li><a href="#build-the-image">Build the Image</a></li>
-<li><a href="#run-the-container">Run the Container</a></li>
-<li><a href="#verify-the-installation">Verify the Installation</a></li>
-</ul>
-</li>
-<li><a href="#docker-compose">Docker Compose</a><ul>
-<li><a href="#1-create-a-env-file">1. Create a .env File</a></li>
-<li><a href="#2-start-the-service">2. Start the Service</a></li>
+<li><a href="#docker-deployment-recommended">Docker Deployment (Recommended)</a><ul>
+<li><a href="#1-clone-the-repository">1. Clone the Repository</a></li>
+<li><a href="#2-configure-environment-variables">2. Configure Environment Variables</a></li>
+<li><a href="#3-start-the-service">3. Start the Service</a></li>
+<li><a href="#4-verify-the-installation">4. Verify the Installation</a></li>
 <li><a href="#volume-mounts">Volume Mounts</a></li>
-<li><a href="#3-check-service-health">3. Check Service Health</a></li>
+<li><a href="#docker-image-details">Docker Image Details</a></li>
 </ul>
 </li>
 <li><a href="#local-development-setup">Local Development Setup</a><ul>
-<li><a href="#requirements">Requirements</a></li>
-<li><a href="#1-install-uv">1. Install uv</a></li>
-<li><a href="#2-clone-and-install">2. Clone and Install</a></li>
-<li><a href="#3-install-ai-cli-tools">3. Install AI CLI Tools</a></li>
-<li><a href="#4-configure-environment-variables">4. Configure Environment Variables</a></li>
-<li><a href="#5-create-the-data-directory">5. Create the Data Directory</a></li>
-<li><a href="#6-run-the-server">6. Run the Server</a></li>
-<li><a href="#7-verify">7. Verify</a></li>
+<li><a href="#1-install-python-312">1. Install Python 3.12+</a></li>
+<li><a href="#2-install-uv">2. Install uv</a></li>
+<li><a href="#3-clone-and-install-dependencies">3. Clone and Install Dependencies</a></li>
+<li><a href="#4-install-system-dependencies">4. Install System Dependencies</a></li>
+<li><a href="#5-install-ai-cli-binaries">5. Install AI CLI Binaries</a></li>
+<li><a href="#6-configure-environment">6. Configure Environment</a></li>
+<li><a href="#7-run-the-development-server">7. Run the Development Server</a></li>
+</ul>
+</li>
+<li><a href="#ai-cli-binary-installation">AI CLI Binary Installation</a><ul>
+<li><a href="#claude-code-cli">Claude Code CLI</a></li>
+<li><a href="#cursor-agent-cli">Cursor Agent CLI</a></li>
+<li><a href="#gemini-cli">Gemini CLI</a></li>
 </ul>
 </li>
 <li><a href="#development-tooling">Development Tooling</a></li>
-<li><a href="#environment-variable-reference">Environment Variable Reference</a></li>
-<li><a href="#authentication-setup-by-provider">Authentication Setup by Provider</a><ul>
-<li><a href="#claude-with-api-key">Claude with API Key</a></li>
-<li><a href="#claude-with-vertex-ai">Claude with Vertex AI</a></li>
-<li><a href="#gemini">Gemini</a></li>
-<li><a href="#cursor">Cursor</a></li>
-</ul>
-</li>
-<li><a href="#container-security">Container Security</a></li>
+<li><a href="#environment-variables-reference">Environment Variables Reference</a></li>
+<li><a href="#storage-layout">Storage Layout</a></li>
+<li><a href="#verifying-your-installation">Verifying Your Installation</a></li>
 </ul>
 </div>
 

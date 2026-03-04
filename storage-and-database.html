@@ -4,14 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Storage &amp; Database - docsfy</title>
-    <meta name="description" content="AI-powered documentation generator that creates polished, Mintlify-quality static HTML sites from GitHub repositories">
+    <meta name="description" content="AI-powered documentation generator that creates polished, Mintlify-quality static HTML sites from GitHub repositories.">
     <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <a href="index.html" class="sidebar-logo">docsfy</a>
-            <p class="sidebar-tagline">AI-powered documentation generator that creates polished, Mintlify-quality static HTML sites from GitHub repositories</p>
+            <p class="sidebar-tagline">AI-powered documentation generator that creates polished, Mintlify-quality static HTML sites from GitHub repositories.</p>
         </div>
 
         <div class="sidebar-search">
@@ -89,16 +89,23 @@
                     </li>
                     
                     <li>
-                        <a href="serving-docs.html"
+                        <a href="incremental-updates.html"
                            class="nav-link">
-                            Serving Documentation
+                            Incremental Updates
                         </a>
                     </li>
                     
                     <li>
-                        <a href="incremental-updates.html"
+                        <a href="downloading-and-self-hosting.html"
                            class="nav-link">
-                            Incremental Updates
+                            Downloading &amp; Self-Hosting
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="managing-projects.html"
+                           class="nav-link">
+                            Managing Projects
                         </a>
                     </li>
                     
@@ -117,13 +124,6 @@
                     </li>
                     
                     <li>
-                        <a href="ai-cli-integration.html"
-                           class="nav-link">
-                            AI CLI Integration
-                        </a>
-                    </li>
-                    
-                    <li>
                         <a href="storage-and-database.html"
                            class="nav-link active">
                             Storage &amp; Database
@@ -131,9 +131,9 @@
                     </li>
                     
                     <li>
-                        <a href="html-renderer.html"
+                        <a href="html-theming.html"
                            class="nav-link">
-                            HTML Renderer
+                            HTML Theming &amp; Output
                         </a>
                     </li>
                     
@@ -143,6 +143,13 @@
             <div class="nav-group">
                 <h3 class="nav-group-title">API Reference</h3>
                 <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="api-overview.html"
+                           class="nav-link">
+                            API Overview
+                        </a>
+                    </li>
                     
                     <li>
                         <a href="api-generate.html"
@@ -161,21 +168,7 @@
                     <li>
                         <a href="api-projects.html"
                            class="nav-link">
-                            GET /api/projects/{name}
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="api-projects-delete.html"
-                           class="nav-link">
-                            DELETE /api/projects/{name}
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="api-projects-download.html"
-                           class="nav-link">
-                            GET /api/projects/{name}/download
+                            Project Endpoints
                         </a>
                     </li>
                     
@@ -208,9 +201,9 @@
                     </li>
                     
                     <li>
-                        <a href="tech-stack.html"
+                        <a href="project-structure.html"
                            class="nav-link">
-                            Technology Stack
+                            Project Structure
                         </a>
                     </li>
                     
@@ -257,42 +250,46 @@
                 <h1 class="article-title">Storage &amp; Database</h1>
                 <div class="article-body">
                     <h1 id="storage-database">Storage &amp; Database</h1>
-<p>docsfy uses a two-layer storage architecture: a <strong>SQLite database</strong> for project metadata and tracking, and a <strong>filesystem directory tree</strong> for cached markdown content, rendered HTML sites, and search indexes. Both live under a single <code>/data</code> mount point for simple container deployment.</p>
-<h2 id="storage-overview">Storage Overview</h2>
+<p>docsfy uses a dual-storage architecture: <strong>SQLite</strong> for structured project metadata and the <strong>local filesystem</strong> for documentation artifacts — plan files, cached markdown, and rendered HTML sites. All persistent data lives under a single <code>/data/</code> root directory, making backups and container mounts straightforward.</p>
+<h2 id="storage-architecture-overview">Storage Architecture Overview</h2>
 <div class="highlight"><pre><span></span><code>/data/
-  docsfy.db                          # SQLite database (project metadata)
-  projects/                          # Filesystem storage (generated content)
-    {project-name}/
-      plan.json                      # Documentation structure from AI Planner
-      cache/
-        pages/*.md                   # AI-generated markdown (cached)
-      site/                          # Final rendered static HTML site
-        index.html
-        *.html
-        assets/
-          style.css
-          search.js
-          theme-toggle.js
-          highlight.js
-        search-index.json            # Client-side search index
-</code></pre></div>
-
-<p>All storage is rooted at <code>/data</code>, which is mapped as a Docker volume:</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># docker-compose.yaml</span>
-<span class="nt">services</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">docsfy</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">volumes</span><span class="p">:</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./data:/data</span>
+├── docsfy.db                          # SQLite database (project metadata)
+└── projects/
+    └── {project-name}/
+        ├── plan.json                  # Documentation structure from AI Planner
+        ├── cache/
+        │   └── pages/
+        │       ├── getting-started.md # AI-generated markdown (cached)
+        │       ├── api-reference.md
+        │       └── ...
+        └── site/                      # Final rendered HTML
+            ├── index.html
+            ├── getting-started.html
+            ├── api-reference.html
+            ├── search-index.json
+            └── assets/
+                ├── style.css
+                ├── search.js
+                ├── theme-toggle.js
+                └── highlight.js
 </code></pre></div>
 
 <blockquote>
-<p><strong>Tip:</strong> Since all persistent state lives under <code>/data</code>, backing up this single directory captures everything — the database, cached content, and rendered sites.</p>
+<p><strong>Note:</strong> The <code>/data/</code> directory is the single mount point for all persistent storage. In Docker deployments, this is mapped to a host directory via a volume mount (see <a href="#docker-volume-configuration">Docker Configuration</a>).</p>
 </blockquote>
 <h2 id="sqlite-database">SQLite Database</h2>
-<h3 id="location">Location</h3>
-<p>The database file lives at <code>/data/docsfy.db</code>. docsfy accesses it asynchronously via <code>aiosqlite</code>, which is well-suited for the FastAPI async request lifecycle.</p>
-<h3 id="schema">Schema</h3>
-<p>The database stores <strong>project metadata only</strong> — it does not store page content or rendered HTML. The tracked fields are:</p>
+<p>docsfy stores all project metadata in a single SQLite database at <code>/data/docsfy.db</code>. The database is accessed asynchronously using <code>aiosqlite</code> to avoid blocking the FastAPI event loop.</p>
+<h3 id="why-sqlite">Why SQLite?</h3>
+<p>SQLite is an ideal fit for docsfy because:</p>
+<ul>
+<li><strong>Zero configuration</strong> — no external database server to set up or manage</li>
+<li><strong>Single-file storage</strong> — the entire database is one portable file</li>
+<li><strong>Concurrent reads</strong> — multiple API requests can query project status simultaneously</li>
+<li><strong>Lightweight</strong> — minimal resource overhead for metadata-only workloads</li>
+<li><strong>Docker-friendly</strong> — persists easily via a single volume mount</li>
+</ul>
+<h3 id="what-the-database-stores">What the Database Stores</h3>
+<p>The SQLite database tracks project-level metadata:</p>
 <table>
 <thead>
 <tr>
@@ -303,23 +300,23 @@
 <tbody>
 <tr>
 <td>Project name</td>
-<td>Unique identifier derived from the repository</td>
+<td>Unique identifier for the documentation project</td>
 </tr>
 <tr>
 <td>Repository URL</td>
-<td>Source GitHub repository (SSH or HTTPS)</td>
+<td>The source GitHub repository (SSH or HTTPS)</td>
 </tr>
 <tr>
 <td>Status</td>
-<td>Current generation state: <code>generating</code>, <code>ready</code>, or <code>error</code></td>
+<td>Current state: <code>generating</code>, <code>ready</code>, or <code>error</code></td>
 </tr>
 <tr>
-<td>Last generated</td>
-<td>Timestamp of the most recent successful generation</td>
+<td>Last generated timestamp</td>
+<td>When documentation was last successfully built</td>
 </tr>
 <tr>
 <td>Last commit SHA</td>
-<td>HEAD commit SHA from the last generation run</td>
+<td>The Git commit SHA from the most recent generation</td>
 </tr>
 <tr>
 <td>Generation history</td>
@@ -328,122 +325,174 @@
 </tbody>
 </table>
 <h3 id="project-status-lifecycle">Project Status Lifecycle</h3>
-<p>A project transitions through these statuses during generation:</p>
+<p>A project moves through the following statuses during its lifecycle:</p>
 <div class="highlight"><pre><span></span><code>POST /api/generate
        │
        v
-  ┌──────────┐     success     ┌───────┐
-  │generating │ ──────────────&gt; │ ready │
-  └──────────┘                  └───────┘
-       │
-       │ failure
-       v
-  ┌───────┐
-  │ error │
-  └───────┘
+  ┌────────────┐     success     ┌─────────┐
+  │ generating │ ──────────────&gt; │  ready   │
+  └────────────┘                 └─────────┘
+       │                              │
+       │ failure                      │ re-generate
+       v                              v
+  ┌────────────┐                ┌────────────┐
+  │   error    │                │ generating │
+  └────────────┘                └────────────┘
 </code></pre></div>
 
+<h3 id="querying-project-metadata">Querying Project Metadata</h3>
+<p>The database is the source of truth for the API status endpoints:</p>
 <ul>
-<li><strong><code>generating</code></strong> — Pipeline is actively running (clone, plan, content generation, render).</li>
-<li><strong><code>ready</code></strong> — Site is built and available for serving at <code>GET /docs/{project}/</code>.</li>
-<li><strong><code>error</code></strong> — Generation failed; logs are stored for debugging.</li>
+<li><strong><code>GET /api/status</code></strong> — queries all projects and returns their current status</li>
+<li><strong><code>GET /api/projects/{name}</code></strong> — returns detailed metadata for a specific project, including last generated timestamp, commit SHA, and page list</li>
+<li><strong><code>DELETE /api/projects/{name}</code></strong> — removes the project record from the database <em>and</em> deletes the corresponding filesystem directory</li>
 </ul>
-<h3 id="incremental-update-tracking">Incremental Update Tracking</h3>
-<p>The database plays a central role in docsfy's incremental update strategy. When a project is re-generated:</p>
-<ol>
-<li>The stored <strong>last commit SHA</strong> is compared against the repository's current HEAD.</li>
-<li>If the SHA has changed, the AI Planner re-runs to check if the documentation structure changed.</li>
-<li>Only pages whose source content may be affected are regenerated.</li>
-<li>If the plan structure is unchanged and only specific files changed, only the relevant pages are rebuilt.</li>
-</ol>
 <blockquote>
-<p><strong>Note:</strong> The commit SHA comparison happens before any AI invocation, making the "nothing changed" case fast and free of AI costs.</p>
+<p><strong>Tip:</strong> Use the <code>GET /api/status</code> endpoint to monitor the progress of documentation generation. The status field will transition from <code>generating</code> to <code>ready</code> (or <code>error</code>) when the pipeline completes.</p>
 </blockquote>
-<h2 id="filesystem-layout">Filesystem Layout</h2>
-<h3 id="per-project-directory">Per-Project Directory</h3>
-<p>Each project gets its own directory at <code>/data/projects/{project-name}/</code> containing three distinct areas:</p>
-<div class="highlight"><pre><span></span><code>/data/projects/{project-name}/
-  plan.json
-  cache/
-    pages/*.md
-  site/
-    ...
+<h3 id="commit-sha-tracking">Commit SHA Tracking</h3>
+<p>The database stores the last commit SHA for each project to power incremental updates. When a re-generation is triggered:</p>
+<ol>
+<li>docsfy fetches the repository and reads the current HEAD SHA</li>
+<li>Compares it against the stored SHA in SQLite</li>
+<li>If unchanged, the regeneration can be skipped entirely</li>
+<li>If changed, the new SHA is stored after successful generation</li>
+</ol>
+<p>This mechanism is described further in the <a href="#incremental-updates">Incremental Updates</a> section below.</p>
+<h2 id="filesystem-storage">Filesystem Storage</h2>
+<p>All documentation artifacts — plan files, cached markdown, and rendered HTML — are stored on the filesystem under <code>/data/projects/</code>. Each project gets its own isolated directory identified by name.</p>
+<h3 id="plan-files">Plan Files</h3>
+<p><strong>Location:</strong> <code>/data/projects/{project-name}/plan.json</code></p>
+<p>The plan file is the output of <strong>Stage 2: AI Planner</strong> in the generation pipeline. It defines the entire documentation structure: pages, sections, and navigation hierarchy.</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;pages&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;getting-started&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Getting Started&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Installation and initial setup guide&quot;</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;api-reference&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;API Reference&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Complete API endpoint documentation&quot;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">],</span>
+<span class="w">  </span><span class="nt">&quot;navigation&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Getting Started&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;getting-started&quot;</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;API Reference&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;api-reference&quot;</span><span class="w"> </span><span class="p">}</span>
+<span class="w">  </span><span class="p">]</span>
+<span class="p">}</span>
 </code></pre></div>
 
-<h3 id="planjson-documentation-structure">plan.json — Documentation Structure</h3>
-<p>The <code>plan.json</code> file is the output of <strong>Stage 2 (AI Planner)</strong> and defines the entire documentation structure: pages, sections, and navigation hierarchy.</p>
-<p>This file is:
-- Generated by the AI CLI after analyzing the full repository
-- Used by the content generator to know which pages to write
-- Used by the HTML renderer to build sidebar navigation
-- Persisted for incremental update comparisons (to detect if the doc structure changed)</p>
-<h3 id="cachepages-markdown-cache">cache/pages/ — Markdown Cache</h3>
+<p>The plan file serves multiple purposes:</p>
+<ul>
+<li><strong>Content generation</strong> — Stage 3 iterates over the pages defined in the plan to generate markdown content</li>
+<li><strong>HTML rendering</strong> — Stage 4 uses the plan to build navigation sidebars and page structure</li>
+<li><strong>Incremental updates</strong> — on re-generation, the new plan is compared against the cached plan to determine which pages need updating</li>
+</ul>
+<blockquote>
+<p><strong>Note:</strong> The <code>plan.json</code> file is generated by the AI and parsed using a multi-strategy JSON extraction approach: direct parse, brace-matching, markdown code block extraction, and regex recovery as a fallback.</p>
+</blockquote>
+<h3 id="cached-markdown-pages">Cached Markdown Pages</h3>
+<p><strong>Location:</strong> <code>/data/projects/{project-name}/cache/pages/*.md</code></p>
+<p>Each page defined in <code>plan.json</code> gets its own markdown file in the cache directory. These files are the raw output of <strong>Stage 3: AI Content Generator</strong>.</p>
 <div class="highlight"><pre><span></span><code>cache/
-  pages/
-    getting-started.md
-    api-reference.md
-    configuration.md
-    ...
+└── pages/
+    ├── getting-started.md
+    ├── api-reference.md
+    ├── configuration.md
+    └── deployment.md
 </code></pre></div>
 
-<p>The <code>cache/pages/</code> directory holds the <strong>AI-generated markdown</strong> files produced in <strong>Stage 3 (AI Content Generator)</strong>. Each page defined in <code>plan.json</code> gets a corresponding <code>.md</code> file.</p>
-<p>These cached markdown files serve two purposes:</p>
-<ol>
-<li><strong>Input for rendering</strong> — The HTML renderer converts these into the final static site.</li>
-<li><strong>Incremental update cache</strong> — On re-generation, unchanged pages can be skipped if their source material hasn't changed, avoiding unnecessary AI invocations.</li>
-</ol>
+<p>Caching markdown separately from the rendered HTML provides several benefits:</p>
+<ul>
+<li><strong>Incremental regeneration</strong> — only pages affected by repository changes need to be re-generated by the AI, while unchanged pages reuse their cached markdown</li>
+<li><strong>Re-rendering without AI</strong> — if the HTML template or styles change, all pages can be re-rendered from cached markdown without re-invoking the AI CLI</li>
+<li><strong>Debugging</strong> — the raw markdown can be inspected to verify AI output quality before rendering</li>
+</ul>
 <blockquote>
-<p><strong>Warning:</strong> Manually editing files in <code>cache/pages/</code> is not recommended. They will be overwritten on the next generation run. To customize output, adjust AI prompts or post-process the rendered site instead.</p>
+<p><strong>Warning:</strong> The cache directory should not be manually edited. Modifications will be overwritten on the next generation run. If you need to customize documentation content, consider post-processing the rendered HTML instead.</p>
 </blockquote>
-<h3 id="site-rendered-html-output">site/ — Rendered HTML Output</h3>
+<h3 id="rendered-html-sites">Rendered HTML Sites</h3>
+<p><strong>Location:</strong> <code>/data/projects/{project-name}/site/</code></p>
+<p>The site directory contains the final rendered static HTML, ready to be served or downloaded. It is the output of <strong>Stage 4: HTML Renderer</strong>, which converts cached markdown and the plan file into a polished documentation site using Jinja2 templates.</p>
 <div class="highlight"><pre><span></span><code>site/
-  index.html
-  getting-started.html
-  api-reference.html
-  configuration.html
-  assets/
-    style.css
-    search.js
-    theme-toggle.js
-    highlight.js
-  search-index.json
+├── index.html              # Landing page
+├── getting-started.html    # Individual doc pages
+├── api-reference.html
+├── search-index.json       # Client-side search index
+└── assets/
+    ├── style.css           # Documentation theme styles
+    ├── search.js           # Client-side search (lunr.js or similar)
+    ├── theme-toggle.js     # Dark/light mode toggle
+    └── highlight.js        # Code syntax highlighting
 </code></pre></div>
 
-<p>The <code>site/</code> directory contains the <strong>final static HTML output</strong> from <strong>Stage 4 (HTML Renderer)</strong>. This is a fully self-contained static site that can be:</p>
+<p>The rendered site includes these features:</p>
 <ul>
-<li><strong>Served directly</strong> by docsfy at <code>GET /docs/{project}/{path}</code></li>
-<li><strong>Downloaded</strong> as a <code>.tar.gz</code> archive via <code>GET /api/projects/{name}/download</code> for self-hosting</li>
+<li><strong>Sidebar navigation</strong> — built from the <code>plan.json</code> structure</li>
+<li><strong>Dark/light theme</strong> — toggleable via <code>theme-toggle.js</code></li>
+<li><strong>Client-side search</strong> — powered by <code>search-index.json</code> and <code>search.js</code></li>
+<li><strong>Code syntax highlighting</strong> — via highlight.js</li>
+<li><strong>Responsive design</strong> — works on desktop and mobile</li>
+<li><strong>Callout boxes</strong> — note, warning, and info callouts</li>
 </ul>
-<p>The renderer uses <strong>Jinja2 templates</strong> with bundled CSS and JavaScript assets to produce a polished documentation site with:</p>
-<ul>
-<li>Sidebar navigation (generated from <code>plan.json</code>)</li>
-<li>Dark/light theme toggle</li>
-<li>Client-side search</li>
-<li>Code syntax highlighting (via highlight.js)</li>
-<li>Responsive design</li>
-<li>Callout boxes (note, warning, info)</li>
-<li>Card layouts</li>
-</ul>
-<h2 id="search-index">Search Index</h2>
-<h3 id="how-it-works">How It Works</h3>
-<p>docsfy uses <strong>client-side search</strong> powered by lunr.js (or similar). The search index is generated at build time during the HTML rendering stage and served as a static JSON file.</p>
-<h3 id="search-indexjson">search-index.json</h3>
-<p>The search index lives at:</p>
-<div class="highlight"><pre><span></span><code>/data/projects/{project-name}/site/search-index.json
+<h4 id="serving-the-site">Serving the Site</h4>
+<p>The rendered HTML is served directly by the FastAPI application:</p>
+<div class="highlight"><pre><span></span><code>GET /docs/{project}/{path}
 </code></pre></div>
 
-<p>This JSON file is built from the markdown content of all pages during Stage 4. It contains pre-processed, tokenized content that the client-side search library can query without any server-side infrastructure.</p>
-<h3 id="searchjs">search.js</h3>
-<p>The corresponding search JavaScript is bundled as a static asset:</p>
-<div class="highlight"><pre><span></span><code>/data/projects/{project-name}/site/assets/search.js
+<p>For example, to access the "Getting Started" page for a project called <code>my-app</code>:</p>
+<div class="highlight"><pre><span></span><code>GET /docs/my-app/getting-started.html
 </code></pre></div>
 
-<p>This script loads <code>search-index.json</code> on the client side and provides instant search results as the user types — no server roundtrips required.</p>
+<h4 id="downloading-for-self-hosting">Downloading for Self-Hosting</h4>
+<p>The entire site can be downloaded as a <code>.tar.gz</code> archive for hosting elsewhere:</p>
+<div class="highlight"><pre><span></span><code>GET /api/projects/{name}/download
+</code></pre></div>
+
+<p>This packages the contents of the <code>site/</code> directory into a compressed archive that can be extracted and served by any static file server (Nginx, Apache, Cloudflare Pages, GitHub Pages, etc.).</p>
+<h2 id="incremental-updates">Incremental Updates</h2>
+<p>docsfy avoids expensive full regeneration when possible by tracking changes at both the repository and documentation structure levels.</p>
+<p>The incremental update flow:</p>
+<ol>
+<li><strong>Compare commit SHAs</strong> — the current repository HEAD is checked against the SHA stored in SQLite from the last generation</li>
+<li><strong>Re-run AI Planner</strong> — if the repository has changed, Stage 2 re-analyzes the repo to produce an updated <code>plan.json</code></li>
+<li><strong>Compare plan structures</strong> — the new plan is diffed against the cached <code>plan.json</code> to identify added, removed, or modified pages</li>
+<li><strong>Selective page regeneration</strong> — only pages whose source content may have been affected are regenerated by the AI</li>
+<li><strong>Re-render HTML</strong> — Stage 4 re-renders the full site from the (partially updated) cached markdown</li>
+</ol>
+<div class="highlight"><pre><span></span><code>Re-generate request
+       │
+       v
+  Compare commit SHA
+  (SQLite vs current)
+       │
+       ├── unchanged ──&gt; skip (no-op)
+       │
+       └── changed
+            │
+            v
+       Re-run AI Planner
+            │
+            v
+       Compare plan.json
+       (cached vs new)
+            │
+            ├── structure unchanged ──&gt; regenerate affected pages only
+            │
+            └── structure changed ──&gt; regenerate all pages
+                                       │
+                                       v
+                                  Re-render HTML site
+</code></pre></div>
+
 <blockquote>
-<p><strong>Tip:</strong> Because search is entirely client-side, downloaded/self-hosted sites get full search functionality with no additional setup.</p>
+<p><strong>Tip:</strong> Incremental updates are automatic. Simply call <code>POST /api/generate</code> with the same repository URL, and docsfy will determine the minimal set of work needed.</p>
 </blockquote>
-<h2 id="docker-volume-mapping">Docker Volume Mapping</h2>
-<p>The recommended deployment maps <code>/data</code> as a bind mount or named volume:</p>
+<h2 id="docker-volume-configuration">Docker Volume Configuration</h2>
+<p>In Docker deployments, the <code>/data/</code> directory must be mounted as a persistent volume to survive container restarts.</p>
+<p>From the <code>docker-compose.yaml</code>:</p>
 <div class="highlight"><pre><span></span><code><span class="nt">services</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">docsfy</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">build</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">.</span>
@@ -461,64 +510,112 @@
 <span class="w">      </span><span class="nt">retries</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3</span>
 </code></pre></div>
 
-<p>The container runs as a non-root user (<code>appuser</code>) for OpenShift compatibility. The <code>/data</code> directory must be writable by this user.</p>
-<blockquote>
-<p><strong>Warning:</strong> If you use a bind mount (<code>./data:/data</code>), ensure the host directory exists and has appropriate permissions before starting the container.</p>
-</blockquote>
-<h2 id="storage-management">Storage Management</h2>
-<h3 id="removing-a-project">Removing a Project</h3>
-<p>Use the API to cleanly remove a project and all its associated storage:</p>
-<div class="highlight"><pre><span></span><code>DELETE /api/projects/{name}
-</code></pre></div>
-
-<p>This removes:
-- The project record from the SQLite database
-- The entire <code>/data/projects/{name}/</code> directory tree (plan, cache, and site)</p>
-<h3 id="disk-space-considerations">Disk Space Considerations</h3>
-<p>Each generated project consumes disk space across three areas:</p>
 <table>
 <thead>
 <tr>
-<th>Area</th>
-<th>Contents</th>
-<th>Relative Size</th>
+<th>Volume Mount</th>
+<th>Purpose</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>plan.json</code></td>
-<td>Documentation structure</td>
-<td>Small (a few KB)</td>
+<td><code>./data:/data</code></td>
+<td>Persistent storage for SQLite database and all project files</td>
 </tr>
 <tr>
-<td><code>cache/pages/</code></td>
-<td>AI-generated markdown</td>
-<td>Moderate (depends on page count)</td>
+<td><code>~/.config/gcloud:.../:ro</code></td>
+<td>Google Cloud credentials for Vertex AI (read-only)</td>
 </tr>
 <tr>
-<td><code>site/</code></td>
-<td>Rendered HTML + assets + search index</td>
-<td>Largest (HTML + bundled JS/CSS)</td>
+<td><code>./cursor:.../.config/cursor</code></td>
+<td>Cursor agent configuration</td>
 </tr>
 </tbody>
 </table>
-<p>The SQLite database (<code>docsfy.db</code>) itself remains small, as it stores only metadata — not page content.</p>
 <blockquote>
-<p><strong>Tip:</strong> To reclaim space without losing the ability to re-render, you can delete the <code>site/</code> directory for a project. The cached markdown and plan can be used to regenerate the HTML without re-invoking the AI.</p>
+<p><strong>Warning:</strong> If the <code>/data</code> volume is not mounted, all generated documentation will be lost when the container is restarted. Always configure a persistent volume mount in production.</p>
+</blockquote>
+<h3 id="file-permissions">File Permissions</h3>
+<p>The Docker container runs as a non-root user (<code>appuser</code>) with GID 0 for OpenShift compatibility. Ensure the host directory mapped to <code>/data</code> is writable by this user:</p>
+<div class="highlight"><pre><span></span><code>mkdir<span class="w"> </span>-p<span class="w"> </span>./data
+chmod<span class="w"> </span><span class="m">775</span><span class="w"> </span>./data
+</code></pre></div>
+
+<h2 id="storage-related-api-reference">Storage-Related API Reference</h2>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Endpoint</th>
+<th>Storage Interaction</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>POST</code></td>
+<td><code>/api/generate</code></td>
+<td>Creates project record in SQLite; writes <code>plan.json</code>, <code>cache/pages/*.md</code>, and <code>site/</code> to filesystem</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/api/status</code></td>
+<td>Reads all project records from SQLite</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/api/projects/{name}</code></td>
+<td>Reads project metadata from SQLite</td>
+</tr>
+<tr>
+<td><code>DELETE</code></td>
+<td><code>/api/projects/{name}</code></td>
+<td>Deletes project record from SQLite; removes <code>/data/projects/{name}/</code> directory</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/api/projects/{name}/download</code></td>
+<td>Reads <code>site/</code> directory; returns as <code>.tar.gz</code> archive</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/docs/{project}/{path}</code></td>
+<td>Serves static files from <code>site/</code> directory</td>
+</tr>
+</tbody>
+</table>
+<h2 id="backup-and-recovery">Backup and Recovery</h2>
+<p>Because docsfy uses SQLite and the filesystem, backups are straightforward:</p>
+<h3 id="full-backup">Full Backup</h3>
+<p>Back up the entire <code>/data/</code> directory to capture both the database and all project files:</p>
+<div class="highlight"><pre><span></span><code>tar<span class="w"> </span>-czf<span class="w"> </span>docsfy-backup-<span class="k">$(</span>date<span class="w"> </span>+%Y%m%d<span class="k">)</span>.tar.gz<span class="w"> </span>/data/
+</code></pre></div>
+
+<h3 id="database-only-backup">Database-Only Backup</h3>
+<p>To back up just the project metadata:</p>
+<div class="highlight"><pre><span></span><code>sqlite3<span class="w"> </span>/data/docsfy.db<span class="w"> </span><span class="s2">&quot;.backup /backups/docsfy-</span><span class="k">$(</span>date<span class="w"> </span>+%Y%m%d<span class="k">)</span><span class="s2">.db&quot;</span>
+</code></pre></div>
+
+<h3 id="recovery">Recovery</h3>
+<p>Restore from a full backup:</p>
+<div class="highlight"><pre><span></span><code>tar<span class="w"> </span>-xzf<span class="w"> </span>docsfy-backup-20260304.tar.gz<span class="w"> </span>-C<span class="w"> </span>/
+</code></pre></div>
+
+<blockquote>
+<p><strong>Tip:</strong> Since cached markdown and rendered HTML can always be regenerated from the source repository, a database-only backup is sufficient for disaster recovery — though regeneration will consume AI API credits.</p>
 </blockquote>
                 </div>
             </article>
             <nav class="page-nav">
                 
-                <a href="ai-cli-integration.html" class="page-nav-link page-nav-prev">
+                <a href="generation-pipeline.html" class="page-nav-link page-nav-prev">
                     <span class="page-nav-label">Previous</span>
-                    <span class="page-nav-title">AI CLI Integration</span>
+                    <span class="page-nav-title">Generation Pipeline</span>
                 </a>
                 
                 
-                <a href="html-renderer.html" class="page-nav-link page-nav-next">
+                <a href="html-theming.html" class="page-nav-link page-nav-next">
                     <span class="page-nav-label">Next</span>
-                    <span class="page-nav-title">HTML Renderer</span>
+                    <span class="page-nav-title">HTML Theming &amp; Output</span>
                 </a>
                 
             </nav>
@@ -528,31 +625,31 @@
                     <h3>On this page</h3>
                     <div class="toc">
 <ul>
-<li><a href="#storage-overview">Storage Overview</a></li>
+<li><a href="#storage-architecture-overview">Storage Architecture Overview</a></li>
 <li><a href="#sqlite-database">SQLite Database</a><ul>
-<li><a href="#location">Location</a></li>
-<li><a href="#schema">Schema</a></li>
+<li><a href="#why-sqlite">Why SQLite?</a></li>
+<li><a href="#what-the-database-stores">What the Database Stores</a></li>
 <li><a href="#project-status-lifecycle">Project Status Lifecycle</a></li>
-<li><a href="#incremental-update-tracking">Incremental Update Tracking</a></li>
+<li><a href="#querying-project-metadata">Querying Project Metadata</a></li>
+<li><a href="#commit-sha-tracking">Commit SHA Tracking</a></li>
 </ul>
 </li>
-<li><a href="#filesystem-layout">Filesystem Layout</a><ul>
-<li><a href="#per-project-directory">Per-Project Directory</a></li>
-<li><a href="#planjson-documentation-structure">plan.json — Documentation Structure</a></li>
-<li><a href="#cachepages-markdown-cache">cache/pages/ — Markdown Cache</a></li>
-<li><a href="#site-rendered-html-output">site/ — Rendered HTML Output</a></li>
+<li><a href="#filesystem-storage">Filesystem Storage</a><ul>
+<li><a href="#plan-files">Plan Files</a></li>
+<li><a href="#cached-markdown-pages">Cached Markdown Pages</a></li>
+<li><a href="#rendered-html-sites">Rendered HTML Sites</a></li>
 </ul>
 </li>
-<li><a href="#search-index">Search Index</a><ul>
-<li><a href="#how-it-works">How It Works</a></li>
-<li><a href="#search-indexjson">search-index.json</a></li>
-<li><a href="#searchjs">search.js</a></li>
+<li><a href="#incremental-updates">Incremental Updates</a></li>
+<li><a href="#docker-volume-configuration">Docker Volume Configuration</a><ul>
+<li><a href="#file-permissions">File Permissions</a></li>
 </ul>
 </li>
-<li><a href="#docker-volume-mapping">Docker Volume Mapping</a></li>
-<li><a href="#storage-management">Storage Management</a><ul>
-<li><a href="#removing-a-project">Removing a Project</a></li>
-<li><a href="#disk-space-considerations">Disk Space Considerations</a></li>
+<li><a href="#storage-related-api-reference">Storage-Related API Reference</a></li>
+<li><a href="#backup-and-recovery">Backup and Recovery</a><ul>
+<li><a href="#full-backup">Full Backup</a></li>
+<li><a href="#database-only-backup">Database-Only Backup</a></li>
+<li><a href="#recovery">Recovery</a></li>
 </ul>
 </li>
 </ul>

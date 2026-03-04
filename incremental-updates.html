@@ -4,14 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Incremental Updates - docsfy</title>
-    <meta name="description" content="AI-powered documentation generator that creates polished, Mintlify-quality static HTML sites from GitHub repositories">
+    <meta name="description" content="AI-powered documentation generator that creates polished, Mintlify-quality static HTML sites from GitHub repositories.">
     <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <a href="index.html" class="sidebar-logo">docsfy</a>
-            <p class="sidebar-tagline">AI-powered documentation generator that creates polished, Mintlify-quality static HTML sites from GitHub repositories</p>
+            <p class="sidebar-tagline">AI-powered documentation generator that creates polished, Mintlify-quality static HTML sites from GitHub repositories.</p>
         </div>
 
         <div class="sidebar-search">
@@ -89,16 +89,23 @@
                     </li>
                     
                     <li>
-                        <a href="serving-docs.html"
-                           class="nav-link">
-                            Serving Documentation
+                        <a href="incremental-updates.html"
+                           class="nav-link active">
+                            Incremental Updates
                         </a>
                     </li>
                     
                     <li>
-                        <a href="incremental-updates.html"
-                           class="nav-link active">
-                            Incremental Updates
+                        <a href="downloading-and-self-hosting.html"
+                           class="nav-link">
+                            Downloading &amp; Self-Hosting
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="managing-projects.html"
+                           class="nav-link">
+                            Managing Projects
                         </a>
                     </li>
                     
@@ -117,13 +124,6 @@
                     </li>
                     
                     <li>
-                        <a href="ai-cli-integration.html"
-                           class="nav-link">
-                            AI CLI Integration
-                        </a>
-                    </li>
-                    
-                    <li>
                         <a href="storage-and-database.html"
                            class="nav-link">
                             Storage &amp; Database
@@ -131,9 +131,9 @@
                     </li>
                     
                     <li>
-                        <a href="html-renderer.html"
+                        <a href="html-theming.html"
                            class="nav-link">
-                            HTML Renderer
+                            HTML Theming &amp; Output
                         </a>
                     </li>
                     
@@ -143,6 +143,13 @@
             <div class="nav-group">
                 <h3 class="nav-group-title">API Reference</h3>
                 <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="api-overview.html"
+                           class="nav-link">
+                            API Overview
+                        </a>
+                    </li>
                     
                     <li>
                         <a href="api-generate.html"
@@ -161,21 +168,7 @@
                     <li>
                         <a href="api-projects.html"
                            class="nav-link">
-                            GET /api/projects/{name}
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="api-projects-delete.html"
-                           class="nav-link">
-                            DELETE /api/projects/{name}
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="api-projects-download.html"
-                           class="nav-link">
-                            GET /api/projects/{name}/download
+                            Project Endpoints
                         </a>
                     </li>
                     
@@ -208,9 +201,9 @@
                     </li>
                     
                     <li>
-                        <a href="tech-stack.html"
+                        <a href="project-structure.html"
                            class="nav-link">
-                            Technology Stack
+                            Project Structure
                         </a>
                     </li>
                     
@@ -257,341 +250,296 @@
                 <h1 class="article-title">Incremental Updates</h1>
                 <div class="article-body">
                     <h1 id="incremental-updates">Incremental Updates</h1>
-<p>docsfy uses an incremental update strategy to avoid regenerating entire documentation sites when only part of a repository has changed. By tracking commit SHAs and comparing documentation plans, docsfy intelligently determines which pages need regeneration — saving time, reducing AI costs, and delivering faster updates.</p>
+<p>docsfy tracks repository state between generation runs so that subsequent requests skip unchanged content. Instead of regenerating an entire documentation site from scratch, docsfy compares commit SHAs, detects structural changes in the documentation plan, and selectively regenerates only the pages affected by new commits. This reduces both generation time and AI token usage.</p>
 <h2 id="how-it-works">How It Works</h2>
-<p>The incremental update pipeline follows a layered change-detection approach. Rather than regenerating every page on each request, docsfy compares the current repository state against the last successful generation and narrows down the work to only what has changed.</p>
-<div class="highlight"><pre><span></span><code>POST /api/generate (repo URL)
-        │
-        v
-┌─────────────────────────┐
-│  Fetch repo &amp; get HEAD  │
-│  commit SHA             │
-└────────────┬────────────┘
-             │
-             v
-┌─────────────────────────┐     match
-│  Compare SHA against    ├────────────► No changes — skip generation
-│  stored SHA in SQLite   │
-└────────────┬────────────┘
-             │ different
-             v
-┌─────────────────────────┐     unchanged
-│  Re-run AI Planner      ├────────────► Regenerate only affected pages
-│  Compare new plan.json  │
-│  against cached plan    │
-└────────────┬────────────┘
-             │ changed
-             v
-┌─────────────────────────┐
-│  Full regeneration      │
-│  (new structure)        │
-└─────────────────────────┘
+<p>Incremental updates operate through a layered comparison strategy. Each layer acts as a gate — if no changes are detected, docsfy skips all downstream work.</p>
+<div class="highlight"><pre><span></span><code>Generate request received
+│
+├── Fetch current repo HEAD SHA
+├── Query SQLite for stored SHA
+│
+├── SHAs match?
+│   └── YES → Serve cached site (zero work)
+│
+└── NO → Clone repo
+    ├── Run AI Planner → produce new plan.json
+    ├── Compare new plan.json against cached plan.json
+    │
+    ├── Plan structure changed?
+    │   └── YES → Regenerate ALL pages
+    │
+    └── NO → Identify changed files between commits
+        ├── For each page in plan.json:
+        │   ├── Depends on changed files? → Regenerate
+        │   └── No dependency? → Reuse cached markdown
+        └── Render HTML from all pages
 </code></pre></div>
 
-<p>The process breaks down into three layers of detection:</p>
+<p>There are three distinct levels of optimization:</p>
 <ol>
-<li><strong>Commit SHA comparison</strong> — Has the repository changed at all?</li>
-<li><strong>Plan structure comparison</strong> — Has the documentation structure changed?</li>
-<li><strong>Affected page identification</strong> — Which specific pages need new content?</li>
+<li>
+<p><strong>SHA comparison</strong> — the cheapest check. If the repository HEAD hasn't changed since the last generation, docsfy serves the existing static site immediately with no AI calls.</p>
+</li>
+<li>
+<p><strong>Plan stability detection</strong> — if the repository changed but the documentation structure (pages, sections, navigation) remains the same, docsfy only regenerates pages that reference modified source files.</p>
+</li>
+<li>
+<p><strong>Full regeneration</strong> — when the documentation plan itself changes (new pages added, pages removed, navigation restructured), docsfy regenerates all content to ensure consistency.</p>
+</li>
 </ol>
 <h2 id="commit-sha-tracking">Commit SHA Tracking</h2>
-<p>Every time docsfy generates documentation for a project, it records the HEAD commit SHA of the repository in its SQLite database. This SHA serves as the primary checkpoint for detecting changes.</p>
-<h3 id="storage">Storage</h3>
-<p>The commit SHA is stored alongside other project metadata in the SQLite database at <code>/data/docsfy.db</code>:</p>
-<div class="highlight"><pre><span></span><code>Project name, repo URL, status (generating / ready / error)
-Last generated timestamp, last commit SHA
-Generation history and logs
-</code></pre></div>
+<p>docsfy stores the last successfully generated commit SHA for each project in its SQLite database at <code>/data/docsfy.db</code>.</p>
+<p>The projects table tracks:</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>project_name</code></td>
+<td><code>TEXT</code></td>
+<td>Unique project identifier</td>
+</tr>
+<tr>
+<td><code>repo_url</code></td>
+<td><code>TEXT</code></td>
+<td>Repository URL</td>
+</tr>
+<tr>
+<td><code>status</code></td>
+<td><code>TEXT</code></td>
+<td><code>generating</code> / <code>ready</code> / <code>error</code></td>
+</tr>
+<tr>
+<td><code>last_commit_sha</code></td>
+<td><code>TEXT</code></td>
+<td>HEAD SHA at last successful generation</td>
+</tr>
+<tr>
+<td><code>last_generated</code></td>
+<td><code>DATETIME</code></td>
+<td>Timestamp of last generation</td>
+</tr>
+<tr>
+<td><code>generation_history</code></td>
+<td><code>TEXT</code></td>
+<td>Logs and history</td>
+</tr>
+</tbody>
+</table>
+<p>When a <code>POST /api/generate</code> request arrives for a repository that has already been generated, docsfy fetches the current HEAD SHA from the remote repository and compares it against <code>last_commit_sha</code> in the database:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Pseudocode for the SHA comparison gate</span>
+<span class="n">stored_sha</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">get_last_commit_sha</span><span class="p">(</span><span class="n">project_name</span><span class="p">)</span>
+<span class="n">current_sha</span> <span class="o">=</span> <span class="n">git</span><span class="o">.</span><span class="n">ls_remote</span><span class="p">(</span><span class="n">repo_url</span><span class="p">,</span> <span class="s2">&quot;HEAD&quot;</span><span class="p">)</span>
 
-<p>When a regeneration request arrives via <code>POST /api/generate</code>, docsfy performs a shallow clone of the repository and compares the current HEAD SHA against the stored value:</p>
-<div class="highlight"><pre><span></span><code>1. Track last commit SHA per project in SQLite
-2. On re-generate: fetch repo, compare current SHA against stored SHA
-</code></pre></div>
+<span class="k">if</span> <span class="n">stored_sha</span> <span class="o">==</span> <span class="n">current_sha</span><span class="p">:</span>
+    <span class="c1"># No changes — serve cached site</span>
+    <span class="k">return</span> <span class="n">cached_site_response</span><span class="p">(</span><span class="n">project_name</span><span class="p">)</span>
 
-<p>If the SHAs match, the repository hasn't changed since the last generation, and docsfy can skip regeneration entirely.</p>
-<h3 id="querying-project-state">Querying Project State</h3>
-<p>You can inspect a project's current commit SHA and generation status through the API:</p>
-<div class="highlight"><pre><span></span><code>GET /api/projects/{name}
-</code></pre></div>
-
-<p>This endpoint returns project details including the last generated timestamp and the commit SHA from the most recent successful generation.</p>
-<h2 id="change-detection-pipeline">Change Detection Pipeline</h2>
-<p>When the commit SHA has changed, docsfy proceeds through its four-stage generation pipeline — but with intelligent shortcuts for incremental updates.</p>
-<h3 id="stage-1-clone-repository">Stage 1: Clone Repository</h3>
-<p>docsfy performs a shallow clone to minimize bandwidth and disk usage:</p>
-<div class="highlight"><pre><span></span><code>Shallow clone (--depth 1) to a temporary directory
+<span class="c1"># Repository has new commits — proceed with incremental update</span>
 </code></pre></div>
 
 <blockquote>
-<p><strong>Note:</strong> Shallow cloning with <code>--depth 1</code> means docsfy only fetches the latest commit. This is sufficient for documentation generation since docsfy needs the current state of the codebase, not its full history.</p>
+<p><strong>Note:</strong> The initial clone uses <code>git clone --depth 1</code> for speed, fetching only the latest commit. This is sufficient because docsfy relies on the AI to analyze the current state of the repository, not the full commit history.</p>
 </blockquote>
-<h3 id="stage-2-ai-planner-structure-comparison">Stage 2: AI Planner (Structure Comparison)</h3>
-<p>This is the critical decision point for incremental updates. docsfy re-runs the AI Planner against the updated repository to produce a new <code>plan.json</code>:</p>
-<div class="highlight"><pre><span></span><code>AI CLI runs with cwd set to the cloned repo directory
-AI has full access to explore the entire repository
-Output: plan.json containing pages, sections, and navigation hierarchy
+<h2 id="cached-artifacts">Cached Artifacts</h2>
+<p>docsfy maintains a layered cache on the filesystem that enables selective regeneration:</p>
+<div class="highlight"><pre><span></span><code>/data/projects/{project-name}/
+├── plan.json              # Documentation structure from AI Planner
+├── cache/
+│   └── pages/
+│       ├── overview.md        # Cached AI-generated markdown
+│       ├── getting-started.md
+│       ├── api-reference.md
+│       └── ...
+└── site/                  # Final rendered HTML
+    ├── index.html
+    ├── overview.html
+    ├── getting-started.html
+    ├── assets/
+    │   ├── style.css
+    │   ├── search.js
+    │   ├── theme-toggle.js
+    │   └── highlight.js
+    └── search-index.json
 </code></pre></div>
 
-<p>The new plan is compared against the previously cached plan at <code>/data/projects/{name}/plan.json</code>. Two outcomes are possible:</p>
+<p>Each layer serves a specific role in incremental updates:</p>
+<ul>
+<li><strong><code>plan.json</code></strong> — the previous documentation plan. Compared against the newly generated plan to detect structural changes.</li>
+<li><strong><code>cache/pages/*.md</code></strong> — individual markdown files produced by the AI Content Generator. Pages that are unaffected by repository changes are served directly from this cache, avoiding redundant AI calls.</li>
+<li><strong><code>site/</code></strong> — the final HTML output. Always regenerated from markdown and <code>plan.json</code> during the HTML Renderer stage (Stage 4), since rendering is fast and deterministic.</li>
+</ul>
+<h2 id="the-incremental-update-pipeline">The Incremental Update Pipeline</h2>
+<p>When docsfy detects a new commit SHA, it re-runs the generation pipeline with incremental logic injected into Stages 2 and 3.</p>
+<h3 id="stage-1-clone-repository">Stage 1: Clone Repository</h3>
+<p>The repository is shallow-cloned to a temporary directory, identical to a fresh generation:</p>
+<div class="highlight"><pre><span></span><code>git<span class="w"> </span>clone<span class="w"> </span>--depth<span class="w"> </span><span class="m">1</span><span class="w"> </span>&lt;repo_url&gt;<span class="w"> </span>&lt;temp_dir&gt;
+</code></pre></div>
+
+<p>The temporary directory is deleted after generation completes.</p>
+<h3 id="stage-2-ai-planner-change-detection">Stage 2: AI Planner (Change Detection)</h3>
+<p>The AI Planner runs against the newly cloned repository to produce a fresh <code>plan.json</code>. This new plan is then compared against the cached <code>plan.json</code> from the previous generation.</p>
+<div class="highlight"><pre><span></span><code><span class="n">old_plan</span> <span class="o">=</span> <span class="n">load_json</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;/data/projects/</span><span class="si">{</span><span class="n">project_name</span><span class="si">}</span><span class="s2">/plan.json&quot;</span><span class="p">)</span>
+<span class="n">new_plan</span> <span class="o">=</span> <span class="n">run_ai_planner</span><span class="p">(</span><span class="n">cloned_repo_path</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="n">old_plan</span> <span class="o">==</span> <span class="n">new_plan</span><span class="p">:</span>
+    <span class="c1"># Structure unchanged — selective regeneration possible</span>
+    <span class="n">affected_pages</span> <span class="o">=</span> <span class="n">identify_affected_pages</span><span class="p">(</span><span class="n">old_commit_sha</span><span class="p">,</span> <span class="n">new_commit_sha</span><span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="c1"># Structure changed — must regenerate everything</span>
+    <span class="n">affected_pages</span> <span class="o">=</span> <span class="n">all_pages_in</span><span class="p">(</span><span class="n">new_plan</span><span class="p">)</span>
+    <span class="n">save_json</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;/data/projects/</span><span class="si">{</span><span class="n">project_name</span><span class="si">}</span><span class="s2">/plan.json&quot;</span><span class="p">,</span> <span class="n">new_plan</span><span class="p">)</span>
+</code></pre></div>
+
+<blockquote>
+<p><strong>Tip:</strong> The AI Planner always runs during an incremental update, even if only a single file changed. This ensures docsfy detects cases where a small code change warrants a new documentation page or a restructured navigation hierarchy.</p>
+</blockquote>
+<h3 id="stage-3-ai-content-generator-selective-regeneration">Stage 3: AI Content Generator (Selective Regeneration)</h3>
+<p>This is where the primary savings occur. Only pages in the <code>affected_pages</code> set are sent to the AI for regeneration. All other pages are served from the markdown cache:</p>
+<div class="highlight"><pre><span></span><code><span class="k">for</span> <span class="n">page</span> <span class="ow">in</span> <span class="n">plan</span><span class="p">[</span><span class="s2">&quot;pages&quot;</span><span class="p">]:</span>
+    <span class="k">if</span> <span class="n">page</span> <span class="ow">in</span> <span class="n">affected_pages</span><span class="p">:</span>
+        <span class="c1"># Run AI CLI to regenerate this page</span>
+        <span class="n">markdown</span> <span class="o">=</span> <span class="k">await</span> <span class="n">run_ai_generator</span><span class="p">(</span><span class="n">cloned_repo_path</span><span class="p">,</span> <span class="n">page</span><span class="p">)</span>
+        <span class="n">save_to_cache</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;/data/projects/</span><span class="si">{</span><span class="n">project_name</span><span class="si">}</span><span class="s2">/cache/pages/</span><span class="si">{</span><span class="n">page</span><span class="si">}</span><span class="s2">.md&quot;</span><span class="p">,</span> <span class="n">markdown</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># Reuse existing cached markdown</span>
+        <span class="n">markdown</span> <span class="o">=</span> <span class="n">load_from_cache</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;/data/projects/</span><span class="si">{</span><span class="n">project_name</span><span class="si">}</span><span class="s2">/cache/pages/</span><span class="si">{</span><span class="n">page</span><span class="si">}</span><span class="s2">.md&quot;</span><span class="p">)</span>
+</code></pre></div>
+
+<p>Pages are generated concurrently using async execution with semaphore-limited concurrency, so even when multiple pages need regeneration, they run in parallel:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Concurrent generation with bounded parallelism</span>
+<span class="k">async</span> <span class="k">with</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Semaphore</span><span class="p">(</span><span class="n">max_concurrent</span><span class="p">):</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="o">*</span><span class="p">[</span>
+        <span class="n">generate_page</span><span class="p">(</span><span class="n">page</span><span class="p">)</span> <span class="k">for</span> <span class="n">page</span> <span class="ow">in</span> <span class="n">affected_pages</span>
+    <span class="p">])</span>
+</code></pre></div>
+
+<h3 id="stage-4-html-renderer">Stage 4: HTML Renderer</h3>
+<p>The HTML Renderer always runs in full. It converts all markdown pages (both cached and freshly generated) into the final static HTML site using Jinja2 templates. Since this stage is purely deterministic and fast (no AI calls), there is no need for selective rendering.</p>
+<h2 id="ai-usage-savings">AI Usage Savings</h2>
+<p>The incremental update system dramatically reduces AI token consumption on subsequent runs:</p>
 <table>
 <thead>
 <tr>
 <th>Scenario</th>
-<th>Action</th>
+<th>AI Planner Calls</th>
+<th>AI Content Generator Calls</th>
+<th>Savings</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Plan structure changed (pages added, removed, or reordered)</td>
-<td>Full regeneration of all pages</td>
+<td>No changes (SHA match)</td>
+<td>0</td>
+<td>0</td>
+<td>100%</td>
 </tr>
 <tr>
-<td>Plan structure unchanged (same pages, same hierarchy)</td>
-<td>Regenerate only affected pages</td>
+<td>Code changes, plan unchanged, 2 of 10 pages affected</td>
+<td>1</td>
+<td>2</td>
+<td>~80%</td>
+</tr>
+<tr>
+<td>Code changes, plan structure changed</td>
+<td>1</td>
+<td>All pages</td>
+<td>0% (full regen)</td>
+</tr>
+<tr>
+<td>First generation</td>
+<td>1</td>
+<td>All pages</td>
+<td>N/A (baseline)</td>
 </tr>
 </tbody>
 </table>
-<h3 id="stage-3-selective-content-generation">Stage 3: Selective Content Generation</h3>
-<p>When the plan structure is unchanged, docsfy identifies which pages are likely affected by the repository changes and regenerates only those:</p>
-<div class="highlight"><pre><span></span><code>If plan structure is unchanged and only specific files changed,
-regenerate relevant pages only
-</code></pre></div>
-
-<p>Pages that are unaffected by the changes are served from the cached markdown files:</p>
-<div class="highlight"><pre><span></span><code>/data/projects/{project-name}/
-  plan.json             # doc structure from AI
-  cache/
-    pages/*.md          # AI-generated markdown (cached for incremental updates)
-</code></pre></div>
-
-<p>For each page defined in <code>plan.json</code>, docsfy either:
-- <strong>Regenerates</strong> the page if its content may be affected by the repository changes
-- <strong>Reuses</strong> the cached markdown from <code>/data/projects/{name}/cache/pages/*.md</code></p>
 <blockquote>
-<p><strong>Tip:</strong> Pages are generated concurrently using async execution with semaphore-limited concurrency. During incremental updates, only the subset of affected pages consumes AI resources, making the process significantly faster.</p>
+<p><strong>Note:</strong> The AI Planner call is relatively inexpensive compared to content generation calls. The Content Generator is where the bulk of AI usage occurs, since each page requires the AI to explore and analyze relevant portions of the codebase.</p>
 </blockquote>
-<h3 id="stage-4-html-rendering">Stage 4: HTML Rendering</h3>
-<p>After content generation (whether full or partial), the HTML renderer rebuilds the complete static site:</p>
-<div class="highlight"><pre><span></span><code>/data/projects/{project-name}/
-  site/                 # final rendered HTML
-    index.html
-    *.html
-    assets/
-      style.css
-      search.js
-      theme-toggle.js
-      highlight.js
-    search-index.json
+<h2 id="api-behavior">API Behavior</h2>
+<p>Incremental updates are triggered automatically. When you submit a <code>POST /api/generate</code> request for a repository that has already been generated, docsfy performs the SHA comparison and runs the incremental pipeline if changes are detected:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># First generation — full pipeline</span>
+curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/api/generate<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{&quot;repo_url&quot;: &quot;https://github.com/user/repo&quot;}&#39;</span>
+
+<span class="c1"># Subsequent call — incremental update (automatic)</span>
+curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/api/generate<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{&quot;repo_url&quot;: &quot;https://github.com/user/repo&quot;}&#39;</span>
 </code></pre></div>
 
-<p>The renderer uses Jinja2 templates to convert all markdown pages (both newly generated and cached) along with <code>plan.json</code> into the final static HTML site with sidebar navigation, search index, and themed styling.</p>
+<p>You can inspect the current commit SHA and generation status for any project:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Check project details including last commit SHA</span>
+curl<span class="w"> </span>http://localhost:8000/api/projects/repo
+</code></pre></div>
+
+<p>The response includes <code>last_commit_sha</code> and <code>last_generated</code> fields, allowing you to verify which commit the current documentation reflects.</p>
+<p>To force a full regeneration, delete the project and regenerate:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Delete cached project (clears all state)</span>
+curl<span class="w"> </span>-X<span class="w"> </span>DELETE<span class="w"> </span>http://localhost:8000/api/projects/repo
+
+<span class="c1"># Regenerate from scratch</span>
+curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/api/generate<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{&quot;repo_url&quot;: &quot;https://github.com/user/repo&quot;}&#39;</span>
+</code></pre></div>
+
 <blockquote>
-<p><strong>Note:</strong> The HTML rendering stage always runs in full, even during incremental updates. This ensures the search index, navigation, and cross-page links remain consistent across the entire site.</p>
+<p><strong>Warning:</strong> Deleting a project removes all cached artifacts including <code>plan.json</code>, cached markdown, and the rendered site. The next generation will run the full pipeline with no incremental benefits.</p>
 </blockquote>
-<h2 id="cache-structure">Cache Structure</h2>
-<p>docsfy maintains a layered cache on the filesystem that enables incremental updates:</p>
-<div class="highlight"><pre><span></span><code>/data/projects/{project-name}/
-  plan.json             # doc structure from AI
-  cache/
-    pages/*.md          # AI-generated markdown (cached for incremental updates)
-  site/                 # final rendered HTML
-    index.html
-    *.html
-    assets/
-      style.css
-      search.js
-      theme-toggle.js
-      highlight.js
-    search-index.json
-</code></pre></div>
-
-<table>
-<thead>
-<tr>
-<th>Path</th>
-<th>Purpose</th>
-<th>Used During Incremental Updates</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>plan.json</code></td>
-<td>Documentation structure and navigation hierarchy</td>
-<td>Compared against new plan to detect structural changes</td>
-</tr>
-<tr>
-<td><code>cache/pages/*.md</code></td>
-<td>AI-generated markdown per page</td>
-<td>Reused for pages unaffected by changes</td>
-</tr>
-<tr>
-<td><code>site/</code></td>
-<td>Final rendered HTML output</td>
-<td>Rebuilt entirely after content generation</td>
-</tr>
-</tbody>
-</table>
-<h2 id="ai-provider-integration">AI Provider Integration</h2>
-<p>Incremental updates work identically across all supported AI providers. The AI Planner and Content Generator stages use the configured provider:</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># AI Configuration</span>
-<span class="nv">AI_PROVIDER</span><span class="o">=</span>claude
-<span class="nv">AI_MODEL</span><span class="o">=</span>claude-opus-4-6<span class="o">[</span>1m<span class="o">]</span>
-<span class="nv">AI_CLI_TIMEOUT</span><span class="o">=</span><span class="m">60</span>
-</code></pre></div>
-
-<table>
-<thead>
-<tr>
-<th>Provider</th>
-<th>Binary</th>
-<th>CWD Handling</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Claude</td>
-<td><code>claude</code></td>
-<td>subprocess <code>cwd</code> = repo path</td>
-</tr>
-<tr>
-<td>Gemini</td>
-<td><code>gemini</code></td>
-<td>subprocess <code>cwd</code> = repo path</td>
-</tr>
-<tr>
-<td>Cursor</td>
-<td><code>agent</code></td>
-<td><code>--workspace</code> flag</td>
-</tr>
-</tbody>
-</table>
-<p>The provider configuration follows a consistent pattern:</p>
-<div class="highlight"><pre><span></span><code><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="k">class</span><span class="w"> </span><span class="nc">ProviderConfig</span><span class="p">:</span>
-    <span class="n">binary</span><span class="p">:</span> <span class="nb">str</span>
-    <span class="n">build_cmd</span><span class="p">:</span> <span class="n">Callable</span>
-    <span class="n">uses_own_cwd</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
-</code></pre></div>
-
-<p>During incremental updates, the AI CLI is invoked only for the planner step and for pages that need regeneration — unaffected pages skip AI invocation entirely.</p>
-<blockquote>
-<p><strong>Tip:</strong> Incremental updates can substantially reduce AI CLI usage. If a repository change only affects one module, only the pages documenting that module are regenerated, while all other pages are served from cache.</p>
-</blockquote>
-<h2 id="triggering-incremental-updates">Triggering Incremental Updates</h2>
-<p>Incremental updates are triggered automatically when you call the generate endpoint for a project that has already been generated:</p>
-<div class="highlight"><pre><span></span><code>POST /api/generate
-</code></pre></div>
-
-<p>The flow is:</p>
-<ol>
-<li><strong>First generation</strong> — Full pipeline runs: clone, plan, generate all pages, render HTML. The commit SHA and all artifacts are stored.</li>
-<li><strong>Subsequent generations</strong> — Incremental pipeline: clone, compare SHA, compare plan, regenerate only affected pages, re-render HTML. The stored SHA is updated.</li>
-</ol>
-<blockquote>
-<p><strong>Warning:</strong> If the cached artifacts under <code>/data/projects/{name}/</code> are deleted or corrupted, docsfy will fall back to a full regeneration regardless of the commit SHA comparison.</p>
-</blockquote>
-<h2 id="monitoring-generation-status">Monitoring Generation Status</h2>
-<p>You can monitor whether a project is undergoing a full or incremental generation through the status API:</p>
-<div class="highlight"><pre><span></span><code>GET /api/status          # List all projects and their generation status
-GET /api/projects/{name} # Get project details (last generated, commit SHA, pages)
-</code></pre></div>
-
-<p>Project status values:</p>
-<table>
-<thead>
-<tr>
-<th>Status</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>generating</code></td>
-<td>Generation in progress (full or incremental)</td>
-</tr>
-<tr>
-<td><code>ready</code></td>
-<td>Documentation is up to date and being served</td>
-</tr>
-<tr>
-<td><code>error</code></td>
-<td>Generation failed — check logs for details</td>
-</tr>
-</tbody>
-</table>
-<h2 id="deployment-considerations">Deployment Considerations</h2>
-<h3 id="persistent-storage">Persistent Storage</h3>
-<p>For incremental updates to work, the data volume must persist between container restarts:</p>
-<div class="highlight"><pre><span></span><code><span class="nt">services</span><span class="p">:</span>
+<h2 id="storage-configuration">Storage Configuration</h2>
+<p>All state required for incremental updates is stored under the <code>/data</code> volume:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># docker-compose.yaml</span>
+<span class="nt">services</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">docsfy</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">build</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">.</span>
 <span class="w">    </span><span class="nt">ports</span><span class="p">:</span>
 <span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;8000:8000&quot;</span>
 <span class="w">    </span><span class="nt">env_file</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">.env</span>
 <span class="w">    </span><span class="nt">volumes</span><span class="p">:</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./data:/data</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./data:/data</span><span class="w">    </span><span class="c1"># Persists SQLite DB and project caches</span>
 </code></pre></div>
 
-<p>The <code>./data:/data</code> volume mount ensures that both the SQLite database (with commit SHAs) and the filesystem cache (with generated markdown and HTML) survive container restarts.</p>
-<blockquote>
-<p><strong>Warning:</strong> Without persistent storage, docsfy loses all cached artifacts and commit SHA records, forcing a full regeneration on every request. Always mount the <code>/data</code> volume in production deployments.</p>
-</blockquote>
-<h3 id="health-checks">Health Checks</h3>
-<p>The health check endpoint verifies that the service is operational, including access to the SQLite database where commit SHAs are tracked:</p>
-<div class="highlight"><pre><span></span><code><span class="nt">healthcheck</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">test</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;CMD&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;curl&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;-f&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;http://localhost:8000/health&quot;</span><span class="p p-Indicator">]</span>
-<span class="w">  </span><span class="nt">interval</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">30s</span>
-<span class="w">  </span><span class="nt">timeout</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10s</span>
-<span class="w">  </span><span class="nt">retries</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3</span>
+<p>The <code>./data</code> volume must be persisted between container restarts. Without it, docsfy loses its SQLite database and cached artifacts, forcing a full regeneration for every project on the next request.</p>
+<p>The storage layout:</p>
+<div class="highlight"><pre><span></span><code>/data/
+├── docsfy.db                          # SQLite: commit SHAs, project metadata
+└── projects/
+    ├── my-project/
+    │   ├── plan.json                  # Cached documentation plan
+    │   ├── cache/pages/*.md           # Cached AI-generated markdown
+    │   └── site/                      # Rendered HTML
+    └── another-project/
+        ├── plan.json
+        ├── cache/pages/*.md
+        └── site/
 </code></pre></div>
 
-<h2 id="summary">Summary</h2>
-<p>The incremental update strategy minimizes unnecessary work at every level:</p>
-<table>
-<thead>
-<tr>
-<th>Layer</th>
-<th>Check</th>
-<th>Skip Condition</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Repository</td>
-<td>Commit SHA comparison</td>
-<td>SHA unchanged — no regeneration needed</td>
-</tr>
-<tr>
-<td>Structure</td>
-<td>Plan comparison</td>
-<td>Plan unchanged — skip full regeneration</td>
-</tr>
-<tr>
-<td>Content</td>
-<td>Affected page detection</td>
-<td>Page unaffected — reuse cached markdown</td>
-</tr>
-<tr>
-<td>Rendering</td>
-<td>Always runs</td>
-<td>N/A — ensures site consistency</td>
-</tr>
-</tbody>
-</table>
-<p>This layered approach means that minor repository changes (such as fixing a typo in a single source file) result in only the relevant documentation page being regenerated, while the rest of the site is assembled from cache — delivering fast, cost-efficient updates.</p>
+<h2 id="edge-cases">Edge Cases</h2>
+<p><strong>Repository force-pushed or rebased:</strong> Since docsfy compares HEAD SHAs, a force-push that changes the HEAD SHA triggers an incremental update even if the content is effectively the same. The AI Planner will detect that the plan is unchanged, and only affected pages (if any) will be regenerated.</p>
+<p><strong>Repository deleted and recreated:</strong> If the remote repository is deleted and recreated with a new initial commit, the SHA will differ and docsfy will run an incremental update. If the plan structure differs significantly, a full regeneration occurs.</p>
+<p><strong>Multiple concurrent requests for the same project:</strong> The project <code>status</code> field (<code>generating</code> / <code>ready</code> / <code>error</code>) prevents duplicate generation runs. While a project is in the <code>generating</code> state, subsequent requests will not trigger a new pipeline.</p>
+<p><strong>AI Planner produces a different plan for identical code:</strong> Since AI outputs are non-deterministic, the AI Planner may produce a slightly different <code>plan.json</code> even when no code changed. This would trigger a full regeneration. Plan comparison should account for semantically equivalent structures to minimize false positives.</p>
                 </div>
             </article>
             <nav class="page-nav">
                 
-                <a href="serving-docs.html" class="page-nav-link page-nav-prev">
+                <a href="generating-docs.html" class="page-nav-link page-nav-prev">
                     <span class="page-nav-label">Previous</span>
-                    <span class="page-nav-title">Serving Documentation</span>
+                    <span class="page-nav-title">Generating Documentation</span>
                 </a>
                 
                 
-                <a href="generation-pipeline.html" class="page-nav-link page-nav-next">
+                <a href="downloading-and-self-hosting.html" class="page-nav-link page-nav-next">
                     <span class="page-nav-label">Next</span>
-                    <span class="page-nav-title">Generation Pipeline</span>
+                    <span class="page-nav-title">Downloading &amp; Self-Hosting</span>
                 </a>
                 
             </nav>
@@ -602,28 +550,19 @@ GET /api/projects/{name} # Get project details (last generated, commit SHA, page
                     <div class="toc">
 <ul>
 <li><a href="#how-it-works">How It Works</a></li>
-<li><a href="#commit-sha-tracking">Commit SHA Tracking</a><ul>
-<li><a href="#storage">Storage</a></li>
-<li><a href="#querying-project-state">Querying Project State</a></li>
-</ul>
-</li>
-<li><a href="#change-detection-pipeline">Change Detection Pipeline</a><ul>
+<li><a href="#commit-sha-tracking">Commit SHA Tracking</a></li>
+<li><a href="#cached-artifacts">Cached Artifacts</a></li>
+<li><a href="#the-incremental-update-pipeline">The Incremental Update Pipeline</a><ul>
 <li><a href="#stage-1-clone-repository">Stage 1: Clone Repository</a></li>
-<li><a href="#stage-2-ai-planner-structure-comparison">Stage 2: AI Planner (Structure Comparison)</a></li>
-<li><a href="#stage-3-selective-content-generation">Stage 3: Selective Content Generation</a></li>
-<li><a href="#stage-4-html-rendering">Stage 4: HTML Rendering</a></li>
+<li><a href="#stage-2-ai-planner-change-detection">Stage 2: AI Planner (Change Detection)</a></li>
+<li><a href="#stage-3-ai-content-generator-selective-regeneration">Stage 3: AI Content Generator (Selective Regeneration)</a></li>
+<li><a href="#stage-4-html-renderer">Stage 4: HTML Renderer</a></li>
 </ul>
 </li>
-<li><a href="#cache-structure">Cache Structure</a></li>
-<li><a href="#ai-provider-integration">AI Provider Integration</a></li>
-<li><a href="#triggering-incremental-updates">Triggering Incremental Updates</a></li>
-<li><a href="#monitoring-generation-status">Monitoring Generation Status</a></li>
-<li><a href="#deployment-considerations">Deployment Considerations</a><ul>
-<li><a href="#persistent-storage">Persistent Storage</a></li>
-<li><a href="#health-checks">Health Checks</a></li>
-</ul>
-</li>
-<li><a href="#summary">Summary</a></li>
+<li><a href="#ai-usage-savings">AI Usage Savings</a></li>
+<li><a href="#api-behavior">API Behavior</a></li>
+<li><a href="#storage-configuration">Storage Configuration</a></li>
+<li><a href="#edge-cases">Edge Cases</a></li>
 </ul>
 </div>
 

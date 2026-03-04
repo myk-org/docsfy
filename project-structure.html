@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Structure - docsfy</title>
+    <meta name="description" content="AI-powered documentation generator that creates polished, Mintlify-quality static HTML sites from GitHub repositories.">
+    <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <a href="index.html" class="sidebar-logo">docsfy</a>
+            <p class="sidebar-tagline">AI-powered documentation generator that creates polished, Mintlify-quality static HTML sites from GitHub repositories.</p>
+        </div>
+
+        <div class="sidebar-search">
+            <input type="text" id="search-input" placeholder="Search... (⌘K)" autocomplete="off" readonly>
+            <div id="search-results" class="search-results"></div>
+        </div>
+
+        <nav class="sidebar-nav">
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Getting Started</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="introduction.html"
+                           class="nav-link">
+                            Introduction
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="quickstart.html"
+                           class="nav-link">
+                            Quickstart
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="installation.html"
+                           class="nav-link">
+                            Installation
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Configuration</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="environment-variables.html"
+                           class="nav-link">
+                            Environment Variables
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="ai-providers.html"
+                           class="nav-link">
+                            AI Providers
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="docker-deployment.html"
+                           class="nav-link">
+                            Docker Deployment
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Usage</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="generating-docs.html"
+                           class="nav-link">
+                            Generating Documentation
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="incremental-updates.html"
+                           class="nav-link">
+                            Incremental Updates
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="downloading-and-self-hosting.html"
+                           class="nav-link">
+                            Downloading &amp; Self-Hosting
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="managing-projects.html"
+                           class="nav-link">
+                            Managing Projects
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Architecture</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="generation-pipeline.html"
+                           class="nav-link">
+                            Generation Pipeline
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="storage-and-database.html"
+                           class="nav-link">
+                            Storage &amp; Database
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="html-theming.html"
+                           class="nav-link">
+                            HTML Theming &amp; Output
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">API Reference</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="api-overview.html"
+                           class="nav-link">
+                            API Overview
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="api-generate.html"
+                           class="nav-link">
+                            POST /api/generate
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="api-status.html"
+                           class="nav-link">
+                            GET /api/status
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="api-projects.html"
+                           class="nav-link">
+                            Project Endpoints
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="api-docs-serving.html"
+                           class="nav-link">
+                            GET /docs/{project}/{path}
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="api-health.html"
+                           class="nav-link">
+                            GET /health
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Development</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="contributing.html"
+                           class="nav-link">
+                            Contributing
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="project-structure.html"
+                           class="nav-link active">
+                            Project Structure
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+        </nav>
+    </aside>
+
+    <div class="main-wrapper">
+        <header class="top-bar">
+            <div class="top-bar-left">
+                <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebar">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                </button>
+                <a href="index.html" class="top-bar-title">docsfy</a>
+            </div>
+            <div class="top-bar-spacer"></div>
+            <div class="top-bar-right">
+                <button class="top-bar-search-btn" id="search-trigger" aria-label="Search">
+                    <kbd>&#8984;K</kbd> Search
+                </button>
+                
+                <a href="https://github.com/myk-org/docsfy" target="_blank" rel="noopener noreferrer" class="top-bar-github" id="github-link" data-repo-url="https://github.com/myk-org/docsfy">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                    <span class="github-stars" id="github-stars"></span>
+                </a>
+                
+                <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+                    <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                    </svg>
+                    <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <main class="content">
+            <article class="article">
+                <h1 class="article-title">Project Structure</h1>
+                <div class="article-body">
+                    <h1 id="project-structure">Project Structure</h1>
+<p>This page describes the directory layout, module organization, key source files, and how the major components of docsfy fit together.</p>
+<h2 id="directory-layout">Directory Layout</h2>
+<p>docsfy follows a standard Python project layout using <code>hatchling</code> as the build system and <code>uv</code> as the package manager.</p>
+<div class="highlight"><pre><span></span><code>docsfy/
+├── docs/
+│   └── plans/
+│       └── 2026-03-04-docsfy-design.md   # Architecture design document
+├── docsfy/                                # Main application package
+│   ├── __init__.py
+│   ├── main.py                            # FastAPI app entry point
+│   ├── ai/                                # AI provider integrations
+│   │   ├── __init__.py
+│   │   ├── provider.py                    # ProviderConfig and registry
+│   │   ├── runner.py                      # Subprocess execution logic
+│   │   └── parser.py                      # JSON response extraction
+│   ├── pipeline/                          # Generation pipeline stages
+│   │   ├── __init__.py
+│   │   ├── clone.py                       # Stage 1: Repository cloning
+│   │   ├── planner.py                     # Stage 2: AI-driven doc planning
+│   │   ├── generator.py                   # Stage 3: AI content generation
+│   │   └── renderer.py                    # Stage 4: HTML rendering
+│   ├── routers/                           # FastAPI route definitions
+│   │   ├── __init__.py
+│   │   ├── generate.py                    # POST /api/generate
+│   │   ├── projects.py                    # Project CRUD + download
+│   │   ├── docs.py                        # Static doc serving
+│   │   └── health.py                      # GET /health
+│   ├── db.py                              # SQLite database layer
+│   ├── models.py                          # Pydantic models / schemas
+│   └── templates/                         # Jinja2 HTML templates
+│       ├── base.html
+│       ├── page.html
+│       └── assets/
+│           ├── style.css
+│           ├── search.js
+│           ├── theme-toggle.js
+│           └── highlight.js
+├── tests/                                 # Test suite
+├── pyproject.toml                         # Build config and dependencies
+├── Dockerfile                             # Multi-stage container build
+├── docker-compose.yaml                    # Local development stack
+├── .env.example                           # Environment variable template
+└── .pre-commit-config.yaml                # Linting and formatting hooks
+</code></pre></div>
+
+<h2 id="runtime-data-directory">Runtime Data Directory</h2>
+<p>At runtime, docsfy stores all generated content and metadata under <code>/data</code>:</p>
+<div class="highlight"><pre><span></span><code>/data/
+├── docsfy.db                              # SQLite database (project metadata)
+└── projects/
+    └── {project-name}/
+        ├── plan.json                      # Documentation structure from AI
+        ├── cache/
+        │   └── pages/*.md                 # AI-generated markdown (cached)
+        └── site/                          # Final rendered HTML
+            ├── index.html
+            ├── *.html
+            ├── assets/
+            │   ├── style.css
+            │   ├── search.js
+            │   ├── theme-toggle.js
+            │   └── highlight.js
+            └── search-index.json
+</code></pre></div>
+
+<blockquote>
+<p><strong>Note:</strong> The <code>/data</code> directory is mounted as a Docker volume so generated documentation persists across container restarts.</p>
+</blockquote>
+<h2 id="module-organization">Module Organization</h2>
+<p>The application is organized into four top-level module groups, each with a distinct responsibility.</p>
+<h3 id="docsfymainpy-application-entry-point"><code>docsfy/main.py</code> — Application Entry Point</h3>
+<p>The FastAPI application is defined here and serves as the central wiring point. It registers routers, configures middleware, and sets up the database connection on startup. The application is launched via uvicorn:</p>
+<div class="highlight"><pre><span></span><code>uv run --no-sync uvicorn docsfy.main:app --host 0.0.0.0 --port 8000
+</code></pre></div>
+
+<h3 id="docsfyrouters-api-endpoints"><code>docsfy/routers/</code> — API Endpoints</h3>
+<p>Route handlers are split by domain into separate router modules, then included by the main app.</p>
+<table>
+<thead>
+<tr>
+<th>Module</th>
+<th>Prefix</th>
+<th>Endpoints</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>generate.py</code></td>
+<td><code>/api</code></td>
+<td><code>POST /api/generate</code> — Start doc generation for a repo URL</td>
+</tr>
+<tr>
+<td><code>projects.py</code></td>
+<td><code>/api/projects</code></td>
+<td><code>GET /api/status</code>, <code>GET /api/projects/{name}</code>, <code>DELETE /api/projects/{name}</code>, <code>GET /api/projects/{name}/download</code></td>
+</tr>
+<tr>
+<td><code>docs.py</code></td>
+<td><code>/docs</code></td>
+<td><code>GET /docs/{project}/{path}</code> — Serve rendered static HTML</td>
+</tr>
+<tr>
+<td><code>health.py</code></td>
+<td><code>/</code></td>
+<td><code>GET /health</code> — Health check</td>
+</tr>
+</tbody>
+</table>
+<h3 id="docsfyai-ai-provider-integrations"><code>docsfy/ai/</code> — AI Provider Integrations</h3>
+<p>This module abstracts the differences between AI CLI tools behind a unified interface. See <a href="#ai-provider-integration">AI Provider Integration</a> below for details.</p>
+<h3 id="docsfypipeline-generation-pipeline"><code>docsfy/pipeline/</code> — Generation Pipeline</h3>
+<p>The four-stage pipeline that transforms a repository URL into a static documentation site. See <a href="#generation-pipeline">Generation Pipeline</a> below for details.</p>
+<h2 id="ai-provider-integration">AI Provider Integration</h2>
+<p>docsfy supports three AI CLI providers through a pluggable provider pattern. Each provider is described by a <code>ProviderConfig</code> dataclass:</p>
+<div class="highlight"><pre><span></span><code><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">ProviderConfig</span><span class="p">:</span>
+    <span class="n">binary</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">build_cmd</span><span class="p">:</span> <span class="n">Callable</span>
+    <span class="n">uses_own_cwd</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+</code></pre></div>
+
+<h3 id="supported-providers">Supported Providers</h3>
+<table>
+<thead>
+<tr>
+<th>Provider</th>
+<th>Binary</th>
+<th>Command Pattern</th>
+<th>CWD Handling</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Claude</td>
+<td><code>claude</code></td>
+<td><code>claude --model &lt;model&gt; --dangerously-skip-permissions -p</code></td>
+<td>subprocess <code>cwd</code> = repo path</td>
+</tr>
+<tr>
+<td>Gemini</td>
+<td><code>gemini</code></td>
+<td><code>gemini --model &lt;model&gt; --yolo</code></td>
+<td>subprocess <code>cwd</code> = repo path</td>
+</tr>
+<tr>
+<td>Cursor</td>
+<td><code>agent</code></td>
+<td><code>agent --force --model &lt;model&gt; --print --workspace &lt;path&gt;</code></td>
+<td><code>--workspace</code> flag (<code>uses_own_cwd=True</code>)</td>
+</tr>
+</tbody>
+</table>
+<p>The <code>uses_own_cwd</code> flag distinguishes providers that accept a workspace path as a CLI argument (Cursor) from those that rely on the subprocess working directory (Claude, Gemini).</p>
+<h3 id="runner-docsfyairunnerpy">Runner (<code>docsfy/ai/runner.py</code>)</h3>
+<p>The runner executes AI CLI commands as subprocesses:</p>
+<ul>
+<li>Prompts are passed via <code>stdin</code> using <code>subprocess.run(cmd, input=prompt, capture_output=True, text=True)</code></li>
+<li>Async execution is achieved with <code>asyncio.to_thread(subprocess.run, ...)</code></li>
+<li>Each invocation returns a <code>tuple[bool, str]</code> — a success flag and the raw output</li>
+<li>Before generation begins, a lightweight availability check sends a "Hi" prompt to verify the CLI is functional</li>
+</ul>
+<h3 id="json-parser-docsfyaiparserpy">JSON Parser (<code>docsfy/ai/parser.py</code>)</h3>
+<p>AI responses are parsed using a multi-strategy extraction approach:</p>
+<ol>
+<li><strong>Direct parse</strong> — Attempt <code>json.loads()</code> on the full output</li>
+<li><strong>Brace matching</strong> — Locate the outermost <code>{...}</code> JSON object</li>
+<li><strong>Code block extraction</strong> — Find JSON inside markdown <code>```json</code> fences</li>
+<li><strong>Regex fallback</strong> — Pattern-based recovery for malformed output</li>
+</ol>
+<blockquote>
+<p><strong>Tip:</strong> This layered parsing strategy ensures robust JSON extraction regardless of how the AI CLI formats its response (with preamble text, markdown wrappers, or trailing content).</p>
+</blockquote>
+<h3 id="default-configuration">Default Configuration</h3>
+<table>
+<thead>
+<tr>
+<th>Setting</th>
+<th>Default Value</th>
+<th>Environment Variable</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Provider</td>
+<td><code>claude</code></td>
+<td><code>AI_PROVIDER</code></td>
+</tr>
+<tr>
+<td>Model</td>
+<td><code>claude-opus-4-6[1m]</code></td>
+<td><code>AI_MODEL</code></td>
+</tr>
+<tr>
+<td>Timeout</td>
+<td>60 minutes</td>
+<td><code>AI_CLI_TIMEOUT</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="generation-pipeline">Generation Pipeline</h2>
+<p>The pipeline runs four sequential stages for each documentation generation request.</p>
+<div class="highlight"><pre><span></span><code>POST /api/generate (repo URL)
+        │
+        ▼
+┌─────────────────┐
+│  Stage 1: Clone │  Shallow clone (--depth 1) to temp directory
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│  Stage 2: Plan  │  AI analyzes repo → plan.json
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│  Stage 3: Gen   │  AI generates markdown per page (concurrent)
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│  Stage 4: HTML  │  Jinja2 + markdown → static site
+└────────┬────────┘
+         │
+         ▼
+   Site ready at /docs/{project}/
+</code></pre></div>
+
+<h3 id="stage-1-clone-repository-clonepy">Stage 1: Clone Repository (<code>clone.py</code>)</h3>
+<ul>
+<li>Performs a shallow clone (<code>git clone --depth 1</code>) into a temporary directory</li>
+<li>Supports both SSH and HTTPS URLs for public and private repositories</li>
+<li>Uses system git credentials for private repository access</li>
+</ul>
+<h3 id="stage-2-ai-planner-plannerpy">Stage 2: AI Planner (<code>planner.py</code>)</h3>
+<ul>
+<li>Runs the AI CLI with its working directory set to the cloned repository</li>
+<li>The AI explores the full repository structure to understand the codebase</li>
+<li>Produces a <code>plan.json</code> file that defines pages, sections, and navigation hierarchy</li>
+<li>This plan drives all subsequent content generation</li>
+</ul>
+<h3 id="stage-3-ai-content-generator-generatorpy">Stage 3: AI Content Generator (<code>generator.py</code>)</h3>
+<ul>
+<li>Iterates over each page defined in <code>plan.json</code></li>
+<li>For each page, invokes the AI CLI with access to the cloned repository</li>
+<li>Pages can be generated <strong>concurrently</strong> using <code>asyncio</code> with semaphore-limited concurrency</li>
+<li>Generated markdown is cached at <code>/data/projects/{name}/cache/pages/*.md</code></li>
+</ul>
+<blockquote>
+<p><strong>Note:</strong> The cache enables incremental updates — only pages affected by repository changes need to be regenerated.</p>
+</blockquote>
+<h3 id="stage-4-html-renderer-rendererpy">Stage 4: HTML Renderer (<code>renderer.py</code>)</h3>
+<p>Converts the markdown pages and <code>plan.json</code> into a polished static HTML site using Jinja2 templates. The rendered site includes:</p>
+<ul>
+<li><strong>Sidebar navigation</strong> — Generated from the <code>plan.json</code> hierarchy</li>
+<li><strong>Dark/light theme</strong> — Client-side toggle with <code>theme-toggle.js</code></li>
+<li><strong>Client-side search</strong> — Full-text search via <code>search-index.json</code> and <code>search.js</code></li>
+<li><strong>Code syntax highlighting</strong> — Powered by highlight.js</li>
+<li><strong>Responsive design</strong> — Mobile-friendly layout</li>
+<li><strong>Callout boxes</strong> — Styled note, warning, and info blocks</li>
+<li><strong>Card layouts</strong> — Visual grouping for related content</li>
+</ul>
+<p>Output is written to <code>/data/projects/{name}/site/</code>.</p>
+<h2 id="database-layer-docsfydbpy">Database Layer (<code>docsfy/db.py</code>)</h2>
+<p>docsfy uses SQLite (via aiosqlite) stored at <code>/data/docsfy.db</code> for project metadata:</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Project name</td>
+<td>Unique identifier derived from the repo</td>
+</tr>
+<tr>
+<td>Repo URL</td>
+<td>Source repository URL</td>
+</tr>
+<tr>
+<td>Status</td>
+<td><code>generating</code>, <code>ready</code>, or <code>error</code></td>
+</tr>
+<tr>
+<td>Last generated</td>
+<td>Timestamp of last successful generation</td>
+</tr>
+<tr>
+<td>Last commit SHA</td>
+<td>Used for incremental update detection</td>
+</tr>
+<tr>
+<td>Generation logs</td>
+<td>History and diagnostic output</td>
+</tr>
+</tbody>
+</table>
+<h3 id="incremental-updates">Incremental Updates</h3>
+<p>The database tracks the last commit SHA for each project. When a regeneration is requested:</p>
+<ol>
+<li>Fetch the repository and compare the current SHA against the stored SHA</li>
+<li>If changed, re-run the AI Planner to check for structural changes</li>
+<li>Regenerate only the pages whose content may be affected</li>
+<li>If the plan structure is unchanged and only specific files changed, regenerate only the relevant pages</li>
+</ol>
+<h2 id="rendering-engine-docsfytemplates">Rendering Engine (<code>docsfy/templates/</code>)</h2>
+<p>The rendering engine uses Jinja2 templates with a bundled asset pipeline.</p>
+<h3 id="template-hierarchy">Template Hierarchy</h3>
+<ul>
+<li><strong><code>base.html</code></strong> — Root layout with HTML head, theme initialization, sidebar skeleton, and asset loading</li>
+<li><strong><code>page.html</code></strong> — Extends <code>base.html</code>; renders a single documentation page with its converted markdown content</li>
+</ul>
+<h3 id="bundled-assets">Bundled Assets</h3>
+<table>
+<thead>
+<tr>
+<th>Asset</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>style.css</code></td>
+<td>Complete site styling including responsive layout, dark/light themes, sidebar, callout boxes, and card components</td>
+</tr>
+<tr>
+<td><code>search.js</code></td>
+<td>Client-side full-text search against <code>search-index.json</code></td>
+</tr>
+<tr>
+<td><code>theme-toggle.js</code></td>
+<td>Dark/light mode toggle with <code>localStorage</code> persistence</td>
+</tr>
+<tr>
+<td><code>highlight.js</code></td>
+<td>Syntax highlighting for code blocks</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Tip:</strong> Because all assets are bundled, the generated documentation site is fully self-contained and can be hosted on any static file server with no external dependencies.</p>
+</blockquote>
+<h2 id="configuration-and-environment">Configuration and Environment</h2>
+<h3 id="environment-variables">Environment Variables</h3>
+<p>All configuration is managed through environment variables. A template is provided in <code>.env.example</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># AI Configuration</span>
+<span class="nv">AI_PROVIDER</span><span class="o">=</span>claude<span class="w">           </span><span class="c1"># claude | gemini | cursor</span>
+<span class="nv">AI_MODEL</span><span class="o">=</span>claude-opus-4-6<span class="o">[</span>1m<span class="o">]</span><span class="w"> </span><span class="c1"># Model identifier for the chosen provider</span>
+<span class="nv">AI_CLI_TIMEOUT</span><span class="o">=</span><span class="m">60</span><span class="w">            </span><span class="c1"># Timeout in minutes per AI invocation</span>
+
+<span class="c1"># Claude - Option 1: API Key</span>
+<span class="c1"># ANTHROPIC_API_KEY=</span>
+
+<span class="c1"># Claude - Option 2: Vertex AI</span>
+<span class="c1"># CLAUDE_CODE_USE_VERTEX=1</span>
+<span class="c1"># CLOUD_ML_REGION=</span>
+<span class="c1"># ANTHROPIC_VERTEX_PROJECT_ID=</span>
+
+<span class="c1"># Gemini</span>
+<span class="c1"># GEMINI_API_KEY=</span>
+
+<span class="c1"># Cursor</span>
+<span class="c1"># CURSOR_API_KEY=</span>
+
+<span class="c1"># Logging</span>
+<span class="nv">LOG_LEVEL</span><span class="o">=</span>INFO
+</code></pre></div>
+
+<blockquote>
+<p><strong>Warning:</strong> Never commit <code>.env</code> files with real API keys. Use <code>.env.example</code> as a reference and create your own <code>.env</code> locally.</p>
+</blockquote>
+<h3 id="docker-compose">Docker Compose</h3>
+<p>The <code>docker-compose.yaml</code> mounts credential directories and the data volume:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">services</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">docsfy</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">build</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">.</span>
+<span class="w">    </span><span class="nt">ports</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;8000:8000&quot;</span>
+<span class="w">    </span><span class="nt">env_file</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">.env</span>
+<span class="w">    </span><span class="nt">volumes</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./data:/data</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">~/.config/gcloud:/home/appuser/.config/gcloud:ro</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./cursor:/home/appuser/.config/cursor</span>
+<span class="w">    </span><span class="nt">healthcheck</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">test</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;CMD&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;curl&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;-f&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;http://localhost:8000/health&quot;</span><span class="p p-Indicator">]</span>
+<span class="w">      </span><span class="nt">interval</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">30s</span>
+<span class="w">      </span><span class="nt">timeout</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10s</span>
+<span class="w">      </span><span class="nt">retries</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3</span>
+</code></pre></div>
+
+<h3 id="container-build">Container Build</h3>
+<p>The Dockerfile uses a multi-stage build based on <code>python:3.12-slim</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Aspect</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Base image</td>
+<td><code>python:3.12-slim</code> (multi-stage)</td>
+</tr>
+<tr>
+<td>Package manager</td>
+<td><code>uv</code> (no pip)</td>
+</tr>
+<tr>
+<td>Non-root user</td>
+<td><code>appuser</code> (OpenShift compatible, GID 0)</td>
+</tr>
+<tr>
+<td>System dependencies</td>
+<td>bash, git, curl, nodejs, npm, ca-certificates</td>
+</tr>
+<tr>
+<td>AI CLIs</td>
+<td>Installed at build time (always latest)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="development-tooling">Development Tooling</h2>
+<table>
+<thead>
+<tr>
+<th>Tool</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>uv</strong></td>
+<td>Package management and virtual environment</td>
+</tr>
+<tr>
+<td><strong>hatchling</strong></td>
+<td>Python build system</td>
+</tr>
+<tr>
+<td><strong>Pre-commit</strong></td>
+<td>ruff (lint + format), mypy (strict), flake8, gitleaks, detect-secrets</td>
+</tr>
+<tr>
+<td><strong>Tox</strong></td>
+<td>Unused-code checks, unit test execution</td>
+</tr>
+<tr>
+<td><strong>Python</strong></td>
+<td>3.12+ required</td>
+</tr>
+</tbody>
+</table>
+<h2 id="technology-stack-summary">Technology Stack Summary</h2>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>Technology</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Web framework</td>
+<td>FastAPI + uvicorn</td>
+</tr>
+<tr>
+<td>Templating</td>
+<td>Jinja2</td>
+</tr>
+<tr>
+<td>Markdown processing</td>
+<td>Python <code>markdown</code> library</td>
+</tr>
+<tr>
+<td>Database</td>
+<td>SQLite (via aiosqlite)</td>
+</tr>
+<tr>
+<td>HTML theme</td>
+<td>Custom CSS/JS (bundled)</td>
+</tr>
+<tr>
+<td>Client-side search</td>
+<td>lunr.js or similar</td>
+</tr>
+<tr>
+<td>Code highlighting</td>
+<td>highlight.js</td>
+</tr>
+<tr>
+<td>Build system</td>
+<td>hatchling</td>
+</tr>
+<tr>
+<td>Package manager</td>
+<td>uv</td>
+</tr>
+<tr>
+<td>Container</td>
+<td>Docker (multi-stage, <code>python:3.12-slim</code>)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="how-components-fit-together">How Components Fit Together</h2>
+<p>The following diagram shows the runtime request flow connecting all major components:</p>
+<div class="highlight"><pre><span></span><code>User Request                      docsfy Application
+─────────────                     ──────────────────
+
+POST /api/generate ──────────►  routers/generate.py
+  { &quot;repo_url&quot;: &quot;...&quot; }              │
+                                      ├──► pipeline/clone.py ──► git clone
+                                      │
+                                      ├──► ai/provider.py ──► Select provider
+                                      │         │
+                                      ├──► pipeline/planner.py
+                                      │         │
+                                      │         └──► ai/runner.py ──► AI CLI subprocess
+                                      │                   │
+                                      │              ai/parser.py ──► Extract plan.json
+                                      │
+                                      ├──► pipeline/generator.py
+                                      │         │
+                                      │         └──► ai/runner.py ──► AI CLI (per page, concurrent)
+                                      │                   │
+                                      │              ai/parser.py ──► Extract markdown
+                                      │
+                                      └──► pipeline/renderer.py
+                                                │
+                                                ├──► templates/ (Jinja2)
+                                                ├──► markdown ──► HTML
+                                                └──► Write to /data/projects/{name}/site/
+
+GET /docs/{project}/ ───────►  routers/docs.py
+                                      │
+                                      └──► Serve static files from /data/projects/{name}/site/
+
+GET /api/status ────────────►  routers/projects.py
+                                      │
+                                      └──► db.py ──► Query SQLite /data/docsfy.db
+</code></pre></div>
+
+<p>The <code>ai/</code> module provides a clean abstraction layer: the pipeline stages interact only with the runner and parser interfaces, never with provider-specific CLI details. Swapping providers requires only changing the <code>AI_PROVIDER</code> environment variable — no code changes are needed.</p>
+                </div>
+            </article>
+            <nav class="page-nav">
+                
+                <a href="contributing.html" class="page-nav-link page-nav-prev">
+                    <span class="page-nav-label">Previous</span>
+                    <span class="page-nav-title">Contributing</span>
+                </a>
+                
+                
+                <div></div>
+                
+            </nav>
+            
+            <aside class="toc-sidebar">
+                <div class="toc-container">
+                    <h3>On this page</h3>
+                    <div class="toc">
+<ul>
+<li><a href="#directory-layout">Directory Layout</a></li>
+<li><a href="#runtime-data-directory">Runtime Data Directory</a></li>
+<li><a href="#module-organization">Module Organization</a><ul>
+<li><a href="#docsfymainpy-application-entry-point">docsfy/main.py — Application Entry Point</a></li>
+<li><a href="#docsfyrouters-api-endpoints">docsfy/routers/ — API Endpoints</a></li>
+<li><a href="#docsfyai-ai-provider-integrations">docsfy/ai/ — AI Provider Integrations</a></li>
+<li><a href="#docsfypipeline-generation-pipeline">docsfy/pipeline/ — Generation Pipeline</a></li>
+</ul>
+</li>
+<li><a href="#ai-provider-integration">AI Provider Integration</a><ul>
+<li><a href="#supported-providers">Supported Providers</a></li>
+<li><a href="#runner-docsfyairunnerpy">Runner (docsfy/ai/runner.py)</a></li>
+<li><a href="#json-parser-docsfyaiparserpy">JSON Parser (docsfy/ai/parser.py)</a></li>
+<li><a href="#default-configuration">Default Configuration</a></li>
+</ul>
+</li>
+<li><a href="#generation-pipeline">Generation Pipeline</a><ul>
+<li><a href="#stage-1-clone-repository-clonepy">Stage 1: Clone Repository (clone.py)</a></li>
+<li><a href="#stage-2-ai-planner-plannerpy">Stage 2: AI Planner (planner.py)</a></li>
+<li><a href="#stage-3-ai-content-generator-generatorpy">Stage 3: AI Content Generator (generator.py)</a></li>
+<li><a href="#stage-4-html-renderer-rendererpy">Stage 4: HTML Renderer (renderer.py)</a></li>
+</ul>
+</li>
+<li><a href="#database-layer-docsfydbpy">Database Layer (docsfy/db.py)</a><ul>
+<li><a href="#incremental-updates">Incremental Updates</a></li>
+</ul>
+</li>
+<li><a href="#rendering-engine-docsfytemplates">Rendering Engine (docsfy/templates/)</a><ul>
+<li><a href="#template-hierarchy">Template Hierarchy</a></li>
+<li><a href="#bundled-assets">Bundled Assets</a></li>
+</ul>
+</li>
+<li><a href="#configuration-and-environment">Configuration and Environment</a><ul>
+<li><a href="#environment-variables">Environment Variables</a></li>
+<li><a href="#docker-compose">Docker Compose</a></li>
+<li><a href="#container-build">Container Build</a></li>
+</ul>
+</li>
+<li><a href="#development-tooling">Development Tooling</a></li>
+<li><a href="#technology-stack-summary">Technology Stack Summary</a></li>
+<li><a href="#how-components-fit-together">How Components Fit Together</a></li>
+</ul>
+</div>
+
+                </div>
+            </aside>
+            
+        </main>
+
+        <footer class="footer">
+            <p>Built with <a href="https://github.com/docsfy/docsfy">docsfy</a></p>
+        </footer>
+    </div>
+
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <script src="assets/theme.js"></script>
+    <script src="assets/search.js"></script>
+    <script src="assets/copy.js"></script>
+    <script src="assets/callouts.js"></script>
+    <script src="assets/scrollspy.js"></script>
+    <script src="assets/codelabels.js"></script>
+    <script src="assets/github.js"></script>
+    <script>
+    (function() {
+        var toggle = document.getElementById('sidebar-toggle');
+        var sidebar = document.getElementById('sidebar');
+        var overlay = document.getElementById('sidebar-overlay');
+        if (toggle && sidebar) {
+            toggle.addEventListener('click', function() {
+                sidebar.classList.toggle('open');
+                if (overlay) overlay.classList.toggle('open');
+            });
+        }
+        if (overlay) {
+            overlay.addEventListener('click', function() {
+                sidebar.classList.remove('open');
+                overlay.classList.remove('open');
+            });
+        }
+    })();
+    </script>
+</body>
+</html>
