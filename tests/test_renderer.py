@@ -8,7 +8,9 @@ def test_render_page_to_html() -> None:
 
     html = render_page(
         markdown_content="# Hello\n\nThis is a test.",
-        page_title="Hello", project_name="test-repo", tagline="A test project",
+        page_title="Hello",
+        project_name="test-repo",
+        tagline="A test project",
         navigation=[{"group": "Docs", "pages": [{"slug": "hello", "title": "Hello"}]}],
         current_slug="hello",
     )
@@ -22,11 +24,19 @@ def test_render_site(tmp_path: Path) -> None:
     from docsfy.renderer import render_site
 
     plan = {
-        "project_name": "test-repo", "tagline": "A test project",
+        "project_name": "test-repo",
+        "tagline": "A test project",
         "navigation": [
-            {"group": "Getting Started", "pages": [
-                {"slug": "introduction", "title": "Introduction", "description": "Overview"},
-            ]},
+            {
+                "group": "Getting Started",
+                "pages": [
+                    {
+                        "slug": "introduction",
+                        "title": "Introduction",
+                        "description": "Overview",
+                    },
+                ],
+            },
         ],
     }
     pages = {"introduction": "# Introduction\n\nWelcome to test-repo."}
@@ -47,8 +57,14 @@ def test_search_index_generated(tmp_path: Path) -> None:
     from docsfy.renderer import render_site
 
     plan = {
-        "project_name": "test-repo", "tagline": "Test",
-        "navigation": [{"group": "Docs", "pages": [{"slug": "intro", "title": "Intro", "description": ""}]}],
+        "project_name": "test-repo",
+        "tagline": "Test",
+        "navigation": [
+            {
+                "group": "Docs",
+                "pages": [{"slug": "intro", "title": "Intro", "description": ""}],
+            }
+        ],
     }
     pages = {"intro": "# Intro\n\nSome searchable content here."}
     output_dir = tmp_path / "site"

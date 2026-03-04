@@ -34,7 +34,11 @@ async def test_full_flow_mock(client: AsyncClient, tmp_path: Path) -> None:
             {
                 "group": "Getting Started",
                 "pages": [
-                    {"slug": "introduction", "title": "Introduction", "description": "Overview"},
+                    {
+                        "slug": "introduction",
+                        "title": "Introduction",
+                        "description": "Overview",
+                    },
                 ],
             }
         ],
@@ -44,11 +48,18 @@ async def test_full_flow_mock(client: AsyncClient, tmp_path: Path) -> None:
         patch("docsfy.main.check_ai_cli_available", return_value=(True, "")),
         patch("docsfy.main.clone_repo", return_value=(tmp_path / "repo", "abc123")),
         patch("docsfy.main.run_planner", return_value=sample_plan),
-        patch("docsfy.main.generate_all_pages", return_value={"introduction": "# Intro\n\nWelcome!"}),
+        patch(
+            "docsfy.main.generate_all_pages",
+            return_value={"introduction": "# Intro\n\nWelcome!"},
+        ),
     ):
         from docsfy.main import _run_generation
 
-        await storage.save_project(name="test-repo", repo_url="https://github.com/org/test-repo.git", status="generating")
+        await storage.save_project(
+            name="test-repo",
+            repo_url="https://github.com/org/test-repo.git",
+            status="generating",
+        )
 
         await _run_generation(
             repo_url="https://github.com/org/test-repo.git",

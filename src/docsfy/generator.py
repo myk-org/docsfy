@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 from pathlib import Path
+from typing import Any
 
 from simple_logger.logger import get_logger
 
@@ -15,11 +16,19 @@ MAX_CONCURRENT_PAGES = 5
 
 
 async def run_planner(
-    repo_path: Path, project_name: str, ai_provider: str, ai_model: str, ai_cli_timeout: int | None = None,
-) -> dict:
+    repo_path: Path,
+    project_name: str,
+    ai_provider: str,
+    ai_model: str,
+    ai_cli_timeout: int | None = None,
+) -> dict[str, Any]:
     prompt = build_planner_prompt(project_name)
     success, output = await call_ai_cli(
-        prompt=prompt, cwd=repo_path, ai_provider=ai_provider, ai_model=ai_model, ai_cli_timeout=ai_cli_timeout,
+        prompt=prompt,
+        cwd=repo_path,
+        ai_provider=ai_provider,
+        ai_model=ai_model,
+        ai_cli_timeout=ai_cli_timeout,
     )
     if not success:
         msg = f"Planner failed: {output}"
@@ -35,17 +44,30 @@ async def run_planner(
 
 
 async def generate_page(
-    repo_path: Path, slug: str, title: str, description: str, cache_dir: Path,
-    ai_provider: str, ai_model: str, ai_cli_timeout: int | None = None, use_cache: bool = False,
+    repo_path: Path,
+    slug: str,
+    title: str,
+    description: str,
+    cache_dir: Path,
+    ai_provider: str,
+    ai_model: str,
+    ai_cli_timeout: int | None = None,
+    use_cache: bool = False,
 ) -> str:
     cache_file = cache_dir / f"{slug}.md"
     if use_cache and cache_file.exists():
         logger.debug(f"Using cached page: {slug}")
         return cache_file.read_text()
 
-    prompt = build_page_prompt(project_name=repo_path.name, page_title=title, page_description=description)
+    prompt = build_page_prompt(
+        project_name=repo_path.name, page_title=title, page_description=description
+    )
     success, output = await call_ai_cli(
-        prompt=prompt, cwd=repo_path, ai_provider=ai_provider, ai_model=ai_model, ai_cli_timeout=ai_cli_timeout,
+        prompt=prompt,
+        cwd=repo_path,
+        ai_provider=ai_provider,
+        ai_model=ai_model,
+        ai_cli_timeout=ai_cli_timeout,
     )
     if not success:
         logger.warning(f"Failed to generate page '{slug}': {output}")
@@ -58,8 +80,13 @@ async def generate_page(
 
 
 async def generate_all_pages(
-    repo_path: Path, plan: dict, cache_dir: Path, ai_provider: str, ai_model: str,
-    ai_cli_timeout: int | None = None, use_cache: bool = False,
+    repo_path: Path,
+    plan: dict[str, Any],
+    cache_dir: Path,
+    ai_provider: str,
+    ai_model: str,
+    ai_cli_timeout: int | None = None,
+    use_cache: bool = False,
 ) -> dict[str, str]:
     semaphore = asyncio.Semaphore(MAX_CONCURRENT_PAGES)
     pages: dict[str, str] = {}
@@ -67,9 +94,15 @@ async def generate_all_pages(
     async def _gen(slug: str, title: str, description: str) -> tuple[str, str]:
         async with semaphore:
             md = await generate_page(
-                repo_path=repo_path, slug=slug, title=title, description=description,
-                cache_dir=cache_dir, ai_provider=ai_provider, ai_model=ai_model,
-                ai_cli_timeout=ai_cli_timeout, use_cache=use_cache,
+                repo_path=repo_path,
+                slug=slug,
+                title=title,
+                description=description,
+                cache_dir=cache_dir,
+                ai_provider=ai_provider,
+                ai_model=ai_model,
+                ai_cli_timeout=ai_cli_timeout,
+                use_cache=use_cache,
             )
             return slug, md
 

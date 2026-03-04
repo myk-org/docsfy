@@ -41,8 +41,12 @@ async def save_project(name: str, repo_url: str, status: str = "generating") -> 
 
 
 async def update_project_status(
-    name: str, status: str, last_commit_sha: str | None = None,
-    page_count: int | None = None, error_message: str | None = None, plan_json: str | None = None,
+    name: str,
+    status: str,
+    last_commit_sha: str | None = None,
+    page_count: int | None = None,
+    error_message: str | None = None,
+    plan_json: str | None = None,
 ) -> None:
     async with aiosqlite.connect(DB_PATH) as db:
         fields = ["status = ?", "updated_at = CURRENT_TIMESTAMP"]
@@ -62,11 +66,13 @@ async def update_project_status(
         if status == "ready":
             fields.append("last_generated = CURRENT_TIMESTAMP")
         values.append(name)
-        await db.execute(f"UPDATE projects SET {', '.join(fields)} WHERE name = ?", values)
+        await db.execute(
+            f"UPDATE projects SET {', '.join(fields)} WHERE name = ?", values
+        )
         await db.commit()
 
 
-async def get_project(name: str) -> dict | None:
+async def get_project(name: str) -> dict[str, str | int | None] | None:
     async with aiosqlite.connect(DB_PATH) as db:
         db.row_factory = aiosqlite.Row
         cursor = await db.execute("SELECT * FROM projects WHERE name = ?", (name,))
@@ -76,7 +82,7 @@ async def get_project(name: str) -> dict | None:
         return None
 
 
-async def list_projects() -> list[dict]:
+async def list_projects() -> list[dict[str, str | int | None]]:
     async with aiosqlite.connect(DB_PATH) as db:
         db.row_factory = aiosqlite.Row
         cursor = await db.execute(

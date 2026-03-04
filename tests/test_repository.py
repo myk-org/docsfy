@@ -28,7 +28,7 @@ def test_clone_repo_success(tmp_path: Path) -> None:
         repo_path, sha = clone_repo("https://github.com/org/repo.git", tmp_path)
 
     assert repo_path == tmp_path / "repo"
-    assert sha == "abc123def"
+    assert sha == "abc123def"  # pragma: allowlist secret
 
 
 def test_clone_repo_failure(tmp_path: Path) -> None:
@@ -36,6 +36,8 @@ def test_clone_repo_failure(tmp_path: Path) -> None:
     from docsfy.repository import clone_repo
 
     with patch("docsfy.repository.subprocess.run") as mock_run:
-        mock_run.return_value = MagicMock(returncode=128, stdout="", stderr="fatal: repo not found")
+        mock_run.return_value = MagicMock(
+            returncode=128, stdout="", stderr="fatal: repo not found"
+        )
         with pytest.raises(RuntimeError, match="Clone failed"):
             clone_repo("https://github.com/org/bad-repo.git", tmp_path)

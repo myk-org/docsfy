@@ -24,7 +24,11 @@ async def test_init_db_creates_table(db_path: Path) -> None:
 async def test_save_and_get_project(db_path: Path) -> None:
     from docsfy.storage import get_project, save_project
 
-    await save_project(name="my-repo", repo_url="https://github.com/org/my-repo.git", status="generating")
+    await save_project(
+        name="my-repo",
+        repo_url="https://github.com/org/my-repo.git",
+        status="generating",
+    )
     project = await get_project("my-repo")
     assert project is not None
     assert project["name"] == "my-repo"
@@ -35,8 +39,14 @@ async def test_save_and_get_project(db_path: Path) -> None:
 async def test_update_project_status(db_path: Path) -> None:
     from docsfy.storage import get_project, save_project, update_project_status
 
-    await save_project(name="my-repo", repo_url="https://github.com/org/my-repo.git", status="generating")
-    await update_project_status("my-repo", status="ready", last_commit_sha="abc123", page_count=5)
+    await save_project(
+        name="my-repo",
+        repo_url="https://github.com/org/my-repo.git",
+        status="generating",
+    )
+    await update_project_status(
+        "my-repo", status="ready", last_commit_sha="abc123", page_count=5
+    )
     project = await get_project("my-repo")
     assert project is not None
     assert project["status"] == "ready"
@@ -47,8 +57,12 @@ async def test_update_project_status(db_path: Path) -> None:
 async def test_list_projects(db_path: Path) -> None:
     from docsfy.storage import list_projects, save_project
 
-    await save_project(name="repo-a", repo_url="https://github.com/org/repo-a.git", status="ready")
-    await save_project(name="repo-b", repo_url="https://github.com/org/repo-b.git", status="generating")
+    await save_project(
+        name="repo-a", repo_url="https://github.com/org/repo-a.git", status="ready"
+    )
+    await save_project(
+        name="repo-b", repo_url="https://github.com/org/repo-b.git", status="generating"
+    )
     projects = await list_projects()
     assert len(projects) == 2
 
@@ -56,7 +70,9 @@ async def test_list_projects(db_path: Path) -> None:
 async def test_delete_project(db_path: Path) -> None:
     from docsfy.storage import delete_project, get_project, save_project
 
-    await save_project(name="my-repo", repo_url="https://github.com/org/my-repo.git", status="ready")
+    await save_project(
+        name="my-repo", repo_url="https://github.com/org/my-repo.git", status="ready"
+    )
     deleted = await delete_project("my-repo")
     assert deleted is True
     project = await get_project("my-repo")

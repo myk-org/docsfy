@@ -50,7 +50,9 @@ def test_doc_plan_model() -> None:
         navigation=[
             NavGroup(
                 group="Getting Started",
-                pages=[DocPage(slug="intro", title="Introduction", description="Overview")],
+                pages=[
+                    DocPage(slug="intro", title="Introduction", description="Overview")
+                ],
             )
         ],
     )

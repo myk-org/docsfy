@@ -55,4 +55,4 @@ repos:
       - id: mypy
         exclude: (tests/)
         additional_dependencies:
-          [types-requests, types-PyYAML, types-colorama, types-aiofiles, pydantic]
+          [types-requests, types-PyYAML, types-colorama, types-aiofiles, pydantic, types-Markdown]

@@ -2,13 +2,14 @@ from __future__ import annotations
 
 import json
 import re
+from typing import Any
 
 from simple_logger.logger import get_logger
 
 logger = get_logger(name=__name__)
 
 
-def parse_json_response(raw_text: str) -> dict | None:
+def parse_json_response(raw_text: str) -> dict[str, Any] | None:
     text = raw_text.strip()
     if not text:
         return None
@@ -27,7 +28,7 @@ def parse_json_response(raw_text: str) -> dict | None:
     return None
 
 
-def _extract_json_by_braces(text: str) -> dict | None:
+def _extract_json_by_braces(text: str) -> dict[str, Any] | None:
     first_brace = text.find("{")
     if first_brace == -1:
         return None
@@ -65,7 +66,7 @@ def _extract_json_by_braces(text: str) -> dict | None:
         return None
 
 
-def _extract_json_from_code_blocks(text: str) -> dict | None:
+def _extract_json_from_code_blocks(text: str) -> dict[str, Any] | None:
     blocks = re.findall(r"```(?:json)?\s*\n?(.*?)```", text, re.DOTALL)
     for block_content in blocks:
         block_content = block_content.strip()

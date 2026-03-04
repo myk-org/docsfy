@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import shutil
 from pathlib import Path
+from typing import Any
 
 import markdown
 from jinja2 import Environment, FileSystemLoader, select_autoescape
@@ -36,7 +37,7 @@ def render_page(
     page_title: str,
     project_name: str,
     tagline: str,
-    navigation: list[dict],
+    navigation: list[dict[str, Any]],
     current_slug: str,
 ) -> str:
     env = _get_jinja_env()
@@ -52,7 +53,9 @@ def render_page(
     )
 
 
-def render_index(project_name: str, tagline: str, navigation: list[dict]) -> str:
+def render_index(
+    project_name: str, tagline: str, navigation: list[dict[str, Any]]
+) -> str:
     env = _get_jinja_env()
     template = env.get_template("index.html")
     return template.render(
@@ -63,29 +66,33 @@ def render_index(project_name: str, tagline: str, navigation: list[dict]) -> str
     )
 
 
-def _build_search_index(pages: dict[str, str], plan: dict) -> list[dict]:
-    index: list[dict] = []
+def _build_search_index(
+    pages: dict[str, str], plan: dict[str, Any]
+) -> list[dict[str, str]]:
+    index: list[dict[str, str]] = []
     title_map: dict[str, str] = {}
     for group in plan.get("navigation", []):
         for page in group.get("pages", []):
             title_map[page["slug"]] = page["title"]
     for slug, content in pages.items():
-        index.append({
-            "slug": slug,
-            "title": title_map.get(slug, slug),
-            "content": content[:2000],
-        })
+        index.append(
+            {
+                "slug": slug,
+                "title": title_map.get(slug, slug),
+                "content": content[:2000],
+            }
+        )
     return index
 
 
-def render_site(plan: dict, pages: dict[str, str], output_dir: Path) -> None:
+def render_site(plan: dict[str, Any], pages: dict[str, str], output_dir: Path) -> None:
     output_dir.mkdir(parents=True, exist_ok=True)
     assets_dir = output_dir / "assets"
     assets_dir.mkdir(exist_ok=True)
 
     project_name: str = plan.get("project_name", "Documentation")
     tagline: str = plan.get("tagline", "")
-    navigation: list[dict] = plan.get("navigation", [])
+    navigation: list[dict[str, Any]] = plan.get("navigation", [])
 
     if STATIC_DIR.exists():
         for static_file in STATIC_DIR.iterdir():
