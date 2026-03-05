@@ -494,6 +494,65 @@
     }
 
     /* --------------------------------------------------------------------------
+       Pagination Controls
+       -------------------------------------------------------------------------- */
+    .pagination-controls-top,
+    .pagination-controls-bottom {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .pagination-controls-bottom {
+        justify-content: center;
+        margin-top: 1.5rem;
+        padding-top: 1rem;
+        border-top: 1px solid var(--border-primary);
+    }
+
+    .per-page-select {
+        padding: 4px 8px;
+        border: 1px solid var(--border-primary);
+        border-radius: 4px;
+        background: var(--bg-primary);
+        color: var(--text-primary);
+        font-size: 0.85rem;
+    }
+
+    .pagination-btn {
+        padding: 6px 16px;
+        border: 1px solid var(--border-primary);
+        border-radius: 4px;
+        background: var(--bg-primary);
+        color: var(--text-primary);
+        cursor: pointer;
+        font-size: 0.85rem;
+        transition: all 0.15s ease;
+    }
+
+    .pagination-btn:hover:not(:disabled) {
+        border-color: var(--accent);
+        color: var(--accent);
+    }
+
+    .pagination-btn:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+    }
+
+    .page-info {
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        min-width: 100px;
+        text-align: center;
+    }
+
+    .pagination-label {
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+    }
+
+    /* --------------------------------------------------------------------------
        Empty State
        -------------------------------------------------------------------------- */
     .empty-state {
@@ -1003,6 +1062,15 @@
                     </svg>
                     <input type="text" id="search-filter" placeholder="Filter projects..." aria-label="Filter projects by name">
                 </div>
+                <div class="pagination-controls-top">
+                    <span class="pagination-label">Show:</span>
+                    <select id="per-page" class="per-page-select" aria-label="Items per page">
+                        <option value="10" selected>10</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select>
+                    <span class="pagination-label">per page</span>
+                </div>
                 {% endif %}
             </div>
 
@@ -1149,6 +1217,13 @@
                 {% endfor %}
                 {% endif %}
             </div>
+            {% if projects | length > 0 %}
+            <div class="pagination-controls-bottom">
+                <button id="prev-page" class="pagination-btn" disabled aria-label="Previous page">&larr; Previous</button>
+                <span id="page-info" class="page-info">Page 1 of 1</span>
+                <button id="next-page" class="pagination-btn" aria-label="Next page">Next &rarr;</button>
+            </div>
+            {% endif %}
         </section>
     </main>
 
@@ -1609,6 +1684,69 @@
             if (e.target === confirmOverlay) closeConfirm();
         });
 
+        /* ----- Pagination State ----- */
+        var currentPage = 1;
+        var perPage = 10;
+
+        function getVisibleCards() {
+            /* Get cards that match the search filter (not hidden by search) */
+            return Array.from(document.querySelectorAll('.project-card')).filter(function(card) {
+                return !card.classList.contains('search-hidden');
+            });
+        }
+
+        function applyPagination() {
+            var cards = getVisibleCards();
+            var totalPages = Math.max(1, Math.ceil(cards.length / perPage));
+            if (currentPage > totalPages) currentPage = totalPages;
+
+            var start = (currentPage - 1) * perPage;
+            var end = start + perPage;
+
+            cards.forEach(function(card, i) {
+                card.style.display = (i >= start && i < end) ? '' : 'none';
+            });
+
+            var pageInfo = document.getElementById('page-info');
+            var prevBtn = document.getElementById('prev-page');
+            var nextBtn = document.getElementById('next-page');
+            if (pageInfo) pageInfo.textContent = 'Page ' + currentPage + ' of ' + totalPages;
+            if (prevBtn) prevBtn.disabled = currentPage <= 1;
+            if (nextBtn) nextBtn.disabled = currentPage >= totalPages;
+        }
+
+        /* ----- Pagination Controls ----- */
+        var perPageSelect = document.getElementById('per-page');
+        if (perPageSelect) {
+            perPageSelect.addEventListener('change', function() {
+                perPage = parseInt(this.value, 10);
+                currentPage = 1;
+                applyPagination();
+            });
+        }
+
+        var prevPageBtn = document.getElementById('prev-page');
+        if (prevPageBtn) {
+            prevPageBtn.addEventListener('click', function() {
+                if (currentPage > 1) {
+                    currentPage--;
+                    applyPagination();
+                }
+            });
+        }
+
+        var nextPageBtn = document.getElementById('next-page');
+        if (nextPageBtn) {
+            nextPageBtn.addEventListener('click', function() {
+                var cards = getVisibleCards();
+                var totalPages = Math.max(1, Math.ceil(cards.length / perPage));
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    applyPagination();
+                }
+            });
+        }
+
         /* ----- Search Filter ----- */
         var searchInput = document.getElementById('search-filter');
         if (searchInput) {
@@ -1618,13 +1756,19 @@
                 cards.forEach(function(card) {
                     var name = card.getAttribute('data-project').toLowerCase();
                     if (!query || name.indexOf(query) !== -1) {
-                        card.style.display = '';
+                        card.classList.remove('search-hidden');
                     } else {
+                        card.classList.add('search-hidden');
                         card.style.display = 'none';
                     }
                 });
+                currentPage = 1;
+                applyPagination();
             });
         }
+
+        /* ----- Initial Pagination ----- */
+        applyPagination();
 
         /* ----- Close confirm on Escape ----- */
         document.addEventListener('keydown', function(e) {
