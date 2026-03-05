@@ -78,7 +78,7 @@ async def generate_page(
     cache_file = cache_dir / f"{slug}.md"
     if use_cache and cache_file.exists():
         logger.debug(f"[{_label}] Using cached page: {slug}")
-        return cache_file.read_text()
+        return cache_file.read_text(encoding="utf-8")
 
     prompt = build_page_prompt(
         project_name=repo_path.name, page_title=title, page_description=description
@@ -133,6 +133,9 @@ async def generate_all_pages(
                 logger.warning(
                     f"[{_label}] Skipping page with no slug in group '{group.get('group', 'unknown')}'"
                 )
+                continue
+            if "/" in slug or "\\" in slug or slug.startswith(".") or ".." in slug:
+                logger.warning(f"[{_label}] Skipping path-unsafe slug: '{slug}'")
                 continue
             all_pages.append(
                 {

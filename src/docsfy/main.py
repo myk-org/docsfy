@@ -317,7 +317,7 @@ async def serve_docs(project: str, path: str = "index.html") -> FileResponse:
         file_path.resolve().relative_to(site_dir.resolve())
     except ValueError:
         raise HTTPException(status_code=403, detail="Access denied")
-    if not file_path.exists():
+    if not file_path.exists() or not file_path.is_file():
         raise HTTPException(status_code=404, detail="File not found")
     return FileResponse(file_path)
 

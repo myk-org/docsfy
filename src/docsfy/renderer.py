@@ -42,25 +42,6 @@ def _md_to_html(md_text: str) -> tuple[str, str]:
     return content_html, toc_html
 
 
-def _get_prev_next(
-    plan: dict[str, Any], current_slug: str
-) -> tuple[dict[str, str] | None, dict[str, str] | None]:
-    """Get previous and next pages for navigation."""
-    all_pages: list[dict[str, str]] = []
-    for group in plan.get("navigation", []):
-        for page in group.get("pages", []):
-            all_pages.append(
-                {"slug": page.get("slug", ""), "title": page.get("title", "")}
-            )
-
-    for i, page in enumerate(all_pages):
-        if page.get("slug") == current_slug:
-            prev_page = all_pages[i - 1] if i > 0 else None
-            next_page = all_pages[i + 1] if i < len(all_pages) - 1 else None
-            return prev_page, next_page
-    return None, None
-
-
 def render_page(
     markdown_content: str,
     page_title: str,
@@ -68,13 +49,13 @@ def render_page(
     tagline: str,
     navigation: list[dict[str, Any]],
     current_slug: str,
-    plan: dict[str, Any] | None = None,
+    prev_page: dict[str, str] | None = None,
+    next_page: dict[str, str] | None = None,
     repo_url: str = "",
 ) -> str:
     env = _get_jinja_env()
     template = env.get_template("page.html")
     content_html, toc_html = _md_to_html(markdown_content)
-    prev_page, next_page = _get_prev_next(plan, current_slug) if plan else (None, None)
     return template.render(
         title=page_title,
         project_name=project_name,
@@ -199,13 +180,26 @@ def render_site(plan: dict[str, Any], pages: dict[str, str], output_dir: Path) -
     index_html = render_index(project_name, tagline, navigation, repo_url=repo_url)
     (output_dir / "index.html").write_text(index_html, encoding="utf-8")
 
-    for slug, md_content in valid_pages.items():
-        title = slug
-        for group in navigation:
-            for page in group.get("pages", []):
-                if page.get("slug") == slug:
-                    title = page.get("title", slug)
-                    break
+    # Build ordered list of valid slugs for prev/next navigation
+    valid_slug_order: list[dict[str, str]] = []
+    for group in navigation:
+        for page in group.get("pages", []):
+            slug = page.get("slug", "")
+            if slug in valid_pages:
+                valid_slug_order.append(
+                    {"slug": slug, "title": page.get("title", slug)}
+                )
+
+    for idx, slug_info in enumerate(valid_slug_order):
+        slug = slug_info["slug"]
+        md_content = valid_pages[slug]
+        title = slug_info["title"]
+
+        prev_page = valid_slug_order[idx - 1] if idx > 0 else None
+        next_page = (
+            valid_slug_order[idx + 1] if idx < len(valid_slug_order) - 1 else None
+        )
+
         page_html = render_page(
             markdown_content=md_content,
             page_title=title,
@@ -213,12 +207,11 @@ def render_site(plan: dict[str, Any], pages: dict[str, str], output_dir: Path) -
             tagline=tagline,
             navigation=navigation,
             current_slug=slug,
-            plan=plan,
+            prev_page=prev_page,
+            next_page=next_page,
             repo_url=repo_url,
         )
         (output_dir / f"{slug}.html").write_text(page_html, encoding="utf-8")
-
-        # Also write raw markdown for LLM consumption
         (output_dir / f"{slug}.md").write_text(md_content, encoding="utf-8")
 
     search_index = _build_search_index(valid_pages, plan)

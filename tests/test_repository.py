@@ -30,14 +30,21 @@ def test_clone_repo_success(tmp_path: Path) -> None:
     assert repo_path == tmp_path / "repo"
     assert sha == "abc123def"  # pragma: allowlist secret
     assert mock_run.call_count == 2
-    # Verify clone command args
-    clone_args = mock_run.call_args_list[0]
-    cmd = clone_args.args[0] if clone_args.args else clone_args[0][0]
-    assert "clone" in cmd
-    assert "--depth" in cmd
-    assert "1" in cmd
-    assert "--" in cmd
-    assert "https://github.com/org/repo.git" in cmd
+
+    # Verify clone command
+    clone_call = mock_run.call_args_list[0]
+    clone_cmd = clone_call.args[0]
+    assert "clone" in clone_cmd
+    assert "--depth" in clone_cmd
+    assert "1" in clone_cmd
+    assert "--" in clone_cmd
+    assert "https://github.com/org/repo.git" in clone_cmd
+    assert str(tmp_path / "repo") in clone_cmd
+
+    # Verify rev-parse command
+    revparse_call = mock_run.call_args_list[1]
+    assert "rev-parse" in revparse_call.args[0]
+    assert revparse_call.kwargs.get("cwd") == tmp_path / "repo"
 
 
 def test_clone_repo_failure(tmp_path: Path) -> None:
@@ -61,3 +68,15 @@ def test_get_local_repo_info(tmp_path: Path) -> None:
 
     assert path == tmp_path
     assert sha == "def456"
+
+
+def test_get_local_repo_info_failure(tmp_path: Path) -> None:
+    import pytest
+    from docsfy.repository import get_local_repo_info
+
+    with patch("docsfy.repository.subprocess.run") as mock_run:
+        mock_run.return_value = MagicMock(
+            returncode=1, stdout="", stderr="fatal: not a git repository"
+        )
+        with pytest.raises(RuntimeError, match="Failed to get commit SHA"):
+            get_local_repo_info(tmp_path)
