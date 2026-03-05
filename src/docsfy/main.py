@@ -50,6 +50,7 @@ def _validate_project_name(name: str) -> str:
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+    _generating.clear()
     await init_db()
     yield
 

@@ -5,6 +5,9 @@ import re
 from pathlib import Path
 
 import aiosqlite
+from simple_logger.logger import get_logger
+
+logger = get_logger(name=__name__)
 
 VALID_STATUSES = frozenset({"generating", "ready", "error"})
 
@@ -43,6 +46,15 @@ async def init_db() -> None:
                 await db.execute(f"ALTER TABLE projects ADD COLUMN {column}")
             except Exception:
                 pass  # Column already exists
+
+        # Reset orphaned "generating" projects from previous server run
+        cursor = await db.execute(
+            "UPDATE projects SET status = 'error', error_message = 'Server restarted during generation', current_stage = NULL WHERE status = 'generating'"
+        )
+        if cursor.rowcount > 0:
+            logger.info(
+                f"Reset {cursor.rowcount} orphaned generating project(s) to error status"
+            )
 
         await db.commit()
 

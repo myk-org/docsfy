@@ -123,6 +123,24 @@ async def test_get_known_models(db_path: Path) -> None:
     assert "gemini-2.5-pro" in models["gemini"]
 
 
+async def test_init_db_resets_orphaned_generating(db_path: Path) -> None:
+    from docsfy.storage import get_project, init_db, save_project
+
+    await save_project(
+        name="stuck-repo",
+        repo_url="https://github.com/org/stuck.git",
+        status="generating",
+    )
+
+    # Simulate server restart by re-running init_db
+    await init_db()
+
+    project = await get_project("stuck-repo")
+    assert project is not None
+    assert project["status"] == "error"
+    assert "Server restarted" in project["error_message"]
+
+
 async def test_update_project_with_ai_info(db_path: Path) -> None:
     from docsfy.storage import get_project, save_project, update_project_status
 
