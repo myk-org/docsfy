@@ -999,18 +999,20 @@
                 /* Generating pages */
                 if (si >= 2) {
                     var pageCount = previousPageCount;
-                    if (planPages) {
-                        for (var i = 0; i < pageCount; i++) {
-                            var title = planPages[i] || 'Page ' + (i + 1);
-                            addLogEntry('Generated page ' + (i + 1) + ' of ' + totalPagesFromPlan + ': ' + title, 'done');
-                        }
+                    var totalLabel = totalPagesFromPlan > 0 ? totalPagesFromPlan : '?';
+
+                    /* Show all completed pages (1 through pageCount) */
+                    for (var i = 0; i < pageCount; i++) {
+                        var title = (planPages && planPages[i]) ? planPages[i] : 'Page ' + (i + 1);
+                        addLogEntry('Generated page ' + (i + 1) + ' of ' + totalLabel + ': ' + title, 'done');
                     }
+
+                    /* Show next page being generated if still in generating_pages stage */
                     if (currentStage === 'generating_pages') {
-                        if (planPages && pageCount < totalPagesFromPlan) {
-                            var nextTitle = planPages[pageCount] || 'Page ' + (pageCount + 1);
-                            addLogEntry('Generating page ' + (pageCount + 1) + ' of ' + totalPagesFromPlan + ': ' + nextTitle, 'active');
-                        } else if (!planPages) {
-                            addLogEntry('Generating pages... (' + pageCount + ' completed)', 'active');
+                        var hasMore = totalPagesFromPlan > 0 ? (pageCount < totalPagesFromPlan) : true;
+                        if (hasMore) {
+                            var nextTitle = (planPages && planPages[pageCount]) ? planPages[pageCount] : 'Page ' + (pageCount + 1);
+                            addLogEntry('Generating page ' + (pageCount + 1) + ' of ' + totalLabel + ': ' + nextTitle, 'active');
                         }
                     }
                 }
@@ -1022,24 +1024,27 @@
 
             } else if (currentStatus === 'ready') {
                 addLogEntry('Cloned repository', 'done');
-                if (planPages) {
+                if (totalPagesFromPlan > 0) {
                     addLogEntry('Planned documentation structure (' + totalPagesFromPlan + ' pages)', 'done');
-                    for (var j = 0; j < totalPagesFromPlan; j++) {
-                        var readyTitle = planPages[j] || 'Page ' + (j + 1);
-                        addLogEntry('Generated page ' + (j + 1) + ' of ' + totalPagesFromPlan + ': ' + readyTitle, 'done');
-                    }
-                } else {
-                    addLogEntry('Generated ' + previousPageCount + ' pages', 'done');
+                }
+                var readyCount = totalPagesFromPlan > 0 ? totalPagesFromPlan : previousPageCount;
+                var readyTotalLabel = totalPagesFromPlan > 0 ? totalPagesFromPlan : previousPageCount;
+                for (var j = 0; j < readyCount; j++) {
+                    var readyTitle = (planPages && planPages[j]) ? planPages[j] : 'Page ' + (j + 1);
+                    addLogEntry('Generated page ' + (j + 1) + ' of ' + readyTotalLabel + ': ' + readyTitle, 'done');
                 }
                 addLogEntry('Rendered documentation site', 'done');
                 addLogEntry('Documentation ready!', 'done');
             } else if (currentStatus === 'error') {
                 addLogEntry('Cloned repository', 'done');
-                if (planPages && previousPageCount > 0) {
+                if (totalPagesFromPlan > 0) {
                     addLogEntry('Planned documentation structure (' + totalPagesFromPlan + ' pages)', 'done');
+                }
+                if (previousPageCount > 0) {
+                    var errTotalLabel = totalPagesFromPlan > 0 ? totalPagesFromPlan : '?';
                     for (var k = 0; k < previousPageCount; k++) {
                         var errTitle = (planPages && planPages[k]) ? planPages[k] : 'Page ' + (k + 1);
-                        addLogEntry('Generated page ' + (k + 1) + ' of ' + totalPagesFromPlan + ': ' + errTitle, 'done');
+                        addLogEntry('Generated page ' + (k + 1) + ' of ' + errTotalLabel + ': ' + errTitle, 'done');
                     }
                 }
                 addLogEntry('Generation failed', 'error');
@@ -1228,34 +1233,32 @@
                 previousPageCount = newPageCount;
                 buildInitialLog();
             } else if (pageCountChanged && newStatus === 'generating') {
-                /* Handle page count increments within the same stage */
-                if (planPages) {
-                    /* Mark the last active entry as done */
-                    updateLastLogEntry(null, 'done');
-                    var allEntries = logBody.querySelectorAll('.log-entry');
-                    if (allEntries.length > 0) {
-                        var lastEntry = allEntries[allEntries.length - 1];
-                        var lastText = lastEntry.querySelector('.log-entry-text');
-                        if (lastText && lastText.textContent.indexOf('Generating') === 0) {
-                            lastText.textContent = lastText.textContent.replace('Generating', 'Generated');
-                        }
-                    }
+                var totalLabel = totalPagesFromPlan > 0 ? totalPagesFromPlan : '?';
 
-                    /* Add new completed entries for any skipped pages */
-                    for (var i = previousPageCount + 1; i < newPageCount; i++) {
-                        var skipTitle = (planPages[i]) ? planPages[i] : 'Page ' + (i + 1);
-                        addLogEntry('Generated page ' + (i + 1) + ' of ' + totalPagesFromPlan + ': ' + skipTitle, 'done');
+                /* Mark the last active entry as done */
+                updateLastLogEntry(null, 'done');
+                var allEntries = logBody.querySelectorAll('.log-entry');
+                if (allEntries.length > 0) {
+                    var lastEntry = allEntries[allEntries.length - 1];
+                    var lastText = lastEntry.querySelector('.log-entry-text');
+                    if (lastText && lastText.textContent.indexOf('Generating') === 0) {
+                        lastText.textContent = lastText.textContent.replace('Generating', 'Generated');
                     }
-
-                    /* Add next active entry if still generating */
-                    if (newPageCount < totalPagesFromPlan) {
-                        var nextTitle = (planPages[newPageCount]) ? planPages[newPageCount] : 'Page ' + (newPageCount + 1);
-                        addLogEntry('Generating page ' + (newPageCount + 1) + ' of ' + totalPagesFromPlan + ': ' + nextTitle, 'active');
-                    }
-                } else {
-                    /* No plan available, just show generic progress */
-                    addLogEntry('Generated ' + newPageCount + ' pages...', 'active');
                 }
+
+                /* Add new completed entries for any skipped pages */
+                for (var i = previousPageCount + 1; i < newPageCount; i++) {
+                    var skipTitle = (planPages && planPages[i]) ? planPages[i] : 'Page ' + (i + 1);
+                    addLogEntry('Generated page ' + (i + 1) + ' of ' + totalLabel + ': ' + skipTitle, 'done');
+                }
+
+                /* Add next active entry if still generating */
+                var hasMore = totalPagesFromPlan > 0 ? (newPageCount < totalPagesFromPlan) : true;
+                if (hasMore) {
+                    var nextTitle = (planPages && planPages[newPageCount]) ? planPages[newPageCount] : 'Page ' + (newPageCount + 1);
+                    addLogEntry('Generating page ' + (newPageCount + 1) + ' of ' + totalLabel + ': ' + nextTitle, 'active');
+                }
+
                 previousPageCount = newPageCount;
             }
 
