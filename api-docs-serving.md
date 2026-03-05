@@ -1,47 +1,46 @@
 # GET /docs/{project}/{path}
 
-The `GET /docs/{project}/{path}` endpoint is docsfy's primary documentation serving route. It delivers generated HTML documentation directly to the browser, turning docsfy from a generation-only tool into a fully hosted documentation platform.
+Serve generated static HTML documentation pages directly from the docsfy server. This endpoint acts as a built-in static file server, letting you browse AI-generated documentation sites without deploying them separately.
 
-## Overview
+## Endpoint Overview
 
-Once docsfy generates a documentation site for a project, the rendered HTML is stored on the filesystem under `/data/projects/{project-name}/site/`. This endpoint maps incoming URL paths to those static files, serving them with the correct content types so that browsers render full documentation sites — complete with navigation, search, syntax highlighting, and theme toggling.
+| Property | Value |
+|----------|-------|
+| **Method** | `GET` |
+| **Path** | `/docs/{project}/{path}` |
+| **Authentication** | None |
+| **Response** | Static file content (HTML, CSS, JS, JSON) |
+
+## Path Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `project` | `string` | Yes | The project name used during generation (derived from the repository name) |
+| `path` | `string` | No | Path to the specific file within the generated site. Defaults to `index.html` when omitted or when a directory is requested |
+
+## How It Works
+
+When documentation is generated via `POST /api/generate`, the final pipeline stage renders all markdown content into a complete static HTML site stored on the filesystem. The `GET /docs/{project}/{path}` endpoint maps incoming requests directly to files within that rendered output.
+
+### Request-to-Filesystem Resolution
+
+Each request resolves to a file under the project's `site/` directory:
 
 ```
 GET /docs/{project}/{path}
+        │          │
+        ▼          ▼
+/data/projects/{project}/site/{path}
 ```
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `project` | path | The project name (as specified during generation) |
-| `path` | path | The file path within the project's rendered site directory |
-
-## URL Routing
-
-The FastAPI route captures two path parameters to resolve which file to serve:
-
-1. **`{project}`** — identifies which project's documentation to serve, matching a subdirectory under `/data/projects/`
-2. **`{path}`** — the remaining URL segments, mapping to files within that project's `site/` directory
-
-### Example URLs
-
-| URL | Resolved File |
-|-----|---------------|
-| `/docs/my-api/index.html` | `/data/projects/my-api/site/index.html` |
-| `/docs/my-api/getting-started.html` | `/data/projects/my-api/site/getting-started.html` |
-| `/docs/my-api/assets/style.css` | `/data/projects/my-api/site/assets/style.css` |
-| `/docs/my-api/assets/search.js` | `/data/projects/my-api/site/assets/search.js` |
-| `/docs/my-api/search-index.json` | `/data/projects/my-api/site/search-index.json` |
-
-## Path Resolution
-
-The endpoint resolves the requested path against the project's rendered site directory on the filesystem. The storage layout that backs this endpoint is:
+The storage layout for a generated project looks like this:
 
 ```
 /data/projects/{project-name}/
-  plan.json             # doc structure from AI
+  plan.json                 # doc structure from AI
   cache/
-    pages/*.md          # AI-generated markdown (cached for incremental updates)
-  site/                 # final rendered HTML — served by this endpoint
+    pages/*.md              # AI-generated markdown (cached for incremental updates)
+  site/                     # final rendered HTML ← served by this endpoint
     index.html
     *.html
     assets/
@@ -52,127 +51,118 @@ The endpoint resolves the requested path against the project's rendered site dir
     search-index.json
 ```
 
-The resolution flow works as follows:
-
-1. Extract `{project}` and `{path}` from the URL
-2. Construct the filesystem path: `/data/projects/{project}/site/{path}`
-3. If the path points to a directory (or is empty), serve `index.html` from that directory
-4. Serve the resolved file with the appropriate `Content-Type` header
-5. Return `404 Not Found` if the project or file does not exist
-
-> **Note:** Only files inside the `site/` subdirectory are served. The `plan.json` and `cache/` directories are internal to the generation pipeline and are never exposed through this endpoint.
-
-## Served File Types
-
-The rendered site includes several file types, all served through this single endpoint:
-
-| File | Content-Type | Purpose |
-|------|-------------|---------|
-| `*.html` | `text/html` | Documentation pages generated from AI-written markdown |
-| `style.css` | `text/css` | Theme styles supporting dark/light mode, responsive layout |
-| `search.js` | `application/javascript` | Client-side search powered by lunr.js (or similar) |
-| `theme-toggle.js` | `application/javascript` | Dark/light theme switching logic |
-| `highlight.js` | `application/javascript` | Code syntax highlighting |
-| `search-index.json` | `application/json` | Pre-built search index for client-side search |
-
-## How Content Gets Here
-
-Before this endpoint can serve anything, the project must go through docsfy's four-stage generation pipeline:
-
-```
-POST /api/generate (repo URL)
-        │
-        ▼
-   Clone Repository
-        │
-        ▼
-   AI Planner → plan.json
-        │
-        ▼
-   AI Content Generator → cache/pages/*.md
-        │
-        ▼
-   HTML Renderer → site/   ← served by GET /docs/{project}/{path}
-```
-
-The final **HTML Renderer** stage (Stage 4) converts the AI-generated markdown pages and the `plan.json` structure into a polished static site using Jinja2 templates with bundled CSS/JS assets. The rendered site includes:
-
-- Sidebar navigation (derived from `plan.json` hierarchy)
-- Dark/light theme toggle
-- Client-side full-text search
-- Code syntax highlighting via highlight.js
-- Callout boxes (note, warning, info)
-- Card layouts
-- Responsive design
-
-## Project Status and Availability
-
-The endpoint only serves documentation for projects whose status is `ready` in the SQLite database (`/data/docsfy.db`). Projects can have one of three statuses:
-
-| Status | Docs Available | Description |
-|--------|---------------|-------------|
-| `generating` | No | Pipeline is still running |
-| `ready` | **Yes** | Generation complete, docs are served |
-| `error` | No | Generation failed |
-
-> **Tip:** Use `GET /api/projects/{name}` to check a project's status, last generated timestamp, and commit SHA before requesting its documentation.
+The endpoint serves everything under `site/` — HTML pages, CSS stylesheets, JavaScript files, and the search index.
 
 ## Usage Examples
 
-### Browsing Documentation
-
-Point your browser directly at a project's documentation root:
-
-```
-http://localhost:8000/docs/my-api/index.html
-```
-
-This serves the full documentation site with working navigation, search, and theme toggling — just like any static documentation host.
-
-### Fetching Assets Programmatically
+### Browse the documentation root
 
 ```bash
-# Fetch the main page
-curl http://localhost:8000/docs/my-api/index.html
-
-# Fetch the search index
-curl http://localhost:8000/docs/my-api/search-index.json
-
-# Fetch a specific documentation page
-curl http://localhost:8000/docs/my-api/getting-started.html
+curl http://localhost:8000/docs/my-project/
 ```
 
-### Checking if Documentation Exists
+This returns the `index.html` landing page for the `my-project` documentation site. Open this URL in a browser to get the full documentation experience with sidebar navigation, theme toggling, and client-side search.
+
+### Fetch a specific documentation page
 
 ```bash
-# Check project status first
-curl http://localhost:8000/api/projects/my-api
-
-# Response includes:
-# {
-#   "name": "my-api",
-#   "status": "ready",
-#   "last_generated": "2026-03-04T12:00:00Z",
-#   "last_commit_sha": "abc123..."
-# }
+curl http://localhost:8000/docs/my-project/getting-started.html
 ```
 
-## Relationship to the Download Endpoint
+### Load static assets
 
-docsfy provides two ways to access generated documentation:
+```bash
+# Stylesheet
+curl http://localhost:8000/docs/my-project/assets/style.css
 
-| Method | Endpoint | Use Case |
-|--------|----------|----------|
-| **Hosted serving** | `GET /docs/{project}/{path}` | Browse docs directly from the docsfy server |
-| **Static download** | `GET /api/projects/{name}/download` | Download docs as `.tar.gz` to self-host anywhere |
+# Client-side search logic
+curl http://localhost:8000/docs/my-project/assets/search.js
 
-Both methods serve the same content from the same `site/` directory. The download endpoint packages the entire directory into an archive, while this endpoint serves files individually on demand.
+# Theme toggle
+curl http://localhost:8000/docs/my-project/assets/theme-toggle.js
 
-> **Tip:** If you want to host the documentation on your own infrastructure (e.g., GitHub Pages, Netlify, S3), use the download endpoint to get the `.tar.gz` archive. If you want zero-config hosting, use this endpoint directly.
+# Code syntax highlighting
+curl http://localhost:8000/docs/my-project/assets/highlight.js
+```
 
-## Docker Volume Configuration
+### Fetch the search index
 
-When running docsfy in Docker, the `/data` directory must be mounted as a persistent volume so that generated documentation survives container restarts:
+```bash
+curl http://localhost:8000/docs/my-project/search-index.json
+```
+
+The search index is a JSON file built at render time. It powers the client-side search feature embedded in every documentation page.
+
+## Content Types
+
+The server returns the appropriate `Content-Type` header based on the file extension:
+
+| Extension | Content-Type |
+|-----------|-------------|
+| `.html` | `text/html` |
+| `.css` | `text/css` |
+| `.js` | `application/javascript` |
+| `.json` | `application/json` |
+
+## Response Status Codes
+
+| Status Code | Meaning |
+|-------------|---------|
+| `200 OK` | File found and returned successfully |
+| `404 Not Found` | The project does not exist, documentation has not been generated yet, or the requested path does not match any file in the site |
+
+## Generated Site Features
+
+The HTML pages served by this endpoint include several built-in features rendered during the generation pipeline (Stage 4 — HTML Renderer):
+
+| Feature | Description |
+|---------|-------------|
+| **Sidebar navigation** | Hierarchical navigation built from `plan.json` |
+| **Dark/light theme** | Toggle between themes via `theme-toggle.js` |
+| **Client-side search** | Full-text search powered by `search-index.json` |
+| **Code syntax highlighting** | Automatic highlighting via `highlight.js` |
+| **Card layouts** | Structured content cards for overview pages |
+| **Callout boxes** | Note, warning, and info callouts for emphasized content |
+| **Responsive design** | Mobile-friendly layout |
+
+## End-to-End Workflow
+
+To go from a repository URL to browsable documentation:
+
+```bash
+# 1. Start generation
+curl -X POST http://localhost:8000/api/generate \
+  -H "Content-Type: application/json" \
+  -d '{"repo_url": "https://github.com/org/my-project"}'
+
+# 2. Check status until "ready"
+curl http://localhost:8000/api/projects/my-project
+# Response includes: "status": "generating" → "ready"
+
+# 3. Browse the generated docs
+open http://localhost:8000/docs/my-project/
+```
+
+> **Note:** Documentation is only available after the generation pipeline completes successfully. Requests to `/docs/{project}/` while the project status is `generating` will return a `404` until the site has been fully rendered.
+
+## Self-Hosting Alternative
+
+If you prefer to host the documentation on your own infrastructure rather than serving it through docsfy, you can download the entire generated site as a tarball:
+
+```bash
+curl -o docs.tar.gz http://localhost:8000/api/projects/my-project/download
+tar -xzf docs.tar.gz -C /var/www/my-project-docs/
+```
+
+The downloaded archive contains the exact same static files served by this endpoint — the `site/` directory is fully self-contained with no external dependencies.
+
+> **Tip:** Use the download approach for production deployments where you want to serve documentation from a CDN or dedicated web server like nginx. Use `GET /docs/{project}/{path}` for development previews and lightweight setups.
+
+## Configuration
+
+This endpoint requires no dedicated configuration. It relies on the data volume where generated sites are stored.
+
+### Docker Compose volume mapping
 
 ```yaml
 services:
@@ -180,18 +170,16 @@ services:
     build: .
     ports:
       - "8000:8000"
-    env_file: .env
     volumes:
-      - ./data:/data    # persists generated docs across restarts
+      - ./data:/data    # Generated sites live under /data/projects/
 ```
 
-The `./data/projects/` directory on the host will contain all generated sites, and the endpoint serves directly from this mounted path.
+The `./data` volume must be persistent. If the volume is lost, all generated documentation must be regenerated via `POST /api/generate`.
 
-> **Warning:** If the `/data` volume is not mounted, generated documentation will be lost when the container stops. Always use a persistent volume or bind mount for production deployments.
+> **Warning:** Do not modify files under `/data/projects/{name}/site/` manually. These files are overwritten during each generation or incremental update cycle. Custom edits will be lost.
 
-## Error Responses
+## Incremental Updates and Cache Behavior
 
-| Status Code | Condition |
-|------------|-----------|
-| `200 OK` | File found and served successfully |
-| `404 Not Found` | Project does not exist, project is not in `ready` status, or the requested file path does not exist within the project's `site/` directory |
+When a project is regenerated (e.g., after a repository update), docsfy compares the current commit SHA against the stored SHA in the database. If the documentation structure from `plan.json` is unchanged, only affected pages are re-rendered — the rest are served from cached markdown under `cache/pages/*.md`.
+
+After an incremental update completes, the `site/` directory is refreshed and subsequent requests to this endpoint immediately reflect the updated content. There is no separate cache layer between the endpoint and the filesystem.

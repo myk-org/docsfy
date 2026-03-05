@@ -1,318 +1,294 @@
 # Generating Documentation
 
-docsfy generates polished, static HTML documentation sites from GitHub repositories using AI. This page covers how to submit a repository for documentation generation, monitor progress, and understand the pipeline that transforms your codebase into a documentation site.
+This guide covers the complete workflow for generating documentation with docsfy: submitting a repository, monitoring the generation pipeline, and accessing the finished documentation site.
+
+## Overview
+
+Documentation generation is a four-stage pipeline that clones your repository, uses AI to plan and write documentation, then renders it into a polished static HTML site. The entire process is triggered by a single API call.
+
+```
+POST /api/generate
+       │
+       ▼
+ ┌───────────┐    ┌──────────────┐    ┌──────────────┐    ┌──────────────┐
+ │  Clone     │───▶│  AI Planner  │───▶│  AI Content  │───▶│    HTML      │
+ │  Repo      │    │ (plan.json)  │    │  Generator   │    │  Renderer    │
+ └───────────┘    └──────────────┘    └──────────────┘    └──────────────┘
+                                                                  │
+                                                                  ▼
+                                                          Static HTML site
+                                                     /data/projects/{name}/site/
+```
 
 ## Submitting a Repository
 
-To generate documentation for a repository, send a `POST` request to the `/api/generate` endpoint with the repository URL.
+### Endpoint
 
-### Request
-
-```bash
-curl -X POST http://localhost:8000/api/generate \
-  -H "Content-Type: application/json" \
-  -d '{"repo_url": "https://github.com/your-org/your-repo"}'
+```
+POST /api/generate
 ```
 
-The endpoint accepts both HTTPS and SSH repository URLs:
+### Request Body
 
-```bash
-# HTTPS (public or private)
-{"repo_url": "https://github.com/your-org/your-repo"}
-
-# SSH (requires system git credentials)
-{"repo_url": "git@github.com:your-org/your-repo.git"}
-```
-
-> **Note:** Private repositories are supported. docsfy uses system git credentials configured in the container for authentication. See the [deployment configuration](#private-repository-access) section for setting up credentials.
-
-### Response
-
-A successful request returns the project status with generation details:
+Send a JSON payload with the URL of the GitHub repository you want to document:
 
 ```json
 {
-  "name": "your-repo",
-  "repo_url": "https://github.com/your-org/your-repo",
-  "status": "generating"
+  "repo_url": "https://github.com/user/repository"
 }
 ```
 
-The `status` field will be `generating` while the pipeline is running. Once complete, it transitions to `ready` or `error`.
+SSH URLs are also supported:
 
-### Re-generating Documentation
-
-Submitting the same repository URL again triggers an **incremental update**. docsfy tracks the last commit SHA per project and only regenerates what changed:
-
-1. The repository is fetched and the current commit SHA is compared against the stored SHA
-2. If the commit has changed, the AI Planner re-evaluates whether the documentation structure needs updating
-3. Only pages affected by code changes are regenerated
-4. If the plan structure is unchanged, only relevant pages are rebuilt
-
-This makes re-generation significantly faster than a full build.
-
-```bash
-# Re-generate after pushing new commits
-curl -X POST http://localhost:8000/api/generate \
-  -H "Content-Type: application/json" \
-  -d '{"repo_url": "https://github.com/your-org/your-repo"}'
+```json
+{
+  "repo_url": "git@github.com:user/repository.git"
+}
 ```
 
-## Monitoring Generation Status
+### Example: cURL
+
+```bash
+curl -X POST http://localhost:8000/api/generate \
+  -H "Content-Type: application/json" \
+  -d '{"repo_url": "https://github.com/user/repository"}'
+```
+
+### Example: Python
+
+```python
+import requests
+
+response = requests.post(
+    "http://localhost:8000/api/generate",
+    json={"repo_url": "https://github.com/user/repository"}
+)
+print(response.json())
+```
+
+> **Note:** For private repositories, docsfy uses the system git credentials configured in the container environment. Ensure the container has appropriate SSH keys or credential helpers configured.
+
+### What Happens After Submission
+
+Once you submit a request, the project status is set to `generating` and the four-stage pipeline begins:
+
+1. **Clone Repository** — A shallow clone (`--depth 1`) is performed to a temporary directory, keeping only the latest commit to minimize disk usage and clone time.
+
+2. **AI Planner** — The AI CLI runs with its working directory set to the cloned repository. It analyzes the codebase structure and produces a `plan.json` file that defines the pages, sections, and navigation hierarchy for the documentation site.
+
+3. **AI Content Generator** — For each page defined in `plan.json`, the AI CLI runs again with full access to the repository. Pages can be generated concurrently using semaphore-limited concurrency. Generated markdown is cached at `/data/projects/{name}/cache/pages/*.md`.
+
+4. **HTML Renderer** — Markdown pages and `plan.json` are converted into a static HTML site using Jinja2 templates with bundled CSS and JavaScript. The final output is written to `/data/projects/{name}/site/`.
+
+> **Tip:** The AI CLI availability is verified before generation starts with a lightweight test prompt. If the configured provider is unavailable, the request fails fast rather than partway through the pipeline.
+
+## Monitoring Progress
+
+### Project Status Values
+
+Each project has one of three statuses:
+
+| Status | Description |
+|--------|-------------|
+| `generating` | The documentation pipeline is currently running |
+| `ready` | Generation completed successfully; documentation is available |
+| `error` | Generation failed; check logs for details |
 
 ### List All Projects
 
-Use `GET /api/status` to see all projects and their current generation state:
+To check the status of all projects at once:
+
+```
+GET /api/status
+```
 
 ```bash
 curl http://localhost:8000/api/status
 ```
 
-Each project reports one of three statuses:
-
-| Status | Description |
-|--------|-------------|
-| `generating` | The pipeline is actively running |
-| `ready` | Documentation has been generated successfully and is available to view |
-| `error` | Generation failed; check project details for logs |
+This returns a list of all projects with their current generation status, allowing you to see at a glance which projects are in progress, complete, or have errors.
 
 ### Get Project Details
 
-For detailed information about a specific project, use `GET /api/projects/{name}`:
+For detailed information about a specific project:
 
-```bash
-curl http://localhost:8000/api/projects/your-repo
+```
+GET /api/projects/{name}
 ```
 
-This returns extended metadata including:
+```bash
+curl http://localhost:8000/api/projects/my-project
+```
 
+The response includes:
+
+- Current generation status
 - Last generated timestamp
-- Last commit SHA processed
-- List of generated pages
-- Generation history and logs
+- Last commit SHA
+- List of documentation pages
 
 ### Polling for Completion
 
-Since generation is asynchronous, poll the status endpoint to detect when documentation is ready:
+Since generation runs asynchronously, poll the status endpoint to detect when your documentation is ready:
+
+```python
+import time
+import requests
+
+project_name = "my-project"
+
+while True:
+    response = requests.get(f"http://localhost:8000/api/projects/{project_name}")
+    data = response.json()
+
+    if data["status"] == "ready":
+        print("Documentation is ready!")
+        break
+    elif data["status"] == "error":
+        print("Generation failed.")
+        break
+
+    time.sleep(10)  # check every 10 seconds
+```
+
+> **Note:** Generation time depends on repository size and the configured AI provider. The default AI CLI timeout is 60 minutes per invocation, so large repositories with many pages may take significant time to complete.
+
+### Health Check
+
+Verify the docsfy service itself is running:
+
+```
+GET /health
+```
 
 ```bash
-#!/bin/bash
-PROJECT="your-repo"
-
-while true; do
-  STATUS=$(curl -s "http://localhost:8000/api/projects/$PROJECT" | jq -r '.status')
-  
-  case "$STATUS" in
-    "ready")
-      echo "Documentation is ready!"
-      echo "View at: http://localhost:8000/docs/$PROJECT/"
-      break
-      ;;
-    "error")
-      echo "Generation failed. Check project details for logs."
-      break
-      ;;
-    "generating")
-      echo "Still generating..."
-      sleep 30
-      ;;
-  esac
-done
+curl http://localhost:8000/health
 ```
-
-> **Tip:** Generation time varies depending on repository size and the AI provider used. The default `AI_CLI_TIMEOUT` is 60 minutes, which covers most repositories.
-
-## The Four-Stage Pipeline
-
-Every generation request passes through four sequential stages. Understanding these stages helps with debugging failures and tuning performance.
-
-```
-POST /api/generate
-       |
-       v
-  +---------+     +--------------+     +------------+     +----------+
-  |  Clone  | --> |  AI Planner  | --> | AI Content | --> |   HTML   |
-  |  Repo   |     |  (plan.json) |     | Generator  |     | Renderer |
-  +---------+     +--------------+     +------------+     +----------+
-                                                                |
-                                                                v
-                                                          Static site
-                                                     /data/projects/{name}/site/
-```
-
-### Stage 1: Clone Repository
-
-The first stage creates a shallow clone of the target repository.
-
-- Performs a `git clone --depth 1` to a temporary directory, downloading only the latest commit
-- Supports both SSH and HTTPS URLs
-- Uses system git credentials for private repository access
-
-A shallow clone minimizes bandwidth and disk usage since docsfy only needs the current state of the codebase to generate documentation.
-
-> **Warning:** If the clone fails (invalid URL, authentication error, network issue), the entire pipeline aborts and the project status is set to `error`.
-
-### Stage 2: AI Planner
-
-The planner stage analyzes the entire repository to design the documentation structure.
-
-The AI CLI is invoked with its working directory set to the cloned repository, giving the AI full access to explore every file. It receives a prompt instructing it to analyze the codebase and produce a documentation plan.
-
-**Output:** A `plan.json` file containing the page hierarchy, sections, and navigation structure:
-
-```
-/data/projects/{project-name}/
-  plan.json             # Documentation structure from AI
-```
-
-The plan defines what pages to create, how they relate to each other, and how the sidebar navigation should be organized. This plan drives Stage 3.
-
-The AI CLI invocation follows the provider pattern defined in the codebase:
-
-```python
-@dataclass(frozen=True)
-class ProviderConfig:
-    binary: str
-    build_cmd: Callable
-    uses_own_cwd: bool = False
-```
-
-Prompts are passed to the AI CLI via stdin:
-
-```python
-subprocess.run(cmd, input=prompt, capture_output=True, text=True)
-```
-
-For async execution, this is wrapped with:
-
-```python
-asyncio.to_thread(subprocess.run, ...)
-```
-
-> **Note:** Before starting generation, docsfy performs an availability check by sending a lightweight "Hi" prompt to the configured AI provider. This fails fast if the provider is misconfigured or unreachable.
-
-### Stage 3: AI Content Generator
-
-With the plan established, this stage generates the actual documentation content for each page.
-
-For every page defined in `plan.json`, the AI CLI is invoked again with the cloned repository as its working directory. The AI explores the codebase as needed to write accurate, detailed documentation for each page's topic.
-
-Key characteristics:
-
-- **Concurrent generation** — Pages are generated in parallel using async execution with semaphore-limited concurrency, preventing resource exhaustion while maximizing throughput
-- **Per-page caching** — Each generated page is cached as a Markdown file for use in incremental updates
-
-**Output:** Markdown files cached in the project directory:
-
-```
-/data/projects/{project-name}/
-  cache/
-    pages/*.md          # AI-generated markdown per page
-```
-
-#### JSON Response Parsing
-
-AI CLI output containing JSON (such as structured content) is extracted using a multi-strategy parser:
-
-1. **Direct JSON parse** — Attempt to parse the entire output as JSON
-2. **Brace-matching** — Find the outermost JSON object by matching braces
-3. **Markdown code block extraction** — Extract JSON from fenced code blocks
-4. **Regex recovery** — Fallback pattern matching for malformed output
-
-This layered approach ensures reliable JSON extraction regardless of how different AI providers format their responses.
-
-### Stage 4: HTML Renderer
-
-The final stage converts the Markdown content and `plan.json` navigation structure into a polished static HTML site.
-
-The renderer uses **Jinja2 templates** with bundled CSS and JavaScript assets to produce a site with:
-
-- Sidebar navigation (derived from `plan.json`)
-- Dark and light theme toggle
-- Client-side search (powered by lunr.js)
-- Code syntax highlighting (powered by highlight.js)
-- Card layouts and callout boxes (note, warning, info)
-- Responsive design for mobile and desktop
-
-**Output:** A complete static site:
-
-```
-/data/projects/{project-name}/
-  site/
-    index.html
-    *.html
-    assets/
-      style.css
-      search.js
-      theme-toggle.js
-      highlight.js
-    search-index.json
-```
-
-Once rendering completes, the project status is set to `ready` and the site is immediately available at `GET /docs/{project}/{path}`.
 
 ## Accessing Generated Documentation
 
-### Browse Online
+Once a project's status is `ready`, you can access the documentation in two ways.
 
-Once generation completes, documentation is served directly by docsfy:
+### Serve Directly from docsfy
+
+Browse the generated documentation site through the built-in static file server:
 
 ```
-http://localhost:8000/docs/your-repo/
+GET /docs/{project}/{path}
 ```
+
+Open your browser to:
+
+```
+http://localhost:8000/docs/my-project/
+```
+
+The served site includes:
+
+- Sidebar navigation generated from `plan.json`
+- Dark/light theme toggle
+- Client-side search powered by lunr.js
+- Code syntax highlighting via highlight.js
+- Responsive design with card layouts and callout boxes
 
 ### Download for Self-Hosting
 
-To download the generated site as a `.tar.gz` archive for hosting elsewhere:
+Download the entire documentation site as a `.tar.gz` archive:
 
-```bash
-curl -O http://localhost:8000/api/projects/your-repo/download
+```
+GET /api/projects/{name}/download
 ```
 
-The archive contains the complete static site from `/data/projects/{name}/site/` — extract it and serve with any static file server (Nginx, Apache, GitHub Pages, S3, etc.).
-
-### Remove a Project
-
-To delete a project and all its generated documentation:
-
 ```bash
-curl -X DELETE http://localhost:8000/api/projects/your-repo
+curl -o my-project-docs.tar.gz \
+  http://localhost:8000/api/projects/my-project/download
 ```
 
-> **Warning:** This permanently removes the project metadata from the database and all generated files from disk. This action cannot be undone.
+The archive contains a fully self-contained static site that you can deploy to any static hosting provider (GitHub Pages, Netlify, S3, Nginx, etc.) without any dependency on docsfy.
+
+The downloaded site structure mirrors the internal storage layout:
+
+```
+site/
+  index.html
+  *.html
+  assets/
+    style.css
+    search.js
+    theme-toggle.js
+    highlight.js
+  search-index.json
+```
+
+## Regenerating Documentation
+
+To regenerate documentation after your repository has been updated, submit the same repository URL again:
+
+```bash
+curl -X POST http://localhost:8000/api/generate \
+  -H "Content-Type: application/json" \
+  -d '{"repo_url": "https://github.com/user/repository"}'
+```
+
+docsfy uses incremental updates to minimize redundant work:
+
+1. The current commit SHA is compared against the previously stored SHA
+2. If the repository has changed, the AI Planner re-evaluates the documentation structure
+3. Only pages whose content may be affected by the changes are regenerated
+4. If the plan structure is unchanged, only pages related to modified files are rebuilt
+
+> **Tip:** Incremental regeneration can be significantly faster than a full generation, especially for large repositories where only a few files have changed.
+
+## Deleting a Project
+
+To remove a project and all its generated documentation:
+
+```
+DELETE /api/projects/{name}
+```
+
+```bash
+curl -X DELETE http://localhost:8000/api/projects/my-project
+```
+
+> **Warning:** This permanently deletes the project metadata from the database and all generated files from disk. This action cannot be undone.
 
 ## Configuration
 
-### AI Provider Settings
+The generation pipeline behavior is controlled through environment variables. These are typically set in your `.env` file or passed to the container:
 
-Generation behavior is controlled through environment variables. Configure these in your `.env` file or pass them directly to the container.
+### AI Provider
 
 ```bash
-# AI Configuration
-AI_PROVIDER=claude          # Options: claude, gemini, cursor
-AI_MODEL=claude-opus-4-6[1m]  # Model to use for the configured provider
-AI_CLI_TIMEOUT=60           # Timeout in minutes per AI CLI invocation
+# Choose the AI provider: claude, gemini, or cursor
+AI_PROVIDER=claude
+
+# Model to use for generation
+AI_MODEL=claude-opus-4-6[1m]
+
+# Maximum time (in minutes) for each AI CLI invocation
+AI_CLI_TIMEOUT=60
 ```
 
-The following providers and their CLI commands are supported:
+The three supported providers each use different CLI tools:
 
-| Provider | Binary | Command Pattern | CWD Handling |
-|----------|--------|-----------------|--------------|
-| Claude | `claude` | `claude --model <model> --dangerously-skip-permissions -p` | subprocess `cwd` set to repo path |
-| Gemini | `gemini` | `gemini --model <model> --yolo` | subprocess `cwd` set to repo path |
-| Cursor | `agent` | `agent --force --model <model> --print --workspace <path>` | Uses `--workspace` flag |
+| Provider | CLI Binary | CWD Handling |
+|----------|-----------|--------------|
+| `claude` | `claude` | subprocess `cwd` set to repo path |
+| `gemini` | `gemini` | subprocess `cwd` set to repo path |
+| `cursor` | `agent` | `--workspace` flag pointing to repo path |
 
-### Provider Authentication
+### Authentication
 
-Each AI provider requires its own authentication credentials:
+Configure credentials for your chosen AI provider:
 
 ```bash
-# Claude - Option 1: Direct API Key
+# Claude - Option 1: API Key
 ANTHROPIC_API_KEY=sk-ant-...
 
-# Claude - Option 2: Google Cloud Vertex AI
+# Claude - Option 2: Vertex AI
 CLAUDE_CODE_USE_VERTEX=1
-CLOUD_ML_REGION=us-east5
+CLOUD_ML_REGION=us-central1
 ANTHROPIC_VERTEX_PROJECT_ID=my-gcp-project
 
 # Gemini
@@ -322,11 +298,11 @@ GEMINI_API_KEY=...
 CURSOR_API_KEY=...
 ```
 
-> **Tip:** Only configure credentials for the provider specified in `AI_PROVIDER`. Unused provider credentials are ignored.
+> **Note:** Only one AI provider needs to be configured. Set `AI_PROVIDER` to match whichever provider you have credentials for.
 
-### Private Repository Access
+### Docker Compose
 
-For private repositories, mount your git credentials into the container. The `docker-compose.yaml` includes volume mounts for common credential locations:
+A typical deployment uses Docker Compose with persistent storage:
 
 ```yaml
 services:
@@ -346,53 +322,25 @@ services:
       retries: 3
 ```
 
-For SSH-based git access, mount your SSH keys into the container and ensure they are readable by the `appuser` user.
+The `/data` volume is essential — it persists the SQLite database and all generated documentation across container restarts.
 
-### Storage
+## Error Handling
 
-All generated data is persisted under the `/data` volume:
+When generation fails, the project status is set to `error`. Common failure scenarios include:
 
-| Path | Purpose |
-|------|---------|
-| `/data/docsfy.db` | SQLite database storing project metadata, status, commit SHAs, and generation history |
-| `/data/projects/{name}/plan.json` | Documentation structure from the AI Planner |
-| `/data/projects/{name}/cache/pages/*.md` | Cached Markdown files for incremental updates |
-| `/data/projects/{name}/site/` | Final rendered HTML site |
+| Cause | Resolution |
+|-------|-----------|
+| AI CLI not available | Verify the provider binary is installed and the correct `AI_PROVIDER` is set |
+| Authentication failure | Check that API keys or cloud credentials are correctly configured |
+| Timeout | Increase `AI_CLI_TIMEOUT` for very large repositories |
+| Invalid repository URL | Verify the URL is a valid GitHub repository accessible from the container |
+| Private repo access denied | Ensure system git credentials (SSH keys or credential helpers) are configured in the container |
 
-> **Note:** Mount `/data` as a persistent volume to retain generated documentation across container restarts.
+The AI CLI's JSON response parsing uses a multi-strategy extraction approach to handle varied output formats:
 
-## Health Check
+1. Direct JSON parse
+2. Brace-matching for the outermost JSON object
+3. Markdown code block extraction
+4. Fallback with regex recovery
 
-Verify the service is running and ready to accept requests:
-
-```bash
-curl http://localhost:8000/health
-```
-
-The Docker health check is preconfigured to probe this endpoint every 30 seconds with a 10-second timeout and 3 retries.
-
-## Troubleshooting
-
-### Generation stuck in `generating` status
-
-The AI CLI has a configurable timeout (default: 60 minutes). For very large repositories, increase `AI_CLI_TIMEOUT`:
-
-```bash
-AI_CLI_TIMEOUT=120  # 2 hours
-```
-
-### Generation fails immediately
-
-Check that the configured AI provider is available by verifying:
-
-1. The AI CLI binary is installed in the container (`claude`, `gemini`, or `agent`)
-2. The correct authentication credentials are set
-3. The provider service is reachable from the container
-
-docsfy performs an availability check before starting the pipeline — review the project details (`GET /api/projects/{name}`) for error logs.
-
-### Clone failures
-
-- Verify the repository URL is correct and accessible
-- For private repos, ensure git credentials are properly mounted
-- For SSH URLs, confirm SSH keys are available to the `appuser` inside the container
+This makes the pipeline resilient to minor formatting variations in AI output.

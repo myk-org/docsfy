@@ -1,10 +1,12 @@
 # GET /api/projects/{name}/download
 
-Download a project's generated documentation site as a `.tar.gz` archive for self-hosting.
+Download the complete generated documentation site as a `.tar.gz` archive for self-hosting.
 
 ## Overview
 
-This endpoint packages the complete static HTML documentation site for a project into a compressed `.tar.gz` archive. The downloaded archive contains everything needed to host the documentation independently — HTML pages, CSS stylesheets, JavaScript assets, and the search index — with no dependency on the docsfy server.
+This endpoint packages the rendered static HTML site for a project into a compressed tarball archive. Use it to download the full documentation site and host it on your own infrastructure — any static file server (Nginx, Apache, Caddy, S3, GitHub Pages, etc.) can serve the result.
+
+The archive contains the complete contents of the project's `site/` directory, including all HTML pages, CSS/JS assets, and the client-side search index.
 
 ## Request
 
@@ -16,7 +18,7 @@ GET /api/projects/{name}/download
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `name` | `string` | Yes | The project name as registered in docsfy |
+| `name` | string | Yes | The project name identifier, as set during generation via `POST /api/generate` |
 
 ### Example Request
 
@@ -24,38 +26,45 @@ GET /api/projects/{name}/download
 curl -O -J http://localhost:8000/api/projects/my-project/download
 ```
 
-Or with an explicit output filename:
+The `-O` flag saves the file using the server-provided filename, and `-J` uses the name from the `Content-Disposition` header.
+
+You can also specify a custom output path:
 
 ```bash
 curl -o my-project-docs.tar.gz http://localhost:8000/api/projects/my-project/download
+```
+
+### Python Example
+
+```python
+import httpx
+
+response = httpx.get("http://localhost:8000/api/projects/my-project/download")
+response.raise_for_status()
+
+with open("my-project-docs.tar.gz", "wb") as f:
+    f.write(response.content)
 ```
 
 ## Response
 
 ### Success (200 OK)
 
-On success, the endpoint returns a `.tar.gz` binary stream.
+Returns the `.tar.gz` archive as a binary stream.
+
+**Response Headers:**
 
 | Header | Value |
 |--------|-------|
 | `Content-Type` | `application/gzip` |
+| `Content-Disposition` | `attachment; filename="{name}.tar.gz"` |
 
-**Response body:** Binary `.tar.gz` archive containing the project's generated static site.
+### Archive Contents
 
-### Error Responses
-
-| Status Code | Condition |
-|-------------|-----------|
-| `404 Not Found` | The project `{name}` does not exist |
-| `409 Conflict` | The project exists but documentation is still generating (status is `generating`) |
-| `500 Internal Server Error` | The site directory is missing or the archive could not be created |
-
-## Archive Contents
-
-The downloaded archive mirrors the contents of the rendered site directory at `/data/projects/{name}/site/`. Once extracted, it produces a fully self-contained static website:
+The archive mirrors the project's rendered `site/` directory:
 
 ```
-site/
+{name}/
   index.html
   *.html
   assets/
@@ -66,34 +75,49 @@ site/
   search-index.json
 ```
 
-| File / Directory | Description |
-|-----------------|-------------|
-| `index.html` | Landing page for the documentation site |
+| Path | Description |
+|------|-------------|
+| `index.html` | Documentation landing page |
 | `*.html` | Individual documentation pages generated from the AI content pipeline |
-| `assets/style.css` | Theme stylesheet with dark/light mode support |
-| `assets/search.js` | Client-side search functionality (powered by lunr.js) |
-| `assets/theme-toggle.js` | Dark/light theme switcher |
+| `assets/style.css` | Stylesheet with dark/light theme support and responsive layout |
+| `assets/search.js` | Client-side search powered by the bundled search index |
+| `assets/theme-toggle.js` | Dark/light theme toggle logic |
 | `assets/highlight.js` | Code syntax highlighting |
-| `search-index.json` | Pre-built search index for client-side search |
+| `search-index.json` | Pre-built search index for client-side full-text search |
 
-> **Note:** The HTML pages include sidebar navigation, code syntax highlighting, callout boxes, card layouts, and responsive design — all bundled within the archive. No external CDN or runtime dependency is required.
+### Error Responses
 
-## Self-Hosting the Downloaded Archive
+| Status Code | Description |
+|-------------|-------------|
+| `404 Not Found` | Project with the given `name` does not exist |
+| `409 Conflict` | Project exists but documentation is still being generated (status is `generating`) |
+| `500 Internal Server Error` | Archive creation failed due to a server-side error |
+
+**Example error response (404):**
+
+```json
+{
+  "detail": "Project 'unknown-project' not found"
+}
+```
+
+**Example error response (409):**
+
+```json
+{
+  "detail": "Project 'my-project' is still generating"
+}
+```
+
+> **Note:** You can check whether a project's documentation is ready before attempting a download by calling `GET /api/projects/{name}` and verifying that the `status` field is `ready`.
+
+## Self-Hosting the Downloaded Site
 
 ### Extract the Archive
 
 ```bash
-tar -xzf my-project-docs.tar.gz
+tar -xzf my-project.tar.gz
 ```
-
-### Serve with Python (Quick Preview)
-
-```bash
-cd site/
-python3 -m http.server 3000
-```
-
-Then open `http://localhost:3000` in your browser.
 
 ### Serve with Nginx
 
@@ -102,7 +126,7 @@ server {
     listen 80;
     server_name docs.example.com;
 
-    root /var/www/docs/site;
+    root /var/www/my-project;
     index index.html;
 
     location / {
@@ -111,100 +135,121 @@ server {
 }
 ```
 
-### Serve with Docker (Nginx)
+### Serve with Caddy
 
-```dockerfile
-FROM nginx:alpine
-COPY site/ /usr/share/nginx/html/
-EXPOSE 80
+```
+docs.example.com {
+    root * /var/www/my-project
+    file_server
+}
 ```
 
+### Serve with Python (Development)
+
 ```bash
-docker build -t my-docs .
-docker run -p 8080:80 my-docs
+cd my-project
+python -m http.server 3000
 ```
 
-## How the Archive Is Built
+Then open `http://localhost:3000` in your browser.
 
-The archive is generated from the output of docsfy's four-stage generation pipeline:
-
-1. **Clone** — The target repository is shallow-cloned (`--depth 1`)
-2. **AI Planner** — An AI CLI analyzes the repo and produces `plan.json` with the documentation structure
-3. **AI Content Generator** — For each page in the plan, the AI generates markdown content (pages run concurrently with semaphore-limited concurrency)
-4. **HTML Renderer** — Markdown pages and `plan.json` are rendered into static HTML via Jinja2 templates with bundled CSS/JS
-
-The final rendered site at `/data/projects/{name}/site/` is what gets packaged into the `.tar.gz` archive when you call this endpoint.
-
-> **Tip:** You can check whether a project's documentation is ready for download by calling `GET /api/projects/{name}` and verifying the status is `ready`. Projects with a status of `generating` or `error` are not available for download.
-
-## Project Status and Download Availability
-
-The project must have a `ready` status for the download to succeed. Project status is tracked in the SQLite database at `/data/docsfy.db`:
-
-| Status | Download Available | Description |
-|--------|--------------------|-------------|
-| `generating` | No | Documentation is currently being generated |
-| `ready` | Yes | Generation complete, archive can be downloaded |
-| `error` | No | Generation failed; check project details for logs |
-
-### Checking Project Status Before Download
+### Host on Amazon S3
 
 ```bash
-# Check if the project is ready
-curl http://localhost:8000/api/projects/my-project
-
-# Only then download
-curl -o docs.tar.gz http://localhost:8000/api/projects/my-project/download
+tar -xzf my-project.tar.gz
+aws s3 sync my-project/ s3://my-docs-bucket/ --delete
 ```
 
-## Incremental Updates and Re-downloading
-
-docsfy tracks the last commit SHA for each project. When documentation is regenerated (via `POST /api/generate`), only affected pages are rebuilt. After regeneration completes, calling the download endpoint again returns an updated archive reflecting the latest changes.
+### Host on GitHub Pages
 
 ```bash
-# Regenerate docs after repo changes
-curl -X POST http://localhost:8000/api/generate \
+tar -xzf my-project.tar.gz
+cd my-project
+git init
+git add .
+git commit -m "Deploy documentation"
+git remote add origin git@github.com:yourorg/yourorg.github.io.git
+git push -u origin main
+```
+
+> **Tip:** Automate documentation updates by scripting the download and deployment. Combine `POST /api/generate` with a poll on `GET /api/projects/{name}` until the status is `ready`, then call this download endpoint to fetch the latest build.
+
+## Typical Workflow
+
+The download endpoint fits into the broader docsfy pipeline as the final step:
+
+```
+1. POST /api/generate          # Start documentation generation
+       ↓
+2. GET /api/projects/{name}    # Poll until status is "ready"
+       ↓
+3. GET /api/projects/{name}/download   # Download the .tar.gz
+       ↓
+4. Extract & deploy to your server
+```
+
+### Full Automation Example
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+
+PROJECT="my-project"
+BASE_URL="http://localhost:8000"
+
+# 1. Trigger generation
+curl -s -X POST "$BASE_URL/api/generate" \
   -H "Content-Type: application/json" \
-  -d '{"repo_url": "https://github.com/org/my-project"}'
+  -d "{\"repo_url\": \"https://github.com/myorg/myrepo\"}"
 
-# Poll until status is "ready"
-curl http://localhost:8000/api/projects/my-project
+# 2. Wait for generation to complete
+echo "Waiting for documentation to be generated..."
+while true; do
+  STATUS=$(curl -s "$BASE_URL/api/projects/$PROJECT" | python -c \
+    "import sys,json; print(json.load(sys.stdin)['status'])")
+  case "$STATUS" in
+    ready) echo "Done!"; break ;;
+    error) echo "Generation failed"; exit 1 ;;
+    *)     sleep 10 ;;
+  esac
+done
 
-# Download the updated archive
-curl -o my-project-docs.tar.gz http://localhost:8000/api/projects/my-project/download
+# 3. Download the archive
+curl -o "${PROJECT}-docs.tar.gz" \
+  "$BASE_URL/api/projects/$PROJECT/download"
+
+# 4. Extract and deploy
+tar -xzf "${PROJECT}-docs.tar.gz" -C /var/www/
+echo "Documentation deployed to /var/www/$PROJECT"
 ```
 
-> **Warning:** Downloading while the project status is `generating` will result in an error. Always verify the project status is `ready` before attempting a download.
+> **Warning:** Large repositories may produce sizable documentation archives. Ensure sufficient disk space on both the docsfy server (under `/data/projects/`) and your download destination.
 
-## Storage and Volume Configuration
+## Storage Details
 
-The site files that back this endpoint are stored on the filesystem under `/data/projects/`. When running with Docker, this path is controlled by the volume mount in `docker-compose.yaml`:
-
-```yaml
-services:
-  docsfy:
-    build: .
-    ports:
-      - "8000:8000"
-    env_file: .env
-    volumes:
-      - ./data:/data
-```
-
-The local `./data` directory maps to `/data` inside the container. The generated site for each project lives at:
+The archive is generated on-the-fly from the project's rendered site directory on the server filesystem:
 
 ```
-./data/projects/{project-name}/site/
+/data/projects/{name}/
+  plan.json              # Documentation structure from AI planner
+  cache/
+    pages/*.md           # Cached AI-generated markdown
+  site/                  # ← This directory is packaged into the archive
+    index.html
+    *.html
+    assets/
+    search-index.json
 ```
 
-> **Tip:** You can also access the generated static files directly from the host filesystem at `./data/projects/{name}/site/` without using the download endpoint. The endpoint is a convenience for packaging everything into a single portable archive.
+The `site/` directory is produced by Stage 4 (HTML Renderer) of the generation pipeline, which converts the AI-generated markdown pages and `plan.json` structure into a polished static HTML site using Jinja2 templates with bundled CSS and JavaScript.
+
+> **Note:** If you are running docsfy with Docker, the `/data` directory is typically mounted as a volume (e.g., `./data:/data` in `docker-compose.yaml`). The archive is generated from this persistent storage.
 
 ## Related Endpoints
 
-| Method | Path | Description |
-|--------|------|-------------|
-| `POST` | `/api/generate` | Start documentation generation for a repository |
-| `GET` | `/api/projects/{name}` | Get project details including status, last commit SHA, and page list |
-| `GET` | `/api/status` | List all projects and their generation status |
-| `DELETE` | `/api/projects/{name}` | Remove a project and all its generated documentation |
-| `GET` | `/docs/{project}/{path}` | Serve generated docs directly from docsfy (alternative to self-hosting) |
+| Endpoint | Description |
+|----------|-------------|
+| [`POST /api/generate`](./post-generate.md) | Trigger documentation generation for a repository |
+| [`GET /api/projects/{name}`](./get-project.md) | Check project status and metadata before downloading |
+| [`GET /api/status`](./get-status.md) | List all projects and their current generation status |
+| [`GET /docs/{project}/{path}`](./get-docs.md) | Serve documentation directly from the docsfy server (alternative to self-hosting) |

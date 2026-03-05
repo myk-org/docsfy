@@ -1,143 +1,45 @@
 # Introduction
 
-docsfy is an open-source FastAPI service that automatically generates polished, production-ready documentation sites from GitHub repositories using AI CLI tools. Point it at any repository — public or private — and docsfy will analyze the entire codebase, plan a documentation structure, generate content page by page, and render it all into a static HTML site with sidebar navigation, dark/light theme support, client-side search, and syntax highlighting.
+docsfy is an open-source service that automatically generates polished, production-quality documentation websites from GitHub repositories using AI CLI tools. Point it at a repository, and docsfy will analyze the codebase, plan a documentation structure, generate content for each page, and render a complete static HTML site -- all without writing a single line of documentation by hand.
 
-## Why docsfy?
+## What is docsfy?
 
-Writing documentation is one of the most valuable — and most neglected — parts of software development. Teams skip it because it's time-consuming, and existing tools still require you to write the content yourself. docsfy takes a different approach: let AI read your code and write the docs for you.
+Documentation is one of the most valuable -- and most neglected -- parts of any software project. Writing and maintaining docs takes time that most teams would rather spend building features. docsfy solves this by leveraging AI to read your code and produce comprehensive, well-structured documentation sites automatically.
 
-Instead of parsing syntax trees or extracting docstrings, docsfy gives an AI CLI tool full access to your repository. The AI explores your codebase the same way a developer would — reading source files, configuration, tests, and project structure — then produces comprehensive, Mintlify-quality documentation that explains not just *what* the code does, but *how* and *why*.
+At its core, docsfy is a **FastAPI service** that orchestrates AI CLI tools to transform a repository URL into a fully navigable documentation website. The generated sites include sidebar navigation, dark/light theme toggling, client-side search, syntax-highlighted code blocks, and responsive layouts -- comparable to what you'd get from purpose-built documentation platforms like Mintlify.
 
 ## How It Works
 
-docsfy runs a four-stage generation pipeline for every documentation request:
+docsfy processes each repository through a four-stage generation pipeline:
 
 ```
-POST /api/generate  ←  repo URL
+POST /api/generate  <-- repo URL
       |
       v
- +-----------+    +---------------+    +---------------+    +------------+
- |  1. Clone |───>|  2. AI Planner|───>| 3. AI Content |───>| 4. HTML    |
- |  Repo     |    |  (plan.json)  |    |  Generator    |    | Renderer   |
- +-----------+    +---------------+    +---------------+    +------------+
-                                                                  |
-                                                                  v
-                                                          Static HTML site
++----------+   +--------------+   +------------+   +----------+
+|  Clone   |-->|  AI Planner  |-->| AI Content  |-->|   HTML   |
+|  Repo    |   |  (plan.json) |   |  Generator  |   | Renderer |
++----------+   +--------------+   +------------+   +----------+
 ```
 
-1. **Clone Repository** — Shallow clone (`--depth 1`) of the target GitHub repo into a temporary directory. Supports both HTTPS and SSH URLs.
+### Stage 1: Clone Repository
 
-2. **AI Planner** — The AI CLI runs with its working directory set to the cloned repo. It explores the entire repository and outputs a `plan.json` file defining pages, sections, and navigation hierarchy.
+docsfy performs a shallow clone (`--depth 1`) of the target repository into a temporary directory. Both SSH and HTTPS URLs are supported, and private repositories work seamlessly using your system's existing git credentials.
 
-3. **AI Content Generator** — For each page defined in `plan.json`, the AI CLI runs again with full repo access. Pages are generated concurrently using async execution with semaphore-limited concurrency. Each page is cached as Markdown at `/data/projects/{name}/cache/pages/*.md`.
+### Stage 2: AI Planner
 
-4. **HTML Renderer** — Converts Markdown pages and `plan.json` into a polished static HTML site using Jinja2 templates with bundled CSS and JavaScript assets.
+An AI CLI tool explores the entire cloned repository -- reading source files, configs, tests, and project structure -- then produces a `plan.json` that defines the documentation's pages, sections, and navigation hierarchy. The AI has full access to the codebase, so it can make informed decisions about what to document and how to organize it.
 
-## Multi-Provider AI Support
+### Stage 3: AI Content Generator
 
-docsfy is provider-agnostic. It supports three AI CLI tools through a unified provider configuration:
-
-```python
-@dataclass(frozen=True)
-class ProviderConfig:
-    binary: str
-    build_cmd: Callable
-    uses_own_cwd: bool = False
-```
-
-| Provider | Binary | Command | CWD Handling |
-|----------|--------|---------|--------------|
-| Claude Code | `claude` | `claude --model <model> --dangerously-skip-permissions -p` | subprocess `cwd` = repo path |
-| Gemini CLI | `gemini` | `gemini --model <model> --yolo` | subprocess `cwd` = repo path |
-| Cursor Agent | `agent` | `agent --force --model <model> --print --workspace <path>` | `--workspace` flag |
-
-All providers receive prompts via stdin and return output via stdout:
-
-```python
-subprocess.run(cmd, input=prompt, capture_output=True, text=True)
-```
-
-Async execution is handled through `asyncio.to_thread(subprocess.run, ...)`, returning a `tuple[bool, str]` of success status and output. Before generation begins, docsfy runs a lightweight availability check against the configured provider.
-
-> **Tip:** The default provider is Claude Code with the `claude-opus-4-6[1m]` model, which provides a 1M token context window — large enough to analyze substantial codebases in a single pass.
-
-## Configuration
-
-docsfy is configured through environment variables. Create a `.env` file based on the following template:
-
-```bash
-# AI Configuration
-AI_PROVIDER=claude                    # claude, gemini, or cursor
-AI_MODEL=claude-opus-4-6[1m]         # Model to use for generation
-AI_CLI_TIMEOUT=60                    # Timeout in minutes
-
-# Claude - Option 1: API Key
-ANTHROPIC_API_KEY=sk-ant-...
-
-# Claude - Option 2: Vertex AI
-# CLAUDE_CODE_USE_VERTEX=1
-# CLOUD_ML_REGION=us-central1
-# ANTHROPIC_VERTEX_PROJECT_ID=my-project
-
-# Gemini
-# GEMINI_API_KEY=...
-
-# Cursor
-# CURSOR_API_KEY=...
-
-# Logging
-LOG_LEVEL=INFO
-```
-
-| Setting | Default | Description |
-|---------|---------|-------------|
-| `AI_PROVIDER` | `claude` | Which AI CLI tool to use |
-| `AI_MODEL` | `claude-opus-4-6[1m]` | Model identifier passed to the AI CLI |
-| `AI_CLI_TIMEOUT` | `60` | Maximum generation time in minutes |
-
-> **Note:** Only one provider needs to be configured. Set the `AI_PROVIDER` variable and provide the corresponding API key or credentials.
-
-## API
-
-docsfy exposes a REST API for managing documentation generation:
-
-| Method | Path | Description |
-|--------|------|-------------|
-| `POST` | `/api/generate` | Start documentation generation for a repository URL |
-| `GET` | `/api/status` | List all projects and their generation status |
-| `GET` | `/api/projects/{name}` | Get project details (timestamp, commit SHA, pages) |
-| `DELETE` | `/api/projects/{name}` | Remove a project and its generated docs |
-| `GET` | `/api/projects/{name}/download` | Download the generated site as a `.tar.gz` archive |
-| `GET` | `/docs/{project}/{path}` | Serve the generated static HTML documentation |
-| `GET` | `/health` | Health check endpoint |
-
-Generate documentation for any GitHub repository with a single API call:
-
-```bash
-curl -X POST http://localhost:8000/api/generate \
-  -H "Content-Type: application/json" \
-  -d '{"repo_url": "https://github.com/your-org/your-repo"}'
-```
-
-## Generated Output
-
-The rendered documentation site includes features you'd expect from premium documentation platforms:
-
-- **Sidebar navigation** — Structured from the AI-generated `plan.json`
-- **Dark/light theme** — Toggle with persistent preference
-- **Client-side search** — Full-text search via lunr.js or similar
-- **Syntax highlighting** — Code blocks rendered with highlight.js
-- **Responsive design** — Works on desktop and mobile
-- **Card layouts and callout boxes** — Note, warning, and info styles
-
-The generated output is organized on disk as:
+For each page defined in `plan.json`, the AI CLI runs again with full repository access, generating detailed markdown content. Pages can be generated concurrently using async execution with semaphore-limited concurrency, and results are cached to disk for incremental updates:
 
 ```
 /data/projects/{project-name}/
-  plan.json             # Documentation structure from AI
+  plan.json             # doc structure from AI
   cache/
-    pages/*.md          # AI-generated Markdown (cached for incremental updates)
-  site/                 # Final rendered HTML
+    pages/*.md          # AI-generated markdown (cached for incremental updates)
+  site/                 # final rendered HTML
     index.html
     *.html
     assets/
@@ -148,22 +50,111 @@ The generated output is organized on disk as:
     search-index.json
 ```
 
+### Stage 4: HTML Renderer
+
+The final stage converts the markdown pages and `plan.json` into a polished static HTML site using Jinja2 templates with bundled CSS and JavaScript. The rendered site includes:
+
+- **Sidebar navigation** with hierarchical page structure
+- **Dark/light theme toggle** with client-side persistence
+- **Client-side search** powered by a pre-built search index
+- **Syntax highlighting** via highlight.js
+- **Card layouts and callout boxes** (note, warning, info)
+- **Responsive design** for mobile and desktop
+
+## Multi-Provider AI Support
+
+docsfy supports three AI CLI providers through a standardized provider configuration pattern:
+
+```python
+@dataclass(frozen=True)
+class ProviderConfig:
+    binary: str
+    build_cmd: Callable
+    uses_own_cwd: bool = False
+```
+
+Each provider has its own invocation style, but docsfy abstracts the differences behind a unified interface:
+
+| Provider | Binary | Command Pattern | CWD Handling |
+|----------|--------|-----------------|--------------|
+| Claude | `claude` | `claude --model <model> --dangerously-skip-permissions -p` | subprocess `cwd` = repo path |
+| Gemini | `gemini` | `gemini --model <model> --yolo` | subprocess `cwd` = repo path |
+| Cursor | `agent` | `agent --force --model <model> --print --workspace <path>` | `--workspace` flag |
+
+Prompts are passed to AI CLIs via standard input using `subprocess.run()`, and async execution is handled through `asyncio.to_thread()`:
+
+```python
+# Invocation returns a success flag and the raw output
+result: tuple[bool, str] = await run_ai_cli(prompt, cwd=repo_path)
+```
+
+Before starting a generation, docsfy performs an availability check by sending a lightweight "Hi" prompt to verify the configured AI CLI is reachable and authenticated.
+
+> **Tip:** Claude is the default provider. You can switch providers by setting the `AI_PROVIDER` environment variable to `gemini` or `cursor`.
+
+## AI Response Parsing
+
+AI CLI tools don't always return clean JSON. docsfy uses a multi-strategy extraction approach to reliably parse structured responses:
+
+1. **Direct JSON parse** -- try the output as-is
+2. **Brace-matching** -- find the outermost `{...}` JSON object
+3. **Markdown code block extraction** -- extract JSON from fenced code blocks
+4. **Regex recovery** -- fallback pattern matching
+
+This layered approach ensures robust handling of the varied output formats that different AI providers produce.
+
+## API Endpoints
+
+docsfy exposes a REST API for managing documentation generation:
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `POST` | `/api/generate` | Start doc generation for a repository URL |
+| `GET` | `/api/status` | List all projects and their generation status |
+| `GET` | `/api/projects/{name}` | Get project details, commit SHA, and page list |
+| `DELETE` | `/api/projects/{name}` | Remove a project and its generated docs |
+| `GET` | `/api/projects/{name}/download` | Download the site as a `.tar.gz` archive |
+| `GET` | `/docs/{project}/{path}` | Serve generated documentation directly |
+| `GET` | `/health` | Health check |
+
+You can either serve documentation directly from docsfy or download the generated site as a tarball for self-hosting on any static file server.
+
 ## Incremental Updates
 
-docsfy tracks the last commit SHA for each project in its SQLite database. When you request regeneration:
+docsfy doesn't regenerate everything from scratch each time. It tracks the last commit SHA per project in its SQLite database and uses an intelligent update strategy:
 
-1. The repository is fetched and the current SHA is compared against the stored SHA
-2. If the code has changed, the AI Planner re-evaluates the documentation structure
-3. Only pages affected by the changes are regenerated
-4. Unchanged pages are served from the Markdown cache
+1. On re-generation, fetch the repository and compare the current commit SHA against the stored SHA
+2. If the repository has changed, re-run the AI Planner to detect structural changes
+3. If the documentation structure is unchanged, regenerate only pages affected by the code changes
+4. If the structure itself changed, regenerate the full site
 
-This means subsequent updates are significantly faster than the initial generation.
+> **Note:** Incremental updates can dramatically reduce generation time and AI API costs for repositories that change frequently.
 
-> **Note:** Incremental updates rely on the cached Markdown files in `/data/projects/{name}/cache/pages/`. If the cache is cleared, a full regeneration will be triggered.
+## Quick Start
 
-## Deployment
+### Running with Docker Compose
 
-docsfy ships as a Docker container built on `python:3.12-slim`. The container includes all three AI CLI tools pre-installed so you can switch providers without rebuilding.
+Create a `.env` file with your AI provider credentials:
+
+```bash
+# AI Configuration
+AI_PROVIDER=claude
+AI_MODEL=claude-opus-4-6[1m]
+AI_CLI_TIMEOUT=60
+
+# Claude - Option 1: API Key
+ANTHROPIC_API_KEY=your-api-key-here
+
+# Claude - Option 2: Vertex AI
+# CLAUDE_CODE_USE_VERTEX=1
+# CLOUD_ML_REGION=us-central1
+# ANTHROPIC_VERTEX_PROJECT_ID=your-project-id
+
+# Logging
+LOG_LEVEL=INFO
+```
+
+Start the service:
 
 ```yaml
 services:
@@ -183,25 +174,48 @@ services:
       retries: 3
 ```
 
-The service runs as a non-root user (`appuser`) with OpenShift-compatible GID 0 permissions and starts with:
-
 ```bash
-uv run --no-sync uvicorn docsfy.main:app --host 0.0.0.0 --port 8000
+docker compose up -d
 ```
 
-> **Warning:** The `--dangerously-skip-permissions` flag (Claude) and `--yolo` flag (Gemini) grant the AI CLI unrestricted access within the container. Always run docsfy in an isolated environment and never mount sensitive host directories.
+Then generate documentation for any repository:
+
+```bash
+curl -X POST http://localhost:8000/api/generate \
+  -H "Content-Type: application/json" \
+  -d '{"url": "https://github.com/your-org/your-repo"}'
+```
+
+Once generation completes, view the docs at `http://localhost:8000/docs/your-repo/` or download them for self-hosting:
+
+```bash
+curl http://localhost:8000/api/projects/your-repo/download -o docs.tar.gz
+```
+
+> **Warning:** AI CLI tools are installed unpinned (always latest) inside the container. While this ensures you get the newest features, it means builds are not fully reproducible. Pin versions in your Dockerfile if reproducibility is critical.
 
 ## Technology Stack
 
 | Component | Technology |
-|-----------|------------|
+|-----------|-----------|
 | Web framework | FastAPI + uvicorn |
 | Templating | Jinja2 |
 | Markdown processing | Python markdown library |
-| Database | SQLite (via aiosqlite) |
+| Database | SQLite |
 | Code highlighting | highlight.js |
 | Client-side search | lunr.js |
 | Build system | hatchling |
 | Package manager | uv |
-| Container | Docker (multi-stage, `python:3.12-slim`) |
+| Container | Docker (`python:3.12-slim`, multi-stage) |
 | Python | 3.12+ |
+
+## Core Value Proposition
+
+docsfy occupies a unique space in the documentation tooling landscape:
+
+- **Zero manual writing** -- AI reads your code and writes the docs for you
+- **Always current** -- incremental updates keep documentation in sync with your codebase
+- **Provider flexibility** -- choose between Claude, Gemini, or Cursor based on your preferences and API access
+- **Self-hostable output** -- download generated sites as static HTML and host them anywhere
+- **Production-quality rendering** -- dark/light themes, search, syntax highlighting, and responsive layouts out of the box
+- **Simple deployment** -- a single Docker container with a REST API is all you need

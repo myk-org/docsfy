@@ -4,14 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Introduction - docsfy</title>
-    <meta name="description" content="AI-powered documentation generator that creates polished static HTML sites from GitHub repositories">
+    <meta name="description" content="AI-powered documentation site generator that creates polished, Mintlify-quality static HTML docs from GitHub repositories">
     <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <a href="index.html" class="sidebar-logo">docsfy</a>
-            <p class="sidebar-tagline">AI-powered documentation generator that creates polished static HTML sites from GitHub repositories</p>
+            <p class="sidebar-tagline">AI-powered documentation site generator that creates polished, Mintlify-quality static HTML docs from GitHub repositories</p>
         </div>
 
         <div class="sidebar-search">
@@ -50,13 +50,20 @@
             </div>
             
             <div class="nav-group">
-                <h3 class="nav-group-title">Configuration</h3>
+                <h3 class="nav-group-title">Core Concepts</h3>
                 <ul class="nav-group-pages">
                     
                     <li>
-                        <a href="environment-variables.html"
+                        <a href="architecture.html"
                            class="nav-link">
-                            Environment Variables
+                            Architecture
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="generation-pipeline.html"
+                           class="nav-link">
+                            Generation Pipeline
                         </a>
                     </li>
                     
@@ -68,9 +75,37 @@
                     </li>
                     
                     <li>
-                        <a href="storage-and-data.html"
+                        <a href="incremental-updates.html"
                            class="nav-link">
-                            Storage &amp; Data
+                            Incremental Updates
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Configuration</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="environment-variables.html"
+                           class="nav-link">
+                            Environment Variables
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="ai-provider-setup.html"
+                           class="nav-link">
+                            AI Provider Setup
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="docker-configuration.html"
+                           class="nav-link">
+                            Docker Configuration
                         </a>
                     </li>
                     
@@ -96,44 +131,9 @@
                     </li>
                     
                     <li>
-                        <a href="downloading-and-self-hosting.html"
+                        <a href="managing-projects.html"
                            class="nav-link">
-                            Downloading &amp; Self-Hosting
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="incremental-updates.html"
-                           class="nav-link">
-                            Incremental Updates
-                        </a>
-                    </li>
-                    
-                </ul>
-            </div>
-            
-            <div class="nav-group">
-                <h3 class="nav-group-title">Architecture</h3>
-                <ul class="nav-group-pages">
-                    
-                    <li>
-                        <a href="generation-pipeline.html"
-                           class="nav-link">
-                            Generation Pipeline
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="html-renderer.html"
-                           class="nav-link">
-                            HTML Renderer &amp; Theming
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="ai-cli-integration.html"
-                           class="nav-link">
-                            AI CLI Integration
+                            Managing Projects
                         </a>
                     </li>
                     
@@ -152,9 +152,23 @@
                     </li>
                     
                     <li>
-                        <a href="api-status-and-projects.html"
+                        <a href="api-status.html"
                            class="nav-link">
-                            GET /api/status &amp; Project Details
+                            GET /api/status
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="api-projects.html"
+                           class="nav-link">
+                            GET /api/projects/{name}
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="api-projects-delete.html"
+                           class="nav-link">
+                            DELETE /api/projects/{name}
                         </a>
                     </li>
                     
@@ -162,6 +176,13 @@
                         <a href="api-download.html"
                            class="nav-link">
                             GET /api/projects/{name}/download
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="api-docs-serving.html"
+                           class="nav-link">
+                            GET /docs/{project}/{path}
                         </a>
                     </li>
                     
@@ -176,20 +197,27 @@
             </div>
             
             <div class="nav-group">
-                <h3 class="nav-group-title">Deployment</h3>
+                <h3 class="nav-group-title">Generated Sites</h3>
                 <ul class="nav-group-pages">
                     
                     <li>
-                        <a href="docker-deployment.html"
+                        <a href="html-theme.html"
                            class="nav-link">
-                            Docker Deployment
+                            HTML Theme &amp; Features
                         </a>
                     </li>
                     
                     <li>
-                        <a href="docker-compose.html"
+                        <a href="plan-json-schema.html"
                            class="nav-link">
-                            Docker Compose Setup
+                            Plan JSON Schema
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="customization.html"
+                           class="nav-link">
+                            Customization
                         </a>
                     </li>
                     
@@ -208,9 +236,23 @@
                     </li>
                     
                     <li>
-                        <a href="contributing.html"
+                        <a href="project-structure.html"
                            class="nav-link">
-                            Contributing
+                            Project Structure
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="testing.html"
+                           class="nav-link">
+                            Testing
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="code-quality.html"
+                           class="nav-link">
+                            Code Quality
                         </a>
                     </li>
                     
@@ -223,7 +265,7 @@
     <div class="main-wrapper">
         <header class="top-bar">
             <div class="top-bar-left">
-                <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebar">
+                <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebar" aria-expanded="false">
                     <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
                         <path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
                     </svg>
@@ -256,41 +298,56 @@
             <article class="article">
                 <h1 class="article-title">Introduction</h1>
                 <div class="article-body">
+                    <!-- content is pre-rendered from markdown by the server, not user input -->
                     <h1 id="introduction">Introduction</h1>
-<p>docsfy is an open-source FastAPI service that automatically generates polished, production-ready documentation sites from GitHub repositories using AI CLI tools. Point it at any repository — public or private — and docsfy will analyze the entire codebase, plan a documentation structure, generate content page by page, and render it all into a static HTML site with sidebar navigation, dark/light theme support, client-side search, and syntax highlighting.</p>
-<h2 id="why-docsfy">Why docsfy?</h2>
-<p>Writing documentation is one of the most valuable — and most neglected — parts of software development. Teams skip it because it's time-consuming, and existing tools still require you to write the content yourself. docsfy takes a different approach: let AI read your code and write the docs for you.</p>
-<p>Instead of parsing syntax trees or extracting docstrings, docsfy gives an AI CLI tool full access to your repository. The AI explores your codebase the same way a developer would — reading source files, configuration, tests, and project structure — then produces comprehensive, Mintlify-quality documentation that explains not just <em>what</em> the code does, but <em>how</em> and <em>why</em>.</p>
+<p>docsfy is an open-source service that automatically generates polished, production-quality documentation websites from GitHub repositories using AI CLI tools. Point it at a repository, and docsfy will analyze the codebase, plan a documentation structure, generate content for each page, and render a complete static HTML site -- all without writing a single line of documentation by hand.</p>
+<h2 id="what-is-docsfy">What is docsfy?</h2>
+<p>Documentation is one of the most valuable -- and most neglected -- parts of any software project. Writing and maintaining docs takes time that most teams would rather spend building features. docsfy solves this by leveraging AI to read your code and produce comprehensive, well-structured documentation sites automatically.</p>
+<p>At its core, docsfy is a <strong>FastAPI service</strong> that orchestrates AI CLI tools to transform a repository URL into a fully navigable documentation website. The generated sites include sidebar navigation, dark/light theme toggling, client-side search, syntax-highlighted code blocks, and responsive layouts -- comparable to what you'd get from purpose-built documentation platforms like Mintlify.</p>
 <h2 id="how-it-works">How It Works</h2>
-<p>docsfy runs a four-stage generation pipeline for every documentation request:</p>
-<div class="highlight"><pre><span></span><code>POST /api/generate  ←  repo URL
+<p>docsfy processes each repository through a four-stage generation pipeline:</p>
+<div class="highlight"><pre><span></span><code>POST /api/generate  &lt;-- repo URL
       |
       v
- +-----------+    +---------------+    +---------------+    +------------+
- |  1. Clone |───&gt;|  2. AI Planner|───&gt;| 3. AI Content |───&gt;| 4. HTML    |
- |  Repo     |    |  (plan.json)  |    |  Generator    |    | Renderer   |
- +-----------+    +---------------+    +---------------+    +------------+
-                                                                  |
-                                                                  v
-                                                          Static HTML site
++----------+   +--------------+   +------------+   +----------+
+|  Clone   |--&gt;|  AI Planner  |--&gt;| AI Content  |--&gt;|   HTML   |
+|  Repo    |   |  (plan.json) |   |  Generator  |   | Renderer |
++----------+   +--------------+   +------------+   +----------+
 </code></pre></div>
 
-<ol>
-<li>
-<p><strong>Clone Repository</strong> — Shallow clone (<code>--depth 1</code>) of the target GitHub repo into a temporary directory. Supports both HTTPS and SSH URLs.</p>
-</li>
-<li>
-<p><strong>AI Planner</strong> — The AI CLI runs with its working directory set to the cloned repo. It explores the entire repository and outputs a <code>plan.json</code> file defining pages, sections, and navigation hierarchy.</p>
-</li>
-<li>
-<p><strong>AI Content Generator</strong> — For each page defined in <code>plan.json</code>, the AI CLI runs again with full repo access. Pages are generated concurrently using async execution with semaphore-limited concurrency. Each page is cached as Markdown at <code>/data/projects/{name}/cache/pages/*.md</code>.</p>
-</li>
-<li>
-<p><strong>HTML Renderer</strong> — Converts Markdown pages and <code>plan.json</code> into a polished static HTML site using Jinja2 templates with bundled CSS and JavaScript assets.</p>
-</li>
-</ol>
+<h3 id="stage-1-clone-repository">Stage 1: Clone Repository</h3>
+<p>docsfy performs a shallow clone (<code>--depth 1</code>) of the target repository into a temporary directory. Both SSH and HTTPS URLs are supported, and private repositories work seamlessly using your system's existing git credentials.</p>
+<h3 id="stage-2-ai-planner">Stage 2: AI Planner</h3>
+<p>An AI CLI tool explores the entire cloned repository -- reading source files, configs, tests, and project structure -- then produces a <code>plan.json</code> that defines the documentation's pages, sections, and navigation hierarchy. The AI has full access to the codebase, so it can make informed decisions about what to document and how to organize it.</p>
+<h3 id="stage-3-ai-content-generator">Stage 3: AI Content Generator</h3>
+<p>For each page defined in <code>plan.json</code>, the AI CLI runs again with full repository access, generating detailed markdown content. Pages can be generated concurrently using async execution with semaphore-limited concurrency, and results are cached to disk for incremental updates:</p>
+<div class="highlight"><pre><span></span><code>/data/projects/{project-name}/
+  plan.json             # doc structure from AI
+  cache/
+    pages/*.md          # AI-generated markdown (cached for incremental updates)
+  site/                 # final rendered HTML
+    index.html
+    *.html
+    assets/
+      style.css
+      search.js
+      theme-toggle.js
+      highlight.js
+    search-index.json
+</code></pre></div>
+
+<h3 id="stage-4-html-renderer">Stage 4: HTML Renderer</h3>
+<p>The final stage converts the markdown pages and <code>plan.json</code> into a polished static HTML site using Jinja2 templates with bundled CSS and JavaScript. The rendered site includes:</p>
+<ul>
+<li><strong>Sidebar navigation</strong> with hierarchical page structure</li>
+<li><strong>Dark/light theme toggle</strong> with client-side persistence</li>
+<li><strong>Client-side search</strong> powered by a pre-built search index</li>
+<li><strong>Syntax highlighting</strong> via highlight.js</li>
+<li><strong>Card layouts and callout boxes</strong> (note, warning, info)</li>
+<li><strong>Responsive design</strong> for mobile and desktop</li>
+</ul>
 <h2 id="multi-provider-ai-support">Multi-Provider AI Support</h2>
-<p>docsfy is provider-agnostic. It supports three AI CLI tools through a unified provider configuration:</p>
+<p>docsfy supports three AI CLI providers through a standardized provider configuration pattern:</p>
 <div class="highlight"><pre><span></span><code><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">ProviderConfig</span><span class="p">:</span>
     <span class="n">binary</span><span class="p">:</span> <span class="nb">str</span>
@@ -298,99 +355,56 @@
     <span class="n">uses_own_cwd</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
 </code></pre></div>
 
+<p>Each provider has its own invocation style, but docsfy abstracts the differences behind a unified interface:</p>
 <table>
 <thead>
 <tr>
 <th>Provider</th>
 <th>Binary</th>
-<th>Command</th>
+<th>Command Pattern</th>
 <th>CWD Handling</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Claude Code</td>
+<td>Claude</td>
 <td><code>claude</code></td>
 <td><code>claude --model &lt;model&gt; --dangerously-skip-permissions -p</code></td>
 <td>subprocess <code>cwd</code> = repo path</td>
 </tr>
 <tr>
-<td>Gemini CLI</td>
+<td>Gemini</td>
 <td><code>gemini</code></td>
 <td><code>gemini --model &lt;model&gt; --yolo</code></td>
 <td>subprocess <code>cwd</code> = repo path</td>
 </tr>
 <tr>
-<td>Cursor Agent</td>
+<td>Cursor</td>
 <td><code>agent</code></td>
 <td><code>agent --force --model &lt;model&gt; --print --workspace &lt;path&gt;</code></td>
 <td><code>--workspace</code> flag</td>
 </tr>
 </tbody>
 </table>
-<p>All providers receive prompts via stdin and return output via stdout:</p>
-<div class="highlight"><pre><span></span><code><span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="nb">input</span><span class="o">=</span><span class="n">prompt</span><span class="p">,</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<p>Prompts are passed to AI CLIs via standard input using <code>subprocess.run()</code>, and async execution is handled through <code>asyncio.to_thread()</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Invocation returns a success flag and the raw output</span>
+<span class="n">result</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="k">await</span> <span class="n">run_ai_cli</span><span class="p">(</span><span class="n">prompt</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="n">repo_path</span><span class="p">)</span>
 </code></pre></div>
 
-<p>Async execution is handled through <code>asyncio.to_thread(subprocess.run, ...)</code>, returning a <code>tuple[bool, str]</code> of success status and output. Before generation begins, docsfy runs a lightweight availability check against the configured provider.</p>
+<p>Before starting a generation, docsfy performs an availability check by sending a lightweight "Hi" prompt to verify the configured AI CLI is reachable and authenticated.</p>
 <blockquote>
-<p><strong>Tip:</strong> The default provider is Claude Code with the <code>claude-opus-4-6[1m]</code> model, which provides a 1M token context window — large enough to analyze substantial codebases in a single pass.</p>
+<p><strong>Tip:</strong> Claude is the default provider. You can switch providers by setting the <code>AI_PROVIDER</code> environment variable to <code>gemini</code> or <code>cursor</code>.</p>
 </blockquote>
-<h2 id="configuration">Configuration</h2>
-<p>docsfy is configured through environment variables. Create a <code>.env</code> file based on the following template:</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># AI Configuration</span>
-<span class="nv">AI_PROVIDER</span><span class="o">=</span>claude<span class="w">                    </span><span class="c1"># claude, gemini, or cursor</span>
-<span class="nv">AI_MODEL</span><span class="o">=</span>claude-opus-4-6<span class="o">[</span>1m<span class="o">]</span><span class="w">         </span><span class="c1"># Model to use for generation</span>
-<span class="nv">AI_CLI_TIMEOUT</span><span class="o">=</span><span class="m">60</span><span class="w">                    </span><span class="c1"># Timeout in minutes</span>
-
-<span class="c1"># Claude - Option 1: API Key</span>
-<span class="nv">ANTHROPIC_API_KEY</span><span class="o">=</span>sk-ant-...
-
-<span class="c1"># Claude - Option 2: Vertex AI</span>
-<span class="c1"># CLAUDE_CODE_USE_VERTEX=1</span>
-<span class="c1"># CLOUD_ML_REGION=us-central1</span>
-<span class="c1"># ANTHROPIC_VERTEX_PROJECT_ID=my-project</span>
-
-<span class="c1"># Gemini</span>
-<span class="c1"># GEMINI_API_KEY=...</span>
-
-<span class="c1"># Cursor</span>
-<span class="c1"># CURSOR_API_KEY=...</span>
-
-<span class="c1"># Logging</span>
-<span class="nv">LOG_LEVEL</span><span class="o">=</span>INFO
-</code></pre></div>
-
-<table>
-<thead>
-<tr>
-<th>Setting</th>
-<th>Default</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>AI_PROVIDER</code></td>
-<td><code>claude</code></td>
-<td>Which AI CLI tool to use</td>
-</tr>
-<tr>
-<td><code>AI_MODEL</code></td>
-<td><code>claude-opus-4-6[1m]</code></td>
-<td>Model identifier passed to the AI CLI</td>
-</tr>
-<tr>
-<td><code>AI_CLI_TIMEOUT</code></td>
-<td><code>60</code></td>
-<td>Maximum generation time in minutes</td>
-</tr>
-</tbody>
-</table>
-<blockquote>
-<p><strong>Note:</strong> Only one provider needs to be configured. Set the <code>AI_PROVIDER</code> variable and provide the corresponding API key or credentials.</p>
-</blockquote>
-<h2 id="api">API</h2>
+<h2 id="ai-response-parsing">AI Response Parsing</h2>
+<p>AI CLI tools don't always return clean JSON. docsfy uses a multi-strategy extraction approach to reliably parse structured responses:</p>
+<ol>
+<li><strong>Direct JSON parse</strong> -- try the output as-is</li>
+<li><strong>Brace-matching</strong> -- find the outermost <code>{...}</code> JSON object</li>
+<li><strong>Markdown code block extraction</strong> -- extract JSON from fenced code blocks</li>
+<li><strong>Regex recovery</strong> -- fallback pattern matching</li>
+</ol>
+<p>This layered approach ensures robust handling of the varied output formats that different AI providers produce.</p>
+<h2 id="api-endpoints">API Endpoints</h2>
 <p>docsfy exposes a REST API for managing documentation generation:</p>
 <table>
 <thead>
@@ -404,7 +418,7 @@
 <tr>
 <td><code>POST</code></td>
 <td><code>/api/generate</code></td>
-<td>Start documentation generation for a repository URL</td>
+<td>Start doc generation for a repository URL</td>
 </tr>
 <tr>
 <td><code>GET</code></td>
@@ -414,7 +428,7 @@
 <tr>
 <td><code>GET</code></td>
 <td><code>/api/projects/{name}</code></td>
-<td>Get project details (timestamp, commit SHA, pages)</td>
+<td>Get project details, commit SHA, and page list</td>
 </tr>
 <tr>
 <td><code>DELETE</code></td>
@@ -424,66 +438,53 @@
 <tr>
 <td><code>GET</code></td>
 <td><code>/api/projects/{name}/download</code></td>
-<td>Download the generated site as a <code>.tar.gz</code> archive</td>
+<td>Download the site as a <code>.tar.gz</code> archive</td>
 </tr>
 <tr>
 <td><code>GET</code></td>
 <td><code>/docs/{project}/{path}</code></td>
-<td>Serve the generated static HTML documentation</td>
+<td>Serve generated documentation directly</td>
 </tr>
 <tr>
 <td><code>GET</code></td>
 <td><code>/health</code></td>
-<td>Health check endpoint</td>
+<td>Health check</td>
 </tr>
 </tbody>
 </table>
-<p>Generate documentation for any GitHub repository with a single API call:</p>
-<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/api/generate<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{&quot;repo_url&quot;: &quot;https://github.com/your-org/your-repo&quot;}&#39;</span>
-</code></pre></div>
-
-<h2 id="generated-output">Generated Output</h2>
-<p>The rendered documentation site includes features you'd expect from premium documentation platforms:</p>
-<ul>
-<li><strong>Sidebar navigation</strong> — Structured from the AI-generated <code>plan.json</code></li>
-<li><strong>Dark/light theme</strong> — Toggle with persistent preference</li>
-<li><strong>Client-side search</strong> — Full-text search via lunr.js or similar</li>
-<li><strong>Syntax highlighting</strong> — Code blocks rendered with highlight.js</li>
-<li><strong>Responsive design</strong> — Works on desktop and mobile</li>
-<li><strong>Card layouts and callout boxes</strong> — Note, warning, and info styles</li>
-</ul>
-<p>The generated output is organized on disk as:</p>
-<div class="highlight"><pre><span></span><code>/data/projects/{project-name}/
-  plan.json             # Documentation structure from AI
-  cache/
-    pages/*.md          # AI-generated Markdown (cached for incremental updates)
-  site/                 # Final rendered HTML
-    index.html
-    *.html
-    assets/
-      style.css
-      search.js
-      theme-toggle.js
-      highlight.js
-    search-index.json
-</code></pre></div>
-
+<p>You can either serve documentation directly from docsfy or download the generated site as a tarball for self-hosting on any static file server.</p>
 <h2 id="incremental-updates">Incremental Updates</h2>
-<p>docsfy tracks the last commit SHA for each project in its SQLite database. When you request regeneration:</p>
+<p>docsfy doesn't regenerate everything from scratch each time. It tracks the last commit SHA per project in its SQLite database and uses an intelligent update strategy:</p>
 <ol>
-<li>The repository is fetched and the current SHA is compared against the stored SHA</li>
-<li>If the code has changed, the AI Planner re-evaluates the documentation structure</li>
-<li>Only pages affected by the changes are regenerated</li>
-<li>Unchanged pages are served from the Markdown cache</li>
+<li>On re-generation, fetch the repository and compare the current commit SHA against the stored SHA</li>
+<li>If the repository has changed, re-run the AI Planner to detect structural changes</li>
+<li>If the documentation structure is unchanged, regenerate only pages affected by the code changes</li>
+<li>If the structure itself changed, regenerate the full site</li>
 </ol>
-<p>This means subsequent updates are significantly faster than the initial generation.</p>
 <blockquote>
-<p><strong>Note:</strong> Incremental updates rely on the cached Markdown files in <code>/data/projects/{name}/cache/pages/</code>. If the cache is cleared, a full regeneration will be triggered.</p>
+<p><strong>Note:</strong> Incremental updates can dramatically reduce generation time and AI API costs for repositories that change frequently.</p>
 </blockquote>
-<h2 id="deployment">Deployment</h2>
-<p>docsfy ships as a Docker container built on <code>python:3.12-slim</code>. The container includes all three AI CLI tools pre-installed so you can switch providers without rebuilding.</p>
+<h2 id="quick-start">Quick Start</h2>
+<h3 id="running-with-docker-compose">Running with Docker Compose</h3>
+<p>Create a <code>.env</code> file with your AI provider credentials:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># AI Configuration</span>
+<span class="nv">AI_PROVIDER</span><span class="o">=</span>claude
+<span class="nv">AI_MODEL</span><span class="o">=</span>claude-opus-4-6<span class="o">[</span>1m<span class="o">]</span>
+<span class="nv">AI_CLI_TIMEOUT</span><span class="o">=</span><span class="m">60</span>
+
+<span class="c1"># Claude - Option 1: API Key</span>
+<span class="nv">ANTHROPIC_API_KEY</span><span class="o">=</span>your-api-key-here
+
+<span class="c1"># Claude - Option 2: Vertex AI</span>
+<span class="c1"># CLAUDE_CODE_USE_VERTEX=1</span>
+<span class="c1"># CLOUD_ML_REGION=us-central1</span>
+<span class="c1"># ANTHROPIC_VERTEX_PROJECT_ID=your-project-id</span>
+
+<span class="c1"># Logging</span>
+<span class="nv">LOG_LEVEL</span><span class="o">=</span>INFO
+</code></pre></div>
+
+<p>Start the service:</p>
 <div class="highlight"><pre><span></span><code><span class="nt">services</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">docsfy</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">build</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">.</span>
@@ -501,12 +502,21 @@
 <span class="w">      </span><span class="nt">retries</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3</span>
 </code></pre></div>
 
-<p>The service runs as a non-root user (<code>appuser</code>) with OpenShift-compatible GID 0 permissions and starts with:</p>
-<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>run<span class="w"> </span>--no-sync<span class="w"> </span>uvicorn<span class="w"> </span>docsfy.main:app<span class="w"> </span>--host<span class="w"> </span><span class="m">0</span>.0.0.0<span class="w"> </span>--port<span class="w"> </span><span class="m">8000</span>
+<div class="highlight"><pre><span></span><code>docker<span class="w"> </span>compose<span class="w"> </span>up<span class="w"> </span>-d
+</code></pre></div>
+
+<p>Then generate documentation for any repository:</p>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/api/generate<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{&quot;url&quot;: &quot;https://github.com/your-org/your-repo&quot;}&#39;</span>
+</code></pre></div>
+
+<p>Once generation completes, view the docs at <code>http://localhost:8000/docs/your-repo/</code> or download them for self-hosting:</p>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>http://localhost:8000/api/projects/your-repo/download<span class="w"> </span>-o<span class="w"> </span>docs.tar.gz
 </code></pre></div>
 
 <blockquote>
-<p><strong>Warning:</strong> The <code>--dangerously-skip-permissions</code> flag (Claude) and <code>--yolo</code> flag (Gemini) grant the AI CLI unrestricted access within the container. Always run docsfy in an isolated environment and never mount sensitive host directories.</p>
+<p><strong>Warning:</strong> AI CLI tools are installed unpinned (always latest) inside the container. While this ensures you get the newest features, it means builds are not fully reproducible. Pin versions in your Dockerfile if reproducibility is critical.</p>
 </blockquote>
 <h2 id="technology-stack">Technology Stack</h2>
 <table>
@@ -531,7 +541,7 @@
 </tr>
 <tr>
 <td>Database</td>
-<td>SQLite (via aiosqlite)</td>
+<td>SQLite</td>
 </tr>
 <tr>
 <td>Code highlighting</td>
@@ -551,7 +561,7 @@
 </tr>
 <tr>
 <td>Container</td>
-<td>Docker (multi-stage, <code>python:3.12-slim</code>)</td>
+<td>Docker (<code>python:3.12-slim</code>, multi-stage)</td>
 </tr>
 <tr>
 <td>Python</td>
@@ -559,6 +569,16 @@
 </tr>
 </tbody>
 </table>
+<h2 id="core-value-proposition">Core Value Proposition</h2>
+<p>docsfy occupies a unique space in the documentation tooling landscape:</p>
+<ul>
+<li><strong>Zero manual writing</strong> -- AI reads your code and writes the docs for you</li>
+<li><strong>Always current</strong> -- incremental updates keep documentation in sync with your codebase</li>
+<li><strong>Provider flexibility</strong> -- choose between Claude, Gemini, or Cursor based on your preferences and API access</li>
+<li><strong>Self-hostable output</strong> -- download generated sites as static HTML and host them anywhere</li>
+<li><strong>Production-quality rendering</strong> -- dark/light themes, search, syntax highlighting, and responsive layouts out of the box</li>
+<li><strong>Simple deployment</strong> -- a single Docker container with a REST API is all you need</li>
+</ul>
                 </div>
             </article>
             <nav class="page-nav">
@@ -578,15 +598,24 @@
                     <h3>On this page</h3>
                     <div class="toc">
 <ul>
-<li><a href="#why-docsfy">Why docsfy?</a></li>
-<li><a href="#how-it-works">How It Works</a></li>
+<li><a href="#what-is-docsfy">What is docsfy?</a></li>
+<li><a href="#how-it-works">How It Works</a><ul>
+<li><a href="#stage-1-clone-repository">Stage 1: Clone Repository</a></li>
+<li><a href="#stage-2-ai-planner">Stage 2: AI Planner</a></li>
+<li><a href="#stage-3-ai-content-generator">Stage 3: AI Content Generator</a></li>
+<li><a href="#stage-4-html-renderer">Stage 4: HTML Renderer</a></li>
+</ul>
+</li>
 <li><a href="#multi-provider-ai-support">Multi-Provider AI Support</a></li>
-<li><a href="#configuration">Configuration</a></li>
-<li><a href="#api">API</a></li>
-<li><a href="#generated-output">Generated Output</a></li>
+<li><a href="#ai-response-parsing">AI Response Parsing</a></li>
+<li><a href="#api-endpoints">API Endpoints</a></li>
 <li><a href="#incremental-updates">Incremental Updates</a></li>
-<li><a href="#deployment">Deployment</a></li>
+<li><a href="#quick-start">Quick Start</a><ul>
+<li><a href="#running-with-docker-compose">Running with Docker Compose</a></li>
+</ul>
+</li>
 <li><a href="#technology-stack">Technology Stack</a></li>
+<li><a href="#core-value-proposition">Core Value Proposition</a></li>
 </ul>
 </div>
 
@@ -618,12 +647,15 @@
             toggle.addEventListener('click', function() {
                 sidebar.classList.toggle('open');
                 if (overlay) overlay.classList.toggle('open');
+                var expanded = sidebar.classList.contains('open');
+                toggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
             });
         }
         if (overlay) {
             overlay.addEventListener('click', function() {
                 sidebar.classList.remove('open');
                 overlay.classList.remove('open');
+                if (toggle) toggle.setAttribute('aria-expanded', 'false');
             });
         }
     })();

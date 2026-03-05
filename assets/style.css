@@ -624,6 +624,7 @@ blockquote.callout-tip {
     margin: 1.5rem 0;
 }
 
+/* Chained :not() for broader browser compatibility */
 /* Default blockquote styling (not a callout) */
 blockquote:not(.callout-note):not(.callout-warning):not(.callout-tip) {
     border-left: 4px solid var(--border-primary);
@@ -1052,7 +1053,7 @@ blockquote:not(.callout-note):not(.callout-warning):not(.callout-tip) {
     font-size: 0.75rem;
     background: var(--bg-secondary);
     color: var(--text-secondary);
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--border-primary);
     border-radius: 4px;
     cursor: pointer;
     opacity: 0;
@@ -1063,10 +1064,17 @@ pre:hover .copy-btn {
     opacity: 1;
 }
 
+/* Make copy button always visible on touch devices */
+@media (hover: none) {
+    .copy-btn {
+        opacity: 0.7;
+    }
+}
+
 .copy-btn:hover {
-    background: var(--accent-color);
+    background: var(--accent);
     color: white;
-    border-color: var(--accent-color);
+    border-color: var(--accent);
 }
 
 /* --------------------------------------------------------------------------
@@ -1078,14 +1086,14 @@ pre:hover .copy-btn {
     gap: 1rem;
     margin-top: 3rem;
     padding-top: 2rem;
-    border-top: 1px solid var(--border-color);
+    border-top: 1px solid var(--border-primary);
 }
 
 .page-nav-link {
     display: flex;
     flex-direction: column;
     padding: 1rem 1.25rem;
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--border-primary);
     border-radius: 8px;
     text-decoration: none;
     transition: all 0.15s ease;
@@ -1093,7 +1101,7 @@ pre:hover .copy-btn {
 }
 
 .page-nav-link:hover {
-    border-color: var(--accent-color);
+    border-color: var(--accent);
     box-shadow: 0 2px 8px rgba(79, 70, 229, 0.1);
 }
 
@@ -1113,7 +1121,7 @@ pre:hover .copy-btn {
 .page-nav-title {
     font-size: 0.95rem;
     font-weight: 600;
-    color: var(--accent-color);
+    color: var(--accent);
 }
 
 /* --------------------------------------------------------------------------

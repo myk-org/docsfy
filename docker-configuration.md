@@ -1,12 +1,14 @@
-# Docker & Deployment
+# Docker Configuration
 
-docsfy ships as a single Docker container that bundles the FastAPI service, AI CLI tools, and all runtime dependencies. This page covers the Dockerfile internals, docker-compose configuration, persistent storage, health checks, and running in OpenShift or other restricted environments.
+docsfy runs as a containerized FastAPI service using Docker. This page covers the Dockerfile, docker-compose.yaml, volume mounts, health checks, port mapping, and environment configuration.
 
 ## Dockerfile
 
-The image uses a multi-stage build on `python:3.12-slim` with `uv` as the package manager.
+The Dockerfile uses a `python:3.12-slim` base image with a multi-stage build. It runs as a non-root user for security and OpenShift compatibility.
 
 ### Base Image and System Dependencies
+
+The container installs the system packages required for repository cloning, AI CLI tools, and HTTPS communication:
 
 ```dockerfile
 FROM python:3.12-slim
@@ -17,15 +19,32 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     nodejs \
     npm \
-    ca-certificates \
-  && rm -rf /var/lib/apt/lists/*
+    ca-certificates
 ```
 
-The image includes `git` for repository cloning, `curl` for health checks and CLI installers, and `nodejs`/`npm` for the Gemini CLI.
+- **git** — clones target repositories (shallow clone with `--depth 1`)
+- **nodejs / npm** — required for the Gemini CLI installation
+- **curl** — used to install AI CLIs and for the Docker health check
+- **ca-certificates** — ensures HTTPS connectivity for cloning and API calls
+
+### Non-Root User
+
+The container creates a dedicated `appuser` with GID 0 for OpenShift compatibility:
+
+```dockerfile
+RUN useradd --create-home --gid 0 appuser
+USER appuser
+```
+
+> **Note:** Setting GID 0 (root group) is an OpenShift convention. It does not grant root privileges — it allows the container to run under OpenShift's arbitrary UID assignment while still having access to necessary group-owned files.
+
+### Package Manager
+
+docsfy uses `uv` as its Python package manager. No pip is used in the build or at runtime.
 
 ### AI CLI Installation
 
-All three supported AI CLI tools are installed at build time. Versions are unpinned to always pull the latest release:
+The Dockerfile installs all three supported AI CLI tools. These are intentionally **unpinned** so each build pulls the latest version:
 
 ```dockerfile
 # Claude Code
@@ -38,61 +57,21 @@ RUN curl -fsSL https://cursor.com/install | bash
 RUN npm install -g @google/gemini-cli
 ```
 
-> **Note:** Because CLI versions are unpinned, image builds are not fully reproducible. Pin to a specific version in production if you need deterministic builds.
-
-### Non-root User (OpenShift Compatible)
-
-The image creates a non-root user `appuser` with GID 0, which is required for OpenShift compatibility:
-
-```dockerfile
-RUN groupadd -r appuser && \
-    useradd -r -g 0 -m -d /home/appuser -s /bin/bash appuser && \
-    mkdir -p /data && \
-    chown -R appuser:0 /data && \
-    chmod -R g=u /data /home/appuser
-
-USER appuser
-WORKDIR /home/appuser
-```
-
-Setting the group to `0` (root GID) allows OpenShift's arbitrary UID assignment to work correctly — the container runs as a non-root user, but files remain accessible because the group permissions mirror user permissions (`g=u`).
-
-### Package Installation with uv
-
-```dockerfile
-COPY --chown=appuser:0 pyproject.toml uv.lock ./
-RUN uv sync --frozen --no-dev
-
-COPY --chown=appuser:0 . .
-RUN uv sync --frozen --no-dev
-```
-
-> **Tip:** The two-step `COPY` + `uv sync` pattern leverages Docker layer caching — dependency layers are only rebuilt when `pyproject.toml` or `uv.lock` change, not on every source code edit.
+> **Warning:** Because AI CLI versions are unpinned, builds are not fully reproducible. This is a deliberate design choice to always use the latest AI capabilities. Pin specific versions in a fork if you need deterministic builds.
 
 ### Entrypoint
 
-The container starts uvicorn bound to all interfaces on port 8000:
+The container starts the FastAPI application via uvicorn, binding to all interfaces on port 8000:
 
-```dockerfile
-EXPOSE 8000
-
-ENTRYPOINT ["uv", "run", "--no-sync", "uvicorn", "docsfy.main:app", "--host", "0.0.0.0", "--port", "8000"]
+```
+uv run --no-sync uvicorn docsfy.main:app --host 0.0.0.0 --port 8000
 ```
 
-The `--no-sync` flag skips dependency resolution at startup since packages were already installed during the build.
-
-### Health Check
-
-```dockerfile
-HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
-  CMD curl -f http://localhost:8000/health || exit 1
-```
-
-The `/health` endpoint returns a simple status response that Docker uses to determine container health.
+The `--no-sync` flag tells `uv` to skip dependency resolution at startup, relying on packages already installed during the build stage.
 
 ## docker-compose.yaml
 
-The full Compose configuration for running docsfy:
+The full Compose configuration defines the service, port mapping, environment, volumes, and health check:
 
 ```yaml
 services:
@@ -112,122 +91,101 @@ services:
       retries: 3
 ```
 
-Start the service:
+### Port Mapping
 
-```bash
-docker compose up -d
-```
+| Host Port | Container Port | Protocol | Purpose |
+|-----------|---------------|----------|---------|
+| 8000 | 8000 | TCP | FastAPI application (API + static doc serving) |
 
-Rebuild after code changes:
+The application serves both the REST API endpoints (`/api/*`) and the generated documentation sites (`/docs/{project}/*`) on the same port.
 
-```bash
-docker compose up -d --build
+To use a different host port, change only the left side of the mapping:
+
+```yaml
+ports:
+  - "3000:8000"  # access via http://localhost:3000
 ```
 
 ## Volume Mounts
 
-docsfy uses three volume mounts for persistent data and credentials.
+The Compose file defines three volume mounts, each serving a distinct purpose.
 
-### Data Volume (`./data:/data`)
+### Data Persistence (`./data:/data`)
 
-The primary persistent volume stores all generated documentation and the SQLite database:
-
-```
-/data/
-  docsfy.db                          # SQLite metadata database
-  projects/
-    {project-name}/
-      plan.json                      # AI-generated doc structure
-      cache/
-        pages/*.md                   # AI-generated markdown (cached for incremental updates)
-      site/                          # Final rendered static HTML
-        index.html
-        *.html
-        assets/
-          style.css
-          search.js
-          theme-toggle.js
-          highlight.js
-        search-index.json
+```yaml
+- ./data:/data
 ```
 
-The SQLite database at `/data/docsfy.db` tracks:
+This is the primary read-write volume that persists all generated content and metadata across container restarts. It maps the `./data` directory on the host to `/data` inside the container.
 
+The container stores two types of data here:
+
+**SQLite Database** at `/data/docsfy.db` — project metadata including:
 - Project name and repository URL
 - Generation status (`generating`, `ready`, or `error`)
 - Last generated timestamp and commit SHA
 - Generation history and logs
 
-> **Warning:** The `./data` directory must be writable by the container user. If running with a non-root UID (e.g., on OpenShift), ensure the directory has group-writable permissions: `chmod -R g+w ./data`.
+**Project Files** under `/data/projects/` — generated documentation:
 
-### Google Cloud Credentials (`~/.config/gcloud:/home/appuser/.config/gcloud:ro`)
-
-Mounted read-only (`:ro`) when using Claude via Vertex AI. This volume passes your local `gcloud` Application Default Credentials into the container.
-
-This mount is only needed when `CLAUDE_CODE_USE_VERTEX=1` is set. If you use API key authentication instead, this volume can be omitted.
-
-### Cursor Configuration (`./cursor:/home/appuser/.config/cursor`)
-
-Stores Cursor CLI configuration and credentials. This mount is read-write so the Cursor agent can persist session state.
-
-This mount is only needed when `AI_PROVIDER=cursor`. It can be omitted for other providers.
-
-> **Tip:** Only mount the credential volumes you actually need. If you're using Claude with an API key, you can simplify your Compose file to just the data volume:
-> ```yaml
-> volumes:
->   - ./data:/data
-> ```
-
-## Environment Variables
-
-Create a `.env` file from the example template. All variables have sensible defaults except provider-specific API keys.
-
-```bash
-# AI Configuration
-AI_PROVIDER=claude                    # Options: claude, gemini, cursor
-AI_MODEL=claude-opus-4-6[1m]         # Model identifier for the chosen provider
-AI_CLI_TIMEOUT=60                     # Timeout in minutes (default: 60)
-
-# Claude - Option 1: API Key
-# ANTHROPIC_API_KEY=sk-ant-...
-
-# Claude - Option 2: Vertex AI
-# CLAUDE_CODE_USE_VERTEX=1
-# CLOUD_ML_REGION=us-central1
-# ANTHROPIC_VERTEX_PROJECT_ID=my-project
-
-# Gemini
-# GEMINI_API_KEY=...
-
-# Cursor
-# CURSOR_API_KEY=...
-
-# Logging
-LOG_LEVEL=INFO                        # Options: DEBUG, INFO, WARNING, ERROR
+```
+/data/projects/{project-name}/
+  plan.json             # documentation structure from AI
+  cache/
+    pages/*.md          # AI-generated markdown (cached for incremental updates)
+  site/                 # final rendered HTML
+    index.html
+    *.html
+    assets/
+      style.css
+      search.js
+      theme-toggle.js
+      highlight.js
+    search-index.json
 ```
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `AI_PROVIDER` | `claude` | AI backend: `claude`, `gemini`, or `cursor` |
-| `AI_MODEL` | `claude-opus-4-6[1m]` | Model identifier passed to the AI CLI |
-| `AI_CLI_TIMEOUT` | `60` | Maximum minutes per AI CLI invocation |
-| `ANTHROPIC_API_KEY` | — | Claude API key (mutually exclusive with Vertex AI) |
-| `CLAUDE_CODE_USE_VERTEX` | — | Set to `1` to use Vertex AI for Claude |
-| `CLOUD_ML_REGION` | — | Google Cloud region for Vertex AI |
-| `ANTHROPIC_VERTEX_PROJECT_ID` | — | Google Cloud project ID for Vertex AI |
-| `GEMINI_API_KEY` | — | API key for Gemini CLI |
-| `CURSOR_API_KEY` | — | API key for Cursor Agent |
-| `LOG_LEVEL` | `INFO` | Application log level |
+> **Warning:** Deleting or losing the `./data` directory means losing all generated documentation and project history. Back up this directory in production deployments.
 
-> **Warning:** Never commit your `.env` file to version control. Add it to `.gitignore` and distribute credentials through a secrets manager in production.
+> **Tip:** The `cache/pages/*.md` files enable incremental updates. When a repository changes, docsfy compares commit SHAs and regenerates only affected pages rather than rebuilding the entire site.
+
+### Google Cloud Credentials (`~/.config/gcloud:ro`)
+
+```yaml
+- ~/.config/gcloud:/home/appuser/.config/gcloud:ro
+```
+
+This volume mounts your host's Google Cloud SDK configuration into the container. It is required when using **Claude via Vertex AI** as the AI provider.
+
+Key details:
+- Mounted as **read-only** (`:ro`) — the container cannot modify your host credentials
+- Maps to the `appuser` home directory inside the container
+- Only needed when `CLAUDE_CODE_USE_VERTEX=1` is set in your `.env` file
+
+If you are using API key authentication (e.g., `ANTHROPIC_API_KEY`) rather than Vertex AI, this volume mount can be safely removed.
+
+### Cursor Agent Configuration (`./cursor`)
+
+```yaml
+- ./cursor:/home/appuser/.config/cursor
+```
+
+This volume mounts configuration for the Cursor Agent AI provider. Unlike the gcloud mount, this is **read-write** — Cursor may write configuration or session state during operation.
+
+If you are not using Cursor as your AI provider, this volume mount can be safely removed.
+
+### Volume Mount Summary
+
+| Host Path | Container Path | Mode | Purpose |
+|-----------|---------------|------|---------|
+| `./data` | `/data` | read-write | SQLite database and generated documentation |
+| `~/.config/gcloud` | `/home/appuser/.config/gcloud` | read-only | Google Cloud credentials (Vertex AI) |
+| `./cursor` | `/home/appuser/.config/cursor` | read-write | Cursor Agent configuration |
 
 ## Health Checks
 
-The `/health` endpoint provides a lightweight liveness check for container orchestrators.
+The application exposes a `GET /health` endpoint used by both Docker's built-in health check mechanism and external monitoring.
 
-### Docker Health Check
-
-The Dockerfile and `docker-compose.yaml` both configure the same health check:
+### Docker Health Check Configuration
 
 ```yaml
 healthcheck:
@@ -237,207 +195,165 @@ healthcheck:
   retries: 3
 ```
 
-- **interval**: Checks every 30 seconds
-- **timeout**: Each check must respond within 10 seconds
-- **retries**: The container is marked unhealthy after 3 consecutive failures
+| Parameter | Value | Description |
+|-----------|-------|-------------|
+| `test` | `curl -f http://localhost:8000/health` | Sends an HTTP request to the health endpoint; `-f` makes curl return a non-zero exit code on HTTP errors |
+| `interval` | 30s | Time between consecutive health checks |
+| `timeout` | 10s | Maximum time to wait for a response before marking the check as failed |
+| `retries` | 3 | Number of consecutive failures required before the container is marked `unhealthy` |
 
-Inspect health status:
+With these settings, a container will be marked unhealthy after **90 seconds** of continuous failure (3 retries × 30s interval).
 
-```bash
-docker inspect --format='{{.State.Health.Status}}' docsfy-docsfy-1
-```
+> **Tip:** You can check the container health status at any time with:
+> ```bash
+> docker inspect --format='{{.State.Health.Status}}' docsfy-docsfy-1
+> ```
 
-### Kubernetes / OpenShift Probes
+## Environment Variables
 
-When deploying to Kubernetes or OpenShift, map the health endpoint to liveness and readiness probes:
-
-```yaml
-livenessProbe:
-  httpGet:
-    path: /health
-    port: 8000
-  initialDelaySeconds: 10
-  periodSeconds: 30
-  timeoutSeconds: 10
-  failureThreshold: 3
-
-readinessProbe:
-  httpGet:
-    path: /health
-    port: 8000
-  initialDelaySeconds: 5
-  periodSeconds: 10
-  timeoutSeconds: 5
-  failureThreshold: 3
-```
-
-## OpenShift-Compatible Non-root Setup
-
-docsfy is designed to run on OpenShift, which assigns an arbitrary UID at runtime for security. The key requirements are:
-
-1. **GID 0 membership** — The `appuser` is created with group `0` (root). OpenShift assigns a random UID but always uses GID 0.
-
-2. **Group-equals-user permissions** — All writable directories use `chmod g=u`, meaning the group has the same permissions as the owner. This ensures the arbitrary UID can read and write through the group.
-
-3. **No hardcoded UID** — The `USER` directive sets the default, but the container does not assume a specific UID at runtime.
-
-The following directories must be writable by GID 0:
-
-| Path | Purpose |
-|------|---------|
-| `/data` | SQLite database and generated documentation |
-| `/home/appuser` | AI CLI configurations and cache |
-
-### OpenShift DeploymentConfig Example
-
-```yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: docsfy
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: docsfy
-  template:
-    metadata:
-      labels:
-        app: docsfy
-    spec:
-      securityContext:
-        runAsNonRoot: true
-      containers:
-        - name: docsfy
-          image: docsfy:latest
-          ports:
-            - containerPort: 8000
-          envFrom:
-            - secretRef:
-                name: docsfy-secrets
-          volumeMounts:
-            - name: data
-              mountPath: /data
-          securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop: ["ALL"]
-          livenessProbe:
-            httpGet:
-              path: /health
-              port: 8000
-            initialDelaySeconds: 10
-            periodSeconds: 30
-          readinessProbe:
-            httpGet:
-              path: /health
-              port: 8000
-            initialDelaySeconds: 5
-            periodSeconds: 10
-          resources:
-            requests:
-              memory: "512Mi"
-              cpu: "250m"
-            limits:
-              memory: "2Gi"
-              cpu: "2000m"
-      volumes:
-        - name: data
-          persistentVolumeClaim:
-            claimName: docsfy-data
-```
-
-> **Note:** AI documentation generation is CPU- and memory-intensive. The resource limits above are starting points — adjust based on the size of repositories you plan to document.
-
-### Kubernetes Secret for Credentials
-
-Store API keys in a Kubernetes Secret rather than environment variables:
-
-```yaml
-apiVersion: v1
-kind: Secret
-metadata:
-  name: docsfy-secrets
-type: Opaque
-stringData:
-  AI_PROVIDER: claude
-  AI_MODEL: claude-opus-4-6[1m]
-  ANTHROPIC_API_KEY: sk-ant-...
-  LOG_LEVEL: INFO
-```
-
-### PersistentVolumeClaim for Data
-
-```yaml
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: docsfy-data
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 10Gi
-```
-
-## Building the Image
-
-### Local Build
+Configuration is managed through a `.env` file loaded via the `env_file` directive in docker-compose.yaml. Create your `.env` file based on this template:
 
 ```bash
-docker build -t docsfy:latest .
+# AI Configuration
+AI_PROVIDER=claude
+AI_MODEL=claude-opus-4-6[1m]
+AI_CLI_TIMEOUT=60
+
+# Claude - Option 1: API Key
+# ANTHROPIC_API_KEY=
+
+# Claude - Option 2: Vertex AI
+# CLAUDE_CODE_USE_VERTEX=1
+# CLOUD_ML_REGION=
+# ANTHROPIC_VERTEX_PROJECT_ID=
+
+# Gemini
+# GEMINI_API_KEY=
+
+# Cursor
+# CURSOR_API_KEY=
+
+# Logging
+LOG_LEVEL=INFO
 ```
 
-### Multi-platform Build
+### AI Provider Settings
 
-To build for both `amd64` and `arm64`:
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `AI_PROVIDER` | `claude` | AI backend to use: `claude`, `gemini`, or `cursor` |
+| `AI_MODEL` | `claude-opus-4-6[1m]` | Model identifier passed to the AI CLI |
+| `AI_CLI_TIMEOUT` | `60` | Maximum time in **minutes** for a single AI CLI invocation |
 
+### Authentication Variables
+
+Configure credentials based on your chosen provider:
+
+**Claude with API Key:**
 ```bash
-docker buildx build --platform linux/amd64,linux/arm64 -t docsfy:latest .
+AI_PROVIDER=claude
+ANTHROPIC_API_KEY=sk-ant-...
 ```
 
-### Build Arguments
-
-Override the default Python version or other base image settings using build args if the Dockerfile supports them:
-
+**Claude with Vertex AI:**
 ```bash
-docker build --build-arg PYTHON_VERSION=3.12 -t docsfy:latest .
+AI_PROVIDER=claude
+CLAUDE_CODE_USE_VERTEX=1
+CLOUD_ML_REGION=us-east5
+ANTHROPIC_VERTEX_PROJECT_ID=my-gcp-project
 ```
+
+> **Note:** When using Vertex AI, ensure the `~/.config/gcloud` volume mount is configured in your docker-compose.yaml and that your local gcloud credentials are valid (`gcloud auth application-default login`).
+
+**Gemini:**
+```bash
+AI_PROVIDER=gemini
+GEMINI_API_KEY=...
+```
+
+**Cursor:**
+```bash
+AI_PROVIDER=cursor
+CURSOR_API_KEY=...
+```
+
+### Logging
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `LOG_LEVEL` | `INFO` | Python logging level (`DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL`) |
 
 ## Quick Start
 
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/myk-org/docsfy.git
-   cd docsfy
-   ```
+1. **Clone the repository and create your environment file:**
 
-2. **Create your environment file:**
    ```bash
+   git clone <repo-url> && cd docsfy
    cp .env.example .env
-   # Edit .env with your API key(s)
    ```
 
-3. **Start the service:**
+2. **Configure your AI provider credentials** in the `.env` file (see [Environment Variables](#environment-variables) above).
+
+3. **Create the data directory:**
+
    ```bash
-   docker compose up -d
+   mkdir -p data
    ```
 
-4. **Verify it's running:**
+4. **Build and start the container:**
+
    ```bash
-   curl http://localhost:8000/health
+   docker compose up --build -d
    ```
 
-5. **Generate documentation for a repository:**
+5. **Verify the service is healthy:**
+
    ```bash
-   curl -X POST http://localhost:8000/api/generate \
-     -H "Content-Type: application/json" \
-     -d '{"repo_url": "https://github.com/owner/repo"}'
+   docker compose ps
+   # Look for "(healthy)" in the STATUS column
    ```
 
-6. **View generated docs:**
-   Open `http://localhost:8000/docs/{project-name}/` in your browser, or download the static site:
-   ```bash
-   curl -o docs.tar.gz http://localhost:8000/api/projects/{project-name}/download
-   ```
+6. **Access the API** at `http://localhost:8000`.
+
+## Production Considerations
+
+### Persistent Storage
+
+In production, consider using a named Docker volume instead of a bind mount for the data directory:
+
+```yaml
+volumes:
+  docsfy-data:
+
+services:
+  docsfy:
+    volumes:
+      - docsfy-data:/data
+```
+
+This provides better isolation and is managed by the Docker storage driver rather than the host filesystem.
+
+### Resource Limits
+
+AI CLI invocations can be resource-intensive. Consider adding resource constraints:
+
+```yaml
+services:
+  docsfy:
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+        reservations:
+          memory: 1G
+```
+
+### Restarting on Failure
+
+Add a restart policy to ensure the service recovers from crashes:
+
+```yaml
+services:
+  docsfy:
+    restart: unless-stopped
+```

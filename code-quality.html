@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Code Quality - docsfy</title>
+    <meta name="description" content="AI-powered documentation site generator that creates polished, Mintlify-quality static HTML docs from GitHub repositories">
+    <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <a href="index.html" class="sidebar-logo">docsfy</a>
+            <p class="sidebar-tagline">AI-powered documentation site generator that creates polished, Mintlify-quality static HTML docs from GitHub repositories</p>
+        </div>
+
+        <div class="sidebar-search">
+            <input type="text" id="search-input" placeholder="Search... (⌘K)" autocomplete="off" readonly>
+            <div id="search-results" class="search-results"></div>
+        </div>
+
+        <nav class="sidebar-nav">
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Getting Started</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="introduction.html"
+                           class="nav-link">
+                            Introduction
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="quickstart.html"
+                           class="nav-link">
+                            Quickstart
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="installation.html"
+                           class="nav-link">
+                            Installation
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Core Concepts</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="architecture.html"
+                           class="nav-link">
+                            Architecture
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="generation-pipeline.html"
+                           class="nav-link">
+                            Generation Pipeline
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="ai-providers.html"
+                           class="nav-link">
+                            AI Providers
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="incremental-updates.html"
+                           class="nav-link">
+                            Incremental Updates
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Configuration</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="environment-variables.html"
+                           class="nav-link">
+                            Environment Variables
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="ai-provider-setup.html"
+                           class="nav-link">
+                            AI Provider Setup
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="docker-configuration.html"
+                           class="nav-link">
+                            Docker Configuration
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Usage</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="generating-docs.html"
+                           class="nav-link">
+                            Generating Documentation
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="serving-docs.html"
+                           class="nav-link">
+                            Serving Documentation
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="managing-projects.html"
+                           class="nav-link">
+                            Managing Projects
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">API Reference</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="api-generate.html"
+                           class="nav-link">
+                            POST /api/generate
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="api-status.html"
+                           class="nav-link">
+                            GET /api/status
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="api-projects.html"
+                           class="nav-link">
+                            GET /api/projects/{name}
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="api-projects-delete.html"
+                           class="nav-link">
+                            DELETE /api/projects/{name}
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="api-download.html"
+                           class="nav-link">
+                            GET /api/projects/{name}/download
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="api-docs-serving.html"
+                           class="nav-link">
+                            GET /docs/{project}/{path}
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="api-health.html"
+                           class="nav-link">
+                            GET /health
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Generated Sites</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="html-theme.html"
+                           class="nav-link">
+                            HTML Theme &amp; Features
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="plan-json-schema.html"
+                           class="nav-link">
+                            Plan JSON Schema
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="customization.html"
+                           class="nav-link">
+                            Customization
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Development</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="development-setup.html"
+                           class="nav-link">
+                            Development Setup
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="project-structure.html"
+                           class="nav-link">
+                            Project Structure
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="testing.html"
+                           class="nav-link">
+                            Testing
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="code-quality.html"
+                           class="nav-link active">
+                            Code Quality
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+        </nav>
+    </aside>
+
+    <div class="main-wrapper">
+        <header class="top-bar">
+            <div class="top-bar-left">
+                <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebar" aria-expanded="false">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                </button>
+                <a href="index.html" class="top-bar-title">docsfy</a>
+            </div>
+            <div class="top-bar-spacer"></div>
+            <div class="top-bar-right">
+                <button class="top-bar-search-btn" id="search-trigger" aria-label="Search">
+                    <kbd>&#8984;K</kbd> Search
+                </button>
+                
+                <a href="https://github.com/myk-org/docsfy" target="_blank" rel="noopener noreferrer" class="top-bar-github" id="github-link" data-repo-url="https://github.com/myk-org/docsfy">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                    <span class="github-stars" id="github-stars"></span>
+                </a>
+                
+                <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+                    <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                    </svg>
+                    <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <main class="content">
+            <article class="article">
+                <h1 class="article-title">Code Quality</h1>
+                <div class="article-body">
+                    <!-- content is pre-rendered from markdown by the server, not user input -->
+                    <h1 id="code-quality">Code Quality</h1>
+<p>docsfy enforces code quality through a layered system of automated checks that run before every commit. The toolchain — adopted from the <a href="https://github.com/pr-test-oracle">pr-test-oracle</a> project — combines linting, formatting, type checking, and secret detection into a single pre-commit workflow.</p>
+<h2 id="overview">Overview</h2>
+<table>
+<thead>
+<tr>
+<th>Tool</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="#pre-commit-hooks">Pre-commit</a></td>
+<td>Git hook framework that orchestrates all checks</td>
+</tr>
+<tr>
+<td><a href="#ruff-linting-and-formatting">Ruff</a></td>
+<td>Fast Python linter and formatter (replaces black, isort, and most flake8 rules)</td>
+</tr>
+<tr>
+<td><a href="#mypy-strict-type-checking">Mypy</a></td>
+<td>Static type checker in strict mode</td>
+</tr>
+<tr>
+<td><a href="#flake8">Flake8</a></td>
+<td>Supplementary linting for rules not covered by ruff</td>
+</tr>
+<tr>
+<td><a href="#gitleaks">Gitleaks</a></td>
+<td>Scans commits for hardcoded secrets and credentials</td>
+</tr>
+<tr>
+<td><a href="#detect-secrets">detect-secrets</a></td>
+<td>Baseline-aware secret detection to prevent new secrets from entering the codebase</td>
+</tr>
+</tbody>
+</table>
+<h2 id="pre-commit-hooks">Pre-commit Hooks</h2>
+<p><a href="https://pre-commit.com/">Pre-commit</a> is the entry point for all code quality checks. It intercepts <code>git commit</code> and runs every configured hook against staged files. If any hook fails, the commit is blocked until the issue is fixed.</p>
+<h3 id="installation">Installation</h3>
+<p>Pre-commit is installed as a development dependency via <code>uv</code>:</p>
+<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>sync<span class="w"> </span>--dev
+</code></pre></div>
+
+<p>Then activate the hooks in your local repository:</p>
+<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>run<span class="w"> </span>pre-commit<span class="w"> </span>install
+</code></pre></div>
+
+<h3 id="configuration">Configuration</h3>
+<p>The <code>.pre-commit-config.yaml</code> file defines all hooks and their versions:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">repos</span><span class="p">:</span>
+<span class="w">  </span><span class="c1"># Standard pre-commit hooks</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">repo</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://github.com/pre-commit/pre-commit-hooks</span>
+<span class="w">    </span><span class="nt">rev</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">v5.0.0</span>
+<span class="w">    </span><span class="nt">hooks</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">trailing-whitespace</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">end-of-file-fixer</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">check-yaml</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">check-toml</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">check-added-large-files</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">debug-statements</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">check-merge-conflict</span>
+
+<span class="w">  </span><span class="c1"># Ruff - linting and formatting</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">repo</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://github.com/astral-sh/ruff-pre-commit</span>
+<span class="w">    </span><span class="nt">rev</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">v0.9.7</span>
+<span class="w">    </span><span class="nt">hooks</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ruff</span>
+<span class="w">        </span><span class="nt">args</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">--fix</span><span class="p p-Indicator">]</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ruff-format</span>
+
+<span class="w">  </span><span class="c1"># Mypy - strict type checking</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">repo</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://github.com/pre-commit/mirrors-mypy</span>
+<span class="w">    </span><span class="nt">rev</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">v1.15.0</span>
+<span class="w">    </span><span class="nt">hooks</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mypy</span>
+<span class="w">        </span><span class="nt">additional_dependencies</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">fastapi</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">uvicorn</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">jinja2</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">aiosqlite</span><span class="p p-Indicator">]</span>
+<span class="w">        </span><span class="nt">args</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">--strict</span><span class="p p-Indicator">]</span>
+
+<span class="w">  </span><span class="c1"># Flake8 - supplementary linting</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">repo</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://github.com/PyCQA/flake8</span>
+<span class="w">    </span><span class="nt">rev</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">7.1.2</span>
+<span class="w">    </span><span class="nt">hooks</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">flake8</span>
+
+<span class="w">  </span><span class="c1"># Gitleaks - secret scanning</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">repo</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://github.com/gitleaks/gitleaks</span>
+<span class="w">    </span><span class="nt">rev</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">v8.22.1</span>
+<span class="w">    </span><span class="nt">hooks</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gitleaks</span>
+
+<span class="w">  </span><span class="c1"># detect-secrets - baseline secret detection</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">repo</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://github.com/Yelp/detect-secrets</span>
+<span class="w">    </span><span class="nt">rev</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">v1.5.0</span>
+<span class="w">    </span><span class="nt">hooks</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">detect-secrets</span>
+<span class="w">        </span><span class="nt">args</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&#39;--baseline&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;.secrets.baseline&#39;</span><span class="p p-Indicator">]</span>
+</code></pre></div>
+
+<h3 id="running-hooks-manually">Running Hooks Manually</h3>
+<p>Run all hooks against every file (not just staged changes):</p>
+<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>run<span class="w"> </span>pre-commit<span class="w"> </span>run<span class="w"> </span>--all-files
+</code></pre></div>
+
+<p>Run a specific hook:</p>
+<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>run<span class="w"> </span>pre-commit<span class="w"> </span>run<span class="w"> </span>ruff<span class="w"> </span>--all-files
+uv<span class="w"> </span>run<span class="w"> </span>pre-commit<span class="w"> </span>run<span class="w"> </span>mypy<span class="w"> </span>--all-files
+</code></pre></div>
+
+<blockquote>
+<p><strong>Tip:</strong> Run <code>pre-commit run --all-files</code> after pulling changes or updating hook versions to catch issues early before your next commit.</p>
+</blockquote>
+<h2 id="ruff-linting-and-formatting">Ruff Linting and Formatting</h2>
+<p><a href="https://docs.astral.sh/ruff/">Ruff</a> is an extremely fast Python linter and formatter written in Rust. It replaces black, isort, pycodestyle, pyflakes, and many flake8 plugins in a single tool.</p>
+<p>docsfy uses ruff for two purposes via separate pre-commit hooks:</p>
+<ul>
+<li><strong><code>ruff</code></strong> — linting with auto-fix enabled (<code>--fix</code>)</li>
+<li><strong><code>ruff-format</code></strong> — code formatting (consistent style enforcement)</li>
+</ul>
+<h3 id="configuration_1">Configuration</h3>
+<p>Ruff is configured in <code>pyproject.toml</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="k">[tool.ruff]</span>
+<span class="n">target-version</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;py312&quot;</span>
+<span class="n">line-length</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">120</span>
+
+<span class="k">[tool.ruff.lint]</span>
+<span class="n">select</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="s2">&quot;E&quot;</span><span class="p">,</span><span class="w">      </span><span class="c1"># pycodestyle errors</span>
+<span class="w">    </span><span class="s2">&quot;W&quot;</span><span class="p">,</span><span class="w">      </span><span class="c1"># pycodestyle warnings</span>
+<span class="w">    </span><span class="s2">&quot;F&quot;</span><span class="p">,</span><span class="w">      </span><span class="c1"># pyflakes</span>
+<span class="w">    </span><span class="s2">&quot;I&quot;</span><span class="p">,</span><span class="w">      </span><span class="c1"># isort</span>
+<span class="w">    </span><span class="s2">&quot;N&quot;</span><span class="p">,</span><span class="w">      </span><span class="c1"># pep8-naming</span>
+<span class="w">    </span><span class="s2">&quot;UP&quot;</span><span class="p">,</span><span class="w">     </span><span class="c1"># pyupgrade</span>
+<span class="w">    </span><span class="s2">&quot;B&quot;</span><span class="p">,</span><span class="w">      </span><span class="c1"># flake8-bugbear</span>
+<span class="w">    </span><span class="s2">&quot;SIM&quot;</span><span class="p">,</span><span class="w">    </span><span class="c1"># flake8-simplify</span>
+<span class="w">    </span><span class="s2">&quot;RUF&quot;</span><span class="p">,</span><span class="w">    </span><span class="c1"># ruff-specific rules</span>
+<span class="p">]</span>
+
+<span class="k">[tool.ruff.lint.isort]</span>
+<span class="n">known-first-party</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;docsfy&quot;</span><span class="p">]</span>
+</code></pre></div>
+
+<h3 id="what-ruff-checks">What Ruff Checks</h3>
+<table>
+<thead>
+<tr>
+<th>Rule Set</th>
+<th>Code</th>
+<th>What It Catches</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>pycodestyle</td>
+<td><code>E</code>, <code>W</code></td>
+<td>Style violations (whitespace, indentation, line length)</td>
+</tr>
+<tr>
+<td>pyflakes</td>
+<td><code>F</code></td>
+<td>Unused imports, undefined names, redefined variables</td>
+</tr>
+<tr>
+<td>isort</td>
+<td><code>I</code></td>
+<td>Import ordering and grouping</td>
+</tr>
+<tr>
+<td>pep8-naming</td>
+<td><code>N</code></td>
+<td>Naming convention violations</td>
+</tr>
+<tr>
+<td>pyupgrade</td>
+<td><code>UP</code></td>
+<td>Code that can use newer Python 3.12+ syntax</td>
+</tr>
+<tr>
+<td>flake8-bugbear</td>
+<td><code>B</code></td>
+<td>Common bugs and design problems</td>
+</tr>
+<tr>
+<td>flake8-simplify</td>
+<td><code>SIM</code></td>
+<td>Code that can be simplified</td>
+</tr>
+<tr>
+<td>ruff-specific</td>
+<td><code>RUF</code></td>
+<td>Ruff's own additional checks</td>
+</tr>
+</tbody>
+</table>
+<h3 id="auto-fix-behavior">Auto-fix Behavior</h3>
+<p>The <code>--fix</code> flag in the pre-commit hook means ruff will automatically fix issues where safe to do so. For example:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Before: ruff auto-fixes unused import (F401)</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">get_version</span><span class="p">():</span>
+    <span class="k">return</span> <span class="n">sys</span><span class="o">.</span><span class="n">version</span>
+
+<span class="c1"># After: ruff removes the unused `os` import</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">get_version</span><span class="p">():</span>
+    <span class="k">return</span> <span class="n">sys</span><span class="o">.</span><span class="n">version</span>
+</code></pre></div>
+
+<p>Import ordering is also handled automatically:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Before: unordered imports (I001)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">docsfy.renderer</span><span class="w"> </span><span class="kn">import</span> <span class="n">render_html</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">fastapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">FastAPI</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+
+<span class="c1"># After: ruff reorders into standard/third-party/first-party groups</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">fastapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">FastAPI</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">docsfy.renderer</span><span class="w"> </span><span class="kn">import</span> <span class="n">render_html</span>
+</code></pre></div>
+
+<blockquote>
+<p><strong>Note:</strong> Ruff's formatter (<code>ruff-format</code>) runs as a separate hook after the linter. This ensures that any auto-fixed code is also properly formatted.</p>
+</blockquote>
+<h2 id="mypy-strict-type-checking">Mypy Strict Type Checking</h2>
+<p><a href="https://mypy-lang.org/">Mypy</a> performs static type analysis to catch type errors before runtime. docsfy runs mypy in <strong>strict mode</strong>, which enables all optional type-checking flags for maximum safety.</p>
+<h3 id="configuration_2">Configuration</h3>
+<p>Mypy is configured in <code>pyproject.toml</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="k">[tool.mypy]</span>
+<span class="n">python_version</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;3.12&quot;</span>
+<span class="n">strict</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
+<span class="n">warn_return_any</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
+<span class="n">warn_unused_configs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
+<span class="n">disallow_untyped_defs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
+<span class="n">disallow_incomplete_defs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
+<span class="n">check_untyped_defs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
+<span class="n">no_implicit_optional</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
+<span class="n">warn_redundant_casts</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
+<span class="n">warn_unused_ignores</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
+</code></pre></div>
+
+<h3 id="what-strict-mode-enforces">What Strict Mode Enforces</h3>
+<p>Strict mode is the combination of several flags that together require comprehensive type annotations:</p>
+<ul>
+<li><strong><code>disallow_untyped_defs</code></strong> — Every function must have type annotations for all parameters and the return type</li>
+<li><strong><code>disallow_incomplete_defs</code></strong> — Partial annotations (e.g., annotating some but not all parameters) are rejected</li>
+<li><strong><code>no_implicit_optional</code></strong> — <code>None</code> defaults don't automatically make a parameter <code>Optional</code>; you must write <code>str | None</code> explicitly</li>
+<li><strong><code>warn_return_any</code></strong> — Functions typed as returning a specific type but actually returning <code>Any</code> trigger a warning</li>
+</ul>
+<h3 id="examples">Examples</h3>
+<p>Functions must have complete type annotations:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Passes mypy --strict</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">generate_docs</span><span class="p">(</span><span class="n">repo_url</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">project_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate documentation for a repository.&quot;&quot;&quot;</span>
+    <span class="o">...</span>
+
+<span class="c1"># Fails mypy --strict: missing parameter and return type annotations</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">generate_docs</span><span class="p">(</span><span class="n">repo_url</span><span class="p">,</span> <span class="n">project_name</span><span class="p">):</span>
+    <span class="o">...</span>
+</code></pre></div>
+
+<p>Optional parameters must be explicitly annotated:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Passes mypy --strict</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_provider</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ProviderConfig</span><span class="p">:</span>
+    <span class="o">...</span>
+
+<span class="c1"># Fails mypy --strict: implicit Optional is not allowed</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_provider</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ProviderConfig</span><span class="p">:</span>
+    <span class="o">...</span>
+</code></pre></div>
+
+<blockquote>
+<p><strong>Warning:</strong> The pre-commit mypy hook lists <code>additional_dependencies</code> (fastapi, uvicorn, jinja2, aiosqlite) so that mypy can resolve third-party type stubs. If you add a new dependency to the project, you may need to add it here as well for type checking to pass.</p>
+</blockquote>
+<h2 id="flake8">Flake8</h2>
+<p><a href="https://flake8.pycqa.org/">Flake8</a> provides supplementary linting that catches issues outside ruff's rule set. While ruff covers most of flake8's core rules, flake8 is retained for its plugin ecosystem and as a secondary verification layer.</p>
+<h3 id="configuration_3">Configuration</h3>
+<p>Flake8 is configured in <code>pyproject.toml</code> (via the <code>[tool.flake8]</code> section if using <code>pyproject-flake8</code>) or in a <code>.flake8</code> file:</p>
+<div class="highlight"><pre><span></span><code><span class="k">[flake8]</span>
+<span class="na">max-line-length</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">120</span>
+<span class="na">extend-ignore</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">E203, W503</span>
+<span class="na">per-file-ignores</span><span class="w"> </span><span class="o">=</span>
+<span class="w">    </span><span class="na">__init__.py</span><span class="o">:</span><span class="s">F401</span>
+</code></pre></div>
+
+<table>
+<thead>
+<tr>
+<th>Setting</th>
+<th>Value</th>
+<th>Reason</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>max-line-length</code></td>
+<td><code>120</code></td>
+<td>Matches ruff's <code>line-length</code> setting</td>
+</tr>
+<tr>
+<td><code>extend-ignore: E203</code></td>
+<td>—</td>
+<td>Conflicts with formatting around slice notation</td>
+</tr>
+<tr>
+<td><code>extend-ignore: W503</code></td>
+<td>—</td>
+<td>Deprecated rule about line breaks before binary operators</td>
+</tr>
+<tr>
+<td><code>per-file-ignores: __init__.py:F401</code></td>
+<td>—</td>
+<td>Allows unused imports in <code>__init__.py</code> (re-exports)</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Note:</strong> The <code>max-line-length</code> setting should always match ruff's <code>line-length</code> in <code>pyproject.toml</code> to avoid conflicting results between the two tools.</p>
+</blockquote>
+<h2 id="gitleaks">Gitleaks</h2>
+<p><a href="https://gitleaks.io/">Gitleaks</a> is a SAST (Static Application Security Testing) tool that scans git commits for hardcoded secrets such as API keys, tokens, passwords, and private keys.</p>
+<h3 id="how-it-works">How It Works</h3>
+<p>The gitleaks pre-commit hook scans the contents of staged files before each commit. If a potential secret is detected, the commit is blocked with a report identifying the file, line, and type of secret found.</p>
+<h3 id="configuration_4">Configuration</h3>
+<p>Gitleaks uses its built-in rules by default. A custom <code>.gitleaks.toml</code> can be added to fine-tune detection:</p>
+<div class="highlight"><pre><span></span><code><span class="k">[allowlist]</span>
+<span class="n">description</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;Global allowlist&quot;</span>
+<span class="n">paths</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="s1">&#39;&#39;&#39;\.secrets\.baseline$&#39;&#39;&#39;</span><span class="p">,</span>
+<span class="w">    </span><span class="s1">&#39;&#39;&#39;\.env\.example$&#39;&#39;&#39;</span><span class="p">,</span>
+<span class="p">]</span>
+</code></pre></div>
+
+<h3 id="example-output">Example Output</h3>
+<p>When gitleaks detects a secret, you'll see output like:</p>
+<div class="highlight"><pre><span></span><code>Finding:  ANTHROPIC_API_KEY=sk-ant-api03-real-key-here
+RuleID:   generic-api-key
+Entropy:  4.2
+File:     .env
+Line:     2
+Commit:   (staged)
+</code></pre></div>
+
+<blockquote>
+<p><strong>Warning:</strong> Never commit <code>.env</code> files or any file containing real API keys. Use <code>.env.example</code> with placeholder values instead. The project's <code>.gitignore</code> should exclude <code>.env</code> and other sensitive files.</p>
+</blockquote>
+<h3 id="handling-false-positives">Handling False Positives</h3>
+<p>If gitleaks flags a false positive (e.g., a test fixture or documentation example), you can suppress it inline:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># gitleaks:allow</span>
+<span class="n">EXAMPLE_KEY</span> <span class="o">=</span> <span class="s2">&quot;sk-ant-api03-placeholder-not-real&quot;</span>
+</code></pre></div>
+
+<h2 id="detect-secrets">detect-secrets</h2>
+<p><a href="https://github.com/Yelp/detect-secrets">detect-secrets</a> takes a baseline-aware approach to secret detection. Rather than scanning all files every time, it maintains a <code>.secrets.baseline</code> file that tracks known findings, and only alerts on <strong>new</strong> secrets introduced after the baseline was established.</p>
+<h3 id="how-it-works_1">How It Works</h3>
+<ol>
+<li>A <code>.secrets.baseline</code> file is generated and committed to the repository</li>
+<li>On each commit, detect-secrets compares staged files against the baseline</li>
+<li>Only new secrets (not present in the baseline) trigger a failure</li>
+<li>Known false positives are tracked in the baseline and ignored</li>
+</ol>
+<h3 id="generating-the-baseline">Generating the Baseline</h3>
+<p>Create the initial baseline:</p>
+<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>run<span class="w"> </span>detect-secrets<span class="w"> </span>scan<span class="w"> </span>&gt;<span class="w"> </span>.secrets.baseline
+</code></pre></div>
+
+<h3 id="auditing-the-baseline">Auditing the Baseline</h3>
+<p>After generating or updating the baseline, audit it to mark findings as true or false positives:</p>
+<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>run<span class="w"> </span>detect-secrets<span class="w"> </span>audit<span class="w"> </span>.secrets.baseline
+</code></pre></div>
+
+<p>This launches an interactive session where each finding is presented for review. Findings marked as false positives are ignored in future scans.</p>
+<h3 id="updating-the-baseline">Updating the Baseline</h3>
+<p>When new files are added or existing secrets are rotated, update the baseline:</p>
+<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>run<span class="w"> </span>detect-secrets<span class="w"> </span>scan<span class="w"> </span>--baseline<span class="w"> </span>.secrets.baseline
+</code></pre></div>
+
+<blockquote>
+<p><strong>Tip:</strong> Run <code>detect-secrets audit .secrets.baseline</code> after every baseline update to ensure new findings are properly classified.</p>
+</blockquote>
+<h2 id="running-all-checks">Running All Checks</h2>
+<h3 id="via-pre-commit">Via Pre-commit</h3>
+<p>The standard way to run all code quality checks:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Run against staged files only (happens automatically on commit)</span>
+uv<span class="w"> </span>run<span class="w"> </span>pre-commit<span class="w"> </span>run
+
+<span class="c1"># Run against all files in the repository</span>
+uv<span class="w"> </span>run<span class="w"> </span>pre-commit<span class="w"> </span>run<span class="w"> </span>--all-files
+</code></pre></div>
+
+<h3 id="via-tox">Via Tox</h3>
+<p>Tox provides an additional layer for running checks in isolated environments:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Run all tox environments (tests + quality checks)</span>
+uv<span class="w"> </span>run<span class="w"> </span>tox
+
+<span class="c1"># Run a specific environment</span>
+uv<span class="w"> </span>run<span class="w"> </span>tox<span class="w"> </span>-e<span class="w"> </span>lint
+</code></pre></div>
+
+<h2 id="troubleshooting">Troubleshooting</h2>
+<h3 id="pre-commit-hook-fails-on-commit">Pre-commit Hook Fails on Commit</h3>
+<p>If a hook fails, read the error output to identify which tool flagged the issue. Common scenarios:</p>
+<table>
+<thead>
+<tr>
+<th>Tool</th>
+<th>Common Failure</th>
+<th>Resolution</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ruff</td>
+<td><code>F401 unused import</code></td>
+<td>Remove the unused import or add <code># noqa: F401</code> if intentional</td>
+</tr>
+<tr>
+<td>ruff-format</td>
+<td>File reformatted</td>
+<td>Stage the reformatted file and commit again</td>
+</tr>
+<tr>
+<td>mypy</td>
+<td><code>Missing return type</code></td>
+<td>Add type annotations to the function signature</td>
+</tr>
+<tr>
+<td>flake8</td>
+<td><code>E501 line too long</code></td>
+<td>Break the line or check that <code>max-line-length</code> matches ruff</td>
+</tr>
+<tr>
+<td>gitleaks</td>
+<td>Secret detected</td>
+<td>Remove the secret, use environment variables instead</td>
+</tr>
+<tr>
+<td>detect-secrets</td>
+<td>New secret found</td>
+<td>Remove it, or update the baseline if it's a false positive</td>
+</tr>
+</tbody>
+</table>
+<h3 id="skipping-hooks-emergency-only">Skipping Hooks (Emergency Only)</h3>
+<p>In rare cases where you need to bypass pre-commit hooks:</p>
+<div class="highlight"><pre><span></span><code>git<span class="w"> </span>commit<span class="w"> </span>--no-verify<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;emergency fix: description&quot;</span>
+</code></pre></div>
+
+<blockquote>
+<p><strong>Warning:</strong> Use <code>--no-verify</code> sparingly and only in genuine emergencies. All skipped checks should be run manually afterwards with <code>pre-commit run --all-files</code> to ensure no issues are left unresolved.</p>
+</blockquote>
+<h3 id="updating-hook-versions">Updating Hook Versions</h3>
+<p>Keep pre-commit hooks up to date:</p>
+<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>run<span class="w"> </span>pre-commit<span class="w"> </span>autoupdate
+</code></pre></div>
+
+<p>This updates the <code>rev</code> field for each repo in <code>.pre-commit-config.yaml</code> to the latest available tag.</p>
+                </div>
+            </article>
+            <nav class="page-nav">
+                
+                <a href="testing.html" class="page-nav-link page-nav-prev">
+                    <span class="page-nav-label">Previous</span>
+                    <span class="page-nav-title">Testing</span>
+                </a>
+                
+                
+                <div></div>
+                
+            </nav>
+            
+            <aside class="toc-sidebar">
+                <div class="toc-container">
+                    <h3>On this page</h3>
+                    <div class="toc">
+<ul>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#pre-commit-hooks">Pre-commit Hooks</a><ul>
+<li><a href="#installation">Installation</a></li>
+<li><a href="#configuration">Configuration</a></li>
+<li><a href="#running-hooks-manually">Running Hooks Manually</a></li>
+</ul>
+</li>
+<li><a href="#ruff-linting-and-formatting">Ruff Linting and Formatting</a><ul>
+<li><a href="#configuration_1">Configuration</a></li>
+<li><a href="#what-ruff-checks">What Ruff Checks</a></li>
+<li><a href="#auto-fix-behavior">Auto-fix Behavior</a></li>
+</ul>
+</li>
+<li><a href="#mypy-strict-type-checking">Mypy Strict Type Checking</a><ul>
+<li><a href="#configuration_2">Configuration</a></li>
+<li><a href="#what-strict-mode-enforces">What Strict Mode Enforces</a></li>
+<li><a href="#examples">Examples</a></li>
+</ul>
+</li>
+<li><a href="#flake8">Flake8</a><ul>
+<li><a href="#configuration_3">Configuration</a></li>
+</ul>
+</li>
+<li><a href="#gitleaks">Gitleaks</a><ul>
+<li><a href="#how-it-works">How It Works</a></li>
+<li><a href="#configuration_4">Configuration</a></li>
+<li><a href="#example-output">Example Output</a></li>
+<li><a href="#handling-false-positives">Handling False Positives</a></li>
+</ul>
+</li>
+<li><a href="#detect-secrets">detect-secrets</a><ul>
+<li><a href="#how-it-works_1">How It Works</a></li>
+<li><a href="#generating-the-baseline">Generating the Baseline</a></li>
+<li><a href="#auditing-the-baseline">Auditing the Baseline</a></li>
+<li><a href="#updating-the-baseline">Updating the Baseline</a></li>
+</ul>
+</li>
+<li><a href="#running-all-checks">Running All Checks</a><ul>
+<li><a href="#via-pre-commit">Via Pre-commit</a></li>
+<li><a href="#via-tox">Via Tox</a></li>
+</ul>
+</li>
+<li><a href="#troubleshooting">Troubleshooting</a><ul>
+<li><a href="#pre-commit-hook-fails-on-commit">Pre-commit Hook Fails on Commit</a></li>
+<li><a href="#skipping-hooks-emergency-only">Skipping Hooks (Emergency Only)</a></li>
+<li><a href="#updating-hook-versions">Updating Hook Versions</a></li>
+</ul>
+</li>
+</ul>
+</div>
+
+                </div>
+            </aside>
+            
+        </main>
+
+        <footer class="footer">
+            <p>Built with <a href="https://github.com/docsfy/docsfy">docsfy</a></p>
+        </footer>
+    </div>
+
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <script src="assets/theme.js"></script>
+    <script src="assets/search.js"></script>
+    <script src="assets/copy.js"></script>
+    <script src="assets/callouts.js"></script>
+    <script src="assets/scrollspy.js"></script>
+    <script src="assets/codelabels.js"></script>
+    <script src="assets/github.js"></script>
+    <script>
+    (function() {
+        var toggle = document.getElementById('sidebar-toggle');
+        var sidebar = document.getElementById('sidebar');
+        var overlay = document.getElementById('sidebar-overlay');
+        if (toggle && sidebar) {
+            toggle.addEventListener('click', function() {
+                sidebar.classList.toggle('open');
+                if (overlay) overlay.classList.toggle('open');
+                var expanded = sidebar.classList.contains('open');
+                toggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+            });
+        }
+        if (overlay) {
+            overlay.addEventListener('click', function() {
+                sidebar.classList.remove('open');
+                overlay.classList.remove('open');
+                if (toggle) toggle.setAttribute('aria-expanded', 'false');
+            });
+        }
+    })();
+    </script>
+</body>
+</html>

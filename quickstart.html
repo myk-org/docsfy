@@ -4,14 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quickstart - docsfy</title>
-    <meta name="description" content="AI-powered documentation generator that creates polished static HTML sites from GitHub repositories">
+    <meta name="description" content="AI-powered documentation site generator that creates polished, Mintlify-quality static HTML docs from GitHub repositories">
     <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <a href="index.html" class="sidebar-logo">docsfy</a>
-            <p class="sidebar-tagline">AI-powered documentation generator that creates polished static HTML sites from GitHub repositories</p>
+            <p class="sidebar-tagline">AI-powered documentation site generator that creates polished, Mintlify-quality static HTML docs from GitHub repositories</p>
         </div>
 
         <div class="sidebar-search">
@@ -50,13 +50,20 @@
             </div>
             
             <div class="nav-group">
-                <h3 class="nav-group-title">Configuration</h3>
+                <h3 class="nav-group-title">Core Concepts</h3>
                 <ul class="nav-group-pages">
                     
                     <li>
-                        <a href="environment-variables.html"
+                        <a href="architecture.html"
                            class="nav-link">
-                            Environment Variables
+                            Architecture
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="generation-pipeline.html"
+                           class="nav-link">
+                            Generation Pipeline
                         </a>
                     </li>
                     
@@ -68,9 +75,37 @@
                     </li>
                     
                     <li>
-                        <a href="storage-and-data.html"
+                        <a href="incremental-updates.html"
                            class="nav-link">
-                            Storage &amp; Data
+                            Incremental Updates
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Configuration</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="environment-variables.html"
+                           class="nav-link">
+                            Environment Variables
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="ai-provider-setup.html"
+                           class="nav-link">
+                            AI Provider Setup
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="docker-configuration.html"
+                           class="nav-link">
+                            Docker Configuration
                         </a>
                     </li>
                     
@@ -96,44 +131,9 @@
                     </li>
                     
                     <li>
-                        <a href="downloading-and-self-hosting.html"
+                        <a href="managing-projects.html"
                            class="nav-link">
-                            Downloading &amp; Self-Hosting
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="incremental-updates.html"
-                           class="nav-link">
-                            Incremental Updates
-                        </a>
-                    </li>
-                    
-                </ul>
-            </div>
-            
-            <div class="nav-group">
-                <h3 class="nav-group-title">Architecture</h3>
-                <ul class="nav-group-pages">
-                    
-                    <li>
-                        <a href="generation-pipeline.html"
-                           class="nav-link">
-                            Generation Pipeline
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="html-renderer.html"
-                           class="nav-link">
-                            HTML Renderer &amp; Theming
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="ai-cli-integration.html"
-                           class="nav-link">
-                            AI CLI Integration
+                            Managing Projects
                         </a>
                     </li>
                     
@@ -152,9 +152,23 @@
                     </li>
                     
                     <li>
-                        <a href="api-status-and-projects.html"
+                        <a href="api-status.html"
                            class="nav-link">
-                            GET /api/status &amp; Project Details
+                            GET /api/status
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="api-projects.html"
+                           class="nav-link">
+                            GET /api/projects/{name}
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="api-projects-delete.html"
+                           class="nav-link">
+                            DELETE /api/projects/{name}
                         </a>
                     </li>
                     
@@ -162,6 +176,13 @@
                         <a href="api-download.html"
                            class="nav-link">
                             GET /api/projects/{name}/download
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="api-docs-serving.html"
+                           class="nav-link">
+                            GET /docs/{project}/{path}
                         </a>
                     </li>
                     
@@ -176,20 +197,27 @@
             </div>
             
             <div class="nav-group">
-                <h3 class="nav-group-title">Deployment</h3>
+                <h3 class="nav-group-title">Generated Sites</h3>
                 <ul class="nav-group-pages">
                     
                     <li>
-                        <a href="docker-deployment.html"
+                        <a href="html-theme.html"
                            class="nav-link">
-                            Docker Deployment
+                            HTML Theme &amp; Features
                         </a>
                     </li>
                     
                     <li>
-                        <a href="docker-compose.html"
+                        <a href="plan-json-schema.html"
                            class="nav-link">
-                            Docker Compose Setup
+                            Plan JSON Schema
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="customization.html"
+                           class="nav-link">
+                            Customization
                         </a>
                     </li>
                     
@@ -208,9 +236,23 @@
                     </li>
                     
                     <li>
-                        <a href="contributing.html"
+                        <a href="project-structure.html"
                            class="nav-link">
-                            Contributing
+                            Project Structure
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="testing.html"
+                           class="nav-link">
+                            Testing
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="code-quality.html"
+                           class="nav-link">
+                            Code Quality
                         </a>
                     </li>
                     
@@ -223,7 +265,7 @@
     <div class="main-wrapper">
         <header class="top-bar">
             <div class="top-bar-left">
-                <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebar">
+                <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebar" aria-expanded="false">
                     <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
                         <path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
                     </svg>
@@ -256,222 +298,238 @@
             <article class="article">
                 <h1 class="article-title">Quickstart</h1>
                 <div class="article-body">
+                    <!-- content is pre-rendered from markdown by the server, not user input -->
                     <h1 id="quickstart">Quickstart</h1>
-<p>Get docsfy running locally, generate documentation for your first GitHub repository, and browse the results — all in under ten minutes.</p>
+<p>Get docsfy running locally and generate your first AI-powered documentation site in minutes.</p>
 <h2 id="prerequisites">Prerequisites</h2>
 <p>Before you begin, make sure you have the following installed on your machine:</p>
 <ul>
-<li><strong>Docker</strong> (v20.10+) and <strong>Docker Compose</strong> (v2+)</li>
-<li><strong>Git</strong></li>
-<li>An API key for at least one supported AI provider:</li>
+<li><strong>Docker</strong> (v20.10 or later) and <strong>Docker Compose</strong> (v2.0 or later)</li>
+<li><strong>Git</strong> for cloning the docsfy repository</li>
+<li>An <strong>API key</strong> for at least one supported AI provider:</li>
+<li><a href="https://console.anthropic.com/">Anthropic API key</a> for Claude</li>
+<li><a href="https://ai.google.dev/">Google AI API key</a> for Gemini</li>
+<li><a href="https://cursor.com/">Cursor API key</a> for Cursor Agent</li>
 </ul>
-<table>
-<thead>
-<tr>
-<th>Provider</th>
-<th>Required Credential</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Claude (default)</td>
-<td><code>ANTHROPIC_API_KEY</code> or Vertex AI credentials</td>
-</tr>
-<tr>
-<td>Gemini</td>
-<td><code>GEMINI_API_KEY</code></td>
-</tr>
-<tr>
-<td>Cursor</td>
-<td><code>CURSOR_API_KEY</code></td>
-</tr>
-</tbody>
-</table>
 <blockquote>
-<p><strong>Note:</strong> docsfy uses AI CLI tools under the hood to analyze your repository and generate documentation. You need valid credentials for whichever provider you choose.</p>
+<p><strong>Note:</strong> docsfy uses AI CLI tools (Claude Code, Gemini CLI, or Cursor Agent) under the hood. The Docker image installs these automatically — you only need to provide the appropriate API credentials.</p>
 </blockquote>
 <h2 id="step-1-clone-the-repository">Step 1: Clone the Repository</h2>
-<div class="highlight"><pre><span></span><code>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/your-org/docsfy.git
+<div class="highlight"><pre><span></span><code>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/myakove/docsfy.git
 <span class="nb">cd</span><span class="w"> </span>docsfy
 </code></pre></div>
 
 <h2 id="step-2-configure-environment-variables">Step 2: Configure Environment Variables</h2>
-<p>Create a <code>.env</code> file in the project root. Start from the provided example:</p>
+<p>Create a <code>.env</code> file from the provided example:</p>
 <div class="highlight"><pre><span></span><code>cp<span class="w"> </span>.env.example<span class="w"> </span>.env
 </code></pre></div>
 
-<p>Open <code>.env</code> and configure your AI provider credentials. The simplest setup uses Claude with an API key:</p>
+<p>Open <code>.env</code> in your editor and configure your AI provider credentials. At minimum, you need to set the provider and supply one set of API credentials:</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># AI Configuration</span>
 <span class="nv">AI_PROVIDER</span><span class="o">=</span>claude
 <span class="nv">AI_MODEL</span><span class="o">=</span>claude-opus-4-6<span class="o">[</span>1m<span class="o">]</span>
 <span class="nv">AI_CLI_TIMEOUT</span><span class="o">=</span><span class="m">60</span>
 
-<span class="c1"># Claude - Option 1: API Key</span>
-<span class="nv">ANTHROPIC_API_KEY</span><span class="o">=</span>sk-ant-your-key-here
-
 <span class="c1"># Logging</span>
 <span class="nv">LOG_LEVEL</span><span class="o">=</span>INFO
 </code></pre></div>
 
+<p>Then uncomment and fill in the credentials for your chosen provider.</p>
+<h3 id="option-a-claude-with-api-key">Option A: Claude with API Key</h3>
+<div class="highlight"><pre><span></span><code><span class="nv">AI_PROVIDER</span><span class="o">=</span>claude
+<span class="nv">ANTHROPIC_API_KEY</span><span class="o">=</span>sk-ant-...
+</code></pre></div>
+
+<h3 id="option-b-claude-with-vertex-ai">Option B: Claude with Vertex AI</h3>
+<div class="highlight"><pre><span></span><code><span class="nv">AI_PROVIDER</span><span class="o">=</span>claude
+<span class="nv">CLAUDE_CODE_USE_VERTEX</span><span class="o">=</span><span class="m">1</span>
+<span class="nv">CLOUD_ML_REGION</span><span class="o">=</span>us-central1
+<span class="nv">ANTHROPIC_VERTEX_PROJECT_ID</span><span class="o">=</span>your-gcp-project-id
+</code></pre></div>
+
 <blockquote>
-<p><strong>Tip:</strong> If you're using Google Cloud, you can authenticate Claude via Vertex AI instead of an API key:</p>
-<p><code>bash
-AI_PROVIDER=claude
-CLAUDE_CODE_USE_VERTEX=1
-CLOUD_ML_REGION=us-east5
-ANTHROPIC_VERTEX_PROJECT_ID=your-gcp-project-id</code></p>
+<p><strong>Note:</strong> When using Vertex AI, the Docker Compose configuration mounts your local GCP credentials into the container at <code>~/.config/gcloud</code>. Make sure you have authenticated with <code>gcloud auth application-default login</code> before starting the service.</p>
 </blockquote>
-<h3 id="using-a-different-provider">Using a Different Provider</h3>
-<p>To use Gemini or Cursor instead of Claude, set <code>AI_PROVIDER</code> and the corresponding API key:</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># Gemini</span>
-<span class="nv">AI_PROVIDER</span><span class="o">=</span>gemini
-<span class="nv">GEMINI_API_KEY</span><span class="o">=</span>your-gemini-key
-
-<span class="c1"># Cursor</span>
-<span class="nv">AI_PROVIDER</span><span class="o">=</span>cursor
-<span class="nv">CURSOR_API_KEY</span><span class="o">=</span>your-cursor-key
+<h3 id="option-c-gemini">Option C: Gemini</h3>
+<div class="highlight"><pre><span></span><code><span class="nv">AI_PROVIDER</span><span class="o">=</span>gemini
+<span class="nv">GEMINI_API_KEY</span><span class="o">=</span>your-gemini-api-key
 </code></pre></div>
 
-<h2 id="step-3-create-the-data-directory">Step 3: Create the Data Directory</h2>
-<p>docsfy persists all generated documentation and its SQLite database to a <code>data/</code> volume. Create it before starting the service:</p>
-<div class="highlight"><pre><span></span><code>mkdir<span class="w"> </span>-p<span class="w"> </span>data
+<h3 id="option-d-cursor">Option D: Cursor</h3>
+<div class="highlight"><pre><span></span><code><span class="nv">AI_PROVIDER</span><span class="o">=</span>cursor
+<span class="nv">CURSOR_API_KEY</span><span class="o">=</span>your-cursor-api-key
 </code></pre></div>
 
-<p>This directory will contain:</p>
-<div class="highlight"><pre><span></span><code>data/
-├── docsfy.db              # SQLite database (project metadata, status, history)
-└── projects/              # Generated documentation per project
-    └── {project-name}/
-        ├── plan.json      # Documentation structure from AI planner
-        ├── cache/
-        │   └── pages/*.md # AI-generated markdown (cached for incremental updates)
-        └── site/          # Final rendered static HTML
-            ├── index.html
-            ├── *.html
-            └── assets/
-</code></pre></div>
-
-<h2 id="step-4-start-docsfy-with-docker-compose">Step 4: Start docsfy with Docker Compose</h2>
-<p>Build and start the service:</p>
+<blockquote>
+<p><strong>Tip:</strong> Start with Claude (<code>AI_PROVIDER=claude</code>) for the best results. It is the default provider and uses the <code>claude-opus-4-6[1m]</code> model, which produces high-quality documentation structure and content.</p>
+</blockquote>
+<h2 id="step-3-start-docsfy-with-docker-compose">Step 3: Start docsfy with Docker Compose</h2>
+<p>Build and launch the service:</p>
 <div class="highlight"><pre><span></span><code>docker<span class="w"> </span>compose<span class="w"> </span>up<span class="w"> </span>--build
 </code></pre></div>
 
-<p>The <code>docker-compose.yaml</code> defines the service as follows:</p>
-<div class="highlight"><pre><span></span><code><span class="nt">services</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">docsfy</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">build</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">.</span>
-<span class="w">    </span><span class="nt">ports</span><span class="p">:</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;8000:8000&quot;</span>
-<span class="w">    </span><span class="nt">env_file</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">.env</span>
-<span class="w">    </span><span class="nt">volumes</span><span class="p">:</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./data:/data</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">~/.config/gcloud:/home/appuser/.config/gcloud:ro</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./cursor:/home/appuser/.config/cursor</span>
-<span class="w">    </span><span class="nt">healthcheck</span><span class="p">:</span>
-<span class="w">      </span><span class="nt">test</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;CMD&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;curl&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;-f&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;http://localhost:8000/health&quot;</span><span class="p p-Indicator">]</span>
-<span class="w">      </span><span class="nt">interval</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">30s</span>
-<span class="w">      </span><span class="nt">timeout</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10s</span>
-<span class="w">      </span><span class="nt">retries</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3</span>
+<p>Docker will:</p>
+<ol>
+<li>Build the image from <code>python:3.12-slim</code> using a multi-stage build</li>
+<li>Install system dependencies (git, curl, Node.js, npm)</li>
+<li>Install AI CLI tools (Claude Code, Gemini CLI, Cursor Agent)</li>
+<li>Install Python dependencies with <code>uv</code></li>
+<li>Start the FastAPI server on port <strong>8000</strong></li>
+</ol>
+<p>Wait for the health check to pass. You should see output indicating the server is ready:</p>
+<div class="highlight"><pre><span></span><code>docsfy-docsfy-1  | INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
 </code></pre></div>
 
-<blockquote>
-<p><strong>Note:</strong> The <code>~/.config/gcloud</code> volume mount is only needed if you're authenticating Claude via Vertex AI. The <code>./cursor</code> mount is only needed for the Cursor provider. Both can be safely removed if unused.</p>
-</blockquote>
-<p>Wait for the container to finish building and report a healthy status. You can verify the service is running:</p>
+<p>Verify the service is healthy:</p>
 <div class="highlight"><pre><span></span><code>curl<span class="w"> </span>http://localhost:8000/health
 </code></pre></div>
 
-<h2 id="step-5-generate-documentation-for-a-repository">Step 5: Generate Documentation for a Repository</h2>
-<p>With the service running, trigger documentation generation by sending a <code>POST</code> request with a GitHub repository URL:</p>
+<blockquote>
+<p><strong>Tip:</strong> Run in detached mode with <code>docker compose up --build -d</code> to free up your terminal. View logs anytime with <code>docker compose logs -f</code>.</p>
+</blockquote>
+<h2 id="step-4-generate-your-first-documentation-site">Step 4: Generate Your First Documentation Site</h2>
+<p>Trigger documentation generation for any GitHub repository by sending a POST request to the <code>/api/generate</code> endpoint:</p>
 <div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/api/generate<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{&quot;repo_url&quot;: &quot;https://github.com/psf/requests&quot;}&#39;</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{&quot;repo_url&quot;: &quot;https://github.com/pallets/flask&quot;}&#39;</span>
 </code></pre></div>
 
 <p>This kicks off the four-stage generation pipeline:</p>
-<ol>
-<li><strong>Clone</strong> — Shallow-clones the repository (<code>--depth 1</code>)</li>
-<li><strong>Plan</strong> — The AI analyzes the codebase and produces a <code>plan.json</code> defining pages, sections, and navigation</li>
-<li><strong>Generate</strong> — The AI writes markdown content for each page (runs concurrently with semaphore-limited parallelism)</li>
-<li><strong>Render</strong> — Markdown is converted to polished static HTML using Jinja2 templates with sidebar navigation, dark/light theme, client-side search, and syntax highlighting</li>
-</ol>
+<table>
+<thead>
+<tr>
+<th>Stage</th>
+<th>What happens</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Clone</strong></td>
+<td>Shallow-clones the repository (<code>--depth 1</code>) to a temporary directory</td>
+</tr>
+<tr>
+<td><strong>AI Planner</strong></td>
+<td>AI analyzes the entire codebase and produces a <code>plan.json</code> with page structure, sections, and navigation</td>
+</tr>
+<tr>
+<td><strong>AI Content Generator</strong></td>
+<td>For each page in the plan, AI explores the repo and writes markdown content (pages run concurrently)</td>
+</tr>
+<tr>
+<td><strong>HTML Renderer</strong></td>
+<td>Converts markdown + plan into a polished static HTML site with Jinja2 templates</td>
+</tr>
+</tbody>
+</table>
 <blockquote>
-<p><strong>Warning:</strong> Generation can take several minutes depending on repository size and AI provider response times. The default timeout is 60 minutes, configurable via the <code>AI_CLI_TIMEOUT</code> environment variable.</p>
+<p><strong>Warning:</strong> Generation can take several minutes depending on the size of the repository and your AI provider's response time. The <code>AI_CLI_TIMEOUT</code> setting (default: 60 minutes) controls how long each AI invocation is allowed to run.</p>
 </blockquote>
-<h2 id="step-6-check-generation-status">Step 6: Check Generation Status</h2>
-<p>Monitor the progress of your documentation build:</p>
+<h2 id="step-5-monitor-generation-progress">Step 5: Monitor Generation Progress</h2>
+<p>Check the status of all projects:</p>
 <div class="highlight"><pre><span></span><code>curl<span class="w"> </span>http://localhost:8000/api/status
 </code></pre></div>
 
-<p>This returns a list of all projects and their current status (<code>generating</code>, <code>ready</code>, or <code>error</code>).</p>
-<p>For details on a specific project:</p>
-<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>http://localhost:8000/api/projects/requests
+<p>The response lists each project and its current status — <code>generating</code>, <code>ready</code>, or <code>error</code>.</p>
+<p>To get detailed information about a specific project:</p>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>http://localhost:8000/api/projects/flask
 </code></pre></div>
 
-<p>This shows the last generated timestamp, commit SHA, page list, and generation history.</p>
-<h2 id="step-7-view-the-generated-documentation">Step 7: View the Generated Documentation</h2>
-<p>Once the status shows <code>ready</code>, open your browser and navigate to:</p>
-<div class="highlight"><pre><span></span><code>http://localhost:8000/docs/requests/
+<p>This returns metadata including the last generated timestamp, commit SHA, and list of generated pages.</p>
+<h2 id="step-6-view-your-documentation">Step 6: View Your Documentation</h2>
+<p>Once generation is complete (status: <code>ready</code>), open your browser and navigate to:</p>
+<div class="highlight"><pre><span></span><code>http://localhost:8000/docs/flask/
 </code></pre></div>
 
-<p>You'll see a fully rendered documentation site with:</p>
+<p>The generated site includes:</p>
 <ul>
-<li><strong>Sidebar navigation</strong> with sections and pages</li>
-<li><strong>Dark/light theme</strong> toggle</li>
-<li><strong>Client-side search</strong> across all pages</li>
-<li><strong>Syntax-highlighted</strong> code blocks</li>
-<li><strong>Responsive design</strong> for mobile and desktop</li>
-<li><strong>Callout boxes</strong> for notes, warnings, and info</li>
+<li><strong>Sidebar navigation</strong> — auto-generated from the documentation structure</li>
+<li><strong>Dark/light theme toggle</strong> — click to switch between themes</li>
+<li><strong>Full-text search</strong> — client-side search powered by lunr.js across all pages</li>
+<li><strong>Syntax highlighting</strong> — code blocks highlighted with highlight.js</li>
+<li><strong>Callout boxes</strong> — info, note, and warning callouts for important content</li>
+<li><strong>Responsive design</strong> — works on desktop and mobile</li>
 </ul>
-<h2 id="downloading-documentation-for-self-hosting">Downloading Documentation for Self-Hosting</h2>
-<p>If you want to host the generated docs on your own infrastructure (GitHub Pages, Netlify, S3, etc.), download the static site as a <code>.tar.gz</code> archive:</p>
-<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-O<span class="w"> </span>http://localhost:8000/api/projects/requests/download
+<h2 id="step-7-download-for-self-hosting-optional">Step 7: Download for Self-Hosting (Optional)</h2>
+<p>If you want to host the documentation site elsewhere (GitHub Pages, Netlify, S3, etc.), download the static HTML as a <code>.tar.gz</code> archive:</p>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-O<span class="w"> </span>http://localhost:8000/api/projects/flask/download
 </code></pre></div>
 
 <p>Extract and serve with any static file server:</p>
-<div class="highlight"><pre><span></span><code>tar<span class="w"> </span>-xzf<span class="w"> </span>requests.tar.gz
-<span class="nb">cd</span><span class="w"> </span>requests/site
+<div class="highlight"><pre><span></span><code>tar<span class="w"> </span>-xzf<span class="w"> </span>flask.tar.gz
+<span class="nb">cd</span><span class="w"> </span>flask/site
 python<span class="w"> </span>-m<span class="w"> </span>http.server<span class="w"> </span><span class="m">3000</span>
 </code></pre></div>
 
-<h2 id="regenerating-after-repository-changes">Regenerating After Repository Changes</h2>
-<p>docsfy supports <strong>incremental updates</strong>. When you regenerate documentation for a repository that has already been built, it:</p>
-<ol>
-<li>Fetches the latest code and compares the commit SHA against the previous build</li>
-<li>Re-runs the AI planner to detect structural changes</li>
-<li>Regenerates only the pages affected by code changes</li>
-</ol>
-<p>Simply call the generate endpoint again:</p>
+<p>The site is fully self-contained — no server-side dependencies required.</p>
+<h2 id="docker-compose-volume-mounts">Docker Compose Volume Mounts</h2>
+<p>The <code>docker-compose.yaml</code> mounts three volumes:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">volumes</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./data:/data</span><span class="w">                                        </span><span class="c1"># Project data and SQLite database</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">~/.config/gcloud:/home/appuser/.config/gcloud:ro</span><span class="w">    </span><span class="c1"># GCP credentials (for Vertex AI)</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./cursor:/home/appuser/.config/cursor</span><span class="w">               </span><span class="c1"># Cursor configuration</span>
+</code></pre></div>
+
+<table>
+<thead>
+<tr>
+<th>Mount</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>./data:/data</code></td>
+<td>Persists generated documentation, cached markdown, and the SQLite database (<code>docsfy.db</code>) across container restarts</td>
+</tr>
+<tr>
+<td><code>~/.config/gcloud</code></td>
+<td>Read-only mount of GCP credentials for Claude via Vertex AI</td>
+</tr>
+<tr>
+<td><code>./cursor</code></td>
+<td>Cursor Agent configuration directory</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Note:</strong> The <code>./data</code> directory is created automatically. It stores all project data in the following structure:</p>
+<p><code>data/
+├── docsfy.db                    # SQLite metadata database
+└── projects/
+    └── flask/
+        ├── plan.json            # Documentation structure from AI
+        ├── cache/
+        │   └── pages/*.md       # Cached markdown (for incremental updates)
+        └── site/                # Final rendered HTML site
+            ├── index.html
+            ├── *.html
+            ├── search-index.json
+            └── assets/
+                ├── style.css
+                ├── search.js
+                ├── theme-toggle.js
+                └── highlight.js</code></p>
+</blockquote>
+<h2 id="regenerating-documentation">Regenerating Documentation</h2>
+<p>When a repository is updated, docsfy supports incremental regeneration. Send the same POST request again:</p>
 <div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/api/generate<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{&quot;repo_url&quot;: &quot;https://github.com/psf/requests&quot;}&#39;</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{&quot;repo_url&quot;: &quot;https://github.com/pallets/flask&quot;}&#39;</span>
 </code></pre></div>
 
-<blockquote>
-<p><strong>Tip:</strong> This is significantly faster than a full rebuild since unchanged pages are served from the markdown cache at <code>/data/projects/{name}/cache/pages/</code>.</p>
-</blockquote>
+<p>docsfy compares the current commit SHA against the previously stored one. If changes are detected, it:</p>
+<ol>
+<li>Re-runs the AI Planner to check for structural changes</li>
+<li>Regenerates only the affected pages (or all pages if the structure changed)</li>
+<li>Re-renders the HTML site</li>
+</ol>
+<p>This saves significant time and API costs compared to a full regeneration.</p>
 <h2 id="removing-a-project">Removing a Project</h2>
 <p>To delete a project and all its generated documentation:</p>
-<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-X<span class="w"> </span>DELETE<span class="w"> </span>http://localhost:8000/api/projects/requests
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-X<span class="w"> </span>DELETE<span class="w"> </span>http://localhost:8000/api/projects/flask
 </code></pre></div>
 
-<h2 id="running-in-the-background">Running in the Background</h2>
-<p>For long-running or production use, start the service in detached mode:</p>
-<div class="highlight"><pre><span></span><code>docker<span class="w"> </span>compose<span class="w"> </span>up<span class="w"> </span>--build<span class="w"> </span>-d
-</code></pre></div>
-
-<p>View logs:</p>
-<div class="highlight"><pre><span></span><code>docker<span class="w"> </span>compose<span class="w"> </span>logs<span class="w"> </span>-f<span class="w"> </span>docsfy
-</code></pre></div>
-
-<p>Stop the service:</p>
-<div class="highlight"><pre><span></span><code>docker<span class="w"> </span>compose<span class="w"> </span>down
-</code></pre></div>
-
-<blockquote>
-<p><strong>Note:</strong> Generated documentation persists in the <code>./data</code> volume and survives container restarts. You won't lose your builds when stopping or restarting the service.</p>
-</blockquote>
-<h2 id="api-reference-quick-summary">API Reference (Quick Summary)</h2>
+<h2 id="api-reference-summary">API Reference Summary</h2>
 <table>
 <thead>
 <tr>
@@ -484,7 +542,7 @@ python<span class="w"> </span>-m<span class="w"> </span>http.server<span class="
 <tr>
 <td><code>POST</code></td>
 <td><code>/api/generate</code></td>
-<td>Start documentation generation for a repo URL</td>
+<td>Start documentation generation for a repository</td>
 </tr>
 <tr>
 <td><code>GET</code></td>
@@ -494,51 +552,60 @@ python<span class="w"> </span>-m<span class="w"> </span>http.server<span class="
 <tr>
 <td><code>GET</code></td>
 <td><code>/api/projects/{name}</code></td>
-<td>Get project details</td>
+<td>Get project details and metadata</td>
 </tr>
 <tr>
 <td><code>DELETE</code></td>
 <td><code>/api/projects/{name}</code></td>
-<td>Remove a project and its docs</td>
+<td>Remove a project and its documentation</td>
 </tr>
 <tr>
 <td><code>GET</code></td>
 <td><code>/api/projects/{name}/download</code></td>
-<td>Download static site as <code>.tar.gz</code></td>
+<td>Download the static site as <code>.tar.gz</code></td>
 </tr>
 <tr>
 <td><code>GET</code></td>
 <td><code>/docs/{project}/{path}</code></td>
-<td>Serve generated documentation</td>
+<td>Serve generated documentation pages</td>
 </tr>
 <tr>
 <td><code>GET</code></td>
 <td><code>/health</code></td>
-<td>Health check</td>
+<td>Health check endpoint</td>
 </tr>
 </tbody>
 </table>
 <h2 id="troubleshooting">Troubleshooting</h2>
 <h3 id="container-fails-to-start">Container fails to start</h3>
-<p>Verify your <code>.env</code> file exists and contains valid credentials. Check the logs for specific errors:</p>
+<p>Check the logs for errors:</p>
 <div class="highlight"><pre><span></span><code>docker<span class="w"> </span>compose<span class="w"> </span>logs<span class="w"> </span>docsfy
 </code></pre></div>
 
-<h3 id="generation-fails-with-timeout">Generation fails with timeout</h3>
-<p>Large repositories may exceed the default 60-minute timeout. Increase it in your <code>.env</code>:</p>
-<div class="highlight"><pre><span></span><code><span class="nv">AI_CLI_TIMEOUT</span><span class="o">=</span><span class="m">120</span>
+<p>Common causes:</p>
+<ul>
+<li>Missing or invalid <code>.env</code> file — ensure the file exists and has valid syntax</li>
+<li>Port 8000 already in use — stop the conflicting service or change the port mapping in <code>docker-compose.yaml</code></li>
+</ul>
+<h3 id="generation-fails-with-error-status">Generation fails with <code>error</code> status</h3>
+<p>Check the project details for error information:</p>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>http://localhost:8000/api/projects/&lt;project-name&gt;
 </code></pre></div>
 
-<h3 id="private-repository-access">Private repository access</h3>
-<p>docsfy uses system git credentials for cloning. To access private repositories, ensure your git SSH keys or HTTPS credentials are available inside the container. You may need to add an additional volume mount for your SSH keys:</p>
-<div class="highlight"><pre><span></span><code><span class="nt">volumes</span><span class="p">:</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">~/.ssh:/home/appuser/.ssh:ro</span>
-</code></pre></div>
-
+<p>Common causes:</p>
+<ul>
+<li><strong>Invalid API key</strong> — verify your AI provider credentials in <code>.env</code></li>
+<li><strong>Repository not accessible</strong> — ensure the repo URL is correct and publicly accessible (or that git credentials are configured for private repos)</li>
+<li><strong>AI CLI timeout</strong> — for very large repositories, increase <code>AI_CLI_TIMEOUT</code> in <code>.env</code></li>
+</ul>
 <h3 id="health-check-fails">Health check fails</h3>
-<p>Ensure port 8000 is not already in use on your host machine:</p>
-<div class="highlight"><pre><span></span><code>lsof<span class="w"> </span>-i<span class="w"> </span>:8000
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-v<span class="w"> </span>http://localhost:8000/health
 </code></pre></div>
+
+<p>If the health endpoint does not respond, the FastAPI server may not have started. Check the container logs for Python errors or missing dependencies.</p>
+<blockquote>
+<p><strong>Tip:</strong> Set <code>LOG_LEVEL=DEBUG</code> in your <code>.env</code> file for more detailed output when troubleshooting.</p>
+</blockquote>
                 </div>
             </article>
             <nav class="page-nav">
@@ -564,23 +631,24 @@ python<span class="w"> </span>-m<span class="w"> </span>http.server<span class="
 <li><a href="#prerequisites">Prerequisites</a></li>
 <li><a href="#step-1-clone-the-repository">Step 1: Clone the Repository</a></li>
 <li><a href="#step-2-configure-environment-variables">Step 2: Configure Environment Variables</a><ul>
-<li><a href="#using-a-different-provider">Using a Different Provider</a></li>
+<li><a href="#option-a-claude-with-api-key">Option A: Claude with API Key</a></li>
+<li><a href="#option-b-claude-with-vertex-ai">Option B: Claude with Vertex AI</a></li>
+<li><a href="#option-c-gemini">Option C: Gemini</a></li>
+<li><a href="#option-d-cursor">Option D: Cursor</a></li>
 </ul>
 </li>
-<li><a href="#step-3-create-the-data-directory">Step 3: Create the Data Directory</a></li>
-<li><a href="#step-4-start-docsfy-with-docker-compose">Step 4: Start docsfy with Docker Compose</a></li>
-<li><a href="#step-5-generate-documentation-for-a-repository">Step 5: Generate Documentation for a Repository</a></li>
-<li><a href="#step-6-check-generation-status">Step 6: Check Generation Status</a></li>
-<li><a href="#step-7-view-the-generated-documentation">Step 7: View the Generated Documentation</a></li>
-<li><a href="#downloading-documentation-for-self-hosting">Downloading Documentation for Self-Hosting</a></li>
-<li><a href="#regenerating-after-repository-changes">Regenerating After Repository Changes</a></li>
+<li><a href="#step-3-start-docsfy-with-docker-compose">Step 3: Start docsfy with Docker Compose</a></li>
+<li><a href="#step-4-generate-your-first-documentation-site">Step 4: Generate Your First Documentation Site</a></li>
+<li><a href="#step-5-monitor-generation-progress">Step 5: Monitor Generation Progress</a></li>
+<li><a href="#step-6-view-your-documentation">Step 6: View Your Documentation</a></li>
+<li><a href="#step-7-download-for-self-hosting-optional">Step 7: Download for Self-Hosting (Optional)</a></li>
+<li><a href="#docker-compose-volume-mounts">Docker Compose Volume Mounts</a></li>
+<li><a href="#regenerating-documentation">Regenerating Documentation</a></li>
 <li><a href="#removing-a-project">Removing a Project</a></li>
-<li><a href="#running-in-the-background">Running in the Background</a></li>
-<li><a href="#api-reference-quick-summary">API Reference (Quick Summary)</a></li>
+<li><a href="#api-reference-summary">API Reference Summary</a></li>
 <li><a href="#troubleshooting">Troubleshooting</a><ul>
 <li><a href="#container-fails-to-start">Container fails to start</a></li>
-<li><a href="#generation-fails-with-timeout">Generation fails with timeout</a></li>
-<li><a href="#private-repository-access">Private repository access</a></li>
+<li><a href="#generation-fails-with-error-status">Generation fails with error status</a></li>
 <li><a href="#health-check-fails">Health check fails</a></li>
 </ul>
 </li>
@@ -615,12 +683,15 @@ python<span class="w"> </span>-m<span class="w"> </span>http.server<span class="
             toggle.addEventListener('click', function() {
                 sidebar.classList.toggle('open');
                 if (overlay) overlay.classList.toggle('open');
+                var expanded = sidebar.classList.contains('open');
+                toggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
             });
         }
         if (overlay) {
             overlay.addEventListener('click', function() {
                 sidebar.classList.remove('open');
                 overlay.classList.remove('open');
+                if (toggle) toggle.setAttribute('aria-expanded', 'false');
             });
         }
     })();

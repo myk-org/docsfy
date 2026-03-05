@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customization - docsfy</title>
+    <meta name="description" content="AI-powered documentation site generator that creates polished, Mintlify-quality static HTML docs from GitHub repositories">
+    <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <a href="index.html" class="sidebar-logo">docsfy</a>
+            <p class="sidebar-tagline">AI-powered documentation site generator that creates polished, Mintlify-quality static HTML docs from GitHub repositories</p>
+        </div>
+
+        <div class="sidebar-search">
+            <input type="text" id="search-input" placeholder="Search... (⌘K)" autocomplete="off" readonly>
+            <div id="search-results" class="search-results"></div>
+        </div>
+
+        <nav class="sidebar-nav">
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Getting Started</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="introduction.html"
+                           class="nav-link">
+                            Introduction
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="quickstart.html"
+                           class="nav-link">
+                            Quickstart
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="installation.html"
+                           class="nav-link">
+                            Installation
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Core Concepts</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="architecture.html"
+                           class="nav-link">
+                            Architecture
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="generation-pipeline.html"
+                           class="nav-link">
+                            Generation Pipeline
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="ai-providers.html"
+                           class="nav-link">
+                            AI Providers
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="incremental-updates.html"
+                           class="nav-link">
+                            Incremental Updates
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Configuration</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="environment-variables.html"
+                           class="nav-link">
+                            Environment Variables
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="ai-provider-setup.html"
+                           class="nav-link">
+                            AI Provider Setup
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="docker-configuration.html"
+                           class="nav-link">
+                            Docker Configuration
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Usage</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="generating-docs.html"
+                           class="nav-link">
+                            Generating Documentation
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="serving-docs.html"
+                           class="nav-link">
+                            Serving Documentation
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="managing-projects.html"
+                           class="nav-link">
+                            Managing Projects
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">API Reference</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="api-generate.html"
+                           class="nav-link">
+                            POST /api/generate
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="api-status.html"
+                           class="nav-link">
+                            GET /api/status
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="api-projects.html"
+                           class="nav-link">
+                            GET /api/projects/{name}
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="api-projects-delete.html"
+                           class="nav-link">
+                            DELETE /api/projects/{name}
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="api-download.html"
+                           class="nav-link">
+                            GET /api/projects/{name}/download
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="api-docs-serving.html"
+                           class="nav-link">
+                            GET /docs/{project}/{path}
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="api-health.html"
+                           class="nav-link">
+                            GET /health
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Generated Sites</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="html-theme.html"
+                           class="nav-link">
+                            HTML Theme &amp; Features
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="plan-json-schema.html"
+                           class="nav-link">
+                            Plan JSON Schema
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="customization.html"
+                           class="nav-link active">
+                            Customization
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Development</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="development-setup.html"
+                           class="nav-link">
+                            Development Setup
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="project-structure.html"
+                           class="nav-link">
+                            Project Structure
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="testing.html"
+                           class="nav-link">
+                            Testing
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="code-quality.html"
+                           class="nav-link">
+                            Code Quality
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+        </nav>
+    </aside>
+
+    <div class="main-wrapper">
+        <header class="top-bar">
+            <div class="top-bar-left">
+                <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebar" aria-expanded="false">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                </button>
+                <a href="index.html" class="top-bar-title">docsfy</a>
+            </div>
+            <div class="top-bar-spacer"></div>
+            <div class="top-bar-right">
+                <button class="top-bar-search-btn" id="search-trigger" aria-label="Search">
+                    <kbd>&#8984;K</kbd> Search
+                </button>
+                
+                <a href="https://github.com/myk-org/docsfy" target="_blank" rel="noopener noreferrer" class="top-bar-github" id="github-link" data-repo-url="https://github.com/myk-org/docsfy">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                    <span class="github-stars" id="github-stars"></span>
+                </a>
+                
+                <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+                    <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                    </svg>
+                    <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <main class="content">
+            <article class="article">
+                <h1 class="article-title">Customization</h1>
+                <div class="article-body">
+                    <!-- content is pre-rendered from markdown by the server, not user input -->
+                    <h1 id="customization">Customization</h1>
+<p>docsfy generates polished static HTML documentation sites using Jinja2 templates and bundled CSS/JS assets. This page explains how to customize the templates, styling, assets, and site structure to fit your documentation needs.</p>
+<h2 id="site-structure-overview">Site Structure Overview</h2>
+<p>Every generated documentation project follows a consistent filesystem layout under <code>/data/projects/</code>:</p>
+<div class="highlight"><pre><span></span><code>/data/projects/{project-name}/
+  plan.json             # Documentation structure from AI planner
+  cache/
+    pages/*.md          # AI-generated markdown (cached for incremental updates)
+  site/                 # Final rendered HTML
+    index.html
+    *.html
+    assets/
+      style.css
+      search.js
+      theme-toggle.js
+      highlight.js
+    search-index.json
+</code></pre></div>
+
+<p>The <code>site/</code> directory contains the fully self-contained static site. You can download it as a <code>.tar.gz</code> archive via the API and host it anywhere:</p>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-O<span class="w"> </span>http://localhost:8000/api/projects/my-project/download
+tar<span class="w"> </span>-xzf<span class="w"> </span>my-project.tar.gz
+</code></pre></div>
+
+<h2 id="jinja2-templates">Jinja2 Templates</h2>
+<p>docsfy uses <a href="https://jinja.palletsprojects.com/">Jinja2</a> as its templating engine. The HTML Renderer (Stage 4 of the generation pipeline) converts markdown pages and <code>plan.json</code> into polished static HTML by rendering each page through Jinja2 templates with the bundled CSS/JS assets.</p>
+<h3 id="template-location">Template Location</h3>
+<p>Templates live in the <code>docsfy/templates/</code> directory within the application package:</p>
+<div class="highlight"><pre><span></span><code>docsfy/
+  templates/
+    base.html           # Base layout with common structure
+    page.html           # Individual documentation page
+    index.html          # Landing/home page
+</code></pre></div>
+
+<h3 id="base-template-blocks">Base Template Blocks</h3>
+<p>The base template defines the overall HTML structure and exposes blocks that child templates and customizations can override. Key blocks include:</p>
+<div class="highlight"><pre><span></span><code><span class="cp">&lt;!DOCTYPE html&gt;</span>
+<span class="p">&lt;</span><span class="nt">html</span> <span class="na">lang</span><span class="o">=</span><span class="s">&quot;en&quot;</span> <span class="na">data-theme</span><span class="o">=</span><span class="s">&quot;light&quot;</span><span class="p">&gt;</span>
+<span class="p">&lt;</span><span class="nt">head</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">meta</span> <span class="na">charset</span><span class="o">=</span><span class="s">&quot;UTF-8&quot;</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">meta</span> <span class="na">name</span><span class="o">=</span><span class="s">&quot;viewport&quot;</span> <span class="na">content</span><span class="o">=</span><span class="s">&quot;width=device-width, initial-scale=1.0&quot;</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">title</span><span class="p">&gt;</span>{% block title %}{{ page.title }} - {{ project.name }}{% endblock %}<span class="p">&lt;/</span><span class="nt">title</span><span class="p">&gt;</span>
+    {% block head_css %}
+    <span class="p">&lt;</span><span class="nt">link</span> <span class="na">rel</span><span class="o">=</span><span class="s">&quot;stylesheet&quot;</span> <span class="na">href</span><span class="o">=</span><span class="s">&quot;assets/style.css&quot;</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">link</span> <span class="na">rel</span><span class="o">=</span><span class="s">&quot;stylesheet&quot;</span> <span class="na">href</span><span class="o">=</span><span class="s">&quot;assets/highlight.css&quot;</span><span class="p">&gt;</span>
+    {% endblock %}
+    {% block head_extra %}{% endblock %}
+<span class="p">&lt;/</span><span class="nt">head</span><span class="p">&gt;</span>
+<span class="p">&lt;</span><span class="nt">body</span><span class="p">&gt;</span>
+    {% block sidebar %}
+    <span class="p">&lt;</span><span class="nt">nav</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;sidebar&quot;</span><span class="p">&gt;</span>
+        <span class="cm">&lt;!-- Navigation generated from plan.json --&gt;</span>
+    <span class="p">&lt;/</span><span class="nt">nav</span><span class="p">&gt;</span>
+    {% endblock %}
+
+    <span class="p">&lt;</span><span class="nt">main</span><span class="p">&gt;</span>
+        {% block content %}{% endblock %}
+    <span class="p">&lt;/</span><span class="nt">main</span><span class="p">&gt;</span>
+
+    {% block scripts %}
+    <span class="p">&lt;</span><span class="nt">script</span> <span class="na">src</span><span class="o">=</span><span class="s">&quot;assets/highlight.js&quot;</span><span class="p">&gt;&lt;/</span><span class="nt">script</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">script</span> <span class="na">src</span><span class="o">=</span><span class="s">&quot;assets/search.js&quot;</span><span class="p">&gt;&lt;/</span><span class="nt">script</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">script</span> <span class="na">src</span><span class="o">=</span><span class="s">&quot;assets/theme-toggle.js&quot;</span><span class="p">&gt;&lt;/</span><span class="nt">script</span><span class="p">&gt;</span>
+    {% endblock %}
+    {% block scripts_extra %}{% endblock %}
+<span class="p">&lt;/</span><span class="nt">body</span><span class="p">&gt;</span>
+<span class="p">&lt;/</span><span class="nt">html</span><span class="p">&gt;</span>
+</code></pre></div>
+
+<h3 id="template-context-variables">Template Context Variables</h3>
+<p>When rendering each page, the following context variables are available in templates:</p>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>project.name</code></td>
+<td><code>str</code></td>
+<td>Project name derived from the repository</td>
+</tr>
+<tr>
+<td><code>project.repo_url</code></td>
+<td><code>str</code></td>
+<td>Source repository URL</td>
+</tr>
+<tr>
+<td><code>page.title</code></td>
+<td><code>str</code></td>
+<td>Current page title</td>
+</tr>
+<tr>
+<td><code>page.content</code></td>
+<td><code>str</code></td>
+<td>Rendered HTML content from markdown</td>
+</tr>
+<tr>
+<td><code>page.slug</code></td>
+<td><code>str</code></td>
+<td>URL-safe page identifier</td>
+</tr>
+<tr>
+<td><code>navigation</code></td>
+<td><code>list</code></td>
+<td>Sidebar navigation hierarchy from <code>plan.json</code></td>
+</tr>
+<tr>
+<td><code>pages</code></td>
+<td><code>list</code></td>
+<td>All pages in the documentation site</td>
+</tr>
+<tr>
+<td><code>current_page</code></td>
+<td><code>str</code></td>
+<td>Slug of the currently rendered page</td>
+</tr>
+</tbody>
+</table>
+<h3 id="overriding-templates">Overriding Templates</h3>
+<p>To customize the generated HTML structure, you can provide your own Jinja2 templates. Place custom templates in a directory and ensure the renderer can locate them. Because the renderer processes templates during Stage 4 of the pipeline, customizations apply at generation time.</p>
+<p><strong>Extending the base template:</strong></p>
+<div class="highlight"><pre><span></span><code>{% extends &quot;base.html&quot; %}
+
+{% block head_extra %}
+<span class="p">&lt;</span><span class="nt">link</span> <span class="na">rel</span><span class="o">=</span><span class="s">&quot;stylesheet&quot;</span> <span class="na">href</span><span class="o">=</span><span class="s">&quot;assets/custom.css&quot;</span><span class="p">&gt;</span>
+<span class="p">&lt;</span><span class="nt">link</span> <span class="na">rel</span><span class="o">=</span><span class="s">&quot;icon&quot;</span> <span class="na">href</span><span class="o">=</span><span class="s">&quot;assets/favicon.ico&quot;</span><span class="p">&gt;</span>
+{% endblock %}
+
+{% block sidebar %}
+<span class="p">&lt;</span><span class="nt">nav</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;sidebar custom-sidebar&quot;</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;logo&quot;</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">img</span> <span class="na">src</span><span class="o">=</span><span class="s">&quot;assets/logo.svg&quot;</span> <span class="na">alt</span><span class="o">=</span><span class="s">&quot;{{ project.name }}&quot;</span><span class="p">&gt;</span>
+    <span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
+    {{ super() }}
+<span class="p">&lt;/</span><span class="nt">nav</span><span class="p">&gt;</span>
+{% endblock %}
+
+{% block scripts_extra %}
+<span class="p">&lt;</span><span class="nt">script</span> <span class="na">src</span><span class="o">=</span><span class="s">&quot;assets/analytics.js&quot;</span><span class="p">&gt;&lt;/</span><span class="nt">script</span><span class="p">&gt;</span>
+{% endblock %}
+</code></pre></div>
+
+<blockquote>
+<p><strong>Tip:</strong> Use <code>{{ super() }}</code> within a block to include the parent template's content alongside your additions, rather than replacing it entirely.</p>
+</blockquote>
+<h2 id="css-assets">CSS Assets</h2>
+<h3 id="default-stylesheet">Default Stylesheet</h3>
+<p>The bundled <code>style.css</code> provides the default styling for all generated documentation sites. It includes:</p>
+<ul>
+<li>Responsive layout with sidebar navigation</li>
+<li>Dark and light theme support via CSS custom properties</li>
+<li>Card layouts for feature highlights</li>
+<li>Callout boxes for notes, warnings, and informational content</li>
+<li>Typography optimized for documentation readability</li>
+<li>Mobile-friendly responsive design</li>
+</ul>
+<h3 id="theme-system-darklight-mode">Theme System (Dark/Light Mode)</h3>
+<p>docsfy uses CSS custom properties (variables) to implement its theme system. The <code>data-theme</code> attribute on the <code>&lt;html&gt;</code> element controls which theme is active:</p>
+<div class="highlight"><pre><span></span><code><span class="c">/* Light theme (default) */</span>
+<span class="p">:</span><span class="nd">root</span><span class="o">,</span>
+<span class="o">[</span><span class="nt">data-theme</span><span class="o">=</span><span class="s2">&quot;light&quot;</span><span class="o">]</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nv">--color-bg</span><span class="p">:</span><span class="w"> </span><span class="mh">#ffffff</span><span class="p">;</span>
+<span class="w">    </span><span class="nv">--color-text</span><span class="p">:</span><span class="w"> </span><span class="mh">#1a1a2e</span><span class="p">;</span>
+<span class="w">    </span><span class="nv">--color-heading</span><span class="p">:</span><span class="w"> </span><span class="mh">#16213e</span><span class="p">;</span>
+<span class="w">    </span><span class="nv">--color-link</span><span class="p">:</span><span class="w"> </span><span class="mh">#0f3460</span><span class="p">;</span>
+<span class="w">    </span><span class="nv">--color-sidebar-bg</span><span class="p">:</span><span class="w"> </span><span class="mh">#f8f9fa</span><span class="p">;</span>
+<span class="w">    </span><span class="nv">--color-sidebar-text</span><span class="p">:</span><span class="w"> </span><span class="mh">#333333</span><span class="p">;</span>
+<span class="w">    </span><span class="nv">--color-sidebar-active</span><span class="p">:</span><span class="w"> </span><span class="mh">#0f3460</span><span class="p">;</span>
+<span class="w">    </span><span class="nv">--color-code-bg</span><span class="p">:</span><span class="w"> </span><span class="mh">#f4f4f4</span><span class="p">;</span>
+<span class="w">    </span><span class="nv">--color-border</span><span class="p">:</span><span class="w"> </span><span class="mh">#e0e0e0</span><span class="p">;</span>
+<span class="w">    </span><span class="nv">--color-callout-note</span><span class="p">:</span><span class="w"> </span><span class="mh">#e3f2fd</span><span class="p">;</span>
+<span class="w">    </span><span class="nv">--color-callout-warning</span><span class="p">:</span><span class="w"> </span><span class="mh">#fff3e0</span><span class="p">;</span>
+<span class="w">    </span><span class="nv">--color-callout-info</span><span class="p">:</span><span class="w"> </span><span class="mh">#e8f5e9</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="c">/* Dark theme */</span>
+<span class="o">[</span><span class="nt">data-theme</span><span class="o">=</span><span class="s2">&quot;dark&quot;</span><span class="o">]</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nv">--color-bg</span><span class="p">:</span><span class="w"> </span><span class="mh">#1a1a2e</span><span class="p">;</span>
+<span class="w">    </span><span class="nv">--color-text</span><span class="p">:</span><span class="w"> </span><span class="mh">#e0e0e0</span><span class="p">;</span>
+<span class="w">    </span><span class="nv">--color-heading</span><span class="p">:</span><span class="w"> </span><span class="mh">#e8e8e8</span><span class="p">;</span>
+<span class="w">    </span><span class="nv">--color-link</span><span class="p">:</span><span class="w"> </span><span class="mh">#64b5f6</span><span class="p">;</span>
+<span class="w">    </span><span class="nv">--color-sidebar-bg</span><span class="p">:</span><span class="w"> </span><span class="mh">#16213e</span><span class="p">;</span>
+<span class="w">    </span><span class="nv">--color-sidebar-text</span><span class="p">:</span><span class="w"> </span><span class="mh">#cccccc</span><span class="p">;</span>
+<span class="w">    </span><span class="nv">--color-sidebar-active</span><span class="p">:</span><span class="w"> </span><span class="mh">#64b5f6</span><span class="p">;</span>
+<span class="w">    </span><span class="nv">--color-code-bg</span><span class="p">:</span><span class="w"> </span><span class="mh">#2d2d44</span><span class="p">;</span>
+<span class="w">    </span><span class="nv">--color-border</span><span class="p">:</span><span class="w"> </span><span class="mh">#333355</span><span class="p">;</span>
+<span class="w">    </span><span class="nv">--color-callout-note</span><span class="p">:</span><span class="w"> </span><span class="mh">#1a237e</span><span class="p">;</span>
+<span class="w">    </span><span class="nv">--color-callout-warning</span><span class="p">:</span><span class="w"> </span><span class="mh">#4e342e</span><span class="p">;</span>
+<span class="w">    </span><span class="nv">--color-callout-info</span><span class="p">:</span><span class="w"> </span><span class="mh">#1b5e20</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<h3 id="custom-css-overrides">Custom CSS Overrides</h3>
+<p>To apply custom styles to your generated site, add a <code>custom.css</code> file to the <code>site/assets/</code> directory after generation. Reference these variables to maintain theme compatibility:</p>
+<div class="highlight"><pre><span></span><code><span class="c">/* custom.css - Consistent with dark/light themes */</span>
+<span class="p">.</span><span class="nc">sidebar</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">width</span><span class="p">:</span><span class="w"> </span><span class="mi">280</span><span class="kt">px</span><span class="p">;</span>
+<span class="w">    </span><span class="k">background-color</span><span class="p">:</span><span class="w"> </span><span class="nf">var</span><span class="p">(</span><span class="nv">--color-sidebar-bg</span><span class="p">);</span>
+<span class="w">    </span><span class="k">border-right</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="kt">px</span><span class="w"> </span><span class="kc">solid</span><span class="w"> </span><span class="nf">var</span><span class="p">(</span><span class="nv">--color-border</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="p">.</span><span class="nc">content</span><span class="w"> </span><span class="nt">h1</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">color</span><span class="p">:</span><span class="w"> </span><span class="nf">var</span><span class="p">(</span><span class="nv">--color-heading</span><span class="p">);</span>
+<span class="w">    </span><span class="k">border-bottom</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="kt">px</span><span class="w"> </span><span class="kc">solid</span><span class="w"> </span><span class="nf">var</span><span class="p">(</span><span class="nv">--color-link</span><span class="p">);</span>
+<span class="w">    </span><span class="k">padding-bottom</span><span class="p">:</span><span class="w"> </span><span class="mf">0.5</span><span class="kt">em</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="c">/* Custom callout style */</span>
+<span class="p">.</span><span class="nc">callout</span><span class="p">.</span><span class="nc">custom</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">background-color</span><span class="p">:</span><span class="w"> </span><span class="nf">var</span><span class="p">(</span><span class="nv">--color-callout-info</span><span class="p">);</span>
+<span class="w">    </span><span class="k">border-left</span><span class="p">:</span><span class="w"> </span><span class="mi">4</span><span class="kt">px</span><span class="w"> </span><span class="kc">solid</span><span class="w"> </span><span class="nf">var</span><span class="p">(</span><span class="nv">--color-link</span><span class="p">);</span>
+<span class="w">    </span><span class="k">padding</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="kt">em</span><span class="p">;</span>
+<span class="w">    </span><span class="k">margin</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="kt">em</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">    </span><span class="k">border-radius</span><span class="p">:</span><span class="w"> </span><span class="mi">4</span><span class="kt">px</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<blockquote>
+<p><strong>Warning:</strong> If you modify files in the <code>site/</code> directory directly, your changes will be overwritten on the next generation or incremental update. For persistent customizations, modify the templates or asset sources before generation.</p>
+</blockquote>
+<h3 id="callout-boxes">Callout Boxes</h3>
+<p>The default stylesheet includes styling for three callout types that the AI content generator uses when writing documentation pages:</p>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Usage</th>
+<th>Visual Style</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Note</td>
+<td>General supplementary information</td>
+<td>Blue-tinted background</td>
+</tr>
+<tr>
+<td>Warning</td>
+<td>Important cautions or caveats</td>
+<td>Orange-tinted background</td>
+</tr>
+<tr>
+<td>Info</td>
+<td>Helpful tips and extra context</td>
+<td>Green-tinted background</td>
+</tr>
+</tbody>
+</table>
+<p>Callouts are rendered as styled <code>&lt;div&gt;</code> elements:</p>
+<div class="highlight"><pre><span></span><code><span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;callout note&quot;</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">strong</span><span class="p">&gt;</span>Note:<span class="p">&lt;/</span><span class="nt">strong</span><span class="p">&gt;</span> This is supplementary information.
+<span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
+
+<span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;callout warning&quot;</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">strong</span><span class="p">&gt;</span>Warning:<span class="p">&lt;/</span><span class="nt">strong</span><span class="p">&gt;</span> This action cannot be undone.
+<span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
+</code></pre></div>
+
+<h2 id="javascript-assets">JavaScript Assets</h2>
+<p>docsfy bundles three JavaScript files that provide interactive functionality in the generated site.</p>
+<h3 id="theme-toggle-theme-togglejs">Theme Toggle (<code>theme-toggle.js</code>)</h3>
+<p>Handles dark/light mode switching with local storage persistence:</p>
+<div class="highlight"><pre><span></span><code><span class="c1">// Theme preference is stored in localStorage</span>
+<span class="c1">// and applied on page load to prevent flash of wrong theme</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">toggle</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">document</span><span class="p">.</span><span class="nx">querySelector</span><span class="p">(</span><span class="s1">&#39;.theme-toggle&#39;</span><span class="p">);</span>
+<span class="nx">toggle</span><span class="p">.</span><span class="nx">addEventListener</span><span class="p">(</span><span class="s1">&#39;click&#39;</span><span class="p">,</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kd">const</span><span class="w"> </span><span class="nx">current</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">document</span><span class="p">.</span><span class="nx">documentElement</span><span class="p">.</span><span class="nx">getAttribute</span><span class="p">(</span><span class="s1">&#39;data-theme&#39;</span><span class="p">);</span>
+<span class="w">    </span><span class="kd">const</span><span class="w"> </span><span class="nx">next</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">current</span><span class="w"> </span><span class="o">===</span><span class="w"> </span><span class="s1">&#39;dark&#39;</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="s1">&#39;light&#39;</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;dark&#39;</span><span class="p">;</span>
+<span class="w">    </span><span class="nb">document</span><span class="p">.</span><span class="nx">documentElement</span><span class="p">.</span><span class="nx">setAttribute</span><span class="p">(</span><span class="s1">&#39;data-theme&#39;</span><span class="p">,</span><span class="w"> </span><span class="nx">next</span><span class="p">);</span>
+<span class="w">    </span><span class="nx">localStorage</span><span class="p">.</span><span class="nx">setItem</span><span class="p">(</span><span class="s1">&#39;theme&#39;</span><span class="p">,</span><span class="w"> </span><span class="nx">next</span><span class="p">);</span>
+<span class="p">});</span>
+</code></pre></div>
+
+<p>The user's theme preference persists across page loads and is applied before the page renders to prevent a flash of unstyled content.</p>
+<h3 id="client-side-search-searchjs">Client-Side Search (<code>search.js</code>)</h3>
+<p>Search is powered by a client-side index using <a href="https://lunrjs.com/">lunr.js</a> (or a similar library). During Stage 4 of the generation pipeline, a <code>search-index.json</code> file is built containing the searchable content from all pages:</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;pages&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;slug&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;getting-started&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Getting Started&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;content&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Stripped plain-text content for indexing...&quot;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">]</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<p>The search interface loads this index on the client side, enabling fast, offline-capable full-text search with no server round-trips.</p>
+<h3 id="syntax-highlighting-highlightjs">Syntax Highlighting (<code>highlight.js</code>)</h3>
+<p>Code blocks in the generated documentation are syntax-highlighted using <a href="https://highlightjs.org/">highlight.js</a>. The renderer applies language-specific highlighting based on the fenced code block language identifiers from the markdown source:</p>
+<div class="highlight"><pre><span></span><code><span class="sb">```python</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">hello</span><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Hello, world!&quot;</span><span class="p">)</span>
+<span class="sb">```</span>
+</code></pre></div>
+
+<blockquote>
+<p><strong>Tip:</strong> The AI content generator automatically includes language identifiers in fenced code blocks based on the source repository's languages, so syntax highlighting works out of the box.</p>
+</blockquote>
+<h3 id="adding-custom-javascript">Adding Custom JavaScript</h3>
+<p>To add custom scripts (analytics, widgets, interactive components), use the <code>scripts_extra</code> block in a custom template:</p>
+<div class="highlight"><pre><span></span><code>{% block scripts_extra %}
+<span class="p">&lt;</span><span class="nt">script</span><span class="p">&gt;</span>
+<span class="w">    </span><span class="c1">// Custom initialization</span>
+<span class="w">    </span><span class="nb">document</span><span class="p">.</span><span class="nx">addEventListener</span><span class="p">(</span><span class="s1">&#39;DOMContentLoaded&#39;</span><span class="p">,</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="c1">// Add copy-to-clipboard buttons on code blocks</span>
+<span class="w">        </span><span class="nb">document</span><span class="p">.</span><span class="nx">querySelectorAll</span><span class="p">(</span><span class="s1">&#39;pre code&#39;</span><span class="p">).</span><span class="nx">forEach</span><span class="p">((</span><span class="nx">block</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="kd">const</span><span class="w"> </span><span class="nx">button</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">document</span><span class="p">.</span><span class="nx">createElement</span><span class="p">(</span><span class="s1">&#39;button&#39;</span><span class="p">);</span>
+<span class="w">            </span><span class="nx">button</span><span class="p">.</span><span class="nx">className</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;copy-btn&#39;</span><span class="p">;</span>
+<span class="w">            </span><span class="nx">button</span><span class="p">.</span><span class="nx">textContent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;Copy&#39;</span><span class="p">;</span>
+<span class="w">            </span><span class="nx">button</span><span class="p">.</span><span class="nx">addEventListener</span><span class="p">(</span><span class="s1">&#39;click&#39;</span><span class="p">,</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="nx">navigator</span><span class="p">.</span><span class="nx">clipboard</span><span class="p">.</span><span class="nx">writeText</span><span class="p">(</span><span class="nx">block</span><span class="p">.</span><span class="nx">textContent</span><span class="p">);</span>
+<span class="w">                </span><span class="nx">button</span><span class="p">.</span><span class="nx">textContent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;Copied!&#39;</span><span class="p">;</span>
+<span class="w">                </span><span class="nx">setTimeout</span><span class="p">(()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">button</span><span class="p">.</span><span class="nx">textContent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;Copy&#39;</span><span class="p">,</span><span class="w"> </span><span class="mf">2000</span><span class="p">);</span>
+<span class="w">            </span><span class="p">});</span>
+<span class="w">            </span><span class="nx">block</span><span class="p">.</span><span class="nx">parentElement</span><span class="p">.</span><span class="nx">style</span><span class="p">.</span><span class="nx">position</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;relative&#39;</span><span class="p">;</span>
+<span class="w">            </span><span class="nx">block</span><span class="p">.</span><span class="nx">parentElement</span><span class="p">.</span><span class="nx">appendChild</span><span class="p">(</span><span class="nx">button</span><span class="p">);</span>
+<span class="w">        </span><span class="p">});</span>
+<span class="w">    </span><span class="p">});</span>
+<span class="p">&lt;/</span><span class="nt">script</span><span class="p">&gt;</span>
+{% endblock %}
+</code></pre></div>
+
+<h2 id="customizing-the-documentation-plan">Customizing the Documentation Plan</h2>
+<p>The <code>plan.json</code> file drives the entire site structure — navigation, page ordering, and content hierarchy. It is generated by the AI Planner in Stage 2 of the pipeline.</p>
+<h3 id="plan-structure">Plan Structure</h3>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;my-project&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;pages&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;slug&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;index&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Introduction&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Overview and getting started guide&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;section&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Getting Started&quot;</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;slug&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;installation&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Installation&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;How to install and configure the project&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;section&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Getting Started&quot;</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;slug&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;api-reference&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;API Reference&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Complete API documentation&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;section&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Reference&quot;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">],</span>
+<span class="w">  </span><span class="nt">&quot;sections&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Getting Started&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;order&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Reference&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;order&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">]</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<h3 id="modifying-the-plan">Modifying the Plan</h3>
+<p>You can edit <code>plan.json</code> directly to customize the documentation structure before or after generation:</p>
+<ul>
+<li><strong>Reorder pages</strong> by changing their position in the <code>pages</code> array or adjusting section <code>order</code> values</li>
+<li><strong>Add new pages</strong> by inserting entries and providing corresponding markdown files in <code>cache/pages/</code></li>
+<li><strong>Remove pages</strong> by deleting entries from the plan (the cached markdown and rendered HTML can be cleaned up separately)</li>
+<li><strong>Rename sections</strong> to change the sidebar navigation grouping</li>
+</ul>
+<p>After modifying <code>plan.json</code>, re-run the HTML Renderer (Stage 4) to regenerate the site with the updated structure.</p>
+<blockquote>
+<p><strong>Note:</strong> If you trigger a full regeneration via <code>POST /api/generate</code>, the AI Planner will overwrite your custom <code>plan.json</code>. To preserve manual edits, back up your plan before regenerating.</p>
+</blockquote>
+<h3 id="sidebar-navigation">Sidebar Navigation</h3>
+<p>The sidebar navigation is automatically generated from <code>plan.json</code>. Pages are grouped by their <code>section</code> field and ordered according to the section <code>order</code> and page sequence within the <code>pages</code> array.</p>
+<div class="highlight"><pre><span></span><code><span class="p">&lt;</span><span class="nt">nav</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;sidebar&quot;</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;sidebar-header&quot;</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">h2</span><span class="p">&gt;</span>{{ project.name }}<span class="p">&lt;/</span><span class="nt">h2</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">button</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;theme-toggle&quot;</span> <span class="na">aria-label</span><span class="o">=</span><span class="s">&quot;Toggle theme&quot;</span><span class="p">&gt;</span>🌓<span class="p">&lt;/</span><span class="nt">button</span><span class="p">&gt;</span>
+    <span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;sidebar-search&quot;</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">input</span> <span class="na">type</span><span class="o">=</span><span class="s">&quot;text&quot;</span> <span class="na">placeholder</span><span class="o">=</span><span class="s">&quot;Search docs...&quot;</span> <span class="na">id</span><span class="o">=</span><span class="s">&quot;search-input&quot;</span><span class="p">&gt;</span>
+    <span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
+    {% for section in navigation %}
+    <span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;sidebar-section&quot;</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">h3</span><span class="p">&gt;</span>{{ section.name }}<span class="p">&lt;/</span><span class="nt">h3</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">ul</span><span class="p">&gt;</span>
+            {% for page in section.pages %}
+            <span class="p">&lt;</span><span class="nt">li</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;{% if page.slug == current_page %}active{% endif %}&quot;</span><span class="p">&gt;</span>
+                <span class="p">&lt;</span><span class="nt">a</span> <span class="na">href</span><span class="o">=</span><span class="s">&quot;{{ page.slug }}.html&quot;</span><span class="p">&gt;</span>{{ page.title }}<span class="p">&lt;/</span><span class="nt">a</span><span class="p">&gt;</span>
+            <span class="p">&lt;/</span><span class="nt">li</span><span class="p">&gt;</span>
+            {% endfor %}
+        <span class="p">&lt;/</span><span class="nt">ul</span><span class="p">&gt;</span>
+    <span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
+    {% endfor %}
+<span class="p">&lt;/</span><span class="nt">nav</span><span class="p">&gt;</span>
+</code></pre></div>
+
+<h2 id="responsive-design">Responsive Design</h2>
+<p>The default layout is responsive and adapts to different screen sizes. The sidebar collapses into a toggleable menu on mobile viewports:</p>
+<div class="highlight"><pre><span></span><code><span class="c">/* Mobile responsive breakpoint */</span>
+<span class="p">@</span><span class="k">media</span><span class="w"> </span><span class="o">(</span><span class="nt">max-width</span><span class="o">:</span><span class="w"> </span><span class="nt">768px</span><span class="o">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="p">.</span><span class="nc">sidebar</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">position</span><span class="p">:</span><span class="w"> </span><span class="kc">fixed</span><span class="p">;</span>
+<span class="w">        </span><span class="k">transform</span><span class="p">:</span><span class="w"> </span><span class="nb">translateX</span><span class="p">(</span><span class="mi">-100</span><span class="kt">%</span><span class="p">);</span>
+<span class="w">        </span><span class="k">transition</span><span class="p">:</span><span class="w"> </span><span class="k">transform</span><span class="w"> </span><span class="mf">0.3</span><span class="kt">s</span><span class="w"> </span><span class="kc">ease</span><span class="p">;</span>
+<span class="w">        </span><span class="k">z-index</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="p">.</span><span class="nc">sidebar</span><span class="p">.</span><span class="nc">open</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">transform</span><span class="p">:</span><span class="w"> </span><span class="nb">translateX</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="nt">main</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">margin-left</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">        </span><span class="k">width</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span><span class="kt">%</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<blockquote>
+<p><strong>Tip:</strong> When adding custom styles, always test at mobile breakpoints. The sidebar, search overlay, and content area all reflow at <code>768px</code>.</p>
+</blockquote>
+<h2 id="post-generation-customization">Post-Generation Customization</h2>
+<p>Since the final output in <code>site/</code> is plain static HTML, CSS, and JavaScript, you can apply any post-processing after generation:</p>
+<ol>
+<li><strong>Inject analytics</strong> — Add tracking scripts to each HTML file</li>
+<li><strong>Add a custom favicon</strong> — Place <code>favicon.ico</code> in <code>site/assets/</code></li>
+<li><strong>Include additional assets</strong> — Add fonts, images, or third-party libraries to <code>site/assets/</code></li>
+<li><strong>Modify individual pages</strong> — Edit the rendered HTML files directly</li>
+<li><strong>Deploy anywhere</strong> — The <code>site/</code> directory is fully self-contained with no server dependencies</li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="c1"># Download and customize a generated site</span>
+curl<span class="w"> </span>-o<span class="w"> </span>docs.tar.gz<span class="w"> </span>http://localhost:8000/api/projects/my-project/download
+tar<span class="w"> </span>-xzf<span class="w"> </span>docs.tar.gz
+
+<span class="c1"># Add a custom favicon</span>
+cp<span class="w"> </span>my-favicon.ico<span class="w"> </span>site/assets/favicon.ico
+
+<span class="c1"># Inject a custom stylesheet into all pages</span>
+<span class="k">for</span><span class="w"> </span>f<span class="w"> </span><span class="k">in</span><span class="w"> </span>site/*.html<span class="p">;</span><span class="w"> </span><span class="k">do</span>
+<span class="w">    </span>sed<span class="w"> </span>-i<span class="w"> </span><span class="s1">&#39;s|&lt;/head&gt;|&lt;link rel=&quot;stylesheet&quot; href=&quot;assets/custom.css&quot;&gt;&lt;/head&gt;|&#39;</span><span class="w"> </span><span class="s2">&quot;</span><span class="nv">$f</span><span class="s2">&quot;</span>
+<span class="k">done</span>
+
+<span class="c1"># Deploy to any static hosting</span>
+rsync<span class="w"> </span>-av<span class="w"> </span>site/<span class="w"> </span>user@server:/var/www/docs/
+</code></pre></div>
+
+<blockquote>
+<p><strong>Warning:</strong> Direct edits to files in <code>site/</code> are overwritten on regeneration. For durable customizations, modify the Jinja2 templates or asset source files so changes persist across incremental updates.</p>
+</blockquote>
+<h2 id="incremental-updates-and-customization">Incremental Updates and Customization</h2>
+<p>docsfy supports incremental updates that only regenerate pages affected by repository changes. Understanding this process is important for customization:</p>
+<ol>
+<li>On re-generate, docsfy compares the current commit SHA against the stored SHA</li>
+<li>If the repository has changed, the AI Planner re-evaluates the documentation structure</li>
+<li>Only pages affected by the changes are regenerated</li>
+<li>The HTML Renderer re-runs Stage 4 for the full site, applying templates and assets</li>
+</ol>
+<p>Because Stage 4 always re-renders the full site from templates, any customizations made to the Jinja2 templates or source assets in <code>docsfy/templates/</code> and <code>docsfy/static/</code> are automatically applied during incremental updates. Customizations made directly to <code>site/</code> output files, however, will be lost.</p>
+<blockquote>
+<p><strong>Note:</strong> Cached markdown in <code>cache/pages/*.md</code> is preserved across incremental updates unless the AI determines a page needs regeneration. You can manually edit cached markdown to make persistent content changes that survive re-renders.</p>
+</blockquote>
+                </div>
+            </article>
+            <nav class="page-nav">
+                
+                <a href="plan-json-schema.html" class="page-nav-link page-nav-prev">
+                    <span class="page-nav-label">Previous</span>
+                    <span class="page-nav-title">Plan JSON Schema</span>
+                </a>
+                
+                
+                <a href="development-setup.html" class="page-nav-link page-nav-next">
+                    <span class="page-nav-label">Next</span>
+                    <span class="page-nav-title">Development Setup</span>
+                </a>
+                
+            </nav>
+            
+            <aside class="toc-sidebar">
+                <div class="toc-container">
+                    <h3>On this page</h3>
+                    <div class="toc">
+<ul>
+<li><a href="#site-structure-overview">Site Structure Overview</a></li>
+<li><a href="#jinja2-templates">Jinja2 Templates</a><ul>
+<li><a href="#template-location">Template Location</a></li>
+<li><a href="#base-template-blocks">Base Template Blocks</a></li>
+<li><a href="#template-context-variables">Template Context Variables</a></li>
+<li><a href="#overriding-templates">Overriding Templates</a></li>
+</ul>
+</li>
+<li><a href="#css-assets">CSS Assets</a><ul>
+<li><a href="#default-stylesheet">Default Stylesheet</a></li>
+<li><a href="#theme-system-darklight-mode">Theme System (Dark/Light Mode)</a></li>
+<li><a href="#custom-css-overrides">Custom CSS Overrides</a></li>
+<li><a href="#callout-boxes">Callout Boxes</a></li>
+</ul>
+</li>
+<li><a href="#javascript-assets">JavaScript Assets</a><ul>
+<li><a href="#theme-toggle-theme-togglejs">Theme Toggle (theme-toggle.js)</a></li>
+<li><a href="#client-side-search-searchjs">Client-Side Search (search.js)</a></li>
+<li><a href="#syntax-highlighting-highlightjs">Syntax Highlighting (highlight.js)</a></li>
+<li><a href="#adding-custom-javascript">Adding Custom JavaScript</a></li>
+</ul>
+</li>
+<li><a href="#customizing-the-documentation-plan">Customizing the Documentation Plan</a><ul>
+<li><a href="#plan-structure">Plan Structure</a></li>
+<li><a href="#modifying-the-plan">Modifying the Plan</a></li>
+<li><a href="#sidebar-navigation">Sidebar Navigation</a></li>
+</ul>
+</li>
+<li><a href="#responsive-design">Responsive Design</a></li>
+<li><a href="#post-generation-customization">Post-Generation Customization</a></li>
+<li><a href="#incremental-updates-and-customization">Incremental Updates and Customization</a></li>
+</ul>
+</div>
+
+                </div>
+            </aside>
+            
+        </main>
+
+        <footer class="footer">
+            <p>Built with <a href="https://github.com/docsfy/docsfy">docsfy</a></p>
+        </footer>
+    </div>
+
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <script src="assets/theme.js"></script>
+    <script src="assets/search.js"></script>
+    <script src="assets/copy.js"></script>
+    <script src="assets/callouts.js"></script>
+    <script src="assets/scrollspy.js"></script>
+    <script src="assets/codelabels.js"></script>
+    <script src="assets/github.js"></script>
+    <script>
+    (function() {
+        var toggle = document.getElementById('sidebar-toggle');
+        var sidebar = document.getElementById('sidebar');
+        var overlay = document.getElementById('sidebar-overlay');
+        if (toggle && sidebar) {
+            toggle.addEventListener('click', function() {
+                sidebar.classList.toggle('open');
+                if (overlay) overlay.classList.toggle('open');
+                var expanded = sidebar.classList.contains('open');
+                toggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+            });
+        }
+        if (overlay) {
+            overlay.addEventListener('click', function() {
+                sidebar.classList.remove('open');
+                overlay.classList.remove('open');
+                if (toggle) toggle.setAttribute('aria-expanded', 'false');
+            });
+        }
+    })();
+    </script>
+</body>
+</html>

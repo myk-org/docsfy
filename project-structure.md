@@ -1,113 +1,74 @@
 # Project Structure
 
-This page describes the directory layout, module organization, key source files, and how the major components of docsfy fit together.
+This page provides a comprehensive overview of the docsfy codebase layout, covering source modules, templates, static assets, tests, and configuration files. Understanding this structure will help you navigate the project and contribute effectively.
 
-## Directory Layout
-
-docsfy follows a standard Python project layout using `hatchling` as the build system and `uv` as the package manager.
+## Top-Level Directory
 
 ```
 docsfy/
-├── docs/
-│   └── plans/
-│       └── 2026-03-04-docsfy-design.md   # Architecture design document
-├── docsfy/                                # Main application package
-│   ├── __init__.py
-│   ├── main.py                            # FastAPI app entry point
-│   ├── ai/                                # AI provider integrations
-│   │   ├── __init__.py
-│   │   ├── provider.py                    # ProviderConfig and registry
-│   │   ├── runner.py                      # Subprocess execution logic
-│   │   └── parser.py                      # JSON response extraction
-│   ├── pipeline/                          # Generation pipeline stages
-│   │   ├── __init__.py
-│   │   ├── clone.py                       # Stage 1: Repository cloning
-│   │   ├── planner.py                     # Stage 2: AI-driven doc planning
-│   │   ├── generator.py                   # Stage 3: AI content generation
-│   │   └── renderer.py                    # Stage 4: HTML rendering
-│   ├── routers/                           # FastAPI route definitions
-│   │   ├── __init__.py
-│   │   ├── generate.py                    # POST /api/generate
-│   │   ├── projects.py                    # Project CRUD + download
-│   │   ├── docs.py                        # Static doc serving
-│   │   └── health.py                      # GET /health
-│   ├── db.py                              # SQLite database layer
-│   ├── models.py                          # Pydantic models / schemas
-│   └── templates/                         # Jinja2 HTML templates
-│       ├── base.html
-│       ├── page.html
-│       └── assets/
-│           ├── style.css
-│           ├── search.js
-│           ├── theme-toggle.js
-│           └── highlight.js
-├── tests/                                 # Test suite
-├── pyproject.toml                         # Build config and dependencies
-├── Dockerfile                             # Multi-stage container build
-├── docker-compose.yaml                    # Local development stack
-├── .env.example                           # Environment variable template
-└── .pre-commit-config.yaml                # Linting and formatting hooks
+├── src/
+│   └── docsfy/              # Main application package
+├── tests/                    # Test suite
+├── templates/                # Jinja2 HTML templates
+├── docs/                     # Project documentation
+│   └── plans/                # Design documents and RFCs
+├── data/                     # Runtime data (gitignored)
+├── Dockerfile                # Multi-stage container build
+├── docker-compose.yaml       # Local development services
+├── pyproject.toml            # Build config (hatchling) and dependencies
+├── tox.ini                   # Test orchestration
+├── .pre-commit-config.yaml   # Linting and formatting hooks
+├── .env.example              # Environment variable template
+└── uv.lock                   # Dependency lockfile (uv)
 ```
 
-## Runtime Data Directory
+## Source Modules
 
-At runtime, docsfy stores all generated content and metadata under `/data`:
+All application source code lives under `src/docsfy/`. The project uses the `src` layout convention with [hatchling](https://hatch.pypa.io/) as the build backend.
 
-```
-/data/
-├── docsfy.db                              # SQLite database (project metadata)
-└── projects/
-    └── {project-name}/
-        ├── plan.json                      # Documentation structure from AI
-        ├── cache/
-        │   └── pages/*.md                 # AI-generated markdown (cached)
-        └── site/                          # Final rendered HTML
-            ├── index.html
-            ├── *.html
-            ├── assets/
-            │   ├── style.css
-            │   ├── search.js
-            │   ├── theme-toggle.js
-            │   └── highlight.js
-            └── search-index.json
-```
+### `docsfy.main` — Application Entrypoint
 
-> **Note:** The `/data` directory is mounted as a Docker volume so generated documentation persists across container restarts.
-
-## Module Organization
-
-The application is organized into four top-level module groups, each with a distinct responsibility.
-
-### `docsfy/main.py` — Application Entry Point
-
-The FastAPI application is defined here and serves as the central wiring point. It registers routers, configures middleware, and sets up the database connection on startup. The application is launched via uvicorn:
+The FastAPI application is defined and mounted here. This is the entrypoint referenced by the container's uvicorn command:
 
 ```
 uv run --no-sync uvicorn docsfy.main:app --host 0.0.0.0 --port 8000
 ```
 
-### `docsfy/routers/` — API Endpoints
+This module registers all API routes and configures static file serving for generated documentation sites.
 
-Route handlers are split by domain into separate router modules, then included by the main app.
+### `docsfy.api` — API Endpoints
 
-| Module | Prefix | Endpoints |
-|--------|--------|-----------|
-| `generate.py` | `/api` | `POST /api/generate` — Start doc generation for a repo URL |
-| `projects.py` | `/api/projects` | `GET /api/status`, `GET /api/projects/{name}`, `DELETE /api/projects/{name}`, `GET /api/projects/{name}/download` |
-| `docs.py` | `/docs` | `GET /docs/{project}/{path}` — Serve rendered static HTML |
-| `health.py` | `/` | `GET /health` — Health check |
+Defines the REST API that drives documentation generation and project management:
 
-### `docsfy/ai/` — AI Provider Integrations
+| Method   | Path                             | Description                                  |
+|----------|----------------------------------|----------------------------------------------|
+| `POST`   | `/api/generate`                  | Start doc generation for a repo URL          |
+| `GET`    | `/api/status`                    | List all projects and their generation status|
+| `GET`    | `/api/projects/{name}`           | Get project details (commit SHA, pages, etc.)|
+| `DELETE` | `/api/projects/{name}`           | Remove a project and its generated docs      |
+| `GET`    | `/api/projects/{name}/download`  | Download site as `.tar.gz` for self-hosting  |
+| `GET`    | `/docs/{project}/{path}`         | Serve generated static HTML docs             |
+| `GET`    | `/health`                        | Health check                                 |
 
-This module abstracts the differences between AI CLI tools behind a unified interface. See [AI Provider Integration](#ai-provider-integration) below for details.
+### `docsfy.pipeline` — Generation Pipeline
 
-### `docsfy/pipeline/` — Generation Pipeline
+Orchestrates the four-stage documentation generation process:
 
-The four-stage pipeline that transforms a repository URL into a static documentation site. See [Generation Pipeline](#generation-pipeline) below for details.
+1. **Clone** — Shallow-clone (`--depth 1`) the target repository to a temporary directory
+2. **Plan** — Invoke the AI CLI to analyze the repo and produce a `plan.json`
+3. **Generate** — For each page in the plan, invoke the AI CLI to produce markdown content (concurrently, with semaphore-limited parallelism)
+4. **Render** — Convert markdown + plan into a polished static HTML site
 
-## AI Provider Integration
+Pages are generated concurrently using `asyncio.to_thread` to avoid blocking the event loop:
 
-docsfy supports three AI CLI providers through a pluggable provider pattern. Each provider is described by a `ProviderConfig` dataclass:
+```python
+# Async execution via asyncio.to_thread
+result = await asyncio.to_thread(subprocess.run, cmd, input=prompt, capture_output=True, text=True)
+```
+
+### `docsfy.providers` — AI CLI Integration
+
+Implements the provider abstraction for invoking different AI CLI tools. Each provider is defined by a frozen dataclass:
 
 ```python
 @dataclass(frozen=True)
@@ -117,164 +78,114 @@ class ProviderConfig:
     uses_own_cwd: bool = False
 ```
 
-### Supported Providers
+Three providers are supported:
 
-| Provider | Binary | Command Pattern | CWD Handling |
-|----------|--------|-----------------|-------------|
-| Claude | `claude` | `claude --model <model> --dangerously-skip-permissions -p` | subprocess `cwd` = repo path |
-| Gemini | `gemini` | `gemini --model <model> --yolo` | subprocess `cwd` = repo path |
-| Cursor | `agent` | `agent --force --model <model> --print --workspace <path>` | `--workspace` flag (`uses_own_cwd=True`) |
+| Provider | Binary   | CWD Handling                                       |
+|----------|----------|----------------------------------------------------|
+| Claude   | `claude` | subprocess `cwd` set to repo path                 |
+| Gemini   | `gemini` | subprocess `cwd` set to repo path                 |
+| Cursor   | `agent`  | `--workspace` flag (`uses_own_cwd=True`)           |
 
-The `uses_own_cwd` flag distinguishes providers that accept a workspace path as a CLI argument (Cursor) from those that rely on the subprocess working directory (Claude, Gemini).
+The provider invocation passes prompts via stdin and returns a `tuple[bool, str]` indicating success and the raw output.
 
-### Runner (`docsfy/ai/runner.py`)
+### `docsfy.parser` — JSON Response Parsing
 
-The runner executes AI CLI commands as subprocesses:
+Extracts structured JSON from AI CLI output using a multi-strategy approach:
 
-- Prompts are passed via `stdin` using `subprocess.run(cmd, input=prompt, capture_output=True, text=True)`
-- Async execution is achieved with `asyncio.to_thread(subprocess.run, ...)`
-- Each invocation returns a `tuple[bool, str]` — a success flag and the raw output
-- Before generation begins, a lightweight availability check sends a "Hi" prompt to verify the CLI is functional
+1. Direct JSON parse of the full output
+2. Brace-matching to locate the outermost JSON object
+3. Markdown code block extraction (` ```json ... ``` `)
+4. Fallback with regex recovery
 
-### JSON Parser (`docsfy/ai/parser.py`)
+> **Note:** This multi-strategy approach is necessary because AI CLI tools may wrap their JSON output in conversational text, markdown formatting, or other decoration.
 
-AI responses are parsed using a multi-strategy extraction approach:
+### `docsfy.renderer` — HTML Rendering
 
-1. **Direct parse** — Attempt `json.loads()` on the full output
-2. **Brace matching** — Locate the outermost `{...}` JSON object
-3. **Code block extraction** — Find JSON inside markdown `` ```json `` fences
-4. **Regex fallback** — Pattern-based recovery for malformed output
+Converts markdown pages and the `plan.json` navigation structure into a static HTML site using Jinja2 templates. The renderer produces:
 
-> **Tip:** This layered parsing strategy ensures robust JSON extraction regardless of how the AI CLI formats its response (with preamble text, markdown wrappers, or trailing content).
+- Sidebar navigation derived from the plan hierarchy
+- Dark/light theme toggle
+- Client-side full-text search via a generated `search-index.json`
+- Syntax-highlighted code blocks (highlight.js)
+- Callout boxes for notes, warnings, and info blocks
+- Responsive layout with card components
 
-### Default Configuration
+### `docsfy.db` — Database Layer
 
-| Setting | Default Value | Environment Variable |
-|---------|--------------|---------------------|
-| Provider | `claude` | `AI_PROVIDER` |
-| Model | `claude-opus-4-6[1m]` | `AI_MODEL` |
-| Timeout | 60 minutes | `AI_CLI_TIMEOUT` |
+Manages the SQLite database at `/data/docsfy.db` for project metadata. Tracks:
 
-## Generation Pipeline
+- Project name and repository URL
+- Generation status (`generating`, `ready`, `error`)
+- Last generated timestamp and commit SHA
+- Generation history and logs
 
-The pipeline runs four sequential stages for each documentation generation request.
+> **Tip:** The database is used for metadata only. All generated content — markdown cache and rendered HTML — lives on the filesystem under `/data/projects/`.
+
+## Templates
+
+Jinja2 HTML templates power the rendered documentation sites. These live in the `templates/` directory and define the overall page structure, navigation sidebar, and content layout.
+
+Key template features:
+- **Base layout** — common HTML skeleton with head, navigation, and footer
+- **Page template** — renders a single documentation page with sidebar and content area
+- **Search integration** — includes the search UI components
+- **Theme support** — dark/light mode toggle wired into CSS custom properties
+
+## Static Assets
+
+Bundled CSS and JavaScript assets are copied into each generated site under `site/assets/`:
 
 ```
-POST /api/generate (repo URL)
-        │
-        ▼
-┌─────────────────┐
-│  Stage 1: Clone │  Shallow clone (--depth 1) to temp directory
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────┐
-│  Stage 2: Plan  │  AI analyzes repo → plan.json
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────┐
-│  Stage 3: Gen   │  AI generates markdown per page (concurrent)
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────┐
-│  Stage 4: HTML  │  Jinja2 + markdown → static site
-└────────┬────────┘
-         │
-         ▼
-   Site ready at /docs/{project}/
+site/assets/
+├── style.css           # Documentation theme styles
+├── search.js           # Client-side full-text search
+├── theme-toggle.js     # Dark/light mode switcher
+└── highlight.js        # Code syntax highlighting
 ```
 
-### Stage 1: Clone Repository (`clone.py`)
+These assets are self-contained — generated sites have no external CDN dependencies and can be served from any static file host.
 
-- Performs a shallow clone (`git clone --depth 1`) into a temporary directory
-- Supports both SSH and HTTPS URLs for public and private repositories
-- Uses system git credentials for private repository access
+## Tests
 
-### Stage 2: AI Planner (`planner.py`)
+The test suite lives in the `tests/` directory and is executed through **tox** using **uv** as the package manager:
 
-- Runs the AI CLI with its working directory set to the cloned repository
-- The AI explores the full repository structure to understand the codebase
-- Produces a `plan.json` file that defines pages, sections, and navigation hierarchy
-- This plan drives all subsequent content generation
+```ini
+# tox.ini (excerpt)
+[testenv]
+# runs unit tests via uv
+```
 
-### Stage 3: AI Content Generator (`generator.py`)
+The development toolchain enforces code quality through pre-commit hooks:
 
-- Iterates over each page defined in `plan.json`
-- For each page, invokes the AI CLI with access to the cloned repository
-- Pages can be generated **concurrently** using `asyncio` with semaphore-limited concurrency
-- Generated markdown is cached at `/data/projects/{name}/cache/pages/*.md`
+| Tool            | Purpose                                    |
+|-----------------|--------------------------------------------|
+| ruff            | Linting and auto-formatting                |
+| mypy (strict)   | Static type checking                       |
+| flake8          | Additional lint rules                      |
+| gitleaks        | Secret detection in commits                |
+| detect-secrets  | Secret detection in staged files           |
 
-> **Note:** The cache enables incremental updates — only pages affected by repository changes need to be regenerated.
+> **Warning:** All pre-commit hooks must pass before code can be committed. Run `pre-commit run --all-files` to check your changes locally before pushing.
 
-### Stage 4: HTML Renderer (`renderer.py`)
+## Configuration Files
 
-Converts the markdown pages and `plan.json` into a polished static HTML site using Jinja2 templates. The rendered site includes:
+### `pyproject.toml`
 
-- **Sidebar navigation** — Generated from the `plan.json` hierarchy
-- **Dark/light theme** — Client-side toggle with `theme-toggle.js`
-- **Client-side search** — Full-text search via `search-index.json` and `search.js`
-- **Code syntax highlighting** — Powered by highlight.js
-- **Responsive design** — Mobile-friendly layout
-- **Callout boxes** — Styled note, warning, and info blocks
-- **Card layouts** — Visual grouping for related content
+The central project configuration file. Uses **hatchling** as the build system and defines all project metadata and dependencies:
 
-Output is written to `/data/projects/{name}/site/`.
+- Build backend: `hatchling`
+- Python requirement: `3.12+`
+- Key dependencies: FastAPI, uvicorn, Jinja2, markdown, aiosqlite
 
-## Database Layer (`docsfy/db.py`)
+### `.env.example`
 
-docsfy uses SQLite (via aiosqlite) stored at `/data/docsfy.db` for project metadata:
-
-| Field | Description |
-|-------|-------------|
-| Project name | Unique identifier derived from the repo |
-| Repo URL | Source repository URL |
-| Status | `generating`, `ready`, or `error` |
-| Last generated | Timestamp of last successful generation |
-| Last commit SHA | Used for incremental update detection |
-| Generation logs | History and diagnostic output |
-
-### Incremental Updates
-
-The database tracks the last commit SHA for each project. When a regeneration is requested:
-
-1. Fetch the repository and compare the current SHA against the stored SHA
-2. If changed, re-run the AI Planner to check for structural changes
-3. Regenerate only the pages whose content may be affected
-4. If the plan structure is unchanged and only specific files changed, regenerate only the relevant pages
-
-## Rendering Engine (`docsfy/templates/`)
-
-The rendering engine uses Jinja2 templates with a bundled asset pipeline.
-
-### Template Hierarchy
-
-- **`base.html`** — Root layout with HTML head, theme initialization, sidebar skeleton, and asset loading
-- **`page.html`** — Extends `base.html`; renders a single documentation page with its converted markdown content
-
-### Bundled Assets
-
-| Asset | Purpose |
-|-------|---------|
-| `style.css` | Complete site styling including responsive layout, dark/light themes, sidebar, callout boxes, and card components |
-| `search.js` | Client-side full-text search against `search-index.json` |
-| `theme-toggle.js` | Dark/light mode toggle with `localStorage` persistence |
-| `highlight.js` | Syntax highlighting for code blocks |
-
-> **Tip:** Because all assets are bundled, the generated documentation site is fully self-contained and can be hosted on any static file server with no external dependencies.
-
-## Configuration and Environment
-
-### Environment Variables
-
-All configuration is managed through environment variables. A template is provided in `.env.example`:
+Template for required environment variables. Copy to `.env` and fill in your values:
 
 ```bash
 # AI Configuration
-AI_PROVIDER=claude           # claude | gemini | cursor
-AI_MODEL=claude-opus-4-6[1m] # Model identifier for the chosen provider
-AI_CLI_TIMEOUT=60            # Timeout in minutes per AI invocation
+AI_PROVIDER=claude
+AI_MODEL=claude-opus-4-6[1m]
+AI_CLI_TIMEOUT=60
 
 # Claude - Option 1: API Key
 # ANTHROPIC_API_KEY=
@@ -294,11 +205,11 @@ AI_CLI_TIMEOUT=60            # Timeout in minutes per AI invocation
 LOG_LEVEL=INFO
 ```
 
-> **Warning:** Never commit `.env` files with real API keys. Use `.env.example` as a reference and create your own `.env` locally.
+> **Note:** The default AI provider is `claude` with model `claude-opus-4-6[1m]`. The CLI timeout defaults to 60 minutes per invocation, reflecting the time needed for large repository analysis.
 
-### Docker Compose
+### `docker-compose.yaml`
 
-The `docker-compose.yaml` mounts credential directories and the data volume:
+Defines the local development setup with volume mounts for persistent data and cloud credentials:
 
 ```yaml
 services:
@@ -318,82 +229,57 @@ services:
       retries: 3
 ```
 
-### Container Build
+### `Dockerfile`
 
-The Dockerfile uses a multi-stage build based on `python:3.12-slim`:
+Multi-stage build based on `python:3.12-slim`. Key characteristics:
 
-| Aspect | Detail |
-|--------|--------|
-| Base image | `python:3.12-slim` (multi-stage) |
-| Package manager | `uv` (no pip) |
-| Non-root user | `appuser` (OpenShift compatible, GID 0) |
-| System dependencies | bash, git, curl, nodejs, npm, ca-certificates |
-| AI CLIs | Installed at build time (always latest) |
+| Aspect           | Detail                                                    |
+|------------------|-----------------------------------------------------------|
+| Base image       | `python:3.12-slim` (multi-stage)                          |
+| Package manager  | `uv` (no pip)                                             |
+| Non-root user    | `appuser` (OpenShift compatible, GID 0)                   |
+| System deps      | bash, git, curl, nodejs, npm, ca-certificates             |
+| Health check     | `GET /health`                                             |
 
-## Development Tooling
+AI CLI tools are installed at build time (unpinned, always latest):
 
-| Tool | Purpose |
-|------|---------|
-| **uv** | Package management and virtual environment |
-| **hatchling** | Python build system |
-| **Pre-commit** | ruff (lint + format), mypy (strict), flake8, gitleaks, detect-secrets |
-| **Tox** | Unused-code checks, unit test execution |
-| **Python** | 3.12+ required |
+- **Claude:** `curl -fsSL https://claude.ai/install.sh | bash`
+- **Cursor:** `curl -fsSL https://cursor.com/install | bash`
+- **Gemini:** `npm install -g @google/gemini-cli`
 
-## Technology Stack Summary
+## Runtime Data Directory
 
-| Component | Technology |
-|-----------|-----------|
-| Web framework | FastAPI + uvicorn |
-| Templating | Jinja2 |
-| Markdown processing | Python `markdown` library |
-| Database | SQLite (via aiosqlite) |
-| HTML theme | Custom CSS/JS (bundled) |
-| Client-side search | lunr.js or similar |
-| Code highlighting | highlight.js |
-| Build system | hatchling |
-| Package manager | uv |
-| Container | Docker (multi-stage, `python:3.12-slim`) |
-
-## How Components Fit Together
-
-The following diagram shows the runtime request flow connecting all major components:
+The `/data/` directory is created at runtime and is **not** checked into version control. It holds all persistent state:
 
 ```
-User Request                      docsfy Application
-─────────────                     ──────────────────
-
-POST /api/generate ──────────►  routers/generate.py
-  { "repo_url": "..." }              │
-                                      ├──► pipeline/clone.py ──► git clone
-                                      │
-                                      ├──► ai/provider.py ──► Select provider
-                                      │         │
-                                      ├──► pipeline/planner.py
-                                      │         │
-                                      │         └──► ai/runner.py ──► AI CLI subprocess
-                                      │                   │
-                                      │              ai/parser.py ──► Extract plan.json
-                                      │
-                                      ├──► pipeline/generator.py
-                                      │         │
-                                      │         └──► ai/runner.py ──► AI CLI (per page, concurrent)
-                                      │                   │
-                                      │              ai/parser.py ──► Extract markdown
-                                      │
-                                      └──► pipeline/renderer.py
-                                                │
-                                                ├──► templates/ (Jinja2)
-                                                ├──► markdown ──► HTML
-                                                └──► Write to /data/projects/{name}/site/
-
-GET /docs/{project}/ ───────►  routers/docs.py
-                                      │
-                                      └──► Serve static files from /data/projects/{name}/site/
-
-GET /api/status ────────────►  routers/projects.py
-                                      │
-                                      └──► db.py ──► Query SQLite /data/docsfy.db
+/data/
+├── docsfy.db                          # SQLite metadata database
+└── projects/
+    └── {project-name}/
+        ├── plan.json                  # Documentation structure from AI
+        ├── cache/
+        │   └── pages/
+        │       └── *.md               # AI-generated markdown (cached)
+        └── site/                      # Final rendered HTML
+            ├── index.html
+            ├── *.html
+            ├── assets/
+            │   ├── style.css
+            │   ├── search.js
+            │   ├── theme-toggle.js
+            │   └── highlight.js
+            └── search-index.json
 ```
 
-The `ai/` module provides a clean abstraction layer: the pipeline stages interact only with the runner and parser interfaces, never with provider-specific CLI details. Swapping providers requires only changing the `AI_PROVIDER` environment variable — no code changes are needed.
+> **Tip:** The `cache/pages/*.md` files enable incremental updates. When a repository changes, docsfy compares the current commit SHA against the stored SHA and only regenerates pages whose content may be affected, reusing cached markdown for unchanged sections.
+
+## Design Documents
+
+Architectural decisions and design specifications are stored in `docs/plans/`:
+
+```
+docs/plans/
+└── 2026-03-04-docsfy-design.md    # Original design document
+```
+
+These documents capture the rationale behind major architectural choices and serve as the canonical reference for how the system is intended to work.

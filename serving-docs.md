@@ -1,70 +1,43 @@
 # Serving Documentation
 
-Once docsfy has generated documentation for a repository, the built-in static file server makes it immediately available for browsing. This page covers how to access your generated documentation, navigate the site structure, switch between dark and light themes, and use client-side search to find content.
+Once docsfy generates documentation for a project, you can access it in two ways: browse it directly through the built-in static file server, or download it as a tar.gz archive and host it yourself.
 
-## Accessing Generated Documentation
+## Built-in Static File Server
 
-Every project's documentation is served at a predictable URL path based on the project name:
+Every generated project is automatically served at a predictable URL under the `/docs/` prefix.
+
+### Accessing Your Documentation
+
+After generation completes, your documentation is available at:
 
 ```
-GET /docs/{project}/{path}
+http://localhost:8000/docs/{project-name}/
 ```
 
-For example, if you generated documentation for a project called `my-api`, the documentation is available at:
+For example, if you generated docs for a project named `my-api`:
 
 ```
 http://localhost:8000/docs/my-api/
 ```
 
-The root path (`/docs/my-api/`) serves `index.html`, which is the landing page for the project's documentation. Individual pages are accessible as HTML files under the same base path:
+This serves the fully rendered static HTML site — including navigation, search, syntax highlighting, and dark/light theme toggling — directly from the docsfy server with no additional setup.
 
-```
-http://localhost:8000/docs/my-api/              # Landing page (index.html)
-http://localhost:8000/docs/my-api/getting-started.html
-http://localhost:8000/docs/my-api/configuration.html
-http://localhost:8000/docs/my-api/api-reference.html
-```
+### URL Structure
 
-> **Note:** Documentation is only available after the generation pipeline has completed all four stages (clone, plan, generate content, render HTML). Check the project status via `GET /api/projects/{name}` — the status must be `ready`.
+The server maps URLs to files under the project's `site/` directory on the filesystem:
 
-### Verifying a Project Is Ready
+| URL | Filesystem Path |
+|-----|-----------------|
+| `/docs/my-api/` | `/data/projects/my-api/site/index.html` |
+| `/docs/my-api/getting-started.html` | `/data/projects/my-api/site/getting-started.html` |
+| `/docs/my-api/assets/style.css` | `/data/projects/my-api/site/assets/style.css` |
+| `/docs/my-api/search-index.json` | `/data/projects/my-api/site/search-index.json` |
 
-Before attempting to browse documentation, confirm the project has finished generating:
-
-```bash
-curl http://localhost:8000/api/projects/my-api
-```
-
-A successful response includes the project status:
-
-```json
-{
-  "name": "my-api",
-  "status": "ready",
-  "repo_url": "https://github.com/org/my-api",
-  "last_generated": "2026-03-04T14:30:00Z",
-  "last_commit_sha": "a1b2c3d..."
-}
-```
-
-You can also list all projects and their statuses:
-
-```bash
-curl http://localhost:8000/api/status
-```
-
-> **Warning:** If the project status is `generating`, the documentation site may be incomplete or unavailable. If the status is `error`, generation failed and no documentation will be served.
-
-## How the Static File Server Works
-
-The FastAPI server maps the `/docs/{project}/{path}` route to files stored on the filesystem under `/data/projects/{project-name}/site/`. The rendered site directory has the following structure:
+All static assets — stylesheets, JavaScript files for search and theme toggling, and syntax highlighting — are bundled within each project's `site/assets/` directory and served alongside the HTML pages.
 
 ```
 /data/projects/{project-name}/
-  plan.json              # Documentation structure from AI planner
-  cache/
-    pages/*.md           # AI-generated markdown (cached for incremental updates)
-  site/                  # Final rendered HTML (served by the file server)
+  site/                     # served at /docs/{project-name}/
     index.html
     *.html
     assets/
@@ -75,11 +48,145 @@ The FastAPI server maps the `/docs/{project}/{path}` route to files stored on th
     search-index.json
 ```
 
-When a request arrives at `/docs/my-api/getting-started.html`, the server reads and returns the file at `/data/projects/my-api/site/getting-started.html`. Static assets (CSS, JavaScript, images) under the `assets/` directory are also served through this same mechanism.
+### Checking Project Status Before Accessing
 
-### Docker Volume Mapping
+Documentation is only available for projects with a `ready` status. Use the status endpoint to verify:
 
-When running docsfy with Docker Compose, the `/data` directory is mapped to a local `./data` volume, making generated sites persistent across container restarts:
+```bash
+curl http://localhost:8000/api/status
+```
+
+Or check a specific project:
+
+```bash
+curl http://localhost:8000/api/projects/my-api
+```
+
+> **Note:** Attempting to access `/docs/{project-name}/` for a project that is still in `generating` status or ended in `error` will not return valid documentation. Always confirm the project status is `ready` before browsing.
+
+## Downloading as a tar.gz Archive
+
+For self-hosting, you can download the complete generated site as a compressed archive.
+
+### Download Endpoint
+
+```
+GET /api/projects/{name}/download
+```
+
+Download a project's documentation using `curl`:
+
+```bash
+curl -O http://localhost:8000/api/projects/my-api/download
+```
+
+Or specify an output filename:
+
+```bash
+curl -o my-api-docs.tar.gz http://localhost:8000/api/projects/my-api/download
+```
+
+The archive contains the entire contents of the project's `site/` directory — all HTML pages, CSS, JavaScript, and the search index — everything needed for a fully self-contained documentation site.
+
+### Archive Contents
+
+The downloaded `.tar.gz` archive extracts to a complete static site:
+
+```
+my-api/
+  index.html
+  getting-started.html
+  api-reference.html
+  ...
+  assets/
+    style.css
+    search.js
+    theme-toggle.js
+    highlight.js
+  search-index.json
+```
+
+Every file required for the documentation to function is included. There are no external dependencies or CDN references to worry about — search, theme toggling, and code highlighting all work offline.
+
+## Self-Hosting the Downloaded Archive
+
+The downloaded archive is a plain static site that can be served by any HTTP server. No server-side processing is required.
+
+### Using Python's Built-in Server
+
+For quick local previewing:
+
+```bash
+tar -xzf my-api-docs.tar.gz
+cd my-api
+python3 -m http.server 3000
+```
+
+Then browse to `http://localhost:3000`.
+
+### Using Nginx
+
+```nginx
+server {
+    listen 80;
+    server_name docs.example.com;
+
+    root /var/www/docs/my-api;
+    index index.html;
+
+    location / {
+        try_files $uri $uri/ =404;
+    }
+}
+```
+
+### Using Apache
+
+```apache
+<VirtualHost *:80>
+    ServerName docs.example.com
+    DocumentRoot /var/www/docs/my-api
+
+    <Directory /var/www/docs/my-api>
+        Options Indexes FollowSymLinks
+        AllowOverride None
+        Require all granted
+    </Directory>
+</VirtualHost>
+```
+
+### Using Caddy
+
+```
+docs.example.com {
+    root * /var/www/docs/my-api
+    file_server
+}
+```
+
+### Hosting on GitHub Pages
+
+Extract the archive and push to a GitHub Pages branch:
+
+```bash
+tar -xzf my-api-docs.tar.gz
+cd my-api
+git init
+git add .
+git commit -m "Deploy documentation"
+git remote add origin git@github.com:yourorg/my-api-docs.git
+git push -u origin main
+```
+
+Then enable GitHub Pages in the repository settings, serving from the `main` branch.
+
+> **Tip:** Since the generated site uses client-side search and has no server-side dependencies, it works perfectly on any static hosting platform — GitHub Pages, GitLab Pages, Netlify, Cloudflare Pages, S3 + CloudFront, or a simple file server.
+
+## Running docsfy with Docker
+
+The recommended way to run docsfy in production is with Docker. The built-in server starts on port 8000.
+
+### docker-compose.yaml
 
 ```yaml
 services:
@@ -99,172 +206,67 @@ services:
       retries: 3
 ```
 
-> **Tip:** You can inspect the generated site files directly on disk at `./data/projects/{project-name}/site/` for debugging or to copy them to another web server.
+The `/data` volume is where all project data lives — the SQLite database and all generated sites. Persist this volume to retain documentation across container restarts.
 
-## Downloading Documentation for Self-Hosting
+> **Warning:** If the `/data` volume is not mounted, generated documentation will be lost when the container stops. Always mount a persistent volume for production deployments.
 
-If you prefer to host documentation on your own infrastructure (Nginx, GitHub Pages, S3, etc.), you can download the entire rendered site as a `.tar.gz` archive:
-
-```bash
-curl -O http://localhost:8000/api/projects/my-api/download
-```
-
-This downloads the contents of `/data/projects/my-api/site/` as a compressed archive that can be extracted and served by any static file server.
-
-## Navigation
-
-The documentation site features a **sidebar navigation** that reflects the hierarchical structure defined during the AI planning stage. The navigation is generated from `plan.json`, which the AI Planner (Stage 2 of the pipeline) creates after analyzing the repository.
-
-### How Navigation Is Built
-
-1. The AI Planner analyzes the repository and produces `plan.json`, containing pages, sections, and the navigation hierarchy.
-2. The HTML Renderer (Stage 4) uses **Jinja2 templates** to render each page with a consistent sidebar navigation derived from this plan.
-3. Every page includes the full sidebar, so navigation is available without any server-side rendering at browse time.
-
-### Navigation Features
-
-The rendered documentation includes:
-
-- **Sidebar navigation** — A persistent side panel listing all pages organized by sections and sub-sections. The current page is highlighted for context.
-- **Responsive design** — The sidebar collapses on smaller screens and can be toggled with a menu button, ensuring usability on mobile devices and tablets.
-- **Card layouts** — The landing page and section index pages may use card-based layouts to provide visual entry points into different areas of the documentation.
-- **Callout boxes** — Content pages support note, warning, and info callout styles to highlight important information.
-
-### Page Structure
-
-Each generated HTML page includes:
-
-| Element | Description |
-|---------|-------------|
-| Sidebar | Hierarchical navigation of all documentation pages |
-| Main content area | The rendered documentation for the current page |
-| Theme toggle | Switch between dark and light appearance |
-| Search | Client-side full-text search across all pages |
-| Code blocks | Syntax-highlighted code examples via highlight.js |
-
-## Dark/Light Theme Toggle
-
-Every generated documentation site includes a theme toggle that lets readers switch between dark and light color schemes. The toggle is implemented entirely on the client side — no server round-trips required.
-
-### How It Works
-
-The theme system consists of two bundled assets:
-
-- **`assets/style.css`** — Contains CSS custom properties (variables) for both light and dark themes. The active theme is determined by a class or data attribute on the document root.
-- **`assets/theme-toggle.js`** — Client-side JavaScript that handles the toggle interaction, applies the selected theme, and persists the user's preference.
-
-When a user clicks the theme toggle:
-
-1. `theme-toggle.js` switches the active theme class on the `<html>` or `<body>` element.
-2. CSS custom properties update all colors — backgrounds, text, borders, code blocks, navigation — in a single cascade.
-3. The user's preference is saved to `localStorage`, so it persists across page loads and browsing sessions.
-
-> **Tip:** The theme toggle respects the user's system preference on first visit. If the operating system is set to dark mode, the documentation loads in dark mode by default.
-
-### Theme Scope
-
-The theme applies consistently across all visual elements:
-
-- Page backgrounds and text colors
-- Sidebar navigation styling
-- Code syntax highlighting (highlight.js adapts to the active theme)
-- Search overlay and results
-- Callout boxes (note, warning, info)
-- Links, borders, and interactive elements
-
-## Client-Side Search
-
-Generated documentation sites include a full-text search feature that runs entirely in the browser. There is no server-side search endpoint — all indexing and querying happens on the client.
-
-### Search Architecture
-
-The search system has two components:
-
-| Component | File | Purpose |
-|-----------|------|---------|
-| Search index | `search-index.json` | Pre-built index containing the searchable content of every page |
-| Search script | `assets/search.js` | Client-side JavaScript that loads the index and handles queries |
-
-The search implementation uses **lunr.js** (or a similar lightweight client-side search library) to provide fast, full-text search without requiring a backend.
-
-### How Search Works
-
-1. **Index generation** — During the HTML rendering stage (Stage 4), the renderer builds `search-index.json` from the content of all generated pages. This index includes page titles, section headings, and body text.
-
-2. **Index loading** — When a user opens any documentation page, `search.js` fetches `search-index.json` and loads it into memory. The index is typically small enough to load instantly for most project sizes.
-
-3. **Query execution** — As the user types a search query, the script queries the in-memory index and displays matching results in real time. Results include page titles and relevant content snippets.
-
-4. **Navigation** — Clicking a search result navigates directly to the matching page, with the relevant section scrolled into view where possible.
-
-### Using Search
-
-The search input is accessible from any page in the documentation. To search:
-
-1. Click the search input field or use a keyboard shortcut (if configured).
-2. Type your query — results appear as you type.
-3. Click a result to navigate to that page.
-
-> **Note:** Search operates on the pre-built index, so it only includes content that was present when the documentation was last generated. If you regenerate documentation after repository changes, the search index is rebuilt automatically.
-
-### Search Index Contents
-
-The `search-index.json` file is stored alongside the HTML pages at:
-
-```
-/data/projects/{project-name}/site/search-index.json
-```
-
-It is also accessible via the documentation URL:
-
-```
-http://localhost:8000/docs/my-api/search-index.json
-```
-
-## Code Syntax Highlighting
-
-All code blocks in the generated documentation are syntax-highlighted using **highlight.js**, which is bundled as `assets/highlight.js`. The highlighting:
-
-- Supports a wide range of programming languages automatically
-- Adapts to the active theme (dark or light) for readable code in any color scheme
-- Requires no configuration — language detection is automatic based on code content and any language hints in the source markdown
-
-## Putting It All Together
-
-Here is a typical workflow for generating and serving documentation:
+### Starting the Server
 
 ```bash
-# 1. Start the docsfy server
 docker compose up -d
-
-# 2. Verify the server is healthy
-curl http://localhost:8000/health
-
-# 3. Generate documentation for a repository
-curl -X POST http://localhost:8000/api/generate \
-  -H "Content-Type: application/json" \
-  -d '{"repo_url": "https://github.com/org/my-api"}'
-
-# 4. Check generation status
-curl http://localhost:8000/api/status
-
-# 5. Browse documentation once status is "ready"
-# Open in browser: http://localhost:8000/docs/my-api/
-
-# 6. Optionally download for self-hosting
-curl -o my-api-docs.tar.gz \
-  http://localhost:8000/api/projects/my-api/download
 ```
 
-## Incremental Updates
+The server starts with uvicorn on port 8000:
 
-When a repository changes, you don't need to regenerate the entire documentation site. docsfy tracks the last commit SHA per project in its SQLite database. On re-generation:
+```
+uv run --no-sync uvicorn docsfy.main:app --host 0.0.0.0 --port 8000
+```
 
-1. The repository is fetched and the current commit SHA is compared against the stored SHA.
-2. If changes are detected, the AI Planner re-evaluates whether the documentation structure needs updating.
-3. Only pages affected by the changes are regenerated.
-4. The search index (`search-index.json`) is rebuilt to reflect the updated content.
+Verify it's running:
 
-This means the served documentation at `/docs/{project}/` is automatically updated in place — no restart or redeployment needed.
+```bash
+curl http://localhost:8000/health
+```
 
-> **Tip:** Regenerate documentation for a project by calling `POST /api/generate` again with the same repository URL. docsfy will detect it as an existing project and perform an incremental update.
+## Putting a Reverse Proxy in Front of docsfy
+
+For production deployments, place a reverse proxy in front of docsfy to handle TLS, caching, and access control.
+
+### Nginx Reverse Proxy Example
+
+```nginx
+server {
+    listen 443 ssl;
+    server_name docsfy.example.com;
+
+    ssl_certificate     /etc/ssl/certs/docsfy.crt;
+    ssl_certificate_key /etc/ssl/private/docsfy.key;
+
+    location / {
+        proxy_pass http://localhost:8000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    # Cache static documentation assets
+    location /docs/ {
+        proxy_pass http://localhost:8000;
+        proxy_cache_valid 200 10m;
+        add_header Cache-Control "public, max-age=600";
+    }
+}
+```
+
+> **Tip:** Since documentation changes only when you regenerate a project, you can safely apply aggressive caching to the `/docs/` path. Invalidate the cache after triggering a new generation.
+
+## Quick Reference
+
+| Task | Command |
+|------|---------|
+| Browse docs in browser | `http://localhost:8000/docs/{project}/` |
+| Check project status | `curl http://localhost:8000/api/projects/{name}` |
+| List all projects | `curl http://localhost:8000/api/status` |
+| Download docs archive | `curl -o docs.tar.gz http://localhost:8000/api/projects/{name}/download` |
+| Health check | `curl http://localhost:8000/health` |

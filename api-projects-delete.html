@@ -4,14 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DELETE /api/projects/{name} - docsfy</title>
-    <meta name="description" content="AI-powered documentation generator that creates polished, Mintlify-quality static HTML sites from GitHub repositories">
+    <meta name="description" content="AI-powered documentation site generator that creates polished, Mintlify-quality static HTML docs from GitHub repositories">
     <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <a href="index.html" class="sidebar-logo">docsfy</a>
-            <p class="sidebar-tagline">AI-powered documentation generator that creates polished, Mintlify-quality static HTML sites from GitHub repositories</p>
+            <p class="sidebar-tagline">AI-powered documentation site generator that creates polished, Mintlify-quality static HTML docs from GitHub repositories</p>
         </div>
 
         <div class="sidebar-search">
@@ -50,13 +50,20 @@
             </div>
             
             <div class="nav-group">
-                <h3 class="nav-group-title">Configuration</h3>
+                <h3 class="nav-group-title">Core Concepts</h3>
                 <ul class="nav-group-pages">
                     
                     <li>
-                        <a href="environment-variables.html"
+                        <a href="architecture.html"
                            class="nav-link">
-                            Environment Variables
+                            Architecture
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="generation-pipeline.html"
+                           class="nav-link">
+                            Generation Pipeline
                         </a>
                     </li>
                     
@@ -68,9 +75,37 @@
                     </li>
                     
                     <li>
-                        <a href="docker-deployment.html"
+                        <a href="incremental-updates.html"
                            class="nav-link">
-                            Docker Deployment
+                            Incremental Updates
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Configuration</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="environment-variables.html"
+                           class="nav-link">
+                            Environment Variables
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="ai-provider-setup.html"
+                           class="nav-link">
+                            AI Provider Setup
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="docker-configuration.html"
+                           class="nav-link">
+                            Docker Configuration
                         </a>
                     </li>
                     
@@ -96,44 +131,9 @@
                     </li>
                     
                     <li>
-                        <a href="incremental-updates.html"
+                        <a href="managing-projects.html"
                            class="nav-link">
-                            Incremental Updates
-                        </a>
-                    </li>
-                    
-                </ul>
-            </div>
-            
-            <div class="nav-group">
-                <h3 class="nav-group-title">Architecture</h3>
-                <ul class="nav-group-pages">
-                    
-                    <li>
-                        <a href="generation-pipeline.html"
-                           class="nav-link">
-                            Generation Pipeline
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="ai-cli-integration.html"
-                           class="nav-link">
-                            AI CLI Integration
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="storage-and-database.html"
-                           class="nav-link">
-                            Storage &amp; Database
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="html-renderer.html"
-                           class="nav-link">
-                            HTML Renderer
+                            Managing Projects
                         </a>
                     </li>
                     
@@ -173,7 +173,7 @@
                     </li>
                     
                     <li>
-                        <a href="api-projects-download.html"
+                        <a href="api-download.html"
                            class="nav-link">
                             GET /api/projects/{name}/download
                         </a>
@@ -197,20 +197,62 @@
             </div>
             
             <div class="nav-group">
-                <h3 class="nav-group-title">Development</h3>
+                <h3 class="nav-group-title">Generated Sites</h3>
                 <ul class="nav-group-pages">
                     
                     <li>
-                        <a href="contributing.html"
+                        <a href="html-theme.html"
                            class="nav-link">
-                            Contributing
+                            HTML Theme &amp; Features
                         </a>
                     </li>
                     
                     <li>
-                        <a href="tech-stack.html"
+                        <a href="plan-json-schema.html"
                            class="nav-link">
-                            Technology Stack
+                            Plan JSON Schema
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="customization.html"
+                           class="nav-link">
+                            Customization
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Development</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="development-setup.html"
+                           class="nav-link">
+                            Development Setup
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="project-structure.html"
+                           class="nav-link">
+                            Project Structure
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="testing.html"
+                           class="nav-link">
+                            Testing
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="code-quality.html"
+                           class="nav-link">
+                            Code Quality
                         </a>
                     </li>
                     
@@ -223,7 +265,7 @@
     <div class="main-wrapper">
         <header class="top-bar">
             <div class="top-bar-left">
-                <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebar">
+                <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebar" aria-expanded="false">
                     <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
                         <path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
                     </svg>
@@ -256,8 +298,9 @@
             <article class="article">
                 <h1 class="article-title">DELETE /api/projects/{name}</h1>
                 <div class="article-body">
+                    <!-- content is pre-rendered from markdown by the server, not user input -->
                     <h1 id="delete-apiprojectsname">DELETE /api/projects/{name}</h1>
-<p>Remove a project and all its generated documentation from the server. This permanently deletes the project metadata from the SQLite database and removes all associated files from the filesystem, including cached markdown, rendered HTML, and the documentation plan.</p>
+<p>Remove a project and all its generated documentation from storage.</p>
 <h2 id="endpoint">Endpoint</h2>
 <div class="highlight"><pre><span></span><code>DELETE /api/projects/{name}
 </code></pre></div>
@@ -275,18 +318,23 @@
 <tbody>
 <tr>
 <td><code>name</code></td>
-<td><code>string</code></td>
+<td>string</td>
 <td>Yes</td>
-<td>The unique name of the project to delete. This is the project name assigned during generation via <code>POST /api/generate</code>.</td>
+<td>The name of the project to delete</td>
 </tr>
 </tbody>
 </table>
+<p>The project name corresponds to the identifier assigned during generation via <code>POST /api/generate</code>. It is the same name used to serve docs at <code>/docs/{name}/</code> and to retrieve project details from <code>GET /api/projects/{name}</code>.</p>
+<h2 id="request">Request</h2>
+<p>This endpoint requires no request body or query parameters.</p>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-X<span class="w"> </span>DELETE<span class="w"> </span>http://localhost:8000/api/projects/my-project
+</code></pre></div>
+
 <h2 id="response">Response</h2>
 <h3 id="200-ok">200 OK</h3>
-<p>The project and all associated documentation were successfully deleted.</p>
+<p>The project and all associated data were successfully removed.</p>
 <div class="highlight"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;deleted&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;project&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;my-project&quot;</span>
+<span class="w">  </span><span class="nt">&quot;message&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Project &#39;my-project&#39; deleted successfully&quot;</span>
 <span class="p">}</span>
 </code></pre></div>
 
@@ -297,48 +345,24 @@
 <span class="p">}</span>
 </code></pre></div>
 
-<h2 id="examples">Examples</h2>
-<h3 id="curl">cURL</h3>
-<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-X<span class="w"> </span>DELETE<span class="w"> </span>http://localhost:8000/api/projects/my-project
-</code></pre></div>
-
-<h3 id="python-requests">Python (requests)</h3>
-<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
-
-<span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="s2">&quot;http://localhost:8000/api/projects/my-project&quot;</span><span class="p">)</span>
-
-<span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">200</span><span class="p">:</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Project deleted: </span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="k">elif</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">404</span><span class="p">:</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Project not found: </span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()[</span><span class="s1">&#39;detail&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-</code></pre></div>
-
-<h3 id="python-httpx-async">Python (httpx, async)</h3>
-<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">httpx</span>
-
-<span class="k">async</span> <span class="k">with</span> <span class="n">httpx</span><span class="o">.</span><span class="n">AsyncClient</span><span class="p">()</span> <span class="k">as</span> <span class="n">client</span><span class="p">:</span>
-    <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="n">client</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="s2">&quot;http://localhost:8000/api/projects/my-project&quot;</span><span class="p">)</span>
-    <span class="n">response</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">())</span>
-</code></pre></div>
-
 <h2 id="what-gets-deleted">What Gets Deleted</h2>
-<p>When a project is deleted, the following resources are permanently removed:</p>
-<h3 id="database-records">Database Records</h3>
-<p>Project metadata is deleted from the SQLite database at <code>/data/docsfy.db</code>, including:</p>
+<p>Deleting a project removes <strong>all</strong> data associated with it across both storage layers.</p>
+<h3 id="sqlite-database-datadocsfydb">SQLite Database (<code>/data/docsfy.db</code>)</h3>
+<p>The project metadata record is removed, including:</p>
 <ul>
 <li>Project name and repository URL</li>
 <li>Generation status (<code>generating</code> / <code>ready</code> / <code>error</code>)</li>
-<li>Last generated timestamp and commit SHA</li>
+<li>Last generated timestamp</li>
+<li>Last commit SHA (used for incremental updates)</li>
 <li>Generation history and logs</li>
 </ul>
-<h3 id="filesystem">Filesystem</h3>
-<p>The entire project directory at <code>/data/projects/{name}/</code> is removed, which includes:</p>
+<h3 id="filesystem-dataprojectsname">Filesystem (<code>/data/projects/{name}/</code>)</h3>
+<p>The entire project directory is removed:</p>
 <div class="highlight"><pre><span></span><code>/data/projects/{name}/
-  plan.json               # documentation structure from AI planner
+  plan.json                 # documentation structure from AI planner
   cache/
-    pages/*.md            # AI-generated markdown content
-  site/                   # rendered static HTML site
+    pages/*.md              # AI-generated markdown (cached for incremental updates)
+  site/                     # final rendered HTML
     index.html
     *.html
     assets/
@@ -350,46 +374,91 @@
 </code></pre></div>
 
 <blockquote>
-<p><strong>Warning:</strong> This operation is irreversible. All generated documentation, cached markdown pages, and the AI-produced documentation plan will be permanently lost. To regenerate, you must submit a new <code>POST /api/generate</code> request, which will re-clone the repository and run the full AI generation pipeline from scratch.</p>
+<p><strong>Warning:</strong> Deletion is permanent and irreversible. There is no soft-delete or recovery mechanism. If you need the generated documentation, download it first using <code>GET /api/projects/{name}/download</code> before deleting.</p>
 </blockquote>
-<h2 id="behavior-during-active-generation">Behavior During Active Generation</h2>
-<p>If a project is currently in the <code>generating</code> state, the delete request will remove the project record and any partially written files. Any in-progress AI generation tasks for the project will be cancelled.</p>
+<h2 id="side-effects">Side Effects</h2>
+<p>Once a project is deleted, the following endpoints will no longer return data for it:</p>
+<table>
+<thead>
+<tr>
+<th>Endpoint</th>
+<th>Behavior After Deletion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GET /docs/{name}/{path}</code></td>
+<td>Returns <code>404 Not Found</code> — static HTML is no longer served</td>
+</tr>
+<tr>
+<td><code>GET /api/projects/{name}</code></td>
+<td>Returns <code>404 Not Found</code> — project metadata is gone</td>
+</tr>
+<tr>
+<td><code>GET /api/projects/{name}/download</code></td>
+<td>Returns <code>404 Not Found</code> — no site to package</td>
+</tr>
+<tr>
+<td><code>GET /api/status</code></td>
+<td>The project no longer appears in the project list</td>
+</tr>
+</tbody>
+</table>
+<h2 id="examples">Examples</h2>
+<h3 id="delete-a-project-with-curl">Delete a project with curl</h3>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-X<span class="w"> </span>DELETE<span class="w"> </span>http://localhost:8000/api/projects/my-project
+</code></pre></div>
+
+<h3 id="delete-a-project-with-python-requests">Delete a project with Python requests</h3>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
+
+<span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="s2">&quot;http://localhost:8000/api/projects/my-project&quot;</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">200</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Project deleted successfully&quot;</span><span class="p">)</span>
+<span class="k">elif</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">404</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Project not found&quot;</span><span class="p">)</span>
+</code></pre></div>
+
+<h3 id="download-before-deleting">Download before deleting</h3>
+<p>Back up the generated documentation as a <code>.tar.gz</code> archive before removing the project:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Download the generated docs</span>
+curl<span class="w"> </span>-o<span class="w"> </span>my-project-docs.tar.gz<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>http://localhost:8000/api/projects/my-project/download
+
+<span class="c1"># Then delete the project</span>
+curl<span class="w"> </span>-X<span class="w"> </span>DELETE<span class="w"> </span>http://localhost:8000/api/projects/my-project
+</code></pre></div>
+
 <blockquote>
-<p><strong>Note:</strong> Check the project status with <code>GET /api/projects/{name}</code> before deleting to confirm whether generation is still in progress.</p>
+<p><strong>Tip:</strong> Use the download-then-delete pattern when you want to self-host the generated documentation independently. The downloaded archive contains the complete static site and can be served from any web server.</p>
 </blockquote>
-<div class="highlight"><pre><span></span><code><span class="c1"># Check project status before deleting</span>
+<h2 id="deleting-a-project-that-is-currently-generating">Deleting a Project That Is Currently Generating</h2>
+<p>If a project is in the <code>generating</code> state (the AI pipeline is actively running), deleting it will cancel the in-progress generation and clean up any partially written files.</p>
+<p>You can check a project's current status before deleting:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Check project status</span>
 curl<span class="w"> </span>http://localhost:8000/api/projects/my-project
 
-<span class="c1"># Then delete</span>
+<span class="c1"># Delete if no longer needed</span>
 curl<span class="w"> </span>-X<span class="w"> </span>DELETE<span class="w"> </span>http://localhost:8000/api/projects/my-project
 </code></pre></div>
 
-<h2 id="served-documentation">Served Documentation</h2>
-<p>Once a project is deleted, its documentation is immediately no longer accessible at the serving endpoint:</p>
-<div class="highlight"><pre><span></span><code>GET /docs/{name}/{path}
-</code></pre></div>
-
-<p>Any requests to the project's documentation pages will return a <code>404 Not Found</code> after deletion.</p>
 <blockquote>
-<p><strong>Tip:</strong> If you need to preserve a copy of the generated documentation before deleting, download the site archive first using <code>GET /api/projects/{name}/download</code>, which provides the complete static HTML site as a <code>.tar.gz</code> file suitable for self-hosting.</p>
+<p><strong>Note:</strong> After deletion, you can re-generate documentation for the same repository by submitting a new <code>POST /api/generate</code> request. The project name will be available for reuse.</p>
 </blockquote>
-<div class="highlight"><pre><span></span><code><span class="c1"># Download a backup before deleting</span>
-curl<span class="w"> </span>-o<span class="w"> </span>my-project-docs.tar.gz<span class="w"> </span>http://localhost:8000/api/projects/my-project/download
-
-<span class="c1"># Then safely delete</span>
-curl<span class="w"> </span>-X<span class="w"> </span>DELETE<span class="w"> </span>http://localhost:8000/api/projects/my-project
+<h2 id="storage-configuration">Storage Configuration</h2>
+<p>The data directories used by docsfy are configured through the Docker volume mount. The default <code>docker-compose.yaml</code> maps a local <code>./data</code> directory:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">services</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">docsfy</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">build</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">.</span>
+<span class="w">    </span><span class="nt">ports</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;8000:8000&quot;</span>
+<span class="w">    </span><span class="nt">env_file</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">.env</span>
+<span class="w">    </span><span class="nt">volumes</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./data:/data</span>
 </code></pre></div>
 
-<h2 id="re-generating-after-deletion">Re-generating After Deletion</h2>
-<p>After deleting a project, you can regenerate its documentation by submitting a new generation request:</p>
-<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/api/generate<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{&quot;repo_url&quot;: &quot;https://github.com/owner/repo&quot;}&#39;</span>
-</code></pre></div>
-
-<blockquote>
-<p><strong>Note:</strong> Unlike incremental updates (which compare commit SHAs and regenerate only affected pages), a full generation after deletion runs the complete four-stage pipeline: repository cloning, AI planning, AI content generation, and HTML rendering.</p>
-</blockquote>
+<p>Deletion operates on files under <code>/data/projects/{name}/</code> inside the container, which maps to <code>./data/projects/{name}/</code> on the host filesystem.</p>
 <h2 id="related-endpoints">Related Endpoints</h2>
 <table>
 <thead>
@@ -413,12 +482,12 @@ curl<span class="w"> </span>-X<span class="w"> </span>DELETE<span class="w"> </s
 <tr>
 <td><code>GET</code></td>
 <td><code>/api/projects/{name}</code></td>
-<td>Get project details before deleting</td>
+<td>Get project details, status, and page list</td>
 </tr>
 <tr>
 <td><code>GET</code></td>
 <td><code>/api/projects/{name}/download</code></td>
-<td>Download site archive as backup before deleting</td>
+<td>Download the generated site as a <code>.tar.gz</code> archive</td>
 </tr>
 </tbody>
 </table>
@@ -432,7 +501,7 @@ curl<span class="w"> </span>-X<span class="w"> </span>DELETE<span class="w"> </s
                 </a>
                 
                 
-                <a href="api-projects-download.html" class="page-nav-link page-nav-next">
+                <a href="api-download.html" class="page-nav-link page-nav-next">
                     <span class="page-nav-label">Next</span>
                     <span class="page-nav-title">GET /api/projects/{name}/download</span>
                 </a>
@@ -446,25 +515,26 @@ curl<span class="w"> </span>-X<span class="w"> </span>DELETE<span class="w"> </s
 <ul>
 <li><a href="#endpoint">Endpoint</a></li>
 <li><a href="#path-parameters">Path Parameters</a></li>
+<li><a href="#request">Request</a></li>
 <li><a href="#response">Response</a><ul>
 <li><a href="#200-ok">200 OK</a></li>
 <li><a href="#404-not-found">404 Not Found</a></li>
 </ul>
 </li>
-<li><a href="#examples">Examples</a><ul>
-<li><a href="#curl">cURL</a></li>
-<li><a href="#python-requests">Python (requests)</a></li>
-<li><a href="#python-httpx-async">Python (httpx, async)</a></li>
-</ul>
-</li>
 <li><a href="#what-gets-deleted">What Gets Deleted</a><ul>
-<li><a href="#database-records">Database Records</a></li>
-<li><a href="#filesystem">Filesystem</a></li>
+<li><a href="#sqlite-database-datadocsfydb">SQLite Database (/data/docsfy.db)</a></li>
+<li><a href="#filesystem-dataprojectsname">Filesystem (/data/projects/{name}/)</a></li>
 </ul>
 </li>
-<li><a href="#behavior-during-active-generation">Behavior During Active Generation</a></li>
-<li><a href="#served-documentation">Served Documentation</a></li>
-<li><a href="#re-generating-after-deletion">Re-generating After Deletion</a></li>
+<li><a href="#side-effects">Side Effects</a></li>
+<li><a href="#examples">Examples</a><ul>
+<li><a href="#delete-a-project-with-curl">Delete a project with curl</a></li>
+<li><a href="#delete-a-project-with-python-requests">Delete a project with Python requests</a></li>
+<li><a href="#download-before-deleting">Download before deleting</a></li>
+</ul>
+</li>
+<li><a href="#deleting-a-project-that-is-currently-generating">Deleting a Project That Is Currently Generating</a></li>
+<li><a href="#storage-configuration">Storage Configuration</a></li>
 <li><a href="#related-endpoints">Related Endpoints</a></li>
 </ul>
 </div>
@@ -497,12 +567,15 @@ curl<span class="w"> </span>-X<span class="w"> </span>DELETE<span class="w"> </s
             toggle.addEventListener('click', function() {
                 sidebar.classList.toggle('open');
                 if (overlay) overlay.classList.toggle('open');
+                var expanded = sidebar.classList.contains('open');
+                toggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
             });
         }
         if (overlay) {
             overlay.addEventListener('click', function() {
                 sidebar.classList.remove('open');
                 overlay.classList.remove('open');
+                if (toggle) toggle.setAttribute('aria-expanded', 'false');
             });
         }
     })();

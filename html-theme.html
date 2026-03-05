@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTML Theme &amp; Features - docsfy</title>
+    <meta name="description" content="AI-powered documentation site generator that creates polished, Mintlify-quality static HTML docs from GitHub repositories">
+    <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <a href="index.html" class="sidebar-logo">docsfy</a>
+            <p class="sidebar-tagline">AI-powered documentation site generator that creates polished, Mintlify-quality static HTML docs from GitHub repositories</p>
+        </div>
+
+        <div class="sidebar-search">
+            <input type="text" id="search-input" placeholder="Search... (⌘K)" autocomplete="off" readonly>
+            <div id="search-results" class="search-results"></div>
+        </div>
+
+        <nav class="sidebar-nav">
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Getting Started</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="introduction.html"
+                           class="nav-link">
+                            Introduction
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="quickstart.html"
+                           class="nav-link">
+                            Quickstart
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="installation.html"
+                           class="nav-link">
+                            Installation
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Core Concepts</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="architecture.html"
+                           class="nav-link">
+                            Architecture
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="generation-pipeline.html"
+                           class="nav-link">
+                            Generation Pipeline
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="ai-providers.html"
+                           class="nav-link">
+                            AI Providers
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="incremental-updates.html"
+                           class="nav-link">
+                            Incremental Updates
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Configuration</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="environment-variables.html"
+                           class="nav-link">
+                            Environment Variables
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="ai-provider-setup.html"
+                           class="nav-link">
+                            AI Provider Setup
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="docker-configuration.html"
+                           class="nav-link">
+                            Docker Configuration
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Usage</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="generating-docs.html"
+                           class="nav-link">
+                            Generating Documentation
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="serving-docs.html"
+                           class="nav-link">
+                            Serving Documentation
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="managing-projects.html"
+                           class="nav-link">
+                            Managing Projects
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">API Reference</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="api-generate.html"
+                           class="nav-link">
+                            POST /api/generate
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="api-status.html"
+                           class="nav-link">
+                            GET /api/status
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="api-projects.html"
+                           class="nav-link">
+                            GET /api/projects/{name}
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="api-projects-delete.html"
+                           class="nav-link">
+                            DELETE /api/projects/{name}
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="api-download.html"
+                           class="nav-link">
+                            GET /api/projects/{name}/download
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="api-docs-serving.html"
+                           class="nav-link">
+                            GET /docs/{project}/{path}
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="api-health.html"
+                           class="nav-link">
+                            GET /health
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Generated Sites</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="html-theme.html"
+                           class="nav-link active">
+                            HTML Theme &amp; Features
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="plan-json-schema.html"
+                           class="nav-link">
+                            Plan JSON Schema
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="customization.html"
+                           class="nav-link">
+                            Customization
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Development</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="development-setup.html"
+                           class="nav-link">
+                            Development Setup
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="project-structure.html"
+                           class="nav-link">
+                            Project Structure
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="testing.html"
+                           class="nav-link">
+                            Testing
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="code-quality.html"
+                           class="nav-link">
+                            Code Quality
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+        </nav>
+    </aside>
+
+    <div class="main-wrapper">
+        <header class="top-bar">
+            <div class="top-bar-left">
+                <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebar" aria-expanded="false">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                </button>
+                <a href="index.html" class="top-bar-title">docsfy</a>
+            </div>
+            <div class="top-bar-spacer"></div>
+            <div class="top-bar-right">
+                <button class="top-bar-search-btn" id="search-trigger" aria-label="Search">
+                    <kbd>&#8984;K</kbd> Search
+                </button>
+                
+                <a href="https://github.com/myk-org/docsfy" target="_blank" rel="noopener noreferrer" class="top-bar-github" id="github-link" data-repo-url="https://github.com/myk-org/docsfy">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                    <span class="github-stars" id="github-stars"></span>
+                </a>
+                
+                <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+                    <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                    </svg>
+                    <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <main class="content">
+            <article class="article">
+                <h1 class="article-title">HTML Theme &amp; Features</h1>
+                <div class="article-body">
+                    <!-- content is pre-rendered from markdown by the server, not user input -->
+                    <h1 id="html-theme-features">HTML Theme &amp; Features</h1>
+<h2 id="overview">Overview</h2>
+<p>Every documentation site generated by docsfy ships as a fully self-contained static HTML package. The HTML renderer (Stage 4 of the generation pipeline) converts AI-generated markdown pages and the <code>plan.json</code> navigation structure into a polished, production-ready site using Jinja2 templates with bundled CSS and JavaScript assets.</p>
+<p>The rendered site is stored at <code>/data/projects/{project-name}/site/</code> with the following structure:</p>
+<div class="highlight"><pre><span></span><code>/data/projects/{project-name}/site/
+├── index.html
+├── *.html                    # one HTML file per documentation page
+├── assets/
+│   ├── style.css             # main stylesheet (dark/light themes)
+│   ├── search.js             # lunr.js client-side search
+│   ├── theme-toggle.js       # dark/light mode switching
+│   └── highlight.js          # code syntax highlighting
+└── search-index.json         # pre-built search index
+</code></pre></div>
+
+<p>Because every asset is bundled into the site directory, generated documentation works entirely offline — no CDN dependencies or external network requests required.</p>
+<h2 id="sidebar-navigation">Sidebar Navigation</h2>
+<p>The sidebar navigation is automatically generated from the <code>plan.json</code> file produced by the AI Planner in Stage 2 of the pipeline. The planner analyzes your repository and outputs a structured documentation plan containing pages, sections, and a navigation hierarchy.</p>
+<h3 id="how-it-works">How It Works</h3>
+<ol>
+<li>The <strong>AI Planner</strong> explores your repository and produces <code>plan.json</code> with a hierarchical page structure</li>
+<li>The <strong>HTML Renderer</strong> reads <code>plan.json</code> and builds the sidebar from the defined sections and pages</li>
+<li>Each page in the hierarchy becomes a navigable link in the sidebar</li>
+</ol>
+<h3 id="navigation-structure">Navigation Structure</h3>
+<p>The <code>plan.json</code> file defines the complete navigation tree:</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;pages&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Getting Started&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;section&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Introduction&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;filename&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;getting-started&quot;</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Configuration&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;section&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Usage&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;filename&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;configuration&quot;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">]</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<p>The sidebar groups pages by section and preserves the ordering defined in <code>plan.json</code>. The current page is visually highlighted, and sections can be expanded or collapsed for easier navigation on sites with many pages.</p>
+<blockquote>
+<p><strong>Tip:</strong> The AI Planner determines the optimal navigation structure by analyzing your repository's code, README, existing documentation, and project structure. You don't need to manually define the navigation — it's fully automated.</p>
+</blockquote>
+<h2 id="dark-light-theme-toggle">Dark / Light Theme Toggle</h2>
+<p>Generated sites include a built-in theme toggle that lets readers switch between dark and light modes. The toggle is powered by <code>theme-toggle.js</code>, one of the bundled JavaScript assets.</p>
+<h3 id="how-it-works_1">How It Works</h3>
+<p>The theme system uses CSS custom properties (variables) defined in <code>style.css</code> to control colors across the entire site. The <code>theme-toggle.js</code> script:</p>
+<ol>
+<li>Checks for a saved theme preference in the browser's <code>localStorage</code></li>
+<li>Falls back to the operating system preference via <code>prefers-color-scheme</code></li>
+<li>Applies the selected theme by toggling a CSS class on the document root</li>
+<li>Persists the user's choice for future visits</li>
+</ol>
+<h3 id="css-custom-properties">CSS Custom Properties</h3>
+<p>The theme is implemented using two sets of CSS custom properties — one for light mode and one for dark mode:</p>
+<div class="highlight"><pre><span></span><code><span class="p">:</span><span class="nd">root</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nv">--bg-primary</span><span class="p">:</span><span class="w"> </span><span class="mh">#ffffff</span><span class="p">;</span>
+<span class="w">  </span><span class="nv">--bg-secondary</span><span class="p">:</span><span class="w"> </span><span class="mh">#f8f9fa</span><span class="p">;</span>
+<span class="w">  </span><span class="nv">--text-primary</span><span class="p">:</span><span class="w"> </span><span class="mh">#1a1a2e</span><span class="p">;</span>
+<span class="w">  </span><span class="nv">--text-secondary</span><span class="p">:</span><span class="w"> </span><span class="mh">#4a4a6a</span><span class="p">;</span>
+<span class="w">  </span><span class="nv">--border-color</span><span class="p">:</span><span class="w"> </span><span class="mh">#e2e8f0</span><span class="p">;</span>
+<span class="w">  </span><span class="nv">--accent-color</span><span class="p">:</span><span class="w"> </span><span class="mh">#6366f1</span><span class="p">;</span>
+<span class="w">  </span><span class="nv">--code-bg</span><span class="p">:</span><span class="w"> </span><span class="mh">#f1f5f9</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="o">[</span><span class="nt">data-theme</span><span class="o">=</span><span class="s2">&quot;dark&quot;</span><span class="o">]</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nv">--bg-primary</span><span class="p">:</span><span class="w"> </span><span class="mh">#0f172a</span><span class="p">;</span>
+<span class="w">  </span><span class="nv">--bg-secondary</span><span class="p">:</span><span class="w"> </span><span class="mh">#1e293b</span><span class="p">;</span>
+<span class="w">  </span><span class="nv">--text-primary</span><span class="p">:</span><span class="w"> </span><span class="mh">#e2e8f0</span><span class="p">;</span>
+<span class="w">  </span><span class="nv">--text-secondary</span><span class="p">:</span><span class="w"> </span><span class="mh">#94a3b8</span><span class="p">;</span>
+<span class="w">  </span><span class="nv">--border-color</span><span class="p">:</span><span class="w"> </span><span class="mh">#334155</span><span class="p">;</span>
+<span class="w">  </span><span class="nv">--accent-color</span><span class="p">:</span><span class="w"> </span><span class="mh">#818cf8</span><span class="p">;</span>
+<span class="w">  </span><span class="nv">--code-bg</span><span class="p">:</span><span class="w"> </span><span class="mh">#1e293b</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<p>The toggle button is placed in the site header for easy access and uses an icon that reflects the current theme state (sun for light mode, moon for dark mode).</p>
+<blockquote>
+<p><strong>Note:</strong> The theme preference is stored per-browser using <code>localStorage</code>. Each generated docsfy site maintains its own independent theme setting.</p>
+</blockquote>
+<h2 id="client-side-search-with-lunrjs">Client-Side Search with lunr.js</h2>
+<p>Every generated site includes full-text search powered by <a href="https://lunrjs.com/">lunr.js</a>. Search runs entirely in the browser — no server-side component needed — making it work even when the site is downloaded and hosted statically.</p>
+<h3 id="search-index-generation">Search Index Generation</h3>
+<p>During Stage 4 (HTML Rendering), the renderer builds a <code>search-index.json</code> file from all generated pages. This pre-built index contains the tokenized, stemmed, and weighted content of every page in the documentation.</p>
+<div class="highlight"><pre><span></span><code>/data/projects/{project-name}/site/
+├── assets/
+│   └── search.js             # lunr.js integration and UI
+└── search-index.json         # pre-built search index
+</code></pre></div>
+
+<h3 id="how-it-works_2">How It Works</h3>
+<ol>
+<li>At build time, the renderer extracts text from all markdown pages and creates a lunr.js-compatible index stored as <code>search-index.json</code></li>
+<li>When a user opens the site, <code>search.js</code> loads the pre-built index into memory</li>
+<li>As the user types a query, lunr.js performs client-side full-text search against the index</li>
+<li>Results are ranked by relevance and displayed with page titles, section context, and matching excerpts</li>
+</ol>
+<h3 id="search-features">Search Features</h3>
+<ul>
+<li><strong>Full-text search</strong> across all documentation pages</li>
+<li><strong>Relevance ranking</strong> using lunr.js scoring algorithms</li>
+<li><strong>Instant results</strong> — no network requests after initial page load</li>
+<li><strong>Excerpt highlighting</strong> — matching terms are highlighted in search results</li>
+<li><strong>Keyboard navigation</strong> — accessible search result browsing</li>
+</ul>
+<blockquote>
+<p><strong>Tip:</strong> Because the search index is a static JSON file, search works perfectly in fully offline or air-gapped environments after the site has been downloaded via the <code>/api/projects/{name}/download</code> endpoint.</p>
+</blockquote>
+<h2 id="code-syntax-highlighting">Code Syntax Highlighting</h2>
+<p>Code blocks in generated documentation are syntax-highlighted using <a href="https://highlightjs.org/">highlight.js</a>. The highlighting is applied to all fenced code blocks in the AI-generated markdown content.</p>
+<h3 id="supported-languages">Supported Languages</h3>
+<p>highlight.js provides syntax highlighting for all major programming languages. The AI Content Generator (Stage 3) produces markdown with language-annotated code fences, which the HTML Renderer converts to highlighted HTML:</p>
+<div class="highlight"><pre><span></span><code><span class="sb">```python</span>
+<span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">ProviderConfig</span><span class="p">:</span>
+    <span class="n">binary</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">build_cmd</span><span class="p">:</span> <span class="n">Callable</span>
+    <span class="n">uses_own_cwd</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="sb">```</span>
+</code></pre></div>
+
+<p>This renders with full Python syntax highlighting — keywords, decorators, type hints, and string literals are all color-coded for readability.</p>
+<h3 id="theme-integration">Theme Integration</h3>
+<p>Code highlighting colors adapt to the active theme (dark or light). The highlight.js theme is coordinated with the site's CSS custom properties so code blocks blend naturally with the rest of the page in both modes.</p>
+<div class="highlight"><pre><span></span><code>assets/
+├── style.css          # includes code block base styles
+└── highlight.js       # highlight.js runtime + language grammars
+</code></pre></div>
+
+<blockquote>
+<p><strong>Note:</strong> The highlight.js bundle is included directly in the site assets. No external CDN or network request is required for syntax highlighting to work.</p>
+</blockquote>
+<h2 id="card-layouts">Card Layouts</h2>
+<p>Card layouts provide a visually structured way to present grouped content such as feature overviews, API summaries, or quick-start guides. Cards are rendered as bordered, rounded containers arranged in a responsive grid.</p>
+<h3 id="usage-in-markdown">Usage in Markdown</h3>
+<p>The AI Content Generator can produce card-style content in the markdown output. The HTML Renderer recognizes card markup patterns and converts them into styled card components.</p>
+<p>Cards are useful for:</p>
+<ul>
+<li><strong>Feature grids</strong> — showcasing project capabilities at a glance</li>
+<li><strong>API endpoint summaries</strong> — grouping related endpoints with descriptions</li>
+<li><strong>Quick-start options</strong> — presenting multiple getting-started paths</li>
+<li><strong>Comparison tables</strong> — side-by-side feature or technology comparisons</li>
+</ul>
+<h3 id="responsive-behavior">Responsive Behavior</h3>
+<p>Card grids adapt to the viewport width:</p>
+<table>
+<thead>
+<tr>
+<th>Viewport</th>
+<th>Layout</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Desktop (≥1024px)</td>
+<td>3-column grid</td>
+</tr>
+<tr>
+<td>Tablet (≥768px)</td>
+<td>2-column grid</td>
+</tr>
+<tr>
+<td>Mobile (&lt;768px)</td>
+<td>Single-column stack</td>
+</tr>
+</tbody>
+</table>
+<p>Cards maintain consistent spacing and alignment across breakpoints, ensuring readability on all screen sizes.</p>
+<h2 id="callout-boxes">Callout Boxes</h2>
+<p>Callout boxes draw attention to important information within documentation pages. docsfy supports three callout types, each with distinct visual styling to communicate severity and intent.</p>
+<h3 id="callout-types">Callout Types</h3>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Purpose</th>
+<th>Color</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Note</strong></td>
+<td>General supplementary information</td>
+<td>Blue</td>
+</tr>
+<tr>
+<td><strong>Warning</strong></td>
+<td>Potential pitfalls or breaking changes</td>
+<td>Amber/Yellow</td>
+</tr>
+<tr>
+<td><strong>Info</strong></td>
+<td>Helpful context or background details</td>
+<td>Green</td>
+</tr>
+</tbody>
+</table>
+<h3 id="markdown-syntax">Markdown Syntax</h3>
+<p>The AI Content Generator produces callout blocks using blockquote-based syntax in the generated markdown. The HTML Renderer converts these into styled callout components:</p>
+<div class="highlight"><pre><span></span><code><span class="k">&gt; </span><span class="ge">**Note:** This feature requires Python 3.12 or later.</span>
+
+<span class="k">&gt; </span><span class="ge">**Warning:** Changing the AI provider after initial generation</span>
+<span class="k">&gt; </span><span class="ge">will regenerate all pages from scratch.</span>
+
+<span class="k">&gt; </span><span class="ge">**Info:** The search index is rebuilt automatically whenever</span>
+<span class="k">&gt; </span><span class="ge">documentation is regenerated.</span>
+</code></pre></div>
+
+<h3 id="rendered-output">Rendered Output</h3>
+<p>Each callout type renders with:</p>
+<ul>
+<li>A colored left border indicating the callout type</li>
+<li>A bold label (Note, Warning, or Info) with an associated icon</li>
+<li>A tinted background that adapts to the active theme (dark/light)</li>
+<li>Full support for inline markdown (links, code, bold, italic) within the callout body</li>
+</ul>
+<blockquote>
+<p><strong>Tip:</strong> Callout boxes are theme-aware. In dark mode, callout backgrounds and border colors adjust to maintain readability and contrast without appearing harsh.</p>
+</blockquote>
+<h2 id="responsive-design">Responsive Design</h2>
+<p>Generated documentation sites are fully responsive and work across desktop, tablet, and mobile devices. The responsive behavior is implemented entirely in CSS via media queries in <code>style.css</code>.</p>
+<h3 id="breakpoints">Breakpoints</h3>
+<p>The layout adapts at standard breakpoints:</p>
+<table>
+<thead>
+<tr>
+<th>Breakpoint</th>
+<th>Behavior</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>≥1024px</strong> (Desktop)</td>
+<td>Sidebar visible alongside content; full-width card grids</td>
+</tr>
+<tr>
+<td><strong>≥768px</strong> (Tablet)</td>
+<td>Sidebar collapsible; 2-column card grids</td>
+</tr>
+<tr>
+<td><strong>&lt;768px</strong> (Mobile)</td>
+<td>Sidebar hidden behind hamburger menu; single-column layout</td>
+</tr>
+</tbody>
+</table>
+<h3 id="sidebar-behavior">Sidebar Behavior</h3>
+<ul>
+<li><strong>Desktop:</strong> The sidebar is always visible in a fixed left panel, with the main content area occupying the remaining width</li>
+<li><strong>Tablet:</strong> The sidebar can be toggled open/closed to maximize reading space</li>
+<li><strong>Mobile:</strong> The sidebar is fully hidden and accessible via a hamburger menu icon in the header</li>
+</ul>
+<h3 id="content-adaptations">Content Adaptations</h3>
+<ul>
+<li><strong>Code blocks</strong> gain horizontal scrolling on narrow viewports to prevent layout breakage</li>
+<li><strong>Tables</strong> become horizontally scrollable within their containers</li>
+<li><strong>Images</strong> scale to fit the viewport with <code>max-width: 100%</code></li>
+<li><strong>Card grids</strong> reflow from multi-column to single-column layouts</li>
+<li><strong>Navigation</strong> collapses into a mobile-friendly overlay menu</li>
+<li><strong>Search</strong> expands to full-width on mobile for easier input</li>
+</ul>
+<h3 id="typography">Typography</h3>
+<p>Font sizes and spacing scale relative to the viewport to maintain readability:</p>
+<ul>
+<li>Body text uses a base size optimized for reading on each device class</li>
+<li>Headings scale proportionally to maintain visual hierarchy</li>
+<li>Line lengths are capped to keep text within comfortable reading widths (~65-80 characters per line)</li>
+</ul>
+<h2 id="static-site-portability">Static Site Portability</h2>
+<p>All theme features work without any server — the generated site is fully static and self-contained. You can:</p>
+<ol>
+<li><strong>Serve directly from docsfy</strong> via <code>GET /docs/{project}/{path}</code></li>
+<li><strong>Download and self-host</strong> via <code>GET /api/projects/{name}/download</code> (returns a <code>.tar.gz</code> archive)</li>
+<li><strong>Deploy anywhere</strong> — GitHub Pages, Netlify, S3, nginx, or any static file server</li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="c1"># Download and extract a generated site</span>
+curl<span class="w"> </span>-O<span class="w"> </span>http://localhost:8000/api/projects/my-project/download
+tar<span class="w"> </span>xzf<span class="w"> </span>my-project.tar.gz
+<span class="c1"># Serve locally with any static server</span>
+python<span class="w"> </span>-m<span class="w"> </span>http.server<span class="w"> </span>-d<span class="w"> </span>my-project/site<span class="w"> </span><span class="m">8080</span>
+</code></pre></div>
+
+<blockquote>
+<p><strong>Note:</strong> Because all assets (CSS, JavaScript, search index, highlight.js) are bundled in the <code>assets/</code> directory, the site has zero external dependencies. Dark/light theme, search, and syntax highlighting all work offline.</p>
+</blockquote>
+<h2 id="technology-stack">Technology Stack</h2>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>Technology</th>
+<th>Delivery</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Templating</td>
+<td>Jinja2</td>
+<td>Build-time HTML generation</td>
+</tr>
+<tr>
+<td>Markdown processing</td>
+<td>Python markdown library</td>
+<td>Build-time conversion</td>
+</tr>
+<tr>
+<td>Styling</td>
+<td>Custom CSS with CSS custom properties</td>
+<td>Bundled <code>style.css</code></td>
+</tr>
+<tr>
+<td>Theme toggle</td>
+<td>Vanilla JavaScript</td>
+<td>Bundled <code>theme-toggle.js</code></td>
+</tr>
+<tr>
+<td>Search</td>
+<td>lunr.js</td>
+<td>Bundled <code>search.js</code> + <code>search-index.json</code></td>
+</tr>
+<tr>
+<td>Syntax highlighting</td>
+<td>highlight.js</td>
+<td>Bundled <code>highlight.js</code></td>
+</tr>
+<tr>
+<td>Responsive layout</td>
+<td>CSS media queries</td>
+<td>Bundled in <code>style.css</code></td>
+</tr>
+</tbody>
+</table>
+                </div>
+            </article>
+            <nav class="page-nav">
+                
+                <a href="api-health.html" class="page-nav-link page-nav-prev">
+                    <span class="page-nav-label">Previous</span>
+                    <span class="page-nav-title">GET /health</span>
+                </a>
+                
+                
+                <a href="plan-json-schema.html" class="page-nav-link page-nav-next">
+                    <span class="page-nav-label">Next</span>
+                    <span class="page-nav-title">Plan JSON Schema</span>
+                </a>
+                
+            </nav>
+            
+            <aside class="toc-sidebar">
+                <div class="toc-container">
+                    <h3>On this page</h3>
+                    <div class="toc">
+<ul>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#sidebar-navigation">Sidebar Navigation</a><ul>
+<li><a href="#how-it-works">How It Works</a></li>
+<li><a href="#navigation-structure">Navigation Structure</a></li>
+</ul>
+</li>
+<li><a href="#dark-light-theme-toggle">Dark / Light Theme Toggle</a><ul>
+<li><a href="#how-it-works_1">How It Works</a></li>
+<li><a href="#css-custom-properties">CSS Custom Properties</a></li>
+</ul>
+</li>
+<li><a href="#client-side-search-with-lunrjs">Client-Side Search with lunr.js</a><ul>
+<li><a href="#search-index-generation">Search Index Generation</a></li>
+<li><a href="#how-it-works_2">How It Works</a></li>
+<li><a href="#search-features">Search Features</a></li>
+</ul>
+</li>
+<li><a href="#code-syntax-highlighting">Code Syntax Highlighting</a><ul>
+<li><a href="#supported-languages">Supported Languages</a></li>
+<li><a href="#theme-integration">Theme Integration</a></li>
+</ul>
+</li>
+<li><a href="#card-layouts">Card Layouts</a><ul>
+<li><a href="#usage-in-markdown">Usage in Markdown</a></li>
+<li><a href="#responsive-behavior">Responsive Behavior</a></li>
+</ul>
+</li>
+<li><a href="#callout-boxes">Callout Boxes</a><ul>
+<li><a href="#callout-types">Callout Types</a></li>
+<li><a href="#markdown-syntax">Markdown Syntax</a></li>
+<li><a href="#rendered-output">Rendered Output</a></li>
+</ul>
+</li>
+<li><a href="#responsive-design">Responsive Design</a><ul>
+<li><a href="#breakpoints">Breakpoints</a></li>
+<li><a href="#sidebar-behavior">Sidebar Behavior</a></li>
+<li><a href="#content-adaptations">Content Adaptations</a></li>
+<li><a href="#typography">Typography</a></li>
+</ul>
+</li>
+<li><a href="#static-site-portability">Static Site Portability</a></li>
+<li><a href="#technology-stack">Technology Stack</a></li>
+</ul>
+</div>
+
+                </div>
+            </aside>
+            
+        </main>
+
+        <footer class="footer">
+            <p>Built with <a href="https://github.com/docsfy/docsfy">docsfy</a></p>
+        </footer>
+    </div>
+
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <script src="assets/theme.js"></script>
+    <script src="assets/search.js"></script>
+    <script src="assets/copy.js"></script>
+    <script src="assets/callouts.js"></script>
+    <script src="assets/scrollspy.js"></script>
+    <script src="assets/codelabels.js"></script>
+    <script src="assets/github.js"></script>
+    <script>
+    (function() {
+        var toggle = document.getElementById('sidebar-toggle');
+        var sidebar = document.getElementById('sidebar');
+        var overlay = document.getElementById('sidebar-overlay');
+        if (toggle && sidebar) {
+            toggle.addEventListener('click', function() {
+                sidebar.classList.toggle('open');
+                if (overlay) overlay.classList.toggle('open');
+                var expanded = sidebar.classList.contains('open');
+                toggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+            });
+        }
+        if (overlay) {
+            overlay.addEventListener('click', function() {
+                sidebar.classList.remove('open');
+                overlay.classList.remove('open');
+                if (toggle) toggle.setAttribute('aria-expanded', 'false');
+            });
+        }
+    })();
+    </script>
+</body>
+</html>
