@@ -72,7 +72,6 @@
 
         <main class="content">
             <article class="article">
-                <h1 class="article-title">{{ title }}</h1>
                 <div class="article-body">
                     <!-- content is pre-rendered from markdown by the server, not user input -->
                     {{ content | safe }}
@@ -139,6 +138,29 @@
                 overlay.classList.remove('open');
                 if (toggle) toggle.setAttribute('aria-expanded', 'false');
             });
+        }
+    })();
+    </script>
+    <script>
+    (function() {
+        var sidebar = document.querySelector('.sidebar-nav') || document.querySelector('.sidebar');
+        if (!sidebar) return;
+
+        // Restore scroll position
+        var saved = sessionStorage.getItem('sidebar-scroll');
+        if (saved) sidebar.scrollTop = parseInt(saved, 10);
+
+        // Save scroll position before navigating
+        sidebar.addEventListener('scroll', function() {
+            sessionStorage.setItem('sidebar-scroll', sidebar.scrollTop.toString());
+        });
+
+        // Also scroll active link into view if no saved position
+        if (!saved) {
+            var active = sidebar.querySelector('.nav-link.active');
+            if (active) {
+                active.scrollIntoView({ block: 'center', behavior: 'instant' });
+            }
         }
     })();
     </script>

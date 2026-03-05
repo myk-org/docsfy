@@ -188,7 +188,9 @@ async def _generate_from_path(
         cache_dir = get_project_cache_dir(project_name)
         if cache_dir.exists():
             shutil.rmtree(cache_dir)
-            logger.info(f"Cleared cache for {project_name} (force=True)")
+            logger.info(f"[{project_name}] Cleared cache (force=True)")
+        # Reset page count so API shows 0 during regeneration
+        await update_project_status(project_name, status="generating", page_count=0)
     else:
         existing = await get_project(project_name)
         if (
@@ -196,7 +198,7 @@ async def _generate_from_path(
             and existing.get("last_commit_sha") == commit_sha
             and existing.get("status") == "ready"
         ):
-            logger.info(f"Project {project_name} is up to date at {commit_sha[:8]}")
+            logger.info(f"[{project_name}] Project is up to date at {commit_sha[:8]}")
             await update_project_status(project_name, status="ready")
             return
 
@@ -210,6 +212,13 @@ async def _generate_from_path(
 
     plan["repo_url"] = source_url
 
+    # Store plan so API consumers can see doc structure while pages generate
+    await update_project_status(
+        project_name,
+        status="generating",
+        plan_json=json.dumps(plan),
+    )
+
     cache_dir = get_project_cache_dir(project_name)
     pages = await generate_all_pages(
         repo_path=repo_dir,
@@ -219,6 +228,7 @@ async def _generate_from_path(
         ai_model=ai_model,
         ai_cli_timeout=ai_cli_timeout,
         use_cache=not force,
+        project_name=project_name,
     )
 
     site_dir = get_project_site_dir(project_name)
@@ -235,7 +245,7 @@ async def _generate_from_path(
         page_count=page_count,
         plan_json=json.dumps(plan),
     )
-    logger.info(f"Documentation for {project_name} is ready ({page_count} pages)")
+    logger.info(f"[{project_name}] Documentation ready ({page_count} pages)")
 
 
 @app.get("/api/projects/{name}")
