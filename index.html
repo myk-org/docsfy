@@ -4,14 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>docsfy</title>
-    <meta name="description" content="AI-powered documentation site generator that creates polished, Mintlify-quality static HTML docs from GitHub repositories">
+    <meta name="description" content="AI-powered documentation generator that turns GitHub repositories into polished static documentation websites">
     <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <a href="index.html" class="sidebar-logo">docsfy</a>
-            <p class="sidebar-tagline">AI-powered documentation site generator that creates polished, Mintlify-quality static HTML docs from GitHub repositories</p>
+            <p class="sidebar-tagline">AI-powered documentation generator that turns GitHub repositories into polished static documentation websites</p>
         </div>
 
         <div class="sidebar-search">
@@ -32,45 +32,20 @@
                     </li>
                     
                     <li>
+                        <a href="installation.html" class="nav-link">
+                            Installation
+                        </a>
+                    </li>
+                    
+                    <li>
                         <a href="quickstart.html" class="nav-link">
                             Quickstart
                         </a>
                     </li>
                     
                     <li>
-                        <a href="installation.html" class="nav-link">
-                            Installation
-                        </a>
-                    </li>
-                    
-                </ul>
-            </div>
-            
-            <div class="nav-group">
-                <h3 class="nav-group-title">Core Concepts</h3>
-                <ul class="nav-group-pages">
-                    
-                    <li>
-                        <a href="architecture.html" class="nav-link">
-                            Architecture
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="generation-pipeline.html" class="nav-link">
-                            Generation Pipeline
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="ai-providers.html" class="nav-link">
-                            AI Providers
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="incremental-updates.html" class="nav-link">
-                            Incremental Updates
+                        <a href="docker-deployment.html" class="nav-link">
+                            Docker Deployment
                         </a>
                     </li>
                     
@@ -82,20 +57,14 @@
                 <ul class="nav-group-pages">
                     
                     <li>
-                        <a href="environment-variables.html" class="nav-link">
-                            Environment Variables
+                        <a href="configuration.html" class="nav-link">
+                            Configuration Reference
                         </a>
                     </li>
                     
                     <li>
-                        <a href="ai-provider-setup.html" class="nav-link">
-                            AI Provider Setup
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="docker-configuration.html" class="nav-link">
-                            Docker Configuration
+                        <a href="ai-providers.html" class="nav-link">
+                            AI Providers
                         </a>
                     </li>
                     
@@ -113,14 +82,20 @@
                     </li>
                     
                     <li>
-                        <a href="serving-docs.html" class="nav-link">
-                            Serving Documentation
+                        <a href="serving-and-downloading.html" class="nav-link">
+                            Serving and Downloading
                         </a>
                     </li>
                     
                     <li>
-                        <a href="managing-projects.html" class="nav-link">
-                            Managing Projects
+                        <a href="generated-site-features.html" class="nav-link">
+                            Generated Site Features
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="llm-friendly-output.html" class="nav-link">
+                            LLM-Friendly Output
                         </a>
                     </li>
                     
@@ -132,44 +107,26 @@
                 <ul class="nav-group-pages">
                     
                     <li>
-                        <a href="api-generate.html" class="nav-link">
-                            POST /api/generate
+                        <a href="api-overview.html" class="nav-link">
+                            API Overview
                         </a>
                     </li>
                     
                     <li>
-                        <a href="api-status.html" class="nav-link">
-                            GET /api/status
+                        <a href="api-generation.html" class="nav-link">
+                            Generation Endpoint
                         </a>
                     </li>
                     
                     <li>
                         <a href="api-projects.html" class="nav-link">
-                            GET /api/projects/{name}
+                            Project Management Endpoints
                         </a>
                     </li>
                     
                     <li>
-                        <a href="api-projects-delete.html" class="nav-link">
-                            DELETE /api/projects/{name}
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="api-download.html" class="nav-link">
-                            GET /api/projects/{name}/download
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="api-docs-serving.html" class="nav-link">
-                            GET /docs/{project}/{path}
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="api-health.html" class="nav-link">
-                            GET /health
+                        <a href="api-serving.html" class="nav-link">
+                            Serving and Download Endpoints
                         </a>
                     </li>
                     
@@ -177,24 +134,30 @@
             </div>
             
             <div class="nav-group">
-                <h3 class="nav-group-title">Generated Sites</h3>
+                <h3 class="nav-group-title">Architecture</h3>
                 <ul class="nav-group-pages">
                     
                     <li>
-                        <a href="html-theme.html" class="nav-link">
-                            HTML Theme &amp; Features
+                        <a href="architecture-overview.html" class="nav-link">
+                            Architecture Overview
                         </a>
                     </li>
                     
                     <li>
-                        <a href="plan-json-schema.html" class="nav-link">
-                            Plan JSON Schema
+                        <a href="project-structure.html" class="nav-link">
+                            Project Structure
                         </a>
                     </li>
                     
                     <li>
-                        <a href="customization.html" class="nav-link">
-                            Customization
+                        <a href="ai-generation-pipeline.html" class="nav-link">
+                            AI Generation Pipeline
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="storage-and-caching.html" class="nav-link">
+                            Storage and Caching
                         </a>
                     </li>
                     
@@ -208,12 +171,6 @@
                     <li>
                         <a href="development-setup.html" class="nav-link">
                             Development Setup
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="project-structure.html" class="nav-link">
-                            Project Structure
                         </a>
                     </li>
                     
@@ -270,7 +227,7 @@
         <main class="content">
             <section class="hero">
                 <h1 class="hero-title">docsfy</h1>
-                <p class="hero-tagline">AI-powered documentation site generator that creates polished, Mintlify-quality static HTML docs from GitHub repositories</p>
+                <p class="hero-tagline">AI-powered documentation generator that turns GitHub repositories into polished static documentation websites</p>
                 
                 <a href="introduction.html" class="hero-cta">Get Started</a>
                 
@@ -285,21 +242,28 @@
                         <li>
                             <a href="introduction.html">Introduction</a>
                             
-                            <p class="card-page-desc">Overview of docsfy, what it does, how it uses AI CLI tools to generate beautiful documentation sites from GitHub repositories, and the core value proposition</p>
-                            
-                        </li>
-                        
-                        <li>
-                            <a href="quickstart.html">Quickstart</a>
-                            
-                            <p class="card-page-desc">Step-by-step guide to get docsfy running locally with Docker Compose, generate your first documentation site, and view it in the browser</p>
+                            <p class="card-page-desc">Overview of docsfy, what it does, its core workflow (clone → AI plan → AI generate → render HTML), and key features like multi-AI provider support, incremental updates, and beautiful static site output</p>
                             
                         </li>
                         
                         <li>
                             <a href="installation.html">Installation</a>
                             
-                            <p class="card-page-desc">Detailed installation options including Docker, docker-compose, and local development setup with uv and Python 3.12+</p>
+                            <p class="card-page-desc">How to install docsfy via pip/uv from source, Python 3.12+ requirement, installing AI CLI providers (Claude Code, Cursor Agent, Gemini CLI), and setting up environment variables</p>
+                            
+                        </li>
+                        
+                        <li>
+                            <a href="quickstart.html">Quickstart</a>
+                            
+                            <p class="card-page-desc">Generate your first documentation site in minutes — start the server, send a generate request with a GitHub URL, and view the rendered docs</p>
+                            
+                        </li>
+                        
+                        <li>
+                            <a href="docker-deployment.html">Docker Deployment</a>
+                            
+                            <p class="card-page-desc">Running docsfy with Docker and docker-compose, multi-stage build details, exposed ports, health checks, data volume persistence, and OpenShift-compatible non-root container setup</p>
                             
                         </li>
                         
@@ -310,71 +274,26 @@
                 </div>
                 
                 <div class="card">
-                    <h3 class="card-title">Core Concepts</h3>
+                    <h3 class="card-title">Configuration</h3>
                     <ul class="card-pages">
                         
                         <li>
-                            <a href="architecture.html">Architecture</a>
+                            <a href="configuration.html">Configuration Reference</a>
                             
-                            <p class="card-page-desc">High-level architecture of the FastAPI server, the four-stage generation pipeline, storage layout, and how components interact</p>
-                            
-                        </li>
-                        
-                        <li>
-                            <a href="generation-pipeline.html">Generation Pipeline</a>
-                            
-                            <p class="card-page-desc">Deep dive into the four sequential stages: repository cloning, AI-powered planning, concurrent content generation, and HTML rendering</p>
+                            <p class="card-page-desc">All configuration options via environment variables and .env file: AI_PROVIDER, AI_MODEL, AI_CLI_TIMEOUT, LOG_LEVEL, DATA_DIR, and provider-specific keys (ANTHROPIC_API_KEY, GEMINI_API_KEY, etc.)</p>
                             
                         </li>
                         
                         <li>
                             <a href="ai-providers.html">AI Providers</a>
                             
-                            <p class="card-page-desc">Supported AI CLI providers (Claude Code, Cursor Agent, Gemini CLI), their command interfaces, CWD handling, and how provider selection works</p>
-                            
-                        </li>
-                        
-                        <li>
-                            <a href="incremental-updates.html">Incremental Updates</a>
-                            
-                            <p class="card-page-desc">How docsfy tracks commit SHAs, detects repository changes, and selectively regenerates only affected documentation pages</p>
+                            <p class="card-page-desc">Supported AI providers (Claude Code, Cursor Agent, Gemini CLI), how to select and configure each one, model selection, timeout tuning, and provider-specific setup including Vertex AI integration</p>
                             
                         </li>
                         
                     </ul>
                     
-                    <a href="architecture.html" class="card-link">Explore &rarr;</a>
-                    
-                </div>
-                
-                <div class="card">
-                    <h3 class="card-title">Configuration</h3>
-                    <ul class="card-pages">
-                        
-                        <li>
-                            <a href="environment-variables.html">Environment Variables</a>
-                            
-                            <p class="card-page-desc">Complete reference for all environment variables including AI_PROVIDER, AI_MODEL, AI_CLI_TIMEOUT, provider-specific API keys, and logging settings</p>
-                            
-                        </li>
-                        
-                        <li>
-                            <a href="ai-provider-setup.html">AI Provider Setup</a>
-                            
-                            <p class="card-page-desc">How to configure credentials for each AI provider: Anthropic API key, Google Cloud Vertex AI, Gemini API key, and Cursor API key</p>
-                            
-                        </li>
-                        
-                        <li>
-                            <a href="docker-configuration.html">Docker Configuration</a>
-                            
-                            <p class="card-page-desc">Dockerfile details, docker-compose.yaml configuration, volume mounts for persistent storage and credentials, health checks, and port mapping</p>
-                            
-                        </li>
-                        
-                    </ul>
-                    
-                    <a href="environment-variables.html" class="card-link">Explore &rarr;</a>
+                    <a href="configuration.html" class="card-link">Explore &rarr;</a>
                     
                 </div>
                 
@@ -385,21 +304,28 @@
                         <li>
                             <a href="generating-docs.html">Generating Documentation</a>
                             
-                            <p class="card-page-desc">How to submit a repository for documentation generation via the POST /api/generate endpoint, monitor progress, and access the result</p>
+                            <p class="card-page-desc">Complete guide to generating documentation: submitting requests via the API, using repo_url vs repo_path, force regeneration, incremental updates via commit SHA tracking, and concurrent page generation</p>
                             
                         </li>
                         
                         <li>
-                            <a href="serving-docs.html">Serving Documentation</a>
+                            <a href="serving-and-downloading.html">Serving and Downloading</a>
                             
-                            <p class="card-page-desc">Accessing generated documentation through the built-in static file server at /docs/{project}/ or downloading as a tar.gz archive for self-hosting</p>
+                            <p class="card-page-desc">How to serve generated documentation sites via the built-in endpoint at /docs/{project}/{path}, downloading complete sites as tar.gz archives, and the filesystem layout of generated output</p>
                             
                         </li>
                         
                         <li>
-                            <a href="managing-projects.html">Managing Projects</a>
+                            <a href="generated-site-features.html">Generated Site Features</a>
                             
-                            <p class="card-page-desc">Listing projects with status, viewing project details including last generated timestamp and commit SHA, and deleting projects</p>
+                            <p class="card-page-desc">Features of the output documentation site: dark/light theme toggle, client-side search with keyboard shortcut (Cmd+K), responsive mobile design, code syntax highlighting, table of contents with scroll spy, copy-to-clipboard, callout boxes, and prev/next navigation</p>
+                            
+                        </li>
+                        
+                        <li>
+                            <a href="llm-friendly-output.html">LLM-Friendly Output</a>
+                            
+                            <p class="card-page-desc">How docsfy generates llms.txt and llms-full.txt files alongside the HTML site for AI consumption, following the llms.txt specification</p>
                             
                         </li>
                         
@@ -414,88 +340,74 @@
                     <ul class="card-pages">
                         
                         <li>
-                            <a href="api-generate.html">POST /api/generate</a>
+                            <a href="api-overview.html">API Overview</a>
                             
-                            <p class="card-page-desc">Start documentation generation for a GitHub repository URL, including request format, response structure, and status tracking</p>
-                            
-                        </li>
-                        
-                        <li>
-                            <a href="api-status.html">GET /api/status</a>
-                            
-                            <p class="card-page-desc">List all projects and their current generation status (generating, ready, or error)</p>
+                            <p class="card-page-desc">Overview of the docsfy REST API built with FastAPI, base URL, request/response format, and how background generation works with 202 Accepted responses</p>
                             
                         </li>
                         
                         <li>
-                            <a href="api-projects.html">GET /api/projects/{name}</a>
+                            <a href="api-generation.html">Generation Endpoint</a>
                             
-                            <p class="card-page-desc">Retrieve detailed project information including last generated timestamp, commit SHA, and page listing</p>
-                            
-                        </li>
-                        
-                        <li>
-                            <a href="api-projects-delete.html">DELETE /api/projects/{name}</a>
-                            
-                            <p class="card-page-desc">Remove a project and all its generated documentation from storage</p>
+                            <p class="card-page-desc">POST /api/generate — request body schema (repo_url, repo_path, ai_provider, ai_model, ai_cli_timeout, force), response format, validation rules, and mutual exclusivity of repo_url and repo_path</p>
                             
                         </li>
                         
                         <li>
-                            <a href="api-download.html">GET /api/projects/{name}/download</a>
+                            <a href="api-projects.html">Project Management Endpoints</a>
                             
-                            <p class="card-page-desc">Download the complete generated documentation site as a .tar.gz archive for self-hosting</p>
-                            
-                        </li>
-                        
-                        <li>
-                            <a href="api-docs-serving.html">GET /docs/{project}/{path}</a>
-                            
-                            <p class="card-page-desc">Serve generated static HTML documentation pages directly from the docsfy server</p>
+                            <p class="card-page-desc">GET /api/status (list all projects), GET /api/projects/{name} (project details with status, commit SHA, page count), DELETE /api/projects/{name} (remove project and all generated files)</p>
                             
                         </li>
                         
                         <li>
-                            <a href="api-health.html">GET /health</a>
+                            <a href="api-serving.html">Serving and Download Endpoints</a>
                             
-                            <p class="card-page-desc">Health check endpoint for container orchestration and monitoring</p>
+                            <p class="card-page-desc">GET /docs/{project}/{path} for serving static HTML, GET /api/projects/{name}/download for tar.gz archive download, and GET /health for health checks</p>
                             
                         </li>
                         
                     </ul>
                     
-                    <a href="api-generate.html" class="card-link">Explore &rarr;</a>
+                    <a href="api-overview.html" class="card-link">Explore &rarr;</a>
                     
                 </div>
                 
                 <div class="card">
-                    <h3 class="card-title">Generated Sites</h3>
+                    <h3 class="card-title">Architecture</h3>
                     <ul class="card-pages">
                         
                         <li>
-                            <a href="html-theme.html">HTML Theme &amp; Features</a>
+                            <a href="architecture-overview.html">Architecture Overview</a>
                             
-                            <p class="card-page-desc">Overview of the generated site features: sidebar navigation, dark/light theme toggle, client-side search with lunr.js, code syntax highlighting, card layouts, callout boxes, and responsive design</p>
-                            
-                        </li>
-                        
-                        <li>
-                            <a href="plan-json-schema.html">Plan JSON Schema</a>
-                            
-                            <p class="card-page-desc">Structure and schema of the plan.json file produced by the AI Planner, including pages, sections, and navigation hierarchy</p>
+                            <p class="card-page-desc">High-level architecture of docsfy: FastAPI web layer, two-phase AI generation pipeline (planning then content), markdown-to-HTML rendering with Jinja2 templates, SQLite storage, and filesystem-based caching</p>
                             
                         </li>
                         
                         <li>
-                            <a href="customization.html">Customization</a>
+                            <a href="project-structure.html">Project Structure</a>
                             
-                            <p class="card-page-desc">How the Jinja2 templates, bundled CSS/JS assets, and site structure can be customized for different documentation needs</p>
+                            <p class="card-page-desc">Directory layout and module organization: main.py (API), generator.py (AI orchestration), renderer.py (HTML output), storage.py (SQLite), repository.py (git operations), models.py (Pydantic schemas), config.py (settings), prompts.py (AI prompt templates), and json_parser.py</p>
+                            
+                        </li>
+                        
+                        <li>
+                            <a href="ai-generation-pipeline.html">AI Generation Pipeline</a>
+                            
+                            <p class="card-page-desc">Deep dive into the two-phase AI workflow: Phase 1 plans documentation structure via AI codebase exploration, Phase 2 generates markdown content for each page concurrently (up to 5 parallel), with caching and incremental update support</p>
+                            
+                        </li>
+                        
+                        <li>
+                            <a href="storage-and-caching.html">Storage and Caching</a>
+                            
+                            <p class="card-page-desc">SQLite database schema for project metadata, filesystem layout under /data/projects/{name}/ (plan.json, cache/pages/*.md, site/), page-level caching strategy, and path traversal security validation</p>
                             
                         </li>
                         
                     </ul>
                     
-                    <a href="html-theme.html" class="card-link">Explore &rarr;</a>
+                    <a href="architecture-overview.html" class="card-link">Explore &rarr;</a>
                     
                 </div>
                 
@@ -506,28 +418,21 @@
                         <li>
                             <a href="development-setup.html">Development Setup</a>
                             
-                            <p class="card-page-desc">Setting up a local development environment with uv, pre-commit hooks, and the development toolchain</p>
-                            
-                        </li>
-                        
-                        <li>
-                            <a href="project-structure.html">Project Structure</a>
-                            
-                            <p class="card-page-desc">Layout of the docsfy codebase including source modules, templates, assets, tests, and configuration files</p>
+                            <p class="card-page-desc">Setting up the development environment with uv, installing dev dependencies, running the app locally with DEBUG mode, and project tooling overview</p>
                             
                         </li>
                         
                         <li>
                             <a href="testing.html">Testing</a>
                             
-                            <p class="card-page-desc">Running the test suite with tox, unit tests via uv, unused-code checks, and quality gates</p>
+                            <p class="card-page-desc">Running the test suite with pytest and tox, parallel test execution with pytest-xdist, test structure across 11 modules covering API endpoints, AI generation, rendering, storage, models, and integration tests</p>
                             
                         </li>
                         
                         <li>
                             <a href="code-quality.html">Code Quality</a>
                             
-                            <p class="card-page-desc">Pre-commit hooks configuration including ruff linting and formatting, mypy strict type checking, flake8, gitleaks, and detect-secrets</p>
+                            <p class="card-page-desc">Pre-commit hooks configuration: ruff linting/formatting, mypy strict type checking, flake8 with M511 plugin, detect-secrets, gitleaks, and tox unused-code detection</p>
                             
                         </li>
                         
@@ -573,6 +478,29 @@
                 overlay.classList.remove('open');
                 if (toggle) toggle.setAttribute('aria-expanded', 'false');
             });
+        }
+    })();
+    </script>
+    <script>
+    (function() {
+        var sidebar = document.querySelector('.sidebar-nav') || document.querySelector('.sidebar');
+        if (!sidebar) return;
+
+        // Restore scroll position
+        var saved = sessionStorage.getItem('sidebar-scroll');
+        if (saved) sidebar.scrollTop = parseInt(saved, 10);
+
+        // Save scroll position before navigating
+        sidebar.addEventListener('scroll', function() {
+            sessionStorage.setItem('sidebar-scroll', sidebar.scrollTop.toString());
+        });
+
+        // Also scroll active link into view if no saved position
+        if (!saved) {
+            var active = sidebar.querySelector('.nav-link.active');
+            if (active) {
+                active.scrollIntoView({ block: 'center', behavior: 'instant' });
+            }
         }
     })();
     </script>

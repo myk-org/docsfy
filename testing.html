@@ -4,14 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Testing - docsfy</title>
-    <meta name="description" content="AI-powered documentation site generator that creates polished, Mintlify-quality static HTML docs from GitHub repositories">
+    <meta name="description" content="AI-powered documentation generator that turns GitHub repositories into polished static documentation websites">
     <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <a href="index.html" class="sidebar-logo">docsfy</a>
-            <p class="sidebar-tagline">AI-powered documentation site generator that creates polished, Mintlify-quality static HTML docs from GitHub repositories</p>
+            <p class="sidebar-tagline">AI-powered documentation generator that turns GitHub repositories into polished static documentation websites</p>
         </div>
 
         <div class="sidebar-search">
@@ -33,6 +33,13 @@
                     </li>
                     
                     <li>
+                        <a href="installation.html"
+                           class="nav-link">
+                            Installation
+                        </a>
+                    </li>
+                    
+                    <li>
                         <a href="quickstart.html"
                            class="nav-link">
                             Quickstart
@@ -40,44 +47,9 @@
                     </li>
                     
                     <li>
-                        <a href="installation.html"
+                        <a href="docker-deployment.html"
                            class="nav-link">
-                            Installation
-                        </a>
-                    </li>
-                    
-                </ul>
-            </div>
-            
-            <div class="nav-group">
-                <h3 class="nav-group-title">Core Concepts</h3>
-                <ul class="nav-group-pages">
-                    
-                    <li>
-                        <a href="architecture.html"
-                           class="nav-link">
-                            Architecture
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="generation-pipeline.html"
-                           class="nav-link">
-                            Generation Pipeline
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="ai-providers.html"
-                           class="nav-link">
-                            AI Providers
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="incremental-updates.html"
-                           class="nav-link">
-                            Incremental Updates
+                            Docker Deployment
                         </a>
                     </li>
                     
@@ -89,23 +61,16 @@
                 <ul class="nav-group-pages">
                     
                     <li>
-                        <a href="environment-variables.html"
+                        <a href="configuration.html"
                            class="nav-link">
-                            Environment Variables
+                            Configuration Reference
                         </a>
                     </li>
                     
                     <li>
-                        <a href="ai-provider-setup.html"
+                        <a href="ai-providers.html"
                            class="nav-link">
-                            AI Provider Setup
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="docker-configuration.html"
-                           class="nav-link">
-                            Docker Configuration
+                            AI Providers
                         </a>
                     </li>
                     
@@ -124,16 +89,23 @@
                     </li>
                     
                     <li>
-                        <a href="serving-docs.html"
+                        <a href="serving-and-downloading.html"
                            class="nav-link">
-                            Serving Documentation
+                            Serving and Downloading
                         </a>
                     </li>
                     
                     <li>
-                        <a href="managing-projects.html"
+                        <a href="generated-site-features.html"
                            class="nav-link">
-                            Managing Projects
+                            Generated Site Features
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="llm-friendly-output.html"
+                           class="nav-link">
+                            LLM-Friendly Output
                         </a>
                     </li>
                     
@@ -145,51 +117,30 @@
                 <ul class="nav-group-pages">
                     
                     <li>
-                        <a href="api-generate.html"
+                        <a href="api-overview.html"
                            class="nav-link">
-                            POST /api/generate
+                            API Overview
                         </a>
                     </li>
                     
                     <li>
-                        <a href="api-status.html"
+                        <a href="api-generation.html"
                            class="nav-link">
-                            GET /api/status
+                            Generation Endpoint
                         </a>
                     </li>
                     
                     <li>
                         <a href="api-projects.html"
                            class="nav-link">
-                            GET /api/projects/{name}
+                            Project Management Endpoints
                         </a>
                     </li>
                     
                     <li>
-                        <a href="api-projects-delete.html"
+                        <a href="api-serving.html"
                            class="nav-link">
-                            DELETE /api/projects/{name}
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="api-download.html"
-                           class="nav-link">
-                            GET /api/projects/{name}/download
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="api-docs-serving.html"
-                           class="nav-link">
-                            GET /docs/{project}/{path}
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="api-health.html"
-                           class="nav-link">
-                            GET /health
+                            Serving and Download Endpoints
                         </a>
                     </li>
                     
@@ -197,27 +148,34 @@
             </div>
             
             <div class="nav-group">
-                <h3 class="nav-group-title">Generated Sites</h3>
+                <h3 class="nav-group-title">Architecture</h3>
                 <ul class="nav-group-pages">
                     
                     <li>
-                        <a href="html-theme.html"
+                        <a href="architecture-overview.html"
                            class="nav-link">
-                            HTML Theme &amp; Features
+                            Architecture Overview
                         </a>
                     </li>
                     
                     <li>
-                        <a href="plan-json-schema.html"
+                        <a href="project-structure.html"
                            class="nav-link">
-                            Plan JSON Schema
+                            Project Structure
                         </a>
                     </li>
                     
                     <li>
-                        <a href="customization.html"
+                        <a href="ai-generation-pipeline.html"
                            class="nav-link">
-                            Customization
+                            AI Generation Pipeline
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="storage-and-caching.html"
+                           class="nav-link">
+                            Storage and Caching
                         </a>
                     </li>
                     
@@ -232,13 +190,6 @@
                         <a href="development-setup.html"
                            class="nav-link">
                             Development Setup
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="project-structure.html"
-                           class="nav-link">
-                            Project Structure
                         </a>
                     </li>
                     
@@ -296,461 +247,584 @@
 
         <main class="content">
             <article class="article">
-                <h1 class="article-title">Testing</h1>
                 <div class="article-body">
                     <!-- content is pre-rendered from markdown by the server, not user input -->
                     <h1 id="testing">Testing</h1>
-<h2 id="overview">Overview</h2>
-<p>docsfy uses a layered testing strategy built on industry-standard Python tooling. The test infrastructure runs through two primary entry points:</p>
-<ul>
-<li><strong>Tox</strong> orchestrates all test environments — unused-code analysis and unit tests</li>
-<li><strong>Pre-commit</strong> enforces code quality gates on every commit — linting, formatting, type checking, and secret detection</li>
-</ul>
-<p>All tooling uses <strong>uv</strong> as the sole package manager. pip is not used anywhere in the project.</p>
-<h2 id="prerequisites">Prerequisites</h2>
-<p>Ensure you have the following installed:</p>
+<p>docsfy uses <a href="https://docs.pytest.org/">pytest</a> as its testing framework with <a href="https://tox.wiki/">tox</a> for environment management. The test suite contains <strong>54 tests across 11 modules</strong>, covering API endpoints, AI-powered generation, HTML rendering, database storage, data models, and a full end-to-end integration flow.</p>
+<h2 id="quick-start">Quick Start</h2>
+<p>Install the development dependencies:</p>
+<div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;.[dev]&quot;</span>
+</code></pre></div>
+
+<p>This installs the test toolchain defined in <code>pyproject.toml</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="k">[project.optional-dependencies]</span>
+<span class="n">dev</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;pytest&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;pytest-asyncio&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;pytest-xdist&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;httpx&quot;</span><span class="p">]</span>
+</code></pre></div>
+
 <table>
 <thead>
 <tr>
-<th>Tool</th>
-<th>Minimum Version</th>
+<th>Package</th>
 <th>Purpose</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Python</td>
-<td>3.12+</td>
-<td>Runtime</td>
+<td><code>pytest</code></td>
+<td>Core test framework</td>
 </tr>
 <tr>
-<td>uv</td>
-<td>Latest</td>
-<td>Package management and virtual environments</td>
+<td><code>pytest-asyncio</code></td>
+<td>Async/await test support for async test functions</td>
 </tr>
 <tr>
-<td>tox</td>
-<td>4.x</td>
-<td>Test orchestration</td>
+<td><code>pytest-xdist</code></td>
+<td>Parallel test execution across CPU cores</td>
 </tr>
 <tr>
-<td>pre-commit</td>
-<td>Latest</td>
-<td>Git hook management</td>
+<td><code>httpx</code></td>
+<td>Async HTTP client for testing FastAPI endpoints via ASGI</td>
 </tr>
 </tbody>
 </table>
-<p>Install the development environment:</p>
-<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>sync<span class="w"> </span>--dev
+<p>Run the full test suite:</p>
+<div class="highlight"><pre><span></span><code>pytest
+</code></pre></div>
+
+<h2 id="pytest-configuration">Pytest Configuration</h2>
+<p>All pytest settings live in <code>pyproject.toml</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="k">[tool.pytest.ini_options]</span>
+<span class="n">asyncio_mode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;auto&quot;</span>
+<span class="n">testpaths</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;tests&quot;</span><span class="p">]</span>
+<span class="n">pythonpath</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;src&quot;</span><span class="p">]</span>
+</code></pre></div>
+
+<ul>
+<li><strong><code>asyncio_mode = "auto"</code></strong> — Async test functions (<code>async def test_*</code>) are automatically detected and executed without requiring the <code>@pytest.mark.asyncio</code> decorator.</li>
+<li><strong><code>testpaths = ["tests"]</code></strong> — Test discovery is scoped to the <code>tests/</code> directory.</li>
+<li><strong><code>pythonpath = ["src"]</code></strong> — Adds <code>src/</code> to the Python path so that <code>from docsfy.xxx import ...</code> works correctly in test modules.</li>
+</ul>
+<blockquote>
+<p><strong>Note:</strong> There is no <code>conftest.py</code> file. Each test module defines its own fixtures locally.</p>
+</blockquote>
+<h2 id="running-tests">Running Tests</h2>
+<h3 id="basic-commands">Basic Commands</h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Run the full suite</span>
+pytest
+
+<span class="c1"># Run with verbose output</span>
+pytest<span class="w"> </span>-v
+
+<span class="c1"># Run a specific test module</span>
+pytest<span class="w"> </span>tests/test_main.py
+
+<span class="c1"># Run a single test function</span>
+pytest<span class="w"> </span>tests/test_main.py::test_health_endpoint
+
+<span class="c1"># Run with print output visible</span>
+pytest<span class="w"> </span>-v<span class="w"> </span>-s
+</code></pre></div>
+
+<h3 id="parallel-execution-with-pytest-xdist">Parallel Execution with pytest-xdist</h3>
+<p>The <code>pytest-xdist</code> plugin distributes tests across multiple CPU cores for faster execution:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Auto-detect CPU count and run in parallel</span>
+pytest<span class="w"> </span>-n<span class="w"> </span>auto
+
+<span class="c1"># Use a specific number of workers</span>
+pytest<span class="w"> </span>-n<span class="w"> </span><span class="m">4</span>
 </code></pre></div>
 
 <blockquote>
-<p><strong>Note:</strong> docsfy uses <code>hatchling</code> as its build system. All project metadata and tool configuration lives in <code>pyproject.toml</code>.</p>
+<p><strong>Tip:</strong> <code>pytest -n auto</code> is the default when running through tox (see below). It automatically matches the number of available CPU cores.</p>
 </blockquote>
-<hr />
-<h2 id="running-the-full-test-suite-with-tox">Running the Full Test Suite with Tox</h2>
-<p>Tox is the single command to run all checks — unused-code detection and unit tests. Each environment is isolated and uses uv for dependency resolution.</p>
-<h3 id="run-everything">Run everything</h3>
-<div class="highlight"><pre><span></span><code>tox
+<h3 id="using-tox">Using tox</h3>
+<p>tox manages isolated test environments and is the recommended way to run the full validation suite. Configuration is in <code>tox.toml</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="n">skipsdist</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
+<span class="n">envlist</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;unused-code&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;unittests&quot;</span><span class="p">]</span>
+
+<span class="k">[env.unused-code]</span>
+<span class="n">deps</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;python-utility-scripts&quot;</span><span class="p">]</span>
+<span class="n">commands</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[[</span><span class="s2">&quot;pyutils-unusedcode&quot;</span><span class="p">]]</span>
+
+<span class="k">[env.unittests]</span>
+<span class="n">deps</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;uv&quot;</span><span class="p">]</span>
+<span class="n">commands</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[[</span><span class="s2">&quot;uv&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;run&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;--extra&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;dev&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;pytest&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;-n&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;auto&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;tests&quot;</span><span class="p">]]</span>
 </code></pre></div>
 
-<p>This executes all configured environments sequentially. A passing <code>tox</code> run is the bar for merge readiness.</p>
-<h3 id="list-available-environments">List available environments</h3>
-<div class="highlight"><pre><span></span><code>tox<span class="w"> </span>list
-</code></pre></div>
-
-<p>Typical environments:</p>
+<p>Two environments are defined:</p>
 <table>
 <thead>
 <tr>
 <th>Environment</th>
-<th>Description</th>
+<th>Command</th>
+<th>Purpose</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td><code>unused-code</code></td>
-<td>Detects dead code via vulture</td>
+<td><code>pyutils-unusedcode</code></td>
+<td>Detects dead/unused code in the project</td>
 </tr>
 <tr>
-<td><code>tests</code></td>
-<td>Runs the unit test suite via pytest</td>
+<td><code>unittests</code></td>
+<td><code>uv run --extra dev pytest -n auto tests</code></td>
+<td>Runs the full test suite with parallel execution</td>
 </tr>
 </tbody>
 </table>
-<h3 id="run-a-specific-environment">Run a specific environment</h3>
-<div class="highlight"><pre><span></span><code><span class="c1"># Run only unit tests</span>
-tox<span class="w"> </span>-e<span class="w"> </span>tests
+<div class="highlight"><pre><span></span><code><span class="c1"># Run all tox environments</span>
+tox
 
-<span class="c1"># Run only unused-code checks</span>
+<span class="c1"># Run only the test suite</span>
+tox<span class="w"> </span>-e<span class="w"> </span>unittests
+
+<span class="c1"># Run only the unused code checker</span>
 tox<span class="w"> </span>-e<span class="w"> </span>unused-code
 </code></pre></div>
 
-<h3 id="tox-configuration">Tox Configuration</h3>
-<p>Tox is configured in <code>pyproject.toml</code> under the <code>[tool.tox]</code> section. A representative configuration:</p>
-<div class="highlight"><pre><span></span><code><span class="k">[tool.tox]</span>
-<span class="n">legacy_tox_ini</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;&quot;&quot;</span>
-<span class="s2">[tox]</span>
-<span class="s2">envlist = unused-code, tests</span>
-<span class="s2">no_package = true</span>
-
-<span class="s2">[testenv]</span>
-<span class="s2">deps = uv</span>
-<span class="s2">allowlist_externals = uv</span>
-
-<span class="s2">[testenv:tests]</span>
-<span class="s2">commands =</span>
-<span class="s2">    uv run pytest {posargs}</span>
-
-<span class="s2">[testenv:unused-code]</span>
-<span class="s2">commands =</span>
-<span class="s2">    uv run vulture docsfy/ tests/ --min-confidence 80</span>
-<span class="s2">&quot;&quot;&quot;</span>
-</code></pre></div>
-
 <blockquote>
-<p><strong>Tip:</strong> Pass extra arguments to pytest through tox using <code>--</code>:
-<code>bash
-tox -e tests -- -v -k "test_health"</code></p>
+<p><strong>Note:</strong> The <code>unittests</code> environment uses <a href="https://docs.astral.sh/uv/">uv</a> to resolve and install dependencies, then invokes pytest with <code>-n auto</code> for parallel test execution.</p>
 </blockquote>
-<hr />
-<h2 id="unit-tests-via-uv">Unit Tests via uv</h2>
-<p>For rapid iteration during development, run pytest directly through uv without the overhead of tox environment creation.</p>
-<h3 id="run-all-tests">Run all tests</h3>
-<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>run<span class="w"> </span>pytest
+<h2 id="test-structure">Test Structure</h2>
+<p>The test suite is organized into 11 modules, each mapping to a corresponding source module in <code>src/docsfy/</code>:</p>
+<div class="highlight"><pre><span></span><code>tests/
+├── __init__.py
+├── test_main.py           # API endpoints          (8 tests)
+├── test_models.py         # Data model validation   (10 tests)
+├── test_storage.py        # Database operations     (7 tests)
+├── test_json_parser.py    # JSON parsing            (7 tests)
+├── test_repository.py     # Git operations          (6 tests)
+├── test_generator.py      # AI-powered generation   (5 tests)
+├── test_renderer.py       # HTML rendering          (3 tests)
+├── test_config.py         # Configuration settings  (3 tests)
+├── test_ai_client.py      # AI provider config      (2 tests)
+├── test_prompts.py        # Prompt generation       (2 tests)
+└── test_integration.py    # End-to-end flow         (1 test)
 </code></pre></div>
 
-<h3 id="common-pytest-options">Common pytest options</h3>
-<div class="highlight"><pre><span></span><code><span class="c1"># Verbose output with test names</span>
-uv<span class="w"> </span>run<span class="w"> </span>pytest<span class="w"> </span>-v
+<h3 id="test_mainpy-api-endpoints-8-tests">test_main.py — API Endpoints (8 tests)</h3>
+<p>Tests the FastAPI application endpoints: health check, project status, generation triggering, project retrieval, deletion, local path support, and force-regeneration.</p>
+<p>Uses an async <code>client</code> fixture that creates an isolated <code>httpx.AsyncClient</code> connected to the app via ASGI transport:</p>
+<div class="highlight"><pre><span></span><code><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">client</span><span class="p">(</span><span class="n">tmp_path</span><span class="p">:</span> <span class="n">Path</span><span class="p">):</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">docsfy.storage</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">storage</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">docsfy.main</span><span class="w"> </span><span class="kn">import</span> <span class="n">_generating</span>
 
-<span class="c1"># Run a specific test file</span>
-uv<span class="w"> </span>run<span class="w"> </span>pytest<span class="w"> </span>tests/test_main.py
+    <span class="n">orig_db</span> <span class="o">=</span> <span class="n">storage</span><span class="o">.</span><span class="n">DB_PATH</span>
+    <span class="n">orig_data</span> <span class="o">=</span> <span class="n">storage</span><span class="o">.</span><span class="n">DATA_DIR</span>
+    <span class="n">orig_projects</span> <span class="o">=</span> <span class="n">storage</span><span class="o">.</span><span class="n">PROJECTS_DIR</span>
 
-<span class="c1"># Run a specific test function</span>
-uv<span class="w"> </span>run<span class="w"> </span>pytest<span class="w"> </span>tests/test_main.py::test_health_endpoint
+    <span class="n">storage</span><span class="o">.</span><span class="n">DB_PATH</span> <span class="o">=</span> <span class="n">tmp_path</span> <span class="o">/</span> <span class="s2">&quot;test.db&quot;</span>
+    <span class="n">storage</span><span class="o">.</span><span class="n">DATA_DIR</span> <span class="o">=</span> <span class="n">tmp_path</span>
+    <span class="n">storage</span><span class="o">.</span><span class="n">PROJECTS_DIR</span> <span class="o">=</span> <span class="n">tmp_path</span> <span class="o">/</span> <span class="s2">&quot;projects&quot;</span>
+    <span class="n">_generating</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
 
-<span class="c1"># Run tests matching a keyword</span>
-uv<span class="w"> </span>run<span class="w"> </span>pytest<span class="w"> </span>-k<span class="w"> </span><span class="s2">&quot;test_generate&quot;</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">docsfy.main</span><span class="w"> </span><span class="kn">import</span> <span class="n">app</span>
 
-<span class="c1"># Stop on first failure</span>
-uv<span class="w"> </span>run<span class="w"> </span>pytest<span class="w"> </span>-x
+    <span class="k">await</span> <span class="n">storage</span><span class="o">.</span><span class="n">init_db</span><span class="p">()</span>
+    <span class="n">transport</span> <span class="o">=</span> <span class="n">ASGITransport</span><span class="p">(</span><span class="n">app</span><span class="o">=</span><span class="n">app</span><span class="p">)</span>
+    <span class="k">async</span> <span class="k">with</span> <span class="n">AsyncClient</span><span class="p">(</span><span class="n">transport</span><span class="o">=</span><span class="n">transport</span><span class="p">,</span> <span class="n">base_url</span><span class="o">=</span><span class="s2">&quot;http://test&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">ac</span><span class="p">:</span>
+        <span class="k">yield</span> <span class="n">ac</span>
 
-<span class="c1"># Show local variables in tracebacks</span>
-uv<span class="w"> </span>run<span class="w"> </span>pytest<span class="w"> </span>-l
-
-<span class="c1"># Run with coverage report</span>
-uv<span class="w"> </span>run<span class="w"> </span>pytest<span class="w"> </span>--cov<span class="o">=</span>docsfy<span class="w"> </span>--cov-report<span class="o">=</span>term-missing
+    <span class="n">storage</span><span class="o">.</span><span class="n">DB_PATH</span> <span class="o">=</span> <span class="n">orig_db</span>
+    <span class="n">storage</span><span class="o">.</span><span class="n">DATA_DIR</span> <span class="o">=</span> <span class="n">orig_data</span>
+    <span class="n">storage</span><span class="o">.</span><span class="n">PROJECTS_DIR</span> <span class="o">=</span> <span class="n">orig_projects</span>
+    <span class="n">_generating</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
 </code></pre></div>
 
-<h3 id="pytest-configuration">Pytest Configuration</h3>
-<p>Pytest is configured in <code>pyproject.toml</code>:</p>
-<div class="highlight"><pre><span></span><code><span class="k">[tool.pytest.ini_options]</span>
-<span class="n">testpaths</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;tests&quot;</span><span class="p">]</span>
-<span class="n">addopts</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;-ra -q&quot;</span>
+<p>Example endpoint tests:</p>
+<div class="highlight"><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">test_health_endpoint</span><span class="p">(</span><span class="n">client</span><span class="p">:</span> <span class="n">AsyncClient</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/health&quot;</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">200</span>
+    <span class="k">assert</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()[</span><span class="s2">&quot;status&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;ok&quot;</span>
+
+
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">test_generate_endpoint_starts_generation</span><span class="p">(</span><span class="n">client</span><span class="p">:</span> <span class="n">AsyncClient</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">with</span> <span class="n">patch</span><span class="p">(</span><span class="s2">&quot;docsfy.main.asyncio.create_task&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">mock_task</span><span class="p">:</span>
+        <span class="n">mock_task</span><span class="o">.</span><span class="n">side_effect</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">coro</span><span class="p">:</span> <span class="n">coro</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="n">client</span><span class="o">.</span><span class="n">post</span><span class="p">(</span>
+            <span class="s2">&quot;/api/generate&quot;</span><span class="p">,</span>
+            <span class="n">json</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;repo_url&quot;</span><span class="p">:</span> <span class="s2">&quot;https://github.com/org/repo.git&quot;</span><span class="p">},</span>
+        <span class="p">)</span>
+    <span class="k">assert</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">202</span>
+    <span class="n">body</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+    <span class="k">assert</span> <span class="n">body</span><span class="p">[</span><span class="s2">&quot;project&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;repo&quot;</span>
+    <span class="k">assert</span> <span class="n">body</span><span class="p">[</span><span class="s2">&quot;status&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;generating&quot;</span>
 </code></pre></div>
 
-<table>
-<thead>
-<tr>
-<th>Option</th>
-<th>Meaning</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>testpaths</code></td>
-<td>Directories to search for tests</td>
-</tr>
-<tr>
-<td><code>-ra</code></td>
-<td>Show summary of all non-passing tests</td>
-</tr>
-<tr>
-<td><code>-q</code></td>
-<td>Quiet output — less verbose by default</td>
-</tr>
-</tbody>
-</table>
-<h3 id="writing-tests">Writing Tests</h3>
-<p>Tests live in the <code>tests/</code> directory and follow standard pytest conventions. Test files must be named <code>test_*.py</code> and test functions must be prefixed with <code>test_</code>.</p>
-<p>Example — testing the health endpoint:</p>
-<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">pytest</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">fastapi.testclient</span><span class="w"> </span><span class="kn">import</span> <span class="n">TestClient</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">docsfy.main</span><span class="w"> </span><span class="kn">import</span> <span class="n">app</span>
+<h3 id="test_modelspy-data-model-validation-10-tests">test_models.py — Data Model Validation (10 tests)</h3>
+<p>Validates Pydantic models including <code>GenerateRequest</code>, <code>DocPage</code>, <code>DocPlan</code>, <code>NavGroup</code>, and <code>ProjectStatus</code>. Tests cover URL validation, project name extraction, local path support, and mutual exclusivity of <code>repo_url</code> and <code>repo_path</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">test_generate_request_extracts_project_name</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">docsfy.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">GenerateRequest</span>
+
+    <span class="n">req</span> <span class="o">=</span> <span class="n">GenerateRequest</span><span class="p">(</span><span class="n">repo_url</span><span class="o">=</span><span class="s2">&quot;https://github.com/org/my-repo.git&quot;</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">req</span><span class="o">.</span><span class="n">project_name</span> <span class="o">==</span> <span class="s2">&quot;my-repo&quot;</span>
+
+    <span class="n">req2</span> <span class="o">=</span> <span class="n">GenerateRequest</span><span class="p">(</span><span class="n">repo_url</span><span class="o">=</span><span class="s2">&quot;https://github.com/org/my-repo&quot;</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">req2</span><span class="o">.</span><span class="n">project_name</span> <span class="o">==</span> <span class="s2">&quot;my-repo&quot;</span>
 
 
-<span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">client</span><span class="p">():</span>
-    <span class="k">return</span> <span class="n">TestClient</span><span class="p">(</span><span class="n">app</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_generate_request_requires_source</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">docsfy.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">GenerateRequest</span>
+
+    <span class="k">with</span> <span class="n">pytest</span><span class="o">.</span><span class="n">raises</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+        <span class="n">GenerateRequest</span><span class="p">()</span>
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">test_health_endpoint</span><span class="p">(</span><span class="n">client</span><span class="p">):</span>
-    <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/health&quot;</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_generate_request_rejects_both</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">docsfy.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">GenerateRequest</span>
+
+    <span class="k">with</span> <span class="n">pytest</span><span class="o">.</span><span class="n">raises</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+        <span class="n">GenerateRequest</span><span class="p">(</span>
+            <span class="n">repo_url</span><span class="o">=</span><span class="s2">&quot;https://github.com/org/repo.git&quot;</span><span class="p">,</span> <span class="n">repo_path</span><span class="o">=</span><span class="s2">&quot;/some/path&quot;</span>
+        <span class="p">)</span>
+</code></pre></div>
+
+<h3 id="test_storagepy-database-operations-7-tests">test_storage.py — Database Operations (7 tests)</h3>
+<p>Tests the async SQLite storage layer (via <code>aiosqlite</code>): database initialization, project CRUD operations, listing, and deletion. Each test runs against an isolated temporary database:</p>
+<div class="highlight"><pre><span></span><code><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">db_path</span><span class="p">(</span><span class="n">tmp_path</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">docsfy.storage</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">storage</span>
+
+    <span class="n">db</span> <span class="o">=</span> <span class="n">tmp_path</span> <span class="o">/</span> <span class="s2">&quot;test.db&quot;</span>
+    <span class="n">storage</span><span class="o">.</span><span class="n">DB_PATH</span> <span class="o">=</span> <span class="n">db</span>
+    <span class="n">storage</span><span class="o">.</span><span class="n">DATA_DIR</span> <span class="o">=</span> <span class="n">tmp_path</span>
+    <span class="n">storage</span><span class="o">.</span><span class="n">PROJECTS_DIR</span> <span class="o">=</span> <span class="n">tmp_path</span> <span class="o">/</span> <span class="s2">&quot;projects&quot;</span>
+    <span class="k">await</span> <span class="n">storage</span><span class="o">.</span><span class="n">init_db</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">db</span>
+
+
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">test_save_and_get_project</span><span class="p">(</span><span class="n">db_path</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">docsfy.storage</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_project</span><span class="p">,</span> <span class="n">save_project</span>
+
+    <span class="k">await</span> <span class="n">save_project</span><span class="p">(</span>
+        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;my-repo&quot;</span><span class="p">,</span>
+        <span class="n">repo_url</span><span class="o">=</span><span class="s2">&quot;https://github.com/org/my-repo.git&quot;</span><span class="p">,</span>
+        <span class="n">status</span><span class="o">=</span><span class="s2">&quot;generating&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">project</span> <span class="o">=</span> <span class="k">await</span> <span class="n">get_project</span><span class="p">(</span><span class="s2">&quot;my-repo&quot;</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">project</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+    <span class="k">assert</span> <span class="n">project</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;my-repo&quot;</span>
+    <span class="k">assert</span> <span class="n">project</span><span class="p">[</span><span class="s2">&quot;status&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;generating&quot;</span>
+</code></pre></div>
+
+<h3 id="test_json_parserpy-json-parsing-7-tests">test_json_parser.py — JSON Parsing (7 tests)</h3>
+<p>Tests the <code>parse_json_response</code> function that extracts JSON from AI-generated output, which may include surrounding text, markdown code blocks, nested braces, and escaped characters:</p>
+<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">test_parse_json_from_code_block</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">docsfy.json_parser</span><span class="w"> </span><span class="kn">import</span> <span class="n">parse_json_response</span>
+
+    <span class="n">raw</span> <span class="o">=</span> <span class="s1">&#39;```json</span><span class="se">\n</span><span class="s1">{&quot;project_name&quot;: &quot;test&quot;, &quot;navigation&quot;: []}</span><span class="se">\n</span><span class="s1">```&#39;</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">parse_json_response</span><span class="p">(</span><span class="n">raw</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">result</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+    <span class="k">assert</span> <span class="n">result</span><span class="p">[</span><span class="s2">&quot;project_name&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;test&quot;</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">test_parse_json_returns_none_for_garbage</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">docsfy.json_parser</span><span class="w"> </span><span class="kn">import</span> <span class="n">parse_json_response</span>
+
+    <span class="n">result</span> <span class="o">=</span> <span class="n">parse_json_response</span><span class="p">(</span><span class="s2">&quot;this is not json at all&quot;</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">result</span> <span class="ow">is</span> <span class="kc">None</span>
+</code></pre></div>
+
+<h3 id="test_repositorypy-git-operations-6-tests">test_repository.py — Git Operations (6 tests)</h3>
+<p>Tests repository name extraction (HTTPS and SSH URLs), shallow cloning with <code>--depth 1</code>, SHA retrieval via <code>git rev-parse</code>, and error handling for failed clone and rev-parse operations. External <code>subprocess.run</code> calls are mocked:</p>
+<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">test_clone_repo_success</span><span class="p">(</span><span class="n">tmp_path</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">docsfy.repository</span><span class="w"> </span><span class="kn">import</span> <span class="n">clone_repo</span>
+
+    <span class="k">with</span> <span class="n">patch</span><span class="p">(</span><span class="s2">&quot;docsfy.repository.subprocess.run&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">mock_run</span><span class="p">:</span>
+        <span class="n">mock_run</span><span class="o">.</span><span class="n">side_effect</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">MagicMock</span><span class="p">(</span><span class="n">returncode</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">),</span>
+            <span class="n">MagicMock</span><span class="p">(</span><span class="n">returncode</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="s2">&quot;abc123def</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">),</span>
+        <span class="p">]</span>
+        <span class="n">repo_path</span><span class="p">,</span> <span class="n">sha</span> <span class="o">=</span> <span class="n">clone_repo</span><span class="p">(</span><span class="s2">&quot;https://github.com/org/repo.git&quot;</span><span class="p">,</span> <span class="n">tmp_path</span><span class="p">)</span>
+
+    <span class="k">assert</span> <span class="n">repo_path</span> <span class="o">==</span> <span class="n">tmp_path</span> <span class="o">/</span> <span class="s2">&quot;repo&quot;</span>
+    <span class="k">assert</span> <span class="n">sha</span> <span class="o">==</span> <span class="s2">&quot;abc123def&quot;</span>
+    <span class="k">assert</span> <span class="n">mock_run</span><span class="o">.</span><span class="n">call_count</span> <span class="o">==</span> <span class="mi">2</span>
+</code></pre></div>
+
+<h3 id="test_generatorpy-ai-powered-generation-5-tests">test_generator.py — AI-Powered Generation (5 tests)</h3>
+<p>Tests the documentation planner and page generator with mocked AI CLI calls. Covers successful plan generation, AI failure handling, malformed JSON responses, page generation, and cache-hit behavior:</p>
+<div class="highlight"><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">test_run_planner</span><span class="p">(</span><span class="n">tmp_path</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">sample_plan</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">docsfy.generator</span><span class="w"> </span><span class="kn">import</span> <span class="n">run_planner</span>
+
+    <span class="k">with</span> <span class="n">patch</span><span class="p">(</span>
+        <span class="s2">&quot;docsfy.generator.call_ai_cli&quot;</span><span class="p">,</span> <span class="n">return_value</span><span class="o">=</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">sample_plan</span><span class="p">))</span>
+    <span class="p">):</span>
+        <span class="n">plan</span> <span class="o">=</span> <span class="k">await</span> <span class="n">run_planner</span><span class="p">(</span>
+            <span class="n">repo_path</span><span class="o">=</span><span class="n">tmp_path</span><span class="p">,</span>
+            <span class="n">project_name</span><span class="o">=</span><span class="s2">&quot;test-repo&quot;</span><span class="p">,</span>
+            <span class="n">ai_provider</span><span class="o">=</span><span class="s2">&quot;claude&quot;</span><span class="p">,</span>
+            <span class="n">ai_model</span><span class="o">=</span><span class="s2">&quot;opus&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">assert</span> <span class="n">plan</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+    <span class="k">assert</span> <span class="n">plan</span><span class="p">[</span><span class="s2">&quot;project_name&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;test-repo&quot;</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">plan</span><span class="p">[</span><span class="s2">&quot;navigation&quot;</span><span class="p">])</span> <span class="o">==</span> <span class="mi">1</span>
+
+
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">test_generate_page_uses_cache</span><span class="p">(</span><span class="n">tmp_path</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">docsfy.generator</span><span class="w"> </span><span class="kn">import</span> <span class="n">generate_page</span>
+
+    <span class="n">cache_dir</span> <span class="o">=</span> <span class="n">tmp_path</span> <span class="o">/</span> <span class="s2">&quot;cache&quot;</span>
+    <span class="n">cache_dir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">()</span>
+    <span class="n">cached</span> <span class="o">=</span> <span class="n">cache_dir</span> <span class="o">/</span> <span class="s2">&quot;introduction.md&quot;</span>
+    <span class="n">cached</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="s2">&quot;# Cached content&quot;</span><span class="p">)</span>
+
+    <span class="n">md</span> <span class="o">=</span> <span class="k">await</span> <span class="n">generate_page</span><span class="p">(</span>
+        <span class="n">repo_path</span><span class="o">=</span><span class="n">tmp_path</span><span class="p">,</span>
+        <span class="n">slug</span><span class="o">=</span><span class="s2">&quot;introduction&quot;</span><span class="p">,</span>
+        <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Introduction&quot;</span><span class="p">,</span>
+        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Overview&quot;</span><span class="p">,</span>
+        <span class="n">cache_dir</span><span class="o">=</span><span class="n">cache_dir</span><span class="p">,</span>
+        <span class="n">ai_provider</span><span class="o">=</span><span class="s2">&quot;claude&quot;</span><span class="p">,</span>
+        <span class="n">ai_model</span><span class="o">=</span><span class="s2">&quot;opus&quot;</span><span class="p">,</span>
+        <span class="n">use_cache</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="k">assert</span> <span class="n">md</span> <span class="o">==</span> <span class="s2">&quot;# Cached content&quot;</span>
+</code></pre></div>
+
+<h3 id="test_rendererpy-html-rendering-3-tests">test_renderer.py — HTML Rendering (3 tests)</h3>
+<p>Tests single-page HTML rendering, full site generation (including <code>index.html</code>, page HTML files, and CSS assets), and search index generation:</p>
+<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">test_render_site</span><span class="p">(</span><span class="n">tmp_path</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">docsfy.renderer</span><span class="w"> </span><span class="kn">import</span> <span class="n">render_site</span>
+
+    <span class="n">plan</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;project_name&quot;</span><span class="p">:</span> <span class="s2">&quot;test-repo&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;tagline&quot;</span><span class="p">:</span> <span class="s2">&quot;A test project&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;navigation&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;group&quot;</span><span class="p">:</span> <span class="s2">&quot;Getting Started&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;pages&quot;</span><span class="p">:</span> <span class="p">[</span>
+                    <span class="p">{</span><span class="s2">&quot;slug&quot;</span><span class="p">:</span> <span class="s2">&quot;introduction&quot;</span><span class="p">,</span> <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;Introduction&quot;</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Overview&quot;</span><span class="p">},</span>
+                <span class="p">],</span>
+            <span class="p">},</span>
+        <span class="p">],</span>
+    <span class="p">}</span>
+    <span class="n">pages</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;introduction&quot;</span><span class="p">:</span> <span class="s2">&quot;# Introduction</span><span class="se">\n\n</span><span class="s2">Welcome to test-repo.&quot;</span><span class="p">}</span>
+    <span class="n">output_dir</span> <span class="o">=</span> <span class="n">tmp_path</span> <span class="o">/</span> <span class="s2">&quot;site&quot;</span>
+
+    <span class="n">render_site</span><span class="p">(</span><span class="n">plan</span><span class="o">=</span><span class="n">plan</span><span class="p">,</span> <span class="n">pages</span><span class="o">=</span><span class="n">pages</span><span class="p">,</span> <span class="n">output_dir</span><span class="o">=</span><span class="n">output_dir</span><span class="p">)</span>
+
+    <span class="k">assert</span> <span class="p">(</span><span class="n">output_dir</span> <span class="o">/</span> <span class="s2">&quot;index.html&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span>
+    <span class="k">assert</span> <span class="p">(</span><span class="n">output_dir</span> <span class="o">/</span> <span class="s2">&quot;introduction.html&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span>
+    <span class="k">assert</span> <span class="p">(</span><span class="n">output_dir</span> <span class="o">/</span> <span class="s2">&quot;assets&quot;</span> <span class="o">/</span> <span class="s2">&quot;style.css&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">test_search_index_generated</span><span class="p">(</span><span class="n">tmp_path</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">docsfy.renderer</span><span class="w"> </span><span class="kn">import</span> <span class="n">render_site</span>
+
+    <span class="n">plan</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;project_name&quot;</span><span class="p">:</span> <span class="s2">&quot;test-repo&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;tagline&quot;</span><span class="p">:</span> <span class="s2">&quot;Test&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;navigation&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">{</span><span class="s2">&quot;group&quot;</span><span class="p">:</span> <span class="s2">&quot;Docs&quot;</span><span class="p">,</span> <span class="s2">&quot;pages&quot;</span><span class="p">:</span> <span class="p">[{</span><span class="s2">&quot;slug&quot;</span><span class="p">:</span> <span class="s2">&quot;intro&quot;</span><span class="p">,</span> <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;Intro&quot;</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">}]}</span>
+        <span class="p">],</span>
+    <span class="p">}</span>
+    <span class="n">pages</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;intro&quot;</span><span class="p">:</span> <span class="s2">&quot;# Intro</span><span class="se">\n\n</span><span class="s2">Some searchable content here.&quot;</span><span class="p">}</span>
+    <span class="n">output_dir</span> <span class="o">=</span> <span class="n">tmp_path</span> <span class="o">/</span> <span class="s2">&quot;site&quot;</span>
+
+    <span class="n">render_site</span><span class="p">(</span><span class="n">plan</span><span class="o">=</span><span class="n">plan</span><span class="p">,</span> <span class="n">pages</span><span class="o">=</span><span class="n">pages</span><span class="p">,</span> <span class="n">output_dir</span><span class="o">=</span><span class="n">output_dir</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="p">(</span><span class="n">output_dir</span> <span class="o">/</span> <span class="s2">&quot;search-index.json&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span>
+</code></pre></div>
+
+<h3 id="test_configpy-configuration-settings-3-tests">test_config.py — Configuration Settings (3 tests)</h3>
+<p>Validates the <code>Settings</code> Pydantic model with default values, custom environment overrides, and invalid input rejection:</p>
+<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">test_default_settings</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">docsfy.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">Settings</span>
+
+    <span class="k">with</span> <span class="n">patch</span><span class="o">.</span><span class="n">dict</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">,</span> <span class="p">{},</span> <span class="n">clear</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="n">settings</span> <span class="o">=</span> <span class="n">Settings</span><span class="p">(</span><span class="n">_env_file</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">settings</span><span class="o">.</span><span class="n">ai_provider</span> <span class="o">==</span> <span class="s2">&quot;claude&quot;</span>
+    <span class="k">assert</span> <span class="n">settings</span><span class="o">.</span><span class="n">ai_model</span> <span class="o">==</span> <span class="s2">&quot;claude-opus-4-6[1m]&quot;</span>
+    <span class="k">assert</span> <span class="n">settings</span><span class="o">.</span><span class="n">ai_cli_timeout</span> <span class="o">==</span> <span class="mi">60</span>
+    <span class="k">assert</span> <span class="n">settings</span><span class="o">.</span><span class="n">log_level</span> <span class="o">==</span> <span class="s2">&quot;INFO&quot;</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">test_invalid_timeout_rejected</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">docsfy.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">Settings</span>
+
+    <span class="k">with</span> <span class="n">patch</span><span class="o">.</span><span class="n">dict</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;AI_CLI_TIMEOUT&quot;</span><span class="p">:</span> <span class="s2">&quot;0&quot;</span><span class="p">},</span> <span class="n">clear</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="k">with</span> <span class="n">pytest</span><span class="o">.</span><span class="n">raises</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+            <span class="n">Settings</span><span class="p">(</span><span class="n">_env_file</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+</code></pre></div>
+
+<h3 id="test_ai_clientpy-ai-provider-configuration-2-tests">test_ai_client.py — AI Provider Configuration (2 tests)</h3>
+<p>Verifies that the AI client module correctly exports provider configurations and that all three supported providers (<code>claude</code>, <code>gemini</code>, <code>cursor</code>) are registered:</p>
+<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">test_reexports_available</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">docsfy.ai_client</span><span class="w"> </span><span class="kn">import</span> <span class="n">PROVIDERS</span><span class="p">,</span> <span class="n">VALID_AI_PROVIDERS</span>
+
+    <span class="k">assert</span> <span class="s2">&quot;claude&quot;</span> <span class="ow">in</span> <span class="n">PROVIDERS</span>
+    <span class="k">assert</span> <span class="s2">&quot;gemini&quot;</span> <span class="ow">in</span> <span class="n">PROVIDERS</span>
+    <span class="k">assert</span> <span class="s2">&quot;cursor&quot;</span> <span class="ow">in</span> <span class="n">PROVIDERS</span>
+    <span class="k">assert</span> <span class="n">VALID_AI_PROVIDERS</span> <span class="o">==</span> <span class="nb">frozenset</span><span class="p">({</span><span class="s2">&quot;claude&quot;</span><span class="p">,</span> <span class="s2">&quot;gemini&quot;</span><span class="p">,</span> <span class="s2">&quot;cursor&quot;</span><span class="p">})</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">test_provider_config_types</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">docsfy.ai_client</span><span class="w"> </span><span class="kn">import</span> <span class="n">PROVIDERS</span><span class="p">,</span> <span class="n">ProviderConfig</span>
+
+    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">config</span> <span class="ow">in</span> <span class="n">PROVIDERS</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">ProviderConfig</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">binary</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">callable</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">build_cmd</span><span class="p">)</span>
+</code></pre></div>
+
+<h3 id="test_promptspy-prompt-generation-2-tests">test_prompts.py — Prompt Generation (2 tests)</h3>
+<p>Tests that generated AI prompts contain the expected project name, output format instructions, and required schema fields:</p>
+<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">test_build_planner_prompt</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">docsfy.prompts</span><span class="w"> </span><span class="kn">import</span> <span class="n">build_planner_prompt</span>
+
+    <span class="n">prompt</span> <span class="o">=</span> <span class="n">build_planner_prompt</span><span class="p">(</span><span class="s2">&quot;my-repo&quot;</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="s2">&quot;my-repo&quot;</span> <span class="ow">in</span> <span class="n">prompt</span>
+    <span class="k">assert</span> <span class="s2">&quot;JSON&quot;</span> <span class="ow">in</span> <span class="n">prompt</span>
+    <span class="k">assert</span> <span class="s2">&quot;project_name&quot;</span> <span class="ow">in</span> <span class="n">prompt</span>
+    <span class="k">assert</span> <span class="s2">&quot;navigation&quot;</span> <span class="ow">in</span> <span class="n">prompt</span>
+</code></pre></div>
+
+<h3 id="test_integrationpy-end-to-end-flow-1-test">test_integration.py — End-to-End Flow (1 test)</h3>
+<p>A single comprehensive integration test that exercises the complete documentation generation lifecycle with mocked AI calls:</p>
+<ol>
+<li>Saves a project with status <code>"generating"</code></li>
+<li>Runs the generation pipeline (planning + page generation + rendering)</li>
+<li>Verifies status endpoint reports <code>"ready"</code></li>
+<li>Checks project details include the commit SHA</li>
+<li>Confirms HTML documentation pages are served correctly</li>
+<li>Downloads the project as a gzip archive</li>
+<li>Deletes the project and verifies it returns 404</li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">test_full_flow_mock</span><span class="p">(</span><span class="n">client</span><span class="p">:</span> <span class="n">AsyncClient</span><span class="p">,</span> <span class="n">tmp_path</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Test the full generate -&gt; status -&gt; download flow with mocked AI.&quot;&quot;&quot;</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">docsfy.storage</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">storage</span>
+
+    <span class="n">sample_plan</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;project_name&quot;</span><span class="p">:</span> <span class="s2">&quot;test-repo&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;tagline&quot;</span><span class="p">:</span> <span class="s2">&quot;A test project&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;navigation&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;group&quot;</span><span class="p">:</span> <span class="s2">&quot;Getting Started&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;pages&quot;</span><span class="p">:</span> <span class="p">[</span>
+                    <span class="p">{</span><span class="s2">&quot;slug&quot;</span><span class="p">:</span> <span class="s2">&quot;introduction&quot;</span><span class="p">,</span> <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;Introduction&quot;</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Overview&quot;</span><span class="p">},</span>
+                <span class="p">],</span>
+            <span class="p">}</span>
+        <span class="p">],</span>
+    <span class="p">}</span>
+
+    <span class="k">with</span> <span class="p">(</span>
+        <span class="n">patch</span><span class="p">(</span><span class="s2">&quot;docsfy.main.check_ai_cli_available&quot;</span><span class="p">,</span> <span class="n">return_value</span><span class="o">=</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)),</span>
+        <span class="n">patch</span><span class="p">(</span><span class="s2">&quot;docsfy.main.clone_repo&quot;</span><span class="p">,</span> <span class="n">return_value</span><span class="o">=</span><span class="p">(</span><span class="n">tmp_path</span> <span class="o">/</span> <span class="s2">&quot;repo&quot;</span><span class="p">,</span> <span class="s2">&quot;abc123&quot;</span><span class="p">)),</span>
+        <span class="n">patch</span><span class="p">(</span><span class="s2">&quot;docsfy.main.run_planner&quot;</span><span class="p">,</span> <span class="n">return_value</span><span class="o">=</span><span class="n">sample_plan</span><span class="p">),</span>
+        <span class="n">patch</span><span class="p">(</span>
+            <span class="s2">&quot;docsfy.main.generate_all_pages&quot;</span><span class="p">,</span>
+            <span class="n">return_value</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;introduction&quot;</span><span class="p">:</span> <span class="s2">&quot;# Intro</span><span class="se">\n\n</span><span class="s2">Welcome!&quot;</span><span class="p">},</span>
+        <span class="p">),</span>
+    <span class="p">):</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">docsfy.main</span><span class="w"> </span><span class="kn">import</span> <span class="n">_run_generation</span>
+
+        <span class="k">await</span> <span class="n">storage</span><span class="o">.</span><span class="n">save_project</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="s2">&quot;test-repo&quot;</span><span class="p">,</span>
+            <span class="n">repo_url</span><span class="o">=</span><span class="s2">&quot;https://github.com/org/test-repo.git&quot;</span><span class="p">,</span>
+            <span class="n">status</span><span class="o">=</span><span class="s2">&quot;generating&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">await</span> <span class="n">_run_generation</span><span class="p">(</span>
+            <span class="n">repo_url</span><span class="o">=</span><span class="s2">&quot;https://github.com/org/test-repo.git&quot;</span><span class="p">,</span>
+            <span class="n">repo_path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">project_name</span><span class="o">=</span><span class="s2">&quot;test-repo&quot;</span><span class="p">,</span>
+            <span class="n">ai_provider</span><span class="o">=</span><span class="s2">&quot;claude&quot;</span><span class="p">,</span>
+            <span class="n">ai_model</span><span class="o">=</span><span class="s2">&quot;opus&quot;</span><span class="p">,</span>
+            <span class="n">ai_cli_timeout</span><span class="o">=</span><span class="mi">60</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="c1"># Verify the full lifecycle</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/api/status&quot;</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()[</span><span class="s2">&quot;projects&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;status&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;ready&quot;</span>
+
+    <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/docs/test-repo/introduction.html&quot;</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="s2">&quot;Welcome!&quot;</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">text</span>
+
+    <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/api/projects/test-repo/download&quot;</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">response</span><span class="o">.</span><span class="n">headers</span><span class="p">[</span><span class="s2">&quot;content-type&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;application/gzip&quot;</span>
+
+    <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="n">client</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="s2">&quot;/api/projects/test-repo&quot;</span><span class="p">)</span>
     <span class="k">assert</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">200</span>
 </code></pre></div>
 
-<blockquote>
-<p><strong>Tip:</strong> Use <code>conftest.py</code> files in the <code>tests/</code> directory for shared fixtures. Pytest automatically discovers and makes them available to all tests in the same directory and below.</p>
-</blockquote>
-<hr />
-<h2 id="unused-code-checks">Unused-Code Checks</h2>
-<p>docsfy uses <strong>vulture</strong> to detect dead code — unused functions, variables, imports, and unreachable code paths. This prevents code rot and keeps the codebase lean.</p>
-<h3 id="run-via-tox">Run via tox</h3>
-<div class="highlight"><pre><span></span><code>tox<span class="w"> </span>-e<span class="w"> </span>unused-code
+<h2 id="testing-patterns">Testing Patterns</h2>
+<h3 id="async-first-design">Async-First Design</h3>
+<p>All tests that interact with the FastAPI app or the async SQLite storage layer are written as <code>async def</code> functions. With <code>asyncio_mode = "auto"</code> configured in <code>pyproject.toml</code>, pytest-asyncio handles the event loop automatically — no <code>@pytest.mark.asyncio</code> decorators are needed.</p>
+<h3 id="test-isolation">Test Isolation</h3>
+<p>Every test that touches the filesystem or database uses pytest's built-in <code>tmp_path</code> fixture to create a unique temporary directory. Storage module globals (<code>DB_PATH</code>, <code>DATA_DIR</code>, <code>PROJECTS_DIR</code>) are redirected to temporary paths and restored after each test, ensuring no state leaks between tests.</p>
+<h3 id="mocking-external-dependencies">Mocking External Dependencies</h3>
+<p>AI CLI calls and git subprocess calls are mocked with <code>unittest.mock.patch</code> to keep tests fast, deterministic, and free of external dependencies. No real AI providers or git repositories are needed to run the test suite:</p>
+<div class="highlight"><pre><span></span><code><span class="k">with</span> <span class="n">patch</span><span class="p">(</span><span class="s2">&quot;docsfy.generator.call_ai_cli&quot;</span><span class="p">,</span> <span class="n">return_value</span><span class="o">=</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">sample_plan</span><span class="p">))):</span>
+    <span class="n">plan</span> <span class="o">=</span> <span class="k">await</span> <span class="n">run_planner</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
 </code></pre></div>
 
-<h3 id="run-directly">Run directly</h3>
-<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>run<span class="w"> </span>vulture<span class="w"> </span>docsfy/<span class="w"> </span>tests/<span class="w"> </span>--min-confidence<span class="w"> </span><span class="m">80</span>
+<h3 id="asgi-transport-for-api-testing">ASGI Transport for API Testing</h3>
+<p>Instead of starting a live HTTP server, tests use <code>httpx.AsyncClient</code> with <code>ASGITransport</code> to send requests directly through the FastAPI application in-process. This approach is faster and avoids port conflicts:</p>
+<div class="highlight"><pre><span></span><code><span class="n">transport</span> <span class="o">=</span> <span class="n">ASGITransport</span><span class="p">(</span><span class="n">app</span><span class="o">=</span><span class="n">app</span><span class="p">)</span>
+<span class="k">async</span> <span class="k">with</span> <span class="n">AsyncClient</span><span class="p">(</span><span class="n">transport</span><span class="o">=</span><span class="n">transport</span><span class="p">,</span> <span class="n">base_url</span><span class="o">=</span><span class="s2">&quot;http://test&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">ac</span><span class="p">:</span>
+    <span class="k">yield</span> <span class="n">ac</span>
 </code></pre></div>
 
-<p>The <code>--min-confidence 80</code> flag filters out low-confidence results. Vulture uses heuristics to detect unused code, and lower confidence values produce more false positives.</p>
-<h3 id="handling-false-positives">Handling False Positives</h3>
-<p>Some code is intentionally unused from vulture's perspective — framework callbacks, plugin entry points, or dynamically referenced names. Create a vulture allowlist file to suppress these:</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># vulture_allowlist.py</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">docsfy.main</span><span class="w"> </span><span class="kn">import</span> <span class="n">app</span>  <span class="c1"># noqa: F401  # used by uvicorn</span>
-
-<span class="c1"># FastAPI event handlers are called by the framework</span>
-<span class="n">startup_event</span>  <span class="c1"># unused-function</span>
-<span class="n">shutdown_event</span>  <span class="c1"># unused-function</span>
-</code></pre></div>
-
-<p>Then include the allowlist in the vulture invocation:</p>
-<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>run<span class="w"> </span>vulture<span class="w"> </span>docsfy/<span class="w"> </span>tests/<span class="w"> </span>vulture_allowlist.py<span class="w"> </span>--min-confidence<span class="w"> </span><span class="m">80</span>
-</code></pre></div>
-
-<blockquote>
-<p><strong>Warning:</strong> Do not suppress vulture findings without understanding why the code appears unused. Legitimate dead code should be removed, not allowlisted.</p>
-</blockquote>
-<hr />
-<h2 id="quality-gates-pre-commit">Quality Gates (Pre-commit)</h2>
-<p>Pre-commit hooks run automatically before each <code>git commit</code>, enforcing code quality standards. docsfy uses the following hooks:</p>
+<h2 id="code-quality-checks">Code Quality Checks</h2>
+<p>The project uses <a href="https://pre-commit.com/">pre-commit</a> hooks defined in <code>.pre-commit-config.yaml</code> for automated quality enforcement:</p>
 <table>
 <thead>
 <tr>
-<th>Hook</th>
+<th>Tool</th>
+<th>Version</th>
 <th>Purpose</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td><strong>ruff</strong></td>
-<td>Linting and auto-formatting (replaces black + isort + many flake8 plugins)</td>
-</tr>
-<tr>
-<td><strong>mypy</strong></td>
-<td>Static type checking in strict mode</td>
+<td>v0.15.2</td>
+<td>Linting and code formatting</td>
 </tr>
 <tr>
 <td><strong>flake8</strong></td>
-<td>Additional linting rules complementing ruff</td>
+<td>v7.3.0</td>
+<td>Linting with RedHatQE M511 plugin</td>
+</tr>
+<tr>
+<td><strong>mypy</strong></td>
+<td>v1.19.1</td>
+<td>Static type checking (excludes <code>tests/</code>)</td>
 </tr>
 <tr>
 <td><strong>gitleaks</strong></td>
-<td>Scans for hardcoded secrets, API keys, and credentials</td>
+<td>v8.30.0</td>
+<td>Secrets detection in commits</td>
 </tr>
 <tr>
 <td><strong>detect-secrets</strong></td>
-<td>Baseline-aware secret detection</td>
+<td>v1.5.0</td>
+<td>Secret pattern detection</td>
 </tr>
 <tr>
-<td><strong>Standard hooks</strong></td>
-<td>Trailing whitespace, end-of-file fixer, YAML/TOML validation, merge conflict markers</td>
+<td><strong>pre-commit-hooks</strong></td>
+<td>v6.0.0</td>
+<td>AST checks, merge conflicts, trailing whitespace, large files</td>
 </tr>
 </tbody>
 </table>
-<h3 id="setup">Setup</h3>
-<p>Install the pre-commit hooks into your local git repository:</p>
-<div class="highlight"><pre><span></span><code>pre-commit<span class="w"> </span>install
-</code></pre></div>
-
-<h3 id="run-against-all-files">Run against all files</h3>
-<p>Pre-commit normally only checks staged files. To run all hooks against every file in the repository:</p>
+<p>Run all pre-commit checks manually:</p>
 <div class="highlight"><pre><span></span><code>pre-commit<span class="w"> </span>run<span class="w"> </span>--all-files
 </code></pre></div>
 
-<h3 id="run-a-specific-hook">Run a specific hook</h3>
-<div class="highlight"><pre><span></span><code><span class="c1"># Run only ruff</span>
-pre-commit<span class="w"> </span>run<span class="w"> </span>ruff<span class="w"> </span>--all-files
-
-<span class="c1"># Run only mypy</span>
-pre-commit<span class="w"> </span>run<span class="w"> </span>mypy<span class="w"> </span>--all-files
-
-<span class="c1"># Run only flake8</span>
-pre-commit<span class="w"> </span>run<span class="w"> </span>flake8<span class="w"> </span>--all-files
-</code></pre></div>
-
-<h3 id="pre-commit-configuration">Pre-commit Configuration</h3>
-<p>Hooks are defined in <code>.pre-commit-config.yaml</code> at the repository root. A representative configuration:</p>
-<div class="highlight"><pre><span></span><code><span class="nt">repos</span><span class="p">:</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">repo</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://github.com/pre-commit/pre-commit-hooks</span>
-<span class="w">    </span><span class="nt">rev</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">v5.0.0</span>
-<span class="w">    </span><span class="nt">hooks</span><span class="p">:</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">trailing-whitespace</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">end-of-file-fixer</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">check-yaml</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">check-toml</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">check-merge-conflict</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">check-added-large-files</span>
-
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">repo</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://github.com/astral-sh/ruff-pre-commit</span>
-<span class="w">    </span><span class="nt">rev</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">v0.9.0</span>
-<span class="w">    </span><span class="nt">hooks</span><span class="p">:</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ruff</span>
-<span class="w">        </span><span class="nt">args</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">--fix</span><span class="p p-Indicator">]</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ruff-format</span>
-
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">repo</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://github.com/pre-commit/mirrors-mypy</span>
-<span class="w">    </span><span class="nt">rev</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">v1.14.0</span>
-<span class="w">    </span><span class="nt">hooks</span><span class="p">:</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mypy</span>
-<span class="w">        </span><span class="nt">additional_dependencies</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">fastapi</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">pydantic</span><span class="p p-Indicator">]</span>
-
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">repo</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://github.com/PyCQA/flake8</span>
-<span class="w">    </span><span class="nt">rev</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">7.1.0</span>
-<span class="w">    </span><span class="nt">hooks</span><span class="p">:</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">flake8</span>
-
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">repo</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://github.com/gitleaks/gitleaks</span>
-<span class="w">    </span><span class="nt">rev</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">v8.22.0</span>
-<span class="w">    </span><span class="nt">hooks</span><span class="p">:</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gitleaks</span>
-
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">repo</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://github.com/Yelp/detect-secrets</span>
-<span class="w">    </span><span class="nt">rev</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">v1.5.0</span>
-<span class="w">    </span><span class="nt">hooks</span><span class="p">:</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">detect-secrets</span>
-</code></pre></div>
-
-<hr />
-<h2 id="tool-configuration-reference">Tool Configuration Reference</h2>
-<p>All Python tool configuration is centralized in <code>pyproject.toml</code>.</p>
-<h3 id="ruff">Ruff</h3>
-<div class="highlight"><pre><span></span><code><span class="k">[tool.ruff]</span>
-<span class="n">target-version</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;py312&quot;</span>
-<span class="n">line-length</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">120</span>
-
-<span class="k">[tool.ruff.lint]</span>
-<span class="n">select</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;E&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;F&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;I&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;W&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;UP&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;B&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;SIM&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;RUF&quot;</span><span class="p">]</span>
-
-<span class="k">[tool.ruff.format]</span>
-<span class="n">quote-style</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;double&quot;</span>
-</code></pre></div>
-
-<table>
-<thead>
-<tr>
-<th>Rule Set</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>E</code>, <code>W</code></td>
-<td>pycodestyle errors and warnings</td>
-</tr>
-<tr>
-<td><code>F</code></td>
-<td>pyflakes</td>
-</tr>
-<tr>
-<td><code>I</code></td>
-<td>isort (import sorting)</td>
-</tr>
-<tr>
-<td><code>UP</code></td>
-<td>pyupgrade (modern Python syntax)</td>
-</tr>
-<tr>
-<td><code>B</code></td>
-<td>flake8-bugbear (common pitfalls)</td>
-</tr>
-<tr>
-<td><code>SIM</code></td>
-<td>flake8-simplify</td>
-</tr>
-<tr>
-<td><code>RUF</code></td>
-<td>Ruff-specific rules</td>
-</tr>
-</tbody>
-</table>
-<h3 id="mypy">Mypy</h3>
-<div class="highlight"><pre><span></span><code><span class="k">[tool.mypy]</span>
-<span class="n">python_version</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;3.12&quot;</span>
-<span class="n">strict</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
-<span class="n">warn_return_any</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
-<span class="n">warn_unused_configs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
-<span class="n">disallow_untyped_defs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
-</code></pre></div>
-
 <blockquote>
-<p><strong>Note:</strong> Mypy runs in <strong>strict mode</strong>, which means all functions must have type annotations, and <code>Any</code> types are flagged. This catches type errors early and keeps the codebase fully typed.</p>
+<p><strong>Note:</strong> mypy is configured to exclude the <code>tests/</code> directory, allowing test code to use relaxed type annotations while keeping production code strictly typed.</p>
 </blockquote>
-<h3 id="flake8">Flake8</h3>
-<p>Flake8 configuration lives in a separate <code>.flake8</code> file (it does not support <code>pyproject.toml</code>):</p>
-<div class="highlight"><pre><span></span><code><span class="k">[flake8]</span>
-<span class="na">max-line-length</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">120</span>
-<span class="na">extend-ignore</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">E203, W503</span>
-</code></pre></div>
-
-<hr />
-<h2 id="development-workflow">Development Workflow</h2>
-<p>A typical development cycle looks like this:</p>
-<div class="highlight"><pre><span></span><code>1. Write code + tests
-2. Run unit tests          →  uv run pytest
-3. Run unused-code check   →  uv run vulture docsfy/ tests/ --min-confidence 80
-4. Run full tox suite      →  tox
-5. Commit (pre-commit runs automatically)
-6. Fix any hook failures, re-commit
-</code></pre></div>
-
-<h3 id="quick-feedback-loop">Quick feedback loop</h3>
-<p>During active development, use <code>uv run pytest</code> directly for fast iteration:</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># Watch mode with pytest-watch (if installed)</span>
-uv<span class="w"> </span>run<span class="w"> </span>ptw<span class="w"> </span>--<span class="w"> </span>-x<span class="w"> </span>-q
-
-<span class="c1"># Or manually re-run on changes</span>
-uv<span class="w"> </span>run<span class="w"> </span>pytest<span class="w"> </span>-x<span class="w"> </span>-q<span class="w"> </span>tests/test_main.py
-</code></pre></div>
-
-<h3 id="before-opening-a-pr">Before opening a PR</h3>
-<p>Always run the full tox suite and pre-commit against all files:</p>
-<div class="highlight"><pre><span></span><code>tox<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>pre-commit<span class="w"> </span>run<span class="w"> </span>--all-files
-</code></pre></div>
-
-<blockquote>
-<p><strong>Warning:</strong> Do not skip pre-commit hooks with <code>--no-verify</code>. If a hook fails, fix the underlying issue rather than bypassing the check.</p>
-</blockquote>
-<hr />
-<h2 id="troubleshooting">Troubleshooting</h2>
-<h3 id="tox-cannot-find-uv">Tox cannot find uv</h3>
-<p>Ensure <code>uv</code> is installed and available on your <code>PATH</code>:</p>
-<div class="highlight"><pre><span></span><code>which<span class="w"> </span>uv
-uv<span class="w"> </span>--version
-</code></pre></div>
-
-<p>If uv is installed but tox cannot find it, add <code>allowlist_externals = uv</code> to the relevant <code>[testenv]</code> section.</p>
-<h3 id="mypy-reports-missing-stubs">Mypy reports missing stubs</h3>
-<p>Install the required type stubs as additional dependencies in the mypy pre-commit hook or add them to your dev dependencies:</p>
-<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>add<span class="w"> </span>--dev<span class="w"> </span>types-requests<span class="w"> </span>types-pyyaml
-</code></pre></div>
-
-<h3 id="vulture-reports-false-positives-for-fastapi-routes">Vulture reports false positives for FastAPI routes</h3>
-<p>FastAPI route handlers are called by the framework, not directly in your code. Add them to the vulture allowlist file rather than suppressing the check entirely.</p>
-<h3 id="pre-commit-hooks-are-slow">Pre-commit hooks are slow</h3>
-<p>Pre-commit caches hook environments. If hooks are unusually slow, clear and rebuild the cache:</p>
-<div class="highlight"><pre><span></span><code>pre-commit<span class="w"> </span>clean
-pre-commit<span class="w"> </span>install
-pre-commit<span class="w"> </span>run<span class="w"> </span>--all-files
-</code></pre></div>
                 </div>
             </article>
             <nav class="page-nav">
                 
-                <a href="project-structure.html" class="page-nav-link page-nav-prev">
+                <a href="development-setup.html" class="page-nav-link page-nav-prev">
                     <span class="page-nav-label">Previous</span>
-                    <span class="page-nav-title">Project Structure</span>
+                    <span class="page-nav-title">Development Setup</span>
                 </a>
                 
                 
@@ -766,53 +840,36 @@ pre-commit<span class="w"> </span>run<span class="w"> </span>--all-files
                     <h3>On this page</h3>
                     <div class="toc">
 <ul>
-<li><a href="#overview">Overview</a></li>
-<li><a href="#prerequisites">Prerequisites</a></li>
-<li><a href="#running-the-full-test-suite-with-tox">Running the Full Test Suite with Tox</a><ul>
-<li><a href="#run-everything">Run everything</a></li>
-<li><a href="#list-available-environments">List available environments</a></li>
-<li><a href="#run-a-specific-environment">Run a specific environment</a></li>
-<li><a href="#tox-configuration">Tox Configuration</a></li>
-</ul>
-</li>
-<li><a href="#unit-tests-via-uv">Unit Tests via uv</a><ul>
-<li><a href="#run-all-tests">Run all tests</a></li>
-<li><a href="#common-pytest-options">Common pytest options</a></li>
+<li><a href="#quick-start">Quick Start</a></li>
 <li><a href="#pytest-configuration">Pytest Configuration</a></li>
-<li><a href="#writing-tests">Writing Tests</a></li>
+<li><a href="#running-tests">Running Tests</a><ul>
+<li><a href="#basic-commands">Basic Commands</a></li>
+<li><a href="#parallel-execution-with-pytest-xdist">Parallel Execution with pytest-xdist</a></li>
+<li><a href="#using-tox">Using tox</a></li>
 </ul>
 </li>
-<li><a href="#unused-code-checks">Unused-Code Checks</a><ul>
-<li><a href="#run-via-tox">Run via tox</a></li>
-<li><a href="#run-directly">Run directly</a></li>
-<li><a href="#handling-false-positives">Handling False Positives</a></li>
+<li><a href="#test-structure">Test Structure</a><ul>
+<li><a href="#test_mainpy-api-endpoints-8-tests">test_main.py — API Endpoints (8 tests)</a></li>
+<li><a href="#test_modelspy-data-model-validation-10-tests">test_models.py — Data Model Validation (10 tests)</a></li>
+<li><a href="#test_storagepy-database-operations-7-tests">test_storage.py — Database Operations (7 tests)</a></li>
+<li><a href="#test_json_parserpy-json-parsing-7-tests">test_json_parser.py — JSON Parsing (7 tests)</a></li>
+<li><a href="#test_repositorypy-git-operations-6-tests">test_repository.py — Git Operations (6 tests)</a></li>
+<li><a href="#test_generatorpy-ai-powered-generation-5-tests">test_generator.py — AI-Powered Generation (5 tests)</a></li>
+<li><a href="#test_rendererpy-html-rendering-3-tests">test_renderer.py — HTML Rendering (3 tests)</a></li>
+<li><a href="#test_configpy-configuration-settings-3-tests">test_config.py — Configuration Settings (3 tests)</a></li>
+<li><a href="#test_ai_clientpy-ai-provider-configuration-2-tests">test_ai_client.py — AI Provider Configuration (2 tests)</a></li>
+<li><a href="#test_promptspy-prompt-generation-2-tests">test_prompts.py — Prompt Generation (2 tests)</a></li>
+<li><a href="#test_integrationpy-end-to-end-flow-1-test">test_integration.py — End-to-End Flow (1 test)</a></li>
 </ul>
 </li>
-<li><a href="#quality-gates-pre-commit">Quality Gates (Pre-commit)</a><ul>
-<li><a href="#setup">Setup</a></li>
-<li><a href="#run-against-all-files">Run against all files</a></li>
-<li><a href="#run-a-specific-hook">Run a specific hook</a></li>
-<li><a href="#pre-commit-configuration">Pre-commit Configuration</a></li>
+<li><a href="#testing-patterns">Testing Patterns</a><ul>
+<li><a href="#async-first-design">Async-First Design</a></li>
+<li><a href="#test-isolation">Test Isolation</a></li>
+<li><a href="#mocking-external-dependencies">Mocking External Dependencies</a></li>
+<li><a href="#asgi-transport-for-api-testing">ASGI Transport for API Testing</a></li>
 </ul>
 </li>
-<li><a href="#tool-configuration-reference">Tool Configuration Reference</a><ul>
-<li><a href="#ruff">Ruff</a></li>
-<li><a href="#mypy">Mypy</a></li>
-<li><a href="#flake8">Flake8</a></li>
-</ul>
-</li>
-<li><a href="#development-workflow">Development Workflow</a><ul>
-<li><a href="#quick-feedback-loop">Quick feedback loop</a></li>
-<li><a href="#before-opening-a-pr">Before opening a PR</a></li>
-</ul>
-</li>
-<li><a href="#troubleshooting">Troubleshooting</a><ul>
-<li><a href="#tox-cannot-find-uv">Tox cannot find uv</a></li>
-<li><a href="#mypy-reports-missing-stubs">Mypy reports missing stubs</a></li>
-<li><a href="#vulture-reports-false-positives-for-fastapi-routes">Vulture reports false positives for FastAPI routes</a></li>
-<li><a href="#pre-commit-hooks-are-slow">Pre-commit hooks are slow</a></li>
-</ul>
-</li>
+<li><a href="#code-quality-checks">Code Quality Checks</a></li>
 </ul>
 </div>
 
@@ -854,6 +911,29 @@ pre-commit<span class="w"> </span>run<span class="w"> </span>--all-files
                 overlay.classList.remove('open');
                 if (toggle) toggle.setAttribute('aria-expanded', 'false');
             });
+        }
+    })();
+    </script>
+    <script>
+    (function() {
+        var sidebar = document.querySelector('.sidebar-nav') || document.querySelector('.sidebar');
+        if (!sidebar) return;
+
+        // Restore scroll position
+        var saved = sessionStorage.getItem('sidebar-scroll');
+        if (saved) sidebar.scrollTop = parseInt(saved, 10);
+
+        // Save scroll position before navigating
+        sidebar.addEventListener('scroll', function() {
+            sessionStorage.setItem('sidebar-scroll', sidebar.scrollTop.toString());
+        });
+
+        // Also scroll active link into view if no saved position
+        if (!saved) {
+            var active = sidebar.querySelector('.nav-link.active');
+            if (active) {
+                active.scrollIntoView({ block: 'center', behavior: 'instant' });
+            }
         }
     })();
     </script>

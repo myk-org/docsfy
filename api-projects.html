@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GET /api/projects/{name} - docsfy</title>
-    <meta name="description" content="AI-powered documentation site generator that creates polished, Mintlify-quality static HTML docs from GitHub repositories">
+    <title>Project Management Endpoints - docsfy</title>
+    <meta name="description" content="AI-powered documentation generator that turns GitHub repositories into polished static documentation websites">
     <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <a href="index.html" class="sidebar-logo">docsfy</a>
-            <p class="sidebar-tagline">AI-powered documentation site generator that creates polished, Mintlify-quality static HTML docs from GitHub repositories</p>
+            <p class="sidebar-tagline">AI-powered documentation generator that turns GitHub repositories into polished static documentation websites</p>
         </div>
 
         <div class="sidebar-search">
@@ -33,6 +33,13 @@
                     </li>
                     
                     <li>
+                        <a href="installation.html"
+                           class="nav-link">
+                            Installation
+                        </a>
+                    </li>
+                    
+                    <li>
                         <a href="quickstart.html"
                            class="nav-link">
                             Quickstart
@@ -40,44 +47,9 @@
                     </li>
                     
                     <li>
-                        <a href="installation.html"
+                        <a href="docker-deployment.html"
                            class="nav-link">
-                            Installation
-                        </a>
-                    </li>
-                    
-                </ul>
-            </div>
-            
-            <div class="nav-group">
-                <h3 class="nav-group-title">Core Concepts</h3>
-                <ul class="nav-group-pages">
-                    
-                    <li>
-                        <a href="architecture.html"
-                           class="nav-link">
-                            Architecture
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="generation-pipeline.html"
-                           class="nav-link">
-                            Generation Pipeline
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="ai-providers.html"
-                           class="nav-link">
-                            AI Providers
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="incremental-updates.html"
-                           class="nav-link">
-                            Incremental Updates
+                            Docker Deployment
                         </a>
                     </li>
                     
@@ -89,23 +61,16 @@
                 <ul class="nav-group-pages">
                     
                     <li>
-                        <a href="environment-variables.html"
+                        <a href="configuration.html"
                            class="nav-link">
-                            Environment Variables
+                            Configuration Reference
                         </a>
                     </li>
                     
                     <li>
-                        <a href="ai-provider-setup.html"
+                        <a href="ai-providers.html"
                            class="nav-link">
-                            AI Provider Setup
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="docker-configuration.html"
-                           class="nav-link">
-                            Docker Configuration
+                            AI Providers
                         </a>
                     </li>
                     
@@ -124,16 +89,23 @@
                     </li>
                     
                     <li>
-                        <a href="serving-docs.html"
+                        <a href="serving-and-downloading.html"
                            class="nav-link">
-                            Serving Documentation
+                            Serving and Downloading
                         </a>
                     </li>
                     
                     <li>
-                        <a href="managing-projects.html"
+                        <a href="generated-site-features.html"
                            class="nav-link">
-                            Managing Projects
+                            Generated Site Features
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="llm-friendly-output.html"
+                           class="nav-link">
+                            LLM-Friendly Output
                         </a>
                     </li>
                     
@@ -145,51 +117,30 @@
                 <ul class="nav-group-pages">
                     
                     <li>
-                        <a href="api-generate.html"
+                        <a href="api-overview.html"
                            class="nav-link">
-                            POST /api/generate
+                            API Overview
                         </a>
                     </li>
                     
                     <li>
-                        <a href="api-status.html"
+                        <a href="api-generation.html"
                            class="nav-link">
-                            GET /api/status
+                            Generation Endpoint
                         </a>
                     </li>
                     
                     <li>
                         <a href="api-projects.html"
                            class="nav-link active">
-                            GET /api/projects/{name}
+                            Project Management Endpoints
                         </a>
                     </li>
                     
                     <li>
-                        <a href="api-projects-delete.html"
+                        <a href="api-serving.html"
                            class="nav-link">
-                            DELETE /api/projects/{name}
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="api-download.html"
-                           class="nav-link">
-                            GET /api/projects/{name}/download
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="api-docs-serving.html"
-                           class="nav-link">
-                            GET /docs/{project}/{path}
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="api-health.html"
-                           class="nav-link">
-                            GET /health
+                            Serving and Download Endpoints
                         </a>
                     </li>
                     
@@ -197,27 +148,34 @@
             </div>
             
             <div class="nav-group">
-                <h3 class="nav-group-title">Generated Sites</h3>
+                <h3 class="nav-group-title">Architecture</h3>
                 <ul class="nav-group-pages">
                     
                     <li>
-                        <a href="html-theme.html"
+                        <a href="architecture-overview.html"
                            class="nav-link">
-                            HTML Theme &amp; Features
+                            Architecture Overview
                         </a>
                     </li>
                     
                     <li>
-                        <a href="plan-json-schema.html"
+                        <a href="project-structure.html"
                            class="nav-link">
-                            Plan JSON Schema
+                            Project Structure
                         </a>
                     </li>
                     
                     <li>
-                        <a href="customization.html"
+                        <a href="ai-generation-pipeline.html"
                            class="nav-link">
-                            Customization
+                            AI Generation Pipeline
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="storage-and-caching.html"
+                           class="nav-link">
+                            Storage and Caching
                         </a>
                     </li>
                     
@@ -232,13 +190,6 @@
                         <a href="development-setup.html"
                            class="nav-link">
                             Development Setup
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="project-structure.html"
-                           class="nav-link">
-                            Project Structure
                         </a>
                     </li>
                     
@@ -296,53 +247,48 @@
 
         <main class="content">
             <article class="article">
-                <h1 class="article-title">GET /api/projects/{name}</h1>
                 <div class="article-body">
                     <!-- content is pre-rendered from markdown by the server, not user input -->
-                    <h1 id="get-apiprojectsname">GET /api/projects/{name}</h1>
-<p>Retrieve detailed information about a documentation project, including its current status, the last generation timestamp, the commit SHA that was used, and a full listing of generated pages.</p>
-<h2 id="endpoint">Endpoint</h2>
-<div class="highlight"><pre><span></span><code>GET /api/projects/{name}
+                    <h1 id="project-management-endpoints">Project Management Endpoints</h1>
+<p>The project management endpoints allow you to monitor, inspect, and clean up documentation projects managed by docsfy. These read and delete operations complement the generation endpoint by giving you full visibility into project state and lifecycle management.</p>
+<h2 id="get-apistatus">GET /api/status</h2>
+<p>Lists all tracked projects with their current generation status. This is the primary endpoint for dashboards and monitoring tools that need an overview of all documentation projects.</p>
+<h3 id="request">Request</h3>
+<div class="highlight"><pre><span></span><code>GET /api/status
 </code></pre></div>
 
-<h2 id="path-parameters">Path Parameters</h2>
-<table>
-<thead>
-<tr>
-<th>Parameter</th>
-<th>Type</th>
-<th>Required</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>name</code></td>
-<td><code>string</code></td>
-<td>Yes</td>
-<td>The unique project name assigned during generation. This corresponds to the directory name under <code>/data/projects/</code>.</td>
-</tr>
-</tbody>
-</table>
-<h2 id="response">Response</h2>
-<h3 id="200-ok">200 OK</h3>
-<p>Returns the full project details including metadata from the SQLite database and the page listing derived from the project's <code>plan.json</code>.</p>
+<p>No query parameters or request body required.</p>
+<h3 id="response">Response</h3>
+<p>Returns HTTP <code>200</code> with a JSON object containing a <code>projects</code> array. Projects are ordered by most recently updated first.</p>
 <div class="highlight"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;my-project&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;repo_url&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://github.com/example/my-project&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ready&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;last_generated&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-03-04T18:32:01Z&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;last_commit_sha&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;pages&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">    </span><span class="s2">&quot;index.md&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="s2">&quot;getting-started.md&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="s2">&quot;configuration.md&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="s2">&quot;api-reference.md&quot;</span>
+<span class="w">  </span><span class="nt">&quot;projects&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;my-repo&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;repo_url&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://github.com/org/my-repo.git&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ready&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;last_commit_sha&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;abc123def456&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;last_generated&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2025-09-15 14:30:00&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;page_count&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">12</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;another-repo&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;repo_url&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://github.com/org/another-repo.git&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;generating&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;last_commit_sha&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;last_generated&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;page_count&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span>
+<span class="w">    </span><span class="p">}</span>
 <span class="w">  </span><span class="p">]</span>
 <span class="p">}</span>
 </code></pre></div>
 
-<h4 id="response-fields">Response Fields</h4>
+<p>When no projects exist, the response contains an empty array:</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;projects&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[]</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<h3 id="response-fields">Response Fields</h3>
 <table>
 <thead>
 <tr>
@@ -355,36 +301,44 @@
 <tr>
 <td><code>name</code></td>
 <td><code>string</code></td>
-<td>The unique project identifier.</td>
+<td>Unique project identifier, derived from the repository name</td>
 </tr>
 <tr>
 <td><code>repo_url</code></td>
 <td><code>string</code></td>
-<td>The GitHub repository URL (HTTPS or SSH) that this project was generated from.</td>
+<td>Source repository URL or local path</td>
 </tr>
 <tr>
 <td><code>status</code></td>
 <td><code>string</code></td>
-<td>Current project state. One of <code>generating</code>, <code>ready</code>, or <code>error</code>.</td>
-</tr>
-<tr>
-<td><code>last_generated</code></td>
-<td><code>string</code> (ISO 8601)</td>
-<td>Timestamp of the most recent documentation generation run.</td>
+<td>Current state: <code>"generating"</code>, <code>"ready"</code>, or <code>"error"</code></td>
 </tr>
 <tr>
 <td><code>last_commit_sha</code></td>
-<td><code>string</code></td>
-<td>The full 40-character Git commit SHA from the repository at the time of the last generation. Used for <a href="#incremental-updates-and-commit-tracking">incremental updates</a>.</td>
+<td><code>string \| null</code></td>
+<td>Git commit SHA of the last processed revision. <code>null</code> if generation hasn't completed</td>
 </tr>
 <tr>
-<td><code>pages</code></td>
-<td><code>array[string]</code></td>
-<td>List of documentation page filenames derived from the project's <code>plan.json</code>. These correspond to cached markdown files under <code>cache/pages/</code>.</td>
+<td><code>last_generated</code></td>
+<td><code>string \| null</code></td>
+<td>Timestamp when documentation was last successfully generated. <code>null</code> if never completed</td>
+</tr>
+<tr>
+<td><code>page_count</code></td>
+<td><code>integer</code></td>
+<td>Number of documentation pages generated. <code>0</code> during initial generation</td>
 </tr>
 </tbody>
 </table>
-<h3 id="project-status-values">Project Status Values</h3>
+<blockquote>
+<p><strong>Note:</strong> The <code>list_projects()</code> query in <code>storage.py</code> selects only the six fields shown above. Fields like <code>error_message</code>, <code>plan_json</code>, <code>created_at</code>, and <code>updated_at</code> are excluded from this summary view. Use <code>GET /api/projects/{name}</code> for full project details.</p>
+</blockquote>
+<h3 id="example">Example</h3>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>http://localhost:8000/api/status
+</code></pre></div>
+
+<h3 id="status-values">Status Values</h3>
+<p>The <code>status</code> field reflects where a project is in the generation lifecycle:</p>
 <table>
 <thead>
 <tr>
@@ -395,161 +349,387 @@
 <tbody>
 <tr>
 <td><code>generating</code></td>
-<td>Documentation generation is currently in progress. The pipeline is running through clone, plan, content, and render stages.</td>
+<td>Documentation generation is in progress. The AI planner and page generator are actively working.</td>
 </tr>
 <tr>
 <td><code>ready</code></td>
-<td>Generation completed successfully. The static site is available for serving or download.</td>
+<td>Generation completed successfully. Documentation is available for viewing and download.</td>
 </tr>
 <tr>
 <td><code>error</code></td>
-<td>The most recent generation attempt failed. Check generation logs for details.</td>
+<td>Generation failed. Use <code>GET /api/projects/{name}</code> to retrieve the <code>error_message</code> with details.</td>
 </tr>
 </tbody>
 </table>
-<h3 id="404-not-found">404 Not Found</h3>
-<p>Returned when no project exists with the given name.</p>
-<div class="highlight"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;detail&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Project not found: my-project&quot;</span>
-<span class="p">}</span>
+<p>These values are enforced at the storage layer as a fixed set:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># src/docsfy/storage.py</span>
+<span class="n">VALID_STATUSES</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">({</span><span class="s2">&quot;generating&quot;</span><span class="p">,</span> <span class="s2">&quot;ready&quot;</span><span class="p">,</span> <span class="s2">&quot;error&quot;</span><span class="p">})</span>
 </code></pre></div>
 
-<h2 id="examples">Examples</h2>
-<h3 id="retrieve-a-project-with-completed-documentation">Retrieve a project with completed documentation</h3>
-<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>http://localhost:8000/api/projects/my-project
+<hr />
+<h2 id="get-apiprojectsname">GET /api/projects/{name}</h2>
+<p>Retrieves full details for a single project, including fields not returned by the status listing such as <code>error_message</code>, <code>plan_json</code>, and timestamps.</p>
+<h3 id="request_1">Request</h3>
+<div class="highlight"><pre><span></span><code>GET /api/projects/{name}
 </code></pre></div>
 
-<div class="highlight"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;my-project&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;repo_url&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://github.com/example/my-project&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ready&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;last_generated&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-03-04T18:32:01Z&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;last_commit_sha&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;pages&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">    </span><span class="s2">&quot;index.md&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="s2">&quot;getting-started.md&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="s2">&quot;configuration.md&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="s2">&quot;api-reference.md&quot;</span>
-<span class="w">  </span><span class="p">]</span>
-<span class="p">}</span>
-</code></pre></div>
-
-<h3 id="check-a-project-that-is-currently-generating">Check a project that is currently generating</h3>
-<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>http://localhost:8000/api/projects/new-project
-</code></pre></div>
-
-<div class="highlight"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;new-project&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;repo_url&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://github.com/example/new-project&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;generating&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;last_generated&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;last_commit_sha&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;f6e5d4c3b2a1f6e5d4c3b2a1f6e5d4c3b2a1f6e5&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;pages&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[]</span>
-<span class="p">}</span>
-</code></pre></div>
-
-<blockquote>
-<p><strong>Note:</strong> While a project is in <code>generating</code> status, <code>last_generated</code> may be <code>null</code> if this is the first generation run. The <code>pages</code> array will be empty until the AI Planner and Content Generator stages complete.</p>
-</blockquote>
-<h3 id="query-a-project-that-failed-generation">Query a project that failed generation</h3>
-<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>http://localhost:8000/api/projects/broken-project
-</code></pre></div>
-
-<div class="highlight"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;broken-project&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;repo_url&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://github.com/example/broken-project&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;error&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;last_generated&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-03-04T12:01:44Z&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;last_commit_sha&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;d4c3b2a1f6e5d4c3b2a1f6e5d4c3b2a1f6e5d4c3&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;pages&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[]</span>
-<span class="p">}</span>
-</code></pre></div>
-
-<blockquote>
-<p><strong>Tip:</strong> If a project is in <code>error</code> status, you can re-trigger generation by calling <code>POST /api/generate</code> with the same repository URL. The pipeline will re-clone and attempt a full generation.</p>
-</blockquote>
-<h2 id="incremental-updates-and-commit-tracking">Incremental Updates and Commit Tracking</h2>
-<p>The <code>last_commit_sha</code> field plays a key role in the incremental update system. When you trigger a re-generation for an existing project via <code>POST /api/generate</code>:</p>
-<ol>
-<li>docsfy fetches the repository and compares the current HEAD SHA against the stored <code>last_commit_sha</code>.</li>
-<li>If the SHA has changed, the AI Planner re-evaluates whether the documentation structure needs updating.</li>
-<li>Only pages affected by the changes are regenerated, keeping previously cached markdown pages intact.</li>
-<li>The <code>last_commit_sha</code> is updated to reflect the new HEAD after generation completes.</li>
-</ol>
-<p>This makes <code>GET /api/projects/{name}</code> useful for CI/CD integrations that need to determine whether documentation is current with the latest commit.</p>
-<h2 id="storage-layout">Storage Layout</h2>
-<p>The data returned by this endpoint is assembled from two sources:</p>
-<p><strong>SQLite database</strong> (<code>/data/docsfy.db</code>) stores the project metadata — name, repo URL, status, timestamps, and commit SHA.</p>
-<p><strong>Filesystem</strong> (<code>/data/projects/{name}/</code>) holds the generated artifacts:</p>
-<div class="highlight"><pre><span></span><code>/data/projects/{name}/
-  plan.json             # Documentation structure from AI (source for pages listing)
-  cache/
-    pages/*.md          # AI-generated markdown (cached for incremental updates)
-  site/                 # Final rendered HTML
-    index.html
-    *.html
-    assets/
-      style.css
-      search.js
-      theme-toggle.js
-      highlight.js
-    search-index.json
-</code></pre></div>
-
-<p>The <code>pages</code> array in the response is derived from the <code>plan.json</code> file, which is produced by the AI Planner stage and defines the full navigation hierarchy and page structure of the generated documentation site.</p>
-<h2 id="related-endpoints">Related Endpoints</h2>
 <table>
 <thead>
 <tr>
-<th>Method</th>
-<th>Path</th>
+<th>Parameter</th>
+<th>Location</th>
+<th>Type</th>
 <th>Description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>POST</code></td>
-<td><code>/api/generate</code></td>
-<td>Start documentation generation for a repository URL.</td>
-</tr>
-<tr>
-<td><code>GET</code></td>
-<td><code>/api/status</code></td>
-<td>List all projects and their generation status.</td>
-</tr>
-<tr>
-<td><code>DELETE</code></td>
-<td><code>/api/projects/{name}</code></td>
-<td>Remove a project and all its generated documentation.</td>
-</tr>
-<tr>
-<td><code>GET</code></td>
-<td><code>/api/projects/{name}/download</code></td>
-<td>Download the generated static site as a <code>.tar.gz</code> archive.</td>
-</tr>
-<tr>
-<td><code>GET</code></td>
-<td><code>/docs/{project}/{path}</code></td>
-<td>Serve the generated HTML documentation directly.</td>
+<td><code>name</code></td>
+<td>path</td>
+<td><code>string</code></td>
+<td>Project name. Must match <code>^[a-zA-Z0-9][a-zA-Z0-9._-]*$</code></td>
 </tr>
 </tbody>
 </table>
+<h3 id="response_1">Response</h3>
+<p>Returns HTTP <code>200</code> with the complete project record:</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;my-repo&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;repo_url&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://github.com/org/my-repo.git&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ready&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;last_commit_sha&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;abc123def456&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;last_generated&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2025-09-15 14:30:00&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;page_count&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">12</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;error_message&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;plan_json&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;{\&quot;project_name\&quot;: \&quot;my-repo\&quot;, \&quot;tagline\&quot;: \&quot;...\&quot;, \&quot;navigation\&quot;: [...]}&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;created_at&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2025-09-15 14:00:00&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;updated_at&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2025-09-15 14:30:00&quot;</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<h3 id="response-fields_1">Response Fields</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>name</code></td>
+<td><code>string</code></td>
+<td>Unique project identifier</td>
+</tr>
+<tr>
+<td><code>repo_url</code></td>
+<td><code>string</code></td>
+<td>Source repository URL or local path</td>
+</tr>
+<tr>
+<td><code>status</code></td>
+<td><code>string</code></td>
+<td><code>"generating"</code>, <code>"ready"</code>, or <code>"error"</code></td>
+</tr>
+<tr>
+<td><code>last_commit_sha</code></td>
+<td><code>string \| null</code></td>
+<td>Git SHA of the last processed commit</td>
+</tr>
+<tr>
+<td><code>last_generated</code></td>
+<td><code>string \| null</code></td>
+<td>Timestamp of last successful generation</td>
+</tr>
+<tr>
+<td><code>page_count</code></td>
+<td><code>integer</code></td>
+<td>Number of generated documentation pages</td>
+</tr>
+<tr>
+<td><code>error_message</code></td>
+<td><code>string \| null</code></td>
+<td>Error details when <code>status</code> is <code>"error"</code>. <code>null</code> otherwise</td>
+</tr>
+<tr>
+<td><code>plan_json</code></td>
+<td><code>string \| null</code></td>
+<td>JSON-serialized documentation plan produced by the AI planner. Contains navigation structure, page slugs, titles, and descriptions</td>
+</tr>
+<tr>
+<td><code>created_at</code></td>
+<td><code>string</code></td>
+<td>Timestamp when the project was first created</td>
+</tr>
+<tr>
+<td><code>updated_at</code></td>
+<td><code>string</code></td>
+<td>Timestamp of the most recent update to this record</td>
+</tr>
+</tbody>
+</table>
+<h3 id="the-documentation-plan">The Documentation Plan</h3>
+<p>When <code>plan_json</code> is present, it deserializes to a structure matching the <code>DocPlan</code> model:</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;project_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;my-repo&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;tagline&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;A brief description of the project&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;navigation&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;group&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Getting Started&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;pages&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">&quot;slug&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;introduction&quot;</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Introduction&quot;</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Overview of the project&quot;</span>
+<span class="w">        </span><span class="p">},</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">&quot;slug&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;installation&quot;</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Installation&quot;</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;How to install and configure&quot;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">      </span><span class="p">]</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">]</span>
+<span class="p">}</span>
+</code></pre></div>
+
 <blockquote>
-<p><strong>Warning:</strong> Calling <code>DELETE /api/projects/{name}</code> permanently removes the project metadata from the database and deletes all generated files from disk, including cached markdown pages. This action cannot be undone.</p>
+<p><strong>Tip:</strong> The <code>plan_json</code> field is populated as soon as the AI planner finishes, even while individual pages are still being generated. You can use this to show users the planned documentation structure with a progress indicator before generation completes.</p>
+</blockquote>
+<h3 id="error-responses">Error Responses</h3>
+<table>
+<thead>
+<tr>
+<th>Status Code</th>
+<th>Condition</th>
+<th>Response Body</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>400</code></td>
+<td>Invalid project name (fails regex validation)</td>
+<td><code>{"detail": "Invalid project name: '{name}'"}</code></td>
+</tr>
+<tr>
+<td><code>404</code></td>
+<td>Project does not exist in the database</td>
+<td><code>{"detail": "Project '{name}' not found"}</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="name-validation">Name Validation</h3>
+<p>Project names are validated against a strict regex pattern to prevent path traversal attacks:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># src/docsfy/main.py</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_validate_project_name</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Validate project name to prevent path traversal.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">_re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;^[a-zA-Z0-9][a-zA-Z0-9._-]*$&quot;</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="n">status_code</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span> <span class="n">detail</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Invalid project name: &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">name</span>
+</code></pre></div>
+
+<p>Valid names: <code>my-repo</code>, <code>project_123</code>, <code>docs.v2</code></p>
+<p>Invalid names: <code>.hidden</code>, <code>../etc/passwd</code>, <code>path/traversal</code>, <code>-leading-dash</code></p>
+<h3 id="examples">Examples</h3>
+<p><strong>Fetch a completed project:</strong></p>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>http://localhost:8000/api/projects/my-repo
+</code></pre></div>
+
+<p><strong>Check why a project failed:</strong></p>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>http://localhost:8000/api/projects/my-repo<span class="w"> </span><span class="p">|</span><span class="w"> </span>jq<span class="w"> </span><span class="s1">&#39;.error_message&#39;</span>
+</code></pre></div>
+
+<p><strong>Poll for generation completion:</strong></p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Check status until generation finishes</span>
+<span class="k">while</span><span class="w"> </span>true<span class="p">;</span><span class="w"> </span><span class="k">do</span>
+<span class="w">  </span><span class="nv">STATUS</span><span class="o">=</span><span class="k">$(</span>curl<span class="w"> </span>-s<span class="w"> </span>http://localhost:8000/api/projects/my-repo<span class="w"> </span><span class="p">|</span><span class="w"> </span>jq<span class="w"> </span>-r<span class="w"> </span><span class="s1">&#39;.status&#39;</span><span class="k">)</span>
+<span class="w">  </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Status: </span><span class="nv">$STATUS</span><span class="s2">&quot;</span>
+<span class="w">  </span><span class="o">[</span><span class="w"> </span><span class="s2">&quot;</span><span class="nv">$STATUS</span><span class="s2">&quot;</span><span class="w"> </span>!<span class="o">=</span><span class="w"> </span><span class="s2">&quot;generating&quot;</span><span class="w"> </span><span class="o">]</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="k">break</span>
+<span class="w">  </span>sleep<span class="w"> </span><span class="m">5</span>
+<span class="k">done</span>
+</code></pre></div>
+
+<hr />
+<h2 id="delete-apiprojectsname">DELETE /api/projects/{name}</h2>
+<p>Removes a project from the database and deletes all generated files from disk, including the rendered HTML site, cached markdown pages, and the documentation plan.</p>
+<h3 id="request_2">Request</h3>
+<div class="highlight"><pre><span></span><code>DELETE /api/projects/{name}
+</code></pre></div>
+
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Location</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>name</code></td>
+<td>path</td>
+<td><code>string</code></td>
+<td>Project name. Must match <code>^[a-zA-Z0-9][a-zA-Z0-9._-]*$</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="response_2">Response</h3>
+<p>Returns HTTP <code>200</code> on successful deletion:</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;deleted&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;my-repo&quot;</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<h3 id="what-gets-deleted">What Gets Deleted</h3>
+<p>The delete operation performs two steps:</p>
+<ol>
+<li><strong>Database record</strong> — the project row is removed from the <code>projects</code> table in SQLite</li>
+<li><strong>Project directory</strong> — the entire directory tree at <code>{DATA_DIR}/projects/{name}/</code> is removed, including:</li>
+</ol>
+<div class="highlight"><pre><span></span><code>{DATA_DIR}/projects/{name}/
+├── plan.json              # Documentation structure plan
+├── cache/
+│   └── pages/
+│       ├── introduction.md
+│       └── ...            # Cached AI-generated markdown
+└── site/
+    ├── index.html
+    ├── *.html             # Rendered HTML pages
+    ├── assets/
+    │   ├── style.css
+    │   ├── search.js
+    │   └── ...
+    └── search-index.json
+</code></pre></div>
+
+<p>The implementation from <code>main.py</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># src/docsfy/main.py</span>
+<span class="nd">@app</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="s2">&quot;/api/projects/</span><span class="si">{name}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">delete_project_endpoint</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">_validate_project_name</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+    <span class="n">deleted</span> <span class="o">=</span> <span class="k">await</span> <span class="n">delete_project</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">deleted</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="n">status_code</span><span class="o">=</span><span class="mi">404</span><span class="p">,</span> <span class="n">detail</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Project &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; not found&quot;</span><span class="p">)</span>
+    <span class="n">project_dir</span> <span class="o">=</span> <span class="n">get_project_dir</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">project_dir</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+        <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">project_dir</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;deleted&quot;</span><span class="p">:</span> <span class="n">name</span><span class="p">}</span>
+</code></pre></div>
+
+<blockquote>
+<p><strong>Warning:</strong> This operation is irreversible. All generated documentation, cached pages, and the AI-produced plan will be permanently deleted. To regenerate, you must submit a new <code>POST /api/generate</code> request.</p>
+</blockquote>
+<h3 id="error-responses_1">Error Responses</h3>
+<table>
+<thead>
+<tr>
+<th>Status Code</th>
+<th>Condition</th>
+<th>Response Body</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>400</code></td>
+<td>Invalid project name (fails regex validation)</td>
+<td><code>{"detail": "Invalid project name: '{name}'"}</code></td>
+</tr>
+<tr>
+<td><code>404</code></td>
+<td>Project does not exist in the database</td>
+<td><code>{"detail": "Project '{name}' not found"}</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="examples_1">Examples</h3>
+<p><strong>Delete a project:</strong></p>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-X<span class="w"> </span>DELETE<span class="w"> </span>http://localhost:8000/api/projects/my-repo
+</code></pre></div>
+
+<p><strong>Delete and confirm removal:</strong></p>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-X<span class="w"> </span>DELETE<span class="w"> </span>http://localhost:8000/api/projects/my-repo
+
+<span class="c1"># Verify it&#39;s gone</span>
+curl<span class="w"> </span>http://localhost:8000/api/projects/my-repo
+<span class="c1"># Returns: {&quot;detail&quot;: &quot;Project &#39;my-repo&#39; not found&quot;} with HTTP 404</span>
+</code></pre></div>
+
+<hr />
+<h2 id="database-schema">Database Schema</h2>
+<p>All project management endpoints operate on the <code>projects</code> table in SQLite. The database is stored at <code>{DATA_DIR}/docsfy.db</code> (default: <code>/data/docsfy.db</code>) and is initialized automatically on application startup.</p>
+<div class="highlight"><pre><span></span><code><span class="c1">-- src/docsfy/storage.py</span>
+<span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="k">IF</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">EXISTS</span><span class="w"> </span><span class="n">projects</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="n">name</span><span class="w"> </span><span class="nb">TEXT</span><span class="w"> </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="p">,</span>
+<span class="w">    </span><span class="n">repo_url</span><span class="w"> </span><span class="nb">TEXT</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">status</span><span class="w"> </span><span class="nb">TEXT</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="s1">&#39;generating&#39;</span><span class="p">,</span>
+<span class="w">    </span><span class="n">last_commit_sha</span><span class="w"> </span><span class="nb">TEXT</span><span class="p">,</span>
+<span class="w">    </span><span class="n">last_generated</span><span class="w"> </span><span class="nb">TEXT</span><span class="p">,</span>
+<span class="w">    </span><span class="n">page_count</span><span class="w"> </span><span class="nb">INTEGER</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">    </span><span class="n">error_message</span><span class="w"> </span><span class="nb">TEXT</span><span class="p">,</span>
+<span class="w">    </span><span class="n">plan_json</span><span class="w"> </span><span class="nb">TEXT</span><span class="p">,</span>
+<span class="w">    </span><span class="n">created_at</span><span class="w"> </span><span class="k">TIMESTAMP</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="k">CURRENT_TIMESTAMP</span><span class="p">,</span>
+<span class="w">    </span><span class="n">updated_at</span><span class="w"> </span><span class="k">TIMESTAMP</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="k">CURRENT_TIMESTAMP</span>
+<span class="p">)</span>
+</code></pre></div>
+
+<p>The <code>DATA_DIR</code> is configurable via environment variable:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># src/docsfy/storage.py</span>
+<span class="n">DB_PATH</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;DATA_DIR&quot;</span><span class="p">,</span> <span class="s2">&quot;/data&quot;</span><span class="p">))</span> <span class="o">/</span> <span class="s2">&quot;docsfy.db&quot;</span>
+</code></pre></div>
+
+<hr />
+<h2 id="common-patterns">Common Patterns</h2>
+<h3 id="monitoring-a-generation-workflow">Monitoring a Generation Workflow</h3>
+<p>Combine the project management endpoints to track a project from generation through completion:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># 1. Start generation</span>
+curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/api/generate<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{&quot;repo_url&quot;: &quot;https://github.com/org/my-repo.git&quot;}&#39;</span>
+<span class="c1"># Response: {&quot;project&quot;: &quot;my-repo&quot;, &quot;status&quot;: &quot;generating&quot;}</span>
+
+<span class="c1"># 2. Monitor progress via project details</span>
+curl<span class="w"> </span>http://localhost:8000/api/projects/my-repo
+<span class="c1"># Shows page_count incrementing as pages are generated</span>
+
+<span class="c1"># 3. List all projects to see overall status</span>
+curl<span class="w"> </span>http://localhost:8000/api/status
+
+<span class="c1"># 4. Once status is &quot;ready&quot;, view the generated docs</span>
+<span class="c1"># at http://localhost:8000/docs/my-repo/index.html</span>
+</code></pre></div>
+
+<h3 id="cleanup-workflow">Cleanup Workflow</h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># List all projects</span>
+<span class="nv">PROJECTS</span><span class="o">=</span><span class="k">$(</span>curl<span class="w"> </span>-s<span class="w"> </span>http://localhost:8000/api/status<span class="w"> </span><span class="p">|</span><span class="w"> </span>jq<span class="w"> </span>-r<span class="w"> </span><span class="s1">&#39;.projects[].name&#39;</span><span class="k">)</span>
+
+<span class="c1"># Delete projects in error state</span>
+<span class="k">for</span><span class="w"> </span>name<span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="nv">$PROJECTS</span><span class="p">;</span><span class="w"> </span><span class="k">do</span>
+<span class="w">  </span><span class="nv">STATUS</span><span class="o">=</span><span class="k">$(</span>curl<span class="w"> </span>-s<span class="w"> </span><span class="s2">&quot;http://localhost:8000/api/projects/</span><span class="nv">$name</span><span class="s2">&quot;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>jq<span class="w"> </span>-r<span class="w"> </span><span class="s1">&#39;.status&#39;</span><span class="k">)</span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="o">[</span><span class="w"> </span><span class="s2">&quot;</span><span class="nv">$STATUS</span><span class="s2">&quot;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;error&quot;</span><span class="w"> </span><span class="o">]</span><span class="p">;</span><span class="w"> </span><span class="k">then</span>
+<span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Deleting failed project: </span><span class="nv">$name</span><span class="s2">&quot;</span>
+<span class="w">    </span>curl<span class="w"> </span>-X<span class="w"> </span>DELETE<span class="w"> </span><span class="s2">&quot;http://localhost:8000/api/projects/</span><span class="nv">$name</span><span class="s2">&quot;</span>
+<span class="w">  </span><span class="k">fi</span>
+<span class="k">done</span>
+</code></pre></div>
+
+<blockquote>
+<p><strong>Note:</strong> These endpoints have no authentication or rate limiting. In production deployments, consider placing a reverse proxy with authentication in front of the docsfy service, especially for the <code>DELETE</code> endpoint.</p>
 </blockquote>
                 </div>
             </article>
             <nav class="page-nav">
                 
-                <a href="api-status.html" class="page-nav-link page-nav-prev">
+                <a href="api-generation.html" class="page-nav-link page-nav-prev">
                     <span class="page-nav-label">Previous</span>
-                    <span class="page-nav-title">GET /api/status</span>
+                    <span class="page-nav-title">Generation Endpoint</span>
                 </a>
                 
                 
-                <a href="api-projects-delete.html" class="page-nav-link page-nav-next">
+                <a href="api-serving.html" class="page-nav-link page-nav-next">
                     <span class="page-nav-label">Next</span>
-                    <span class="page-nav-title">DELETE /api/projects/{name}</span>
+                    <span class="page-nav-title">Serving and Download Endpoints</span>
                 </a>
                 
             </nav>
@@ -559,23 +739,38 @@
                     <h3>On this page</h3>
                     <div class="toc">
 <ul>
-<li><a href="#endpoint">Endpoint</a></li>
-<li><a href="#path-parameters">Path Parameters</a></li>
-<li><a href="#response">Response</a><ul>
-<li><a href="#200-ok">200 OK</a></li>
-<li><a href="#project-status-values">Project Status Values</a></li>
-<li><a href="#404-not-found">404 Not Found</a></li>
+<li><a href="#get-apistatus">GET /api/status</a><ul>
+<li><a href="#request">Request</a></li>
+<li><a href="#response">Response</a></li>
+<li><a href="#response-fields">Response Fields</a></li>
+<li><a href="#example">Example</a></li>
+<li><a href="#status-values">Status Values</a></li>
 </ul>
 </li>
-<li><a href="#examples">Examples</a><ul>
-<li><a href="#retrieve-a-project-with-completed-documentation">Retrieve a project with completed documentation</a></li>
-<li><a href="#check-a-project-that-is-currently-generating">Check a project that is currently generating</a></li>
-<li><a href="#query-a-project-that-failed-generation">Query a project that failed generation</a></li>
+<li><a href="#get-apiprojectsname">GET /api/projects/{name}</a><ul>
+<li><a href="#request_1">Request</a></li>
+<li><a href="#response_1">Response</a></li>
+<li><a href="#response-fields_1">Response Fields</a></li>
+<li><a href="#the-documentation-plan">The Documentation Plan</a></li>
+<li><a href="#error-responses">Error Responses</a></li>
+<li><a href="#name-validation">Name Validation</a></li>
+<li><a href="#examples">Examples</a></li>
 </ul>
 </li>
-<li><a href="#incremental-updates-and-commit-tracking">Incremental Updates and Commit Tracking</a></li>
-<li><a href="#storage-layout">Storage Layout</a></li>
-<li><a href="#related-endpoints">Related Endpoints</a></li>
+<li><a href="#delete-apiprojectsname">DELETE /api/projects/{name}</a><ul>
+<li><a href="#request_2">Request</a></li>
+<li><a href="#response_2">Response</a></li>
+<li><a href="#what-gets-deleted">What Gets Deleted</a></li>
+<li><a href="#error-responses_1">Error Responses</a></li>
+<li><a href="#examples_1">Examples</a></li>
+</ul>
+</li>
+<li><a href="#database-schema">Database Schema</a></li>
+<li><a href="#common-patterns">Common Patterns</a><ul>
+<li><a href="#monitoring-a-generation-workflow">Monitoring a Generation Workflow</a></li>
+<li><a href="#cleanup-workflow">Cleanup Workflow</a></li>
+</ul>
+</li>
 </ul>
 </div>
 
@@ -617,6 +812,29 @@
                 overlay.classList.remove('open');
                 if (toggle) toggle.setAttribute('aria-expanded', 'false');
             });
+        }
+    })();
+    </script>
+    <script>
+    (function() {
+        var sidebar = document.querySelector('.sidebar-nav') || document.querySelector('.sidebar');
+        if (!sidebar) return;
+
+        // Restore scroll position
+        var saved = sessionStorage.getItem('sidebar-scroll');
+        if (saved) sidebar.scrollTop = parseInt(saved, 10);
+
+        // Save scroll position before navigating
+        sidebar.addEventListener('scroll', function() {
+            sessionStorage.setItem('sidebar-scroll', sidebar.scrollTop.toString());
+        });
+
+        // Also scroll active link into view if no saved position
+        if (!saved) {
+            var active = sidebar.querySelector('.nav-link.active');
+            if (active) {
+                active.scrollIntoView({ block: 'center', behavior: 'instant' });
+            }
         }
     })();
     </script>

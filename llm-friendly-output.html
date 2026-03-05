@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LLM-Friendly Output - docsfy</title>
+    <meta name="description" content="AI-powered documentation generator that turns GitHub repositories into polished static documentation websites">
+    <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <a href="index.html" class="sidebar-logo">docsfy</a>
+            <p class="sidebar-tagline">AI-powered documentation generator that turns GitHub repositories into polished static documentation websites</p>
+        </div>
+
+        <div class="sidebar-search">
+            <input type="text" id="search-input" placeholder="Search... (⌘K)" autocomplete="off" readonly>
+            <div id="search-results" class="search-results"></div>
+        </div>
+
+        <nav class="sidebar-nav">
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Getting Started</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="introduction.html"
+                           class="nav-link">
+                            Introduction
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="installation.html"
+                           class="nav-link">
+                            Installation
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="quickstart.html"
+                           class="nav-link">
+                            Quickstart
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="docker-deployment.html"
+                           class="nav-link">
+                            Docker Deployment
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Configuration</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="configuration.html"
+                           class="nav-link">
+                            Configuration Reference
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="ai-providers.html"
+                           class="nav-link">
+                            AI Providers
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Usage</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="generating-docs.html"
+                           class="nav-link">
+                            Generating Documentation
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="serving-and-downloading.html"
+                           class="nav-link">
+                            Serving and Downloading
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="generated-site-features.html"
+                           class="nav-link">
+                            Generated Site Features
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="llm-friendly-output.html"
+                           class="nav-link active">
+                            LLM-Friendly Output
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">API Reference</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="api-overview.html"
+                           class="nav-link">
+                            API Overview
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="api-generation.html"
+                           class="nav-link">
+                            Generation Endpoint
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="api-projects.html"
+                           class="nav-link">
+                            Project Management Endpoints
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="api-serving.html"
+                           class="nav-link">
+                            Serving and Download Endpoints
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Architecture</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="architecture-overview.html"
+                           class="nav-link">
+                            Architecture Overview
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="project-structure.html"
+                           class="nav-link">
+                            Project Structure
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="ai-generation-pipeline.html"
+                           class="nav-link">
+                            AI Generation Pipeline
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="storage-and-caching.html"
+                           class="nav-link">
+                            Storage and Caching
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Development</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="development-setup.html"
+                           class="nav-link">
+                            Development Setup
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="testing.html"
+                           class="nav-link">
+                            Testing
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="code-quality.html"
+                           class="nav-link">
+                            Code Quality
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+        </nav>
+    </aside>
+
+    <div class="main-wrapper">
+        <header class="top-bar">
+            <div class="top-bar-left">
+                <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebar" aria-expanded="false">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                </button>
+                <a href="index.html" class="top-bar-title">docsfy</a>
+            </div>
+            <div class="top-bar-spacer"></div>
+            <div class="top-bar-right">
+                <button class="top-bar-search-btn" id="search-trigger" aria-label="Search">
+                    <kbd>&#8984;K</kbd> Search
+                </button>
+                
+                <a href="https://github.com/myk-org/docsfy" target="_blank" rel="noopener noreferrer" class="top-bar-github" id="github-link" data-repo-url="https://github.com/myk-org/docsfy">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                    <span class="github-stars" id="github-stars"></span>
+                </a>
+                
+                <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+                    <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                    </svg>
+                    <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <main class="content">
+            <article class="article">
+                <div class="article-body">
+                    <!-- content is pre-rendered from markdown by the server, not user input -->
+                    <h1 id="llm-friendly-output">LLM-Friendly Output</h1>
+<p>Docsfy automatically generates machine-readable text files alongside the HTML documentation site. Every project build produces two complementary files — <code>llms.txt</code> and <code>llms-full.txt</code> — designed for consumption by large language models and AI-powered tools.</p>
+<h2 id="what-is-llmstxt">What is llms.txt?</h2>
+<p>The <code>llms.txt</code> convention provides a standardized way for websites to expose their content in a format optimized for LLMs. Instead of requiring AI tools to parse HTML, CSS, and JavaScript, <code>llms.txt</code> files offer clean markdown that fits naturally into LLM context windows.</p>
+<p>Docsfy produces two files following this convention:</p>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Purpose</th>
+<th>Typical Size</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>llms.txt</code></td>
+<td>Structured index of all documentation pages with links and descriptions</td>
+<td>~2 KB</td>
+</tr>
+<tr>
+<td><code>llms-full.txt</code></td>
+<td>Complete documentation content concatenated into a single file</td>
+<td>Varies with project size</td>
+</tr>
+</tbody>
+</table>
+<h2 id="how-it-works">How It Works</h2>
+<p>LLM output generation is built into the <code>render_site</code> function in <code>renderer.py</code> and runs automatically at the end of every site build. There is no configuration required and no way to disable it — both files are always generated as first-class outputs.</p>
+<h3 id="build-pipeline-integration">Build Pipeline Integration</h3>
+<p>The LLM files are generated in the final rendering stage, after all AI-generated page content is ready:</p>
+<div class="highlight"><pre><span></span><code>POST /api/generate
+  └─ _run_generation()
+       ├─ run_planner()          → documentation plan (JSON)
+       ├─ generate_all_pages()   → page content (markdown)
+       └─ render_site()          → final output
+            ├─ index.html
+            ├─ {slug}.html       (per page)
+            ├─ {slug}.md         (per page)
+            ├─ search-index.json
+            ├─ llms.txt          ← generated here
+            └─ llms-full.txt     ← generated here
+</code></pre></div>
+
+<p>The relevant code in <code>renderer.py</code> (lines 222–227):</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Generate llms.txt files</span>
+<span class="n">llms_txt</span> <span class="o">=</span> <span class="n">_build_llms_txt</span><span class="p">(</span><span class="n">plan</span><span class="p">)</span>
+<span class="p">(</span><span class="n">output_dir</span> <span class="o">/</span> <span class="s2">&quot;llms.txt&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="n">llms_txt</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+
+<span class="n">llms_full_txt</span> <span class="o">=</span> <span class="n">_build_llms_full_txt</span><span class="p">(</span><span class="n">plan</span><span class="p">,</span> <span class="n">valid_pages</span><span class="p">)</span>
+<span class="p">(</span><span class="n">output_dir</span> <span class="o">/</span> <span class="s2">&quot;llms-full.txt&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="n">llms_full_txt</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+</code></pre></div>
+
+<p>Both functions receive the same documentation plan and page content that drive the HTML generation, ensuring the LLM output is always consistent with the rendered site.</p>
+<h2 id="llmstxt-the-index-file">llms.txt — The Index File</h2>
+<p>The <code>llms.txt</code> file serves as a table of contents. It lists every documentation page organized by navigation group, with optional descriptions for each page.</p>
+<h3 id="format">Format</h3>
+<div class="highlight"><pre><span></span><code><span class="gh"># Project Name</span>
+
+<span class="k">&gt; </span><span class="ge">Project tagline or description</span>
+
+<span class="gu">## Section Name</span>
+
+<span class="k">-</span><span class="w"> </span>[<span class="nt">Page Title</span>](<span class="na">page-slug.md</span>): Brief description of the page
+<span class="k">-</span><span class="w"> </span>[<span class="nt">Another Page</span>](<span class="na">another-page.md</span>): What this page covers
+
+<span class="gu">## Another Section</span>
+
+<span class="k">-</span><span class="w"> </span>[<span class="nt">Page Title</span>](<span class="na">page-slug.md</span>)
+</code></pre></div>
+
+<h3 id="structure-breakdown">Structure Breakdown</h3>
+<ul>
+<li><strong>Heading (<code>#</code>)</strong>: The project name from the documentation plan</li>
+<li><strong>Blockquote (<code>&gt;</code>)</strong>: The project tagline (included only if present)</li>
+<li><strong>Section headings (<code>##</code>)</strong>: Navigation group names matching the sidebar structure</li>
+<li><strong>List items (<code>-</code>)</strong>: Links to individual pages using <code>[Title](slug.md)</code> syntax, with an optional description after a colon</li>
+</ul>
+<h3 id="generator-implementation">Generator Implementation</h3>
+<p>From <code>renderer.py</code> (lines 109–127):</p>
+<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">_build_llms_txt</span><span class="p">(</span><span class="n">plan</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Build llms.txt index file.&quot;&quot;&quot;</span>
+    <span class="n">project_name</span> <span class="o">=</span> <span class="n">plan</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;project_name&quot;</span><span class="p">,</span> <span class="s2">&quot;Documentation&quot;</span><span class="p">)</span>
+    <span class="n">tagline</span> <span class="o">=</span> <span class="n">plan</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;tagline&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="n">lines</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;# </span><span class="si">{</span><span class="n">project_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">tagline</span><span class="p">:</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="sa">f</span><span class="s2">&quot;&gt; </span><span class="si">{</span><span class="n">tagline</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">])</span>
+    <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">plan</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;navigation&quot;</span><span class="p">,</span> <span class="p">[]):</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="sa">f</span><span class="s2">&quot;## </span><span class="si">{</span><span class="n">group</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;group&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">])</span>
+        <span class="k">for</span> <span class="n">page</span> <span class="ow">in</span> <span class="n">group</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;pages&quot;</span><span class="p">,</span> <span class="p">[]):</span>
+            <span class="n">desc</span> <span class="o">=</span> <span class="n">page</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;description&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+            <span class="n">page_title</span> <span class="o">=</span> <span class="n">page</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;title&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+            <span class="n">page_slug</span> <span class="o">=</span> <span class="n">page</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;slug&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">desc</span><span class="p">:</span>
+                <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;- [</span><span class="si">{</span><span class="n">page_title</span><span class="si">}</span><span class="s2">](</span><span class="si">{</span><span class="n">page_slug</span><span class="si">}</span><span class="s2">.md): </span><span class="si">{</span><span class="n">desc</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;- [</span><span class="si">{</span><span class="n">page_title</span><span class="si">}</span><span class="s2">](</span><span class="si">{</span><span class="n">page_slug</span><span class="si">}</span><span class="s2">.md)&quot;</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span>
+</code></pre></div>
+
+<h3 id="example-output">Example Output</h3>
+<p>For a project with two navigation groups, the generated <code>llms.txt</code> might look like:</p>
+<div class="highlight"><pre><span></span><code><span class="gh"># my-api-server</span>
+
+<span class="k">&gt; </span><span class="ge">A fast REST API framework for Python</span>
+
+<span class="gu">## Getting Started</span>
+
+<span class="k">-</span><span class="w"> </span>[<span class="nt">Introduction</span>](<span class="na">introduction.md</span>): Overview of the project and its goals
+<span class="k">-</span><span class="w"> </span>[<span class="nt">Installation</span>](<span class="na">installation.md</span>): How to install and configure the server
+<span class="k">-</span><span class="w"> </span>[<span class="nt">Quick Start</span>](<span class="na">quick-start.md</span>): Build your first API endpoint in minutes
+
+<span class="gu">## API Reference</span>
+
+<span class="k">-</span><span class="w"> </span>[<span class="nt">Routes</span>](<span class="na">routes.md</span>): Defining HTTP routes and handlers
+<span class="k">-</span><span class="w"> </span>[<span class="nt">Middleware</span>](<span class="na">middleware.md</span>): Request/response middleware pipeline
+<span class="k">-</span><span class="w"> </span>[<span class="nt">Configuration</span>](<span class="na">configuration.md</span>): Server configuration options
+</code></pre></div>
+
+<h2 id="llms-fulltxt-the-complete-content-file">llms-full.txt — The Complete Content File</h2>
+<p>The <code>llms-full.txt</code> file concatenates all documentation pages into a single file. This is designed for scenarios where an LLM needs the full documentation context — for example, when answering questions about a project or generating code that uses a library.</p>
+<h3 id="format_1">Format</h3>
+<div class="highlight"><pre><span></span><code><span class="gh"># Project Name</span>
+
+<span class="k">&gt; </span><span class="ge">Project tagline</span>
+
+---
+
+Source: page-slug.md
+
+<span class="gh"># Page Title</span>
+
+Full markdown content of the page...
+
+---
+
+Source: another-page.md
+
+<span class="gh"># Another Page Title</span>
+
+Full markdown content of this page...
+
+---
+</code></pre></div>
+
+<h3 id="structure-breakdown_1">Structure Breakdown</h3>
+<ul>
+<li><strong>Header</strong>: Same project name and tagline as <code>llms.txt</code></li>
+<li><strong>Separator (<code>---</code>)</strong>: Horizontal rules delimit each page's content</li>
+<li><strong>Source marker</strong>: A <code>Source: slug.md</code> line before each page identifies its origin</li>
+<li><strong>Content</strong>: The complete markdown content of each page, in navigation order</li>
+</ul>
+<h3 id="generator-implementation_1">Generator Implementation</h3>
+<p>From <code>renderer.py</code> (lines 130–152):</p>
+<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">_build_llms_full_txt</span><span class="p">(</span><span class="n">plan</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">pages</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Build llms-full.txt with all content concatenated.&quot;&quot;&quot;</span>
+    <span class="n">project_name</span> <span class="o">=</span> <span class="n">plan</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;project_name&quot;</span><span class="p">,</span> <span class="s2">&quot;Documentation&quot;</span><span class="p">)</span>
+    <span class="n">tagline</span> <span class="o">=</span> <span class="n">plan</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;tagline&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="n">lines</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;# </span><span class="si">{</span><span class="n">project_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">tagline</span><span class="p">:</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="sa">f</span><span class="s2">&quot;&gt; </span><span class="si">{</span><span class="n">tagline</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">])</span>
+    <span class="n">lines</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="s2">&quot;---&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">])</span>
+    <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">plan</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;navigation&quot;</span><span class="p">,</span> <span class="p">[]):</span>
+        <span class="k">for</span> <span class="n">page</span> <span class="ow">in</span> <span class="n">group</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;pages&quot;</span><span class="p">,</span> <span class="p">[]):</span>
+            <span class="n">slug</span> <span class="o">=</span> <span class="n">page</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;slug&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+            <span class="n">content</span> <span class="o">=</span> <span class="n">pages</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">slug</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span>
+                <span class="p">[</span>
+                    <span class="sa">f</span><span class="s2">&quot;Source: </span><span class="si">{</span><span class="n">slug</span><span class="si">}</span><span class="s2">.md&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;&quot;</span><span class="p">,</span>
+                    <span class="n">content</span><span class="p">,</span>
+                    <span class="s2">&quot;&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;---&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;&quot;</span><span class="p">,</span>
+                <span class="p">]</span>
+            <span class="p">)</span>
+    <span class="k">return</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span>
+</code></pre></div>
+
+<h3 id="page-ordering">Page Ordering</h3>
+<p>Pages appear in <code>llms-full.txt</code> in <strong>navigation order</strong> — the same order they appear in the sidebar and in <code>llms.txt</code>. The generator iterates through navigation groups and their pages sequentially, ensuring a logical reading flow.</p>
+<h2 id="input-data-model">Input Data Model</h2>
+<p>Both generators consume the documentation plan, a JSON structure produced by the AI planner. The plan schema is defined in <code>prompts.py</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;project_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string - project name&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;tagline&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string - one-line project description&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;navigation&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;group&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string - section group name&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;pages&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">&quot;slug&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string - URL-friendly page identifier&quot;</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string - human-readable page title&quot;</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string - brief description of what this page covers&quot;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">      </span><span class="p">]</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">]</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<p>This same plan drives HTML rendering, search index generation, and LLM output — a single source of truth for all output formats.</p>
+<p>The corresponding Pydantic models in <code>models.py</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">DocPage</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+    <span class="n">slug</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">title</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">description</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">NavGroup</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+    <span class="n">group</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">pages</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">DocPage</span><span class="p">]</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">DocPlan</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+    <span class="n">project_name</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">tagline</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="n">navigation</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">NavGroup</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">)</span>
+</code></pre></div>
+
+<h2 id="page-descriptions">Page Descriptions</h2>
+<p>The <code>description</code> field on each page in the plan controls what appears after the colon in <code>llms.txt</code> entries. When the AI planner generates the documentation plan, it produces a brief description for each page:</p>
+<div class="highlight"><pre><span></span><code><span class="k">if</span> <span class="n">desc</span><span class="p">:</span>
+    <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;- [</span><span class="si">{</span><span class="n">page_title</span><span class="si">}</span><span class="s2">](</span><span class="si">{</span><span class="n">page_slug</span><span class="si">}</span><span class="s2">.md): </span><span class="si">{</span><span class="n">desc</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;- [</span><span class="si">{</span><span class="n">page_title</span><span class="si">}</span><span class="s2">](</span><span class="si">{</span><span class="n">page_slug</span><span class="si">}</span><span class="s2">.md)&quot;</span><span class="p">)</span>
+</code></pre></div>
+
+<p>Pages without descriptions are listed with just their title and link. This keeps the index clean while still providing context where available.</p>
+<h2 id="slug-validation-and-security">Slug Validation and Security</h2>
+<p>Before any content reaches the LLM generators, slugs are validated to prevent path traversal attacks. The <code>render_site</code> function filters out unsafe slugs before passing pages to either builder:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Filter out invalid slugs</span>
+<span class="n">valid_pages</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="k">for</span> <span class="n">slug</span><span class="p">,</span> <span class="n">content</span> <span class="ow">in</span> <span class="n">pages</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="k">if</span> <span class="s2">&quot;/&quot;</span> <span class="ow">in</span> <span class="n">slug</span> <span class="ow">or</span> <span class="s2">&quot;</span><span class="se">\\</span><span class="s2">&quot;</span> <span class="ow">in</span> <span class="n">slug</span> <span class="ow">or</span> <span class="n">slug</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">&quot;..&quot;</span> <span class="ow">in</span> <span class="n">slug</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Skipping invalid slug: </span><span class="si">{</span><span class="n">slug</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">valid_pages</span><span class="p">[</span><span class="n">slug</span><span class="p">]</span> <span class="o">=</span> <span class="n">content</span>
+</code></pre></div>
+
+<p>Only pages with valid slugs are included in <code>llms.txt</code> and <code>llms-full.txt</code>. This same validation is also enforced earlier in the pipeline during page generation (<code>generator.py</code>, line 74).</p>
+<blockquote>
+<p><strong>Note:</strong> Invalid slugs are silently excluded from the output with a warning log. If pages are missing from your LLM files, check the logs for "Skipping invalid slug" messages.</p>
+</blockquote>
+<h2 id="output-file-location">Output File Location</h2>
+<p>Generated files are written to the project's site directory:</p>
+<div class="highlight"><pre><span></span><code>/data/projects/{project-name}/
+├── site/
+│   ├── index.html
+│   ├── introduction.html
+│   ├── introduction.md
+│   ├── search-index.json
+│   ├── llms.txt
+│   ├── llms-full.txt
+│   └── assets/
+│       └── style.css
+└── cache/
+    └── pages/
+        └── introduction.md
+</code></pre></div>
+
+<p>Both files are served as static content through the docs endpoint:</p>
+<div class="highlight"><pre><span></span><code>GET /docs/{project}/llms.txt
+GET /docs/{project}/llms-full.txt
+</code></pre></div>
+
+<p>The serving is handled by the <code>serve_docs</code> endpoint in <code>main.py</code>, which serves any file from the site directory:</p>
+<div class="highlight"><pre><span></span><code><span class="nd">@app</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/docs/</span><span class="si">{project}</span><span class="s2">/{path:path}&quot;</span><span class="p">)</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">serve_docs</span><span class="p">(</span><span class="n">project</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;index.html&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FileResponse</span><span class="p">:</span>
+    <span class="n">project</span> <span class="o">=</span> <span class="n">_validate_project_name</span><span class="p">(</span><span class="n">project</span><span class="p">)</span>
+    <span class="n">site_dir</span> <span class="o">=</span> <span class="n">get_project_site_dir</span><span class="p">(</span><span class="n">project</span><span class="p">)</span>
+    <span class="n">file_path</span> <span class="o">=</span> <span class="n">site_dir</span> <span class="o">/</span> <span class="n">path</span>
+    <span class="c1"># Path traversal check</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">file_path</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span><span class="o">.</span><span class="n">relative_to</span><span class="p">(</span><span class="n">site_dir</span><span class="o">.</span><span class="n">resolve</span><span class="p">())</span>
+    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="n">status_code</span><span class="o">=</span><span class="mi">403</span><span class="p">,</span> <span class="n">detail</span><span class="o">=</span><span class="s2">&quot;Access denied&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">file_path</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">file_path</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
+        <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="n">status_code</span><span class="o">=</span><span class="mi">404</span><span class="p">,</span> <span class="n">detail</span><span class="o">=</span><span class="s2">&quot;File not found&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">FileResponse</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span>
+</code></pre></div>
+
+<h2 id="downloading-llm-files">Downloading LLM Files</h2>
+<p>The project download endpoint packages the entire site directory — including both LLM files — into a <code>.tar.gz</code> archive:</p>
+<div class="highlight"><pre><span></span><code>GET /api/projects/{name}/download
+</code></pre></div>
+
+<p>This returns a compressed archive containing all site files:</p>
+<div class="highlight"><pre><span></span><code>my-project/
+├── index.html
+├── llms.txt
+├── llms-full.txt
+├── ...
+</code></pre></div>
+
+<h2 id="relationship-to-markdown-page-files">Relationship to Markdown Page Files</h2>
+<p>In addition to <code>llms.txt</code> and <code>llms-full.txt</code>, docsfy writes individual <code>.md</code> files for each page alongside the HTML:</p>
+<div class="highlight"><pre><span></span><code><span class="p">(</span><span class="n">output_dir</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">slug</span><span class="si">}</span><span class="s2">.html&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="n">page_html</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+<span class="p">(</span><span class="n">output_dir</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">slug</span><span class="si">}</span><span class="s2">.md&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="n">md_content</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+</code></pre></div>
+
+<p>This creates a three-tier access pattern for AI consumers:</p>
+<ol>
+<li><strong><code>llms.txt</code></strong> — Discover what documentation exists (lightweight index)</li>
+<li><strong>Individual <code>.md</code> files</strong> — Fetch specific pages by slug (targeted retrieval)</li>
+<li><strong><code>llms-full.txt</code></strong> — Load everything at once (full context)</li>
+</ol>
+<p>The links in <code>llms.txt</code> point to these individual <code>.md</code> files using relative paths (e.g., <code>introduction.md</code>), enabling AI tools to selectively fetch only the pages they need.</p>
+<blockquote>
+<p><strong>Tip:</strong> For AI tools with limited context windows, use <code>llms.txt</code> to identify relevant pages, then fetch individual <code>.md</code> files. For tools with large context windows, <code>llms-full.txt</code> provides everything in a single request.</p>
+</blockquote>
+<h2 id="use-cases">Use Cases</h2>
+<h3 id="ai-code-assistants">AI Code Assistants</h3>
+<p>Tools like Claude, Cursor, and GitHub Copilot can ingest <code>llms-full.txt</code> to gain complete understanding of a project's documentation, enabling more accurate code suggestions and answers.</p>
+<h3 id="documentation-search">Documentation Search</h3>
+<p>The structured <code>llms.txt</code> index allows AI agents to quickly identify which documentation pages are relevant to a query before fetching full content.</p>
+<h3 id="rag-pipelines">RAG Pipelines</h3>
+<p>Retrieval-Augmented Generation systems can use <code>llms.txt</code> as a document manifest and <code>llms-full.txt</code> as a pre-chunked corpus, with <code>Source:</code> markers providing natural document boundaries for splitting.</p>
+<h3 id="cicd-integration">CI/CD Integration</h3>
+<p>Since LLM files are generated automatically with every build, they stay in sync with the HTML documentation without any additional workflow steps.</p>
+                </div>
+            </article>
+            <nav class="page-nav">
+                
+                <a href="generated-site-features.html" class="page-nav-link page-nav-prev">
+                    <span class="page-nav-label">Previous</span>
+                    <span class="page-nav-title">Generated Site Features</span>
+                </a>
+                
+                
+                <a href="api-overview.html" class="page-nav-link page-nav-next">
+                    <span class="page-nav-label">Next</span>
+                    <span class="page-nav-title">API Overview</span>
+                </a>
+                
+            </nav>
+            
+            <aside class="toc-sidebar">
+                <div class="toc-container">
+                    <h3>On this page</h3>
+                    <div class="toc">
+<ul>
+<li><a href="#what-is-llmstxt">What is llms.txt?</a></li>
+<li><a href="#how-it-works">How It Works</a><ul>
+<li><a href="#build-pipeline-integration">Build Pipeline Integration</a></li>
+</ul>
+</li>
+<li><a href="#llmstxt-the-index-file">llms.txt — The Index File</a><ul>
+<li><a href="#format">Format</a></li>
+<li><a href="#structure-breakdown">Structure Breakdown</a></li>
+<li><a href="#generator-implementation">Generator Implementation</a></li>
+<li><a href="#example-output">Example Output</a></li>
+</ul>
+</li>
+<li><a href="#llms-fulltxt-the-complete-content-file">llms-full.txt — The Complete Content File</a><ul>
+<li><a href="#format_1">Format</a></li>
+<li><a href="#structure-breakdown_1">Structure Breakdown</a></li>
+<li><a href="#generator-implementation_1">Generator Implementation</a></li>
+<li><a href="#page-ordering">Page Ordering</a></li>
+</ul>
+</li>
+<li><a href="#input-data-model">Input Data Model</a></li>
+<li><a href="#page-descriptions">Page Descriptions</a></li>
+<li><a href="#slug-validation-and-security">Slug Validation and Security</a></li>
+<li><a href="#output-file-location">Output File Location</a></li>
+<li><a href="#downloading-llm-files">Downloading LLM Files</a></li>
+<li><a href="#relationship-to-markdown-page-files">Relationship to Markdown Page Files</a></li>
+<li><a href="#use-cases">Use Cases</a><ul>
+<li><a href="#ai-code-assistants">AI Code Assistants</a></li>
+<li><a href="#documentation-search">Documentation Search</a></li>
+<li><a href="#rag-pipelines">RAG Pipelines</a></li>
+<li><a href="#cicd-integration">CI/CD Integration</a></li>
+</ul>
+</li>
+</ul>
+</div>
+
+                </div>
+            </aside>
+            
+        </main>
+
+        <footer class="footer">
+            <p>Built with <a href="https://github.com/docsfy/docsfy">docsfy</a></p>
+        </footer>
+    </div>
+
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <script src="assets/theme.js"></script>
+    <script src="assets/search.js"></script>
+    <script src="assets/copy.js"></script>
+    <script src="assets/callouts.js"></script>
+    <script src="assets/scrollspy.js"></script>
+    <script src="assets/codelabels.js"></script>
+    <script src="assets/github.js"></script>
+    <script>
+    (function() {
+        var toggle = document.getElementById('sidebar-toggle');
+        var sidebar = document.getElementById('sidebar');
+        var overlay = document.getElementById('sidebar-overlay');
+        if (toggle && sidebar) {
+            toggle.addEventListener('click', function() {
+                sidebar.classList.toggle('open');
+                if (overlay) overlay.classList.toggle('open');
+                var expanded = sidebar.classList.contains('open');
+                toggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+            });
+        }
+        if (overlay) {
+            overlay.addEventListener('click', function() {
+                sidebar.classList.remove('open');
+                overlay.classList.remove('open');
+                if (toggle) toggle.setAttribute('aria-expanded', 'false');
+            });
+        }
+    })();
+    </script>
+    <script>
+    (function() {
+        var sidebar = document.querySelector('.sidebar-nav') || document.querySelector('.sidebar');
+        if (!sidebar) return;
+
+        // Restore scroll position
+        var saved = sessionStorage.getItem('sidebar-scroll');
+        if (saved) sidebar.scrollTop = parseInt(saved, 10);
+
+        // Save scroll position before navigating
+        sidebar.addEventListener('scroll', function() {
+            sessionStorage.setItem('sidebar-scroll', sidebar.scrollTop.toString());
+        });
+
+        // Also scroll active link into view if no saved position
+        if (!saved) {
+            var active = sidebar.querySelector('.nav-link.active');
+            if (active) {
+                active.scrollIntoView({ block: 'center', behavior: 'instant' });
+            }
+        }
+    })();
+    </script>
+</body>
+</html>

@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Overview - docsfy</title>
+    <meta name="description" content="AI-powered documentation generator that turns GitHub repositories into polished static documentation websites">
+    <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <a href="index.html" class="sidebar-logo">docsfy</a>
+            <p class="sidebar-tagline">AI-powered documentation generator that turns GitHub repositories into polished static documentation websites</p>
+        </div>
+
+        <div class="sidebar-search">
+            <input type="text" id="search-input" placeholder="Search... (⌘K)" autocomplete="off" readonly>
+            <div id="search-results" class="search-results"></div>
+        </div>
+
+        <nav class="sidebar-nav">
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Getting Started</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="introduction.html"
+                           class="nav-link">
+                            Introduction
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="installation.html"
+                           class="nav-link">
+                            Installation
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="quickstart.html"
+                           class="nav-link">
+                            Quickstart
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="docker-deployment.html"
+                           class="nav-link">
+                            Docker Deployment
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Configuration</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="configuration.html"
+                           class="nav-link">
+                            Configuration Reference
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="ai-providers.html"
+                           class="nav-link">
+                            AI Providers
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Usage</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="generating-docs.html"
+                           class="nav-link">
+                            Generating Documentation
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="serving-and-downloading.html"
+                           class="nav-link">
+                            Serving and Downloading
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="generated-site-features.html"
+                           class="nav-link">
+                            Generated Site Features
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="llm-friendly-output.html"
+                           class="nav-link">
+                            LLM-Friendly Output
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">API Reference</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="api-overview.html"
+                           class="nav-link active">
+                            API Overview
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="api-generation.html"
+                           class="nav-link">
+                            Generation Endpoint
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="api-projects.html"
+                           class="nav-link">
+                            Project Management Endpoints
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="api-serving.html"
+                           class="nav-link">
+                            Serving and Download Endpoints
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Architecture</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="architecture-overview.html"
+                           class="nav-link">
+                            Architecture Overview
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="project-structure.html"
+                           class="nav-link">
+                            Project Structure
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="ai-generation-pipeline.html"
+                           class="nav-link">
+                            AI Generation Pipeline
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="storage-and-caching.html"
+                           class="nav-link">
+                            Storage and Caching
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Development</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="development-setup.html"
+                           class="nav-link">
+                            Development Setup
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="testing.html"
+                           class="nav-link">
+                            Testing
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="code-quality.html"
+                           class="nav-link">
+                            Code Quality
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+        </nav>
+    </aside>
+
+    <div class="main-wrapper">
+        <header class="top-bar">
+            <div class="top-bar-left">
+                <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebar" aria-expanded="false">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                </button>
+                <a href="index.html" class="top-bar-title">docsfy</a>
+            </div>
+            <div class="top-bar-spacer"></div>
+            <div class="top-bar-right">
+                <button class="top-bar-search-btn" id="search-trigger" aria-label="Search">
+                    <kbd>&#8984;K</kbd> Search
+                </button>
+                
+                <a href="https://github.com/myk-org/docsfy" target="_blank" rel="noopener noreferrer" class="top-bar-github" id="github-link" data-repo-url="https://github.com/myk-org/docsfy">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                    <span class="github-stars" id="github-stars"></span>
+                </a>
+                
+                <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+                    <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                    </svg>
+                    <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <main class="content">
+            <article class="article">
+                <div class="article-body">
+                    <!-- content is pre-rendered from markdown by the server, not user input -->
+                    <h1 id="api-overview">API Overview</h1>
+<p>docsfy exposes a REST API built with <a href="https://fastapi.tiangolo.com/">FastAPI</a> for generating, managing, and serving AI-powered documentation sites. All endpoints accept and return JSON, and long-running generation work happens asynchronously in the background.</p>
+<h2 id="base-url">Base URL</h2>
+<p>By default the server listens on <code>http://0.0.0.0:8000</code>. The host and port are configurable through environment variables:</p>
+<div class="highlight"><pre><span></span><code><span class="nv">HOST</span><span class="o">=</span><span class="m">0</span>.0.0.0<span class="w">   </span><span class="c1"># Bind address</span>
+<span class="nv">PORT</span><span class="o">=</span><span class="m">8000</span><span class="w">      </span><span class="c1"># Bind port</span>
+</code></pre></div>
+
+<p>The interactive API docs generated by FastAPI are available at <code>/docs</code> (Swagger UI) and <code>/redoc</code> (ReDoc) while the server is running.</p>
+<h2 id="request-response-format">Request &amp; Response Format</h2>
+<p>All API endpoints under <code>/api/</code> communicate using JSON. Requests that include a body must set <code>Content-Type: application/json</code>. Responses always return JSON unless explicitly noted (e.g., the download endpoint returns a gzipped tarball).</p>
+<h3 id="standard-success-response">Standard Success Response</h3>
+<p>Successful responses return a <code>200 OK</code> status with a JSON body:</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;projects&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;my-project&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;repo_url&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://github.com/org/my-project.git&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ready&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;last_commit_sha&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;a1b2c3d4&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;last_generated&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-03-05 14:30:00&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;page_count&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">12</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">]</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<h3 id="error-response">Error Response</h3>
+<p>Errors follow the standard FastAPI format with a <code>detail</code> field:</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="nt">&quot;detail&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Project &#39;my-project&#39; not found&quot;</span><span class="p">}</span>
+</code></pre></div>
+
+<p>Validation errors (422) include structured location information:</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;detail&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;value_error&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;loc&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;body&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;repo_url&quot;</span><span class="p">],</span>
+<span class="w">      </span><span class="nt">&quot;msg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Value error, Invalid git repository URL: &#39;not-a-url&#39;&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;input&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;not-a-url&quot;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">]</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<h3 id="http-status-codes">HTTP Status Codes</h3>
+<table>
+<thead>
+<tr>
+<th>Code</th>
+<th>Meaning</th>
+<th>Used By</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>200</code></td>
+<td>Success</td>
+<td>All GET and DELETE endpoints</td>
+</tr>
+<tr>
+<td><code>202</code></td>
+<td>Accepted</td>
+<td><code>POST /api/generate</code> — generation started in background</td>
+</tr>
+<tr>
+<td><code>400</code></td>
+<td>Bad Request</td>
+<td>Invalid project name; project not ready for download</td>
+</tr>
+<tr>
+<td><code>404</code></td>
+<td>Not Found</td>
+<td>Project or file does not exist</td>
+</tr>
+<tr>
+<td><code>409</code></td>
+<td>Conflict</td>
+<td>Project is already being generated</td>
+</tr>
+<tr>
+<td><code>422</code></td>
+<td>Unprocessable Entity</td>
+<td>Request body validation failure</td>
+</tr>
+</tbody>
+</table>
+<h2 id="endpoints-at-a-glance">Endpoints at a Glance</h2>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Path</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GET</code></td>
+<td><code>/health</code></td>
+<td>Health check</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/api/generate</code></td>
+<td>Start documentation generation</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/api/status</code></td>
+<td>List all projects with status</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/api/projects/{name}</code></td>
+<td>Get a single project's details</td>
+</tr>
+<tr>
+<td><code>DELETE</code></td>
+<td><code>/api/projects/{name}</code></td>
+<td>Delete a project</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/api/projects/{name}/download</code></td>
+<td>Download generated site as <code>.tar.gz</code></td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/docs/{project}/{path}</code></td>
+<td>Serve generated documentation files</td>
+</tr>
+</tbody>
+</table>
+<h2 id="background-generation-with-202-accepted">Background Generation with 202 Accepted</h2>
+<p>Documentation generation is a long-running process — the AI must analyze the repository, plan the documentation structure, and generate every page. Rather than blocking the caller, docsfy uses an asynchronous pattern built on <code>202 Accepted</code> responses and status polling.</p>
+<h3 id="how-it-works">How It Works</h3>
+<div class="highlight"><pre><span></span><code>Client                              docsfy
+  │                                    │
+  │  POST /api/generate                │
+  │  {&quot;repo_url&quot;: &quot;https://...&quot;}       │
+  ├───────────────────────────────────►│
+  │                                    │ ── validate request
+  │         202 Accepted               │ ── save project (status: &quot;generating&quot;)
+  │  {&quot;project&quot;:&quot;x&quot;,&quot;status&quot;:&quot;...&quot;}    │ ── launch background task
+  │◄───────────────────────────────────┤
+  │                                    │
+  │                                    │ ┌─ Background ──────────────┐
+  │                                    │ │ 1. Clone repository       │
+  │  GET /api/projects/x  (poll)       │ │ 2. Run AI planner         │
+  ├───────────────────────────────────►│ │ 3. Generate pages (5 max  │
+  │  {&quot;status&quot;:&quot;generating&quot;,           │ │    concurrently)           │
+  │   &quot;page_count&quot;: 3}                 │ │ 4. Render HTML site        │
+  │◄───────────────────────────────────┤ └───────────────────────────┘
+  │                                    │
+  │  GET /api/projects/x  (poll)       │
+  ├───────────────────────────────────►│
+  │  {&quot;status&quot;:&quot;ready&quot;,                │
+  │   &quot;page_count&quot;: 12}               │
+  │◄───────────────────────────────────┤
+</code></pre></div>
+
+<h3 id="step-1-submit-a-generation-request">Step 1: Submit a Generation Request</h3>
+<p>Send a <code>POST</code> to <code>/api/generate</code> with either a remote URL or a local path:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Remote repository</span>
+curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/api/generate<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{&quot;repo_url&quot;: &quot;https://github.com/org/my-project.git&quot;}&#39;</span>
+
+<span class="c1"># Local repository</span>
+curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/api/generate<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{&quot;repo_path&quot;: &quot;/home/user/my-project&quot;}&#39;</span>
+</code></pre></div>
+
+<p>The server responds immediately with <code>202 Accepted</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="nt">&quot;project&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;my-project&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;generating&quot;</span><span class="p">}</span>
+</code></pre></div>
+
+<blockquote>
+<p><strong>Note:</strong> You must provide exactly one of <code>repo_url</code> or <code>repo_path</code> — not both. Sending both or neither returns a <code>422</code> validation error.</p>
+</blockquote>
+<h3 id="step-2-poll-for-status">Step 2: Poll for Status</h3>
+<p>While the background task runs, poll the project endpoint to track progress:</p>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>http://localhost:8000/api/projects/my-project
+</code></pre></div>
+
+<p>During generation, the <code>page_count</code> field increments as pages complete:</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;my-project&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;repo_url&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://github.com/org/my-project.git&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;generating&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;page_count&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;plan_json&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;{\&quot;project_name\&quot;: \&quot;my-project\&quot;, ...}&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;error_message&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;created_at&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-03-05 14:00:00&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;updated_at&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-03-05 14:02:30&quot;</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<blockquote>
+<p><strong>Tip:</strong> The <code>plan_json</code> field is populated early in the process — after the planner stage but before page generation finishes. You can parse it to show the planned documentation structure to users while pages are still being generated.</p>
+</blockquote>
+<h3 id="step-3-generation-complete">Step 3: Generation Complete</h3>
+<p>The <code>status</code> field transitions to one of two terminal states:</p>
+<ul>
+<li><strong><code>ready</code></strong> — generation succeeded; the site is available to serve or download</li>
+<li><strong><code>error</code></strong> — generation failed; check <code>error_message</code> for details</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;my-project&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ready&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;page_count&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">12</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;last_commit_sha&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;a1b2c3d4e5f6&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;last_generated&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-03-05 14:05:00&quot;</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<h3 id="conflict-prevention">Conflict Prevention</h3>
+<p>Only one generation can run per project at a time. Submitting a request for a project that is already generating returns <code>409 Conflict</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="nt">&quot;detail&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Project &#39;my-project&#39; is already being generated&quot;</span><span class="p">}</span>
+</code></pre></div>
+
+<p>This is tracked via an in-memory set in <code>main.py</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="n">_generating</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+
+<span class="k">if</span> <span class="n">project_name</span> <span class="ow">in</span> <span class="n">_generating</span><span class="p">:</span>
+    <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span>
+        <span class="n">status_code</span><span class="o">=</span><span class="mi">409</span><span class="p">,</span>
+        <span class="n">detail</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Project &#39;</span><span class="si">{</span><span class="n">project_name</span><span class="si">}</span><span class="s2">&#39; is already being generated&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+</code></pre></div>
+
+<h3 id="incremental-updates">Incremental Updates</h3>
+<p>When you resubmit a generation request for an existing project, docsfy compares the current commit SHA against the stored <code>last_commit_sha</code>. If the repository has not changed and the project status is <code>ready</code>, generation is skipped entirely:</p>
+<div class="highlight"><pre><span></span><code><span class="n">existing</span> <span class="o">=</span> <span class="k">await</span> <span class="n">get_project</span><span class="p">(</span><span class="n">project_name</span><span class="p">)</span>
+<span class="k">if</span> <span class="p">(</span>
+    <span class="n">existing</span>
+    <span class="ow">and</span> <span class="n">existing</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;last_commit_sha&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="n">commit_sha</span>
+    <span class="ow">and</span> <span class="n">existing</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;status&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;ready&quot;</span>
+<span class="p">):</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">project_name</span><span class="si">}</span><span class="s2">] Project is up to date at </span><span class="si">{</span><span class="n">commit_sha</span><span class="p">[:</span><span class="mi">8</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">await</span> <span class="n">update_project_status</span><span class="p">(</span><span class="n">project_name</span><span class="p">,</span> <span class="n">status</span><span class="o">=</span><span class="s2">&quot;ready&quot;</span><span class="p">)</span>
+    <span class="k">return</span>
+</code></pre></div>
+
+<p>To force a full regeneration regardless of cache state, set <code>force: true</code> in the request body:</p>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/api/generate<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{&quot;repo_url&quot;: &quot;https://github.com/org/my-project.git&quot;, &quot;force&quot;: true}&#39;</span>
+</code></pre></div>
+
+<blockquote>
+<p><strong>Warning:</strong> Using <code>force: true</code> deletes the entire page cache for the project and regenerates all pages from scratch. This is significantly slower than an incremental update.</p>
+</blockquote>
+<h2 id="the-generation-request-body">The Generation Request Body</h2>
+<p>The <code>POST /api/generate</code> endpoint accepts a <code>GenerateRequest</code> model with the following fields:</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Required</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>repo_url</code></td>
+<td><code>string</code></td>
+<td>One of <code>repo_url</code> / <code>repo_path</code></td>
+<td><code>null</code></td>
+<td>Git repository URL (HTTPS or SSH)</td>
+</tr>
+<tr>
+<td><code>repo_path</code></td>
+<td><code>string</code></td>
+<td>One of <code>repo_url</code> / <code>repo_path</code></td>
+<td><code>null</code></td>
+<td>Absolute path to a local git repository</td>
+</tr>
+<tr>
+<td><code>ai_provider</code></td>
+<td><code>string</code></td>
+<td>No</td>
+<td>Server default</td>
+<td>AI provider: <code>"claude"</code>, <code>"gemini"</code>, or <code>"cursor"</code></td>
+</tr>
+<tr>
+<td><code>ai_model</code></td>
+<td><code>string</code></td>
+<td>No</td>
+<td>Server default</td>
+<td>Model identifier to use</td>
+</tr>
+<tr>
+<td><code>ai_cli_timeout</code></td>
+<td><code>integer</code></td>
+<td>No</td>
+<td>Server default</td>
+<td>Timeout per AI call in seconds (must be &gt; 0)</td>
+</tr>
+<tr>
+<td><code>force</code></td>
+<td><code>boolean</code></td>
+<td>No</td>
+<td><code>false</code></td>
+<td>Force full regeneration, ignoring cache</td>
+</tr>
+</tbody>
+</table>
+<p><strong>URL validation</strong> accepts two formats:</p>
+<ul>
+<li>HTTPS: <code>https://github.com/org/repo.git</code></li>
+<li>SSH: <code>git@github.com:org/repo.git</code></li>
+</ul>
+<p>The project name is automatically extracted from the last path component of the URL or directory name.</p>
+<h2 id="ai-provider-configuration">AI Provider Configuration</h2>
+<p>The AI provider and model can be configured at the server level via environment variables or overridden per request. Server defaults are defined in <code>config.py</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Settings</span><span class="p">(</span><span class="n">BaseSettings</span><span class="p">):</span>
+    <span class="n">ai_provider</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;claude&quot;</span>
+    <span class="n">ai_model</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;claude-opus-4-6[1m]&quot;</span>
+    <span class="n">ai_cli_timeout</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="mi">60</span><span class="p">,</span> <span class="n">gt</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</code></pre></div>
+
+<p>Per-request overrides take precedence:</p>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/api/generate<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{</span>
+<span class="s1">    &quot;repo_url&quot;: &quot;https://github.com/org/my-project.git&quot;,</span>
+<span class="s1">    &quot;ai_provider&quot;: &quot;gemini&quot;,</span>
+<span class="s1">    &quot;ai_model&quot;: &quot;gemini-2.5-pro&quot;,</span>
+<span class="s1">    &quot;ai_cli_timeout&quot;: 120</span>
+<span class="s1">  }&#39;</span>
+</code></pre></div>
+
+<h2 id="project-lifecycle">Project Lifecycle</h2>
+<p>A project moves through these states during its lifetime:</p>
+<div class="highlight"><pre><span></span><code>                ┌──────────────┐
+  POST /api/    │              │
+  generate ────►│  generating  │
+                │              │
+                └──────┬───────┘
+                       │
+              ┌────────┴────────┐
+              ▼                 ▼
+     ┌────────────┐    ┌────────────┐
+     │   ready    │    │   error    │
+     └────────────┘    └────────────┘
+         │                   │
+         │  POST /api/       │  POST /api/
+         │  generate         │  generate
+         ▼                   ▼
+     ┌──────────────┐
+     │  generating  │  (re-enters the cycle)
+     └──────────────┘
+</code></pre></div>
+
+<table>
+<thead>
+<tr>
+<th>Status</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>generating</code></td>
+<td>Background task is running; <code>page_count</code> increases as pages complete</td>
+</tr>
+<tr>
+<td><code>ready</code></td>
+<td>Documentation site is built and available for serving or download</td>
+</tr>
+<tr>
+<td><code>error</code></td>
+<td>Generation failed; see <code>error_message</code> for details</td>
+</tr>
+</tbody>
+</table>
+<h2 id="the-generation-pipeline">The Generation Pipeline</h2>
+<p>When a generation request is accepted, the background task executes these stages:</p>
+<ol>
+<li><strong>AI CLI check</strong> — verifies the configured AI provider is available</li>
+<li><strong>Repository setup</strong> — clones the remote repo (shallow, <code>--depth 1</code>) or validates the local path</li>
+<li><strong>Planning</strong> — sends the repository to the AI planner, which returns a structured <code>DocPlan</code> (navigation groups and pages)</li>
+<li><strong>Page generation</strong> — generates each page concurrently (up to 5 at a time via <code>MAX_CONCURRENT_PAGES</code>), caching results to disk</li>
+<li><strong>Site rendering</strong> — converts markdown pages to HTML, copies static assets, and builds the search index</li>
+</ol>
+<p>Pages are generated concurrently with a bounded semaphore to avoid overwhelming the AI provider:</p>
+<div class="highlight"><pre><span></span><code><span class="n">MAX_CONCURRENT_PAGES</span> <span class="o">=</span> <span class="mi">5</span>
+
+<span class="n">results</span> <span class="o">=</span> <span class="k">await</span> <span class="n">run_parallel_with_limit</span><span class="p">(</span>
+    <span class="n">coroutines</span><span class="p">,</span> <span class="n">max_concurrency</span><span class="o">=</span><span class="n">MAX_CONCURRENT_PAGES</span>
+<span class="p">)</span>
+</code></pre></div>
+
+<p>If any individual page fails, the pipeline continues and substitutes a fallback message rather than aborting the entire build:</p>
+<div class="highlight"><pre><span></span><code><span class="k">if</span> <span class="ow">not</span> <span class="n">success</span><span class="p">:</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;# </span><span class="si">{</span><span class="n">title</span><span class="si">}</span><span class="se">\n\n</span><span class="s2">*Documentation generation failed. Please re-run.*&quot;</span>
+</code></pre></div>
+
+<h2 id="authentication">Authentication</h2>
+<p>The docsfy API does not currently implement authentication. All endpoints are publicly accessible without API keys or tokens.</p>
+<blockquote>
+<p><strong>Warning:</strong> If you deploy docsfy in a shared or production environment, place it behind a reverse proxy or API gateway that handles authentication and access control.</p>
+</blockquote>
+                </div>
+            </article>
+            <nav class="page-nav">
+                
+                <a href="llm-friendly-output.html" class="page-nav-link page-nav-prev">
+                    <span class="page-nav-label">Previous</span>
+                    <span class="page-nav-title">LLM-Friendly Output</span>
+                </a>
+                
+                
+                <a href="api-generation.html" class="page-nav-link page-nav-next">
+                    <span class="page-nav-label">Next</span>
+                    <span class="page-nav-title">Generation Endpoint</span>
+                </a>
+                
+            </nav>
+            
+            <aside class="toc-sidebar">
+                <div class="toc-container">
+                    <h3>On this page</h3>
+                    <div class="toc">
+<ul>
+<li><a href="#base-url">Base URL</a></li>
+<li><a href="#request-response-format">Request &amp; Response Format</a><ul>
+<li><a href="#standard-success-response">Standard Success Response</a></li>
+<li><a href="#error-response">Error Response</a></li>
+<li><a href="#http-status-codes">HTTP Status Codes</a></li>
+</ul>
+</li>
+<li><a href="#endpoints-at-a-glance">Endpoints at a Glance</a></li>
+<li><a href="#background-generation-with-202-accepted">Background Generation with 202 Accepted</a><ul>
+<li><a href="#how-it-works">How It Works</a></li>
+<li><a href="#step-1-submit-a-generation-request">Step 1: Submit a Generation Request</a></li>
+<li><a href="#step-2-poll-for-status">Step 2: Poll for Status</a></li>
+<li><a href="#step-3-generation-complete">Step 3: Generation Complete</a></li>
+<li><a href="#conflict-prevention">Conflict Prevention</a></li>
+<li><a href="#incremental-updates">Incremental Updates</a></li>
+</ul>
+</li>
+<li><a href="#the-generation-request-body">The Generation Request Body</a></li>
+<li><a href="#ai-provider-configuration">AI Provider Configuration</a></li>
+<li><a href="#project-lifecycle">Project Lifecycle</a></li>
+<li><a href="#the-generation-pipeline">The Generation Pipeline</a></li>
+<li><a href="#authentication">Authentication</a></li>
+</ul>
+</div>
+
+                </div>
+            </aside>
+            
+        </main>
+
+        <footer class="footer">
+            <p>Built with <a href="https://github.com/docsfy/docsfy">docsfy</a></p>
+        </footer>
+    </div>
+
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <script src="assets/theme.js"></script>
+    <script src="assets/search.js"></script>
+    <script src="assets/copy.js"></script>
+    <script src="assets/callouts.js"></script>
+    <script src="assets/scrollspy.js"></script>
+    <script src="assets/codelabels.js"></script>
+    <script src="assets/github.js"></script>
+    <script>
+    (function() {
+        var toggle = document.getElementById('sidebar-toggle');
+        var sidebar = document.getElementById('sidebar');
+        var overlay = document.getElementById('sidebar-overlay');
+        if (toggle && sidebar) {
+            toggle.addEventListener('click', function() {
+                sidebar.classList.toggle('open');
+                if (overlay) overlay.classList.toggle('open');
+                var expanded = sidebar.classList.contains('open');
+                toggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+            });
+        }
+        if (overlay) {
+            overlay.addEventListener('click', function() {
+                sidebar.classList.remove('open');
+                overlay.classList.remove('open');
+                if (toggle) toggle.setAttribute('aria-expanded', 'false');
+            });
+        }
+    })();
+    </script>
+    <script>
+    (function() {
+        var sidebar = document.querySelector('.sidebar-nav') || document.querySelector('.sidebar');
+        if (!sidebar) return;
+
+        // Restore scroll position
+        var saved = sessionStorage.getItem('sidebar-scroll');
+        if (saved) sidebar.scrollTop = parseInt(saved, 10);
+
+        // Save scroll position before navigating
+        sidebar.addEventListener('scroll', function() {
+            sessionStorage.setItem('sidebar-scroll', sidebar.scrollTop.toString());
+        });
+
+        // Also scroll active link into view if no saved position
+        if (!saved) {
+            var active = sidebar.querySelector('.nav-link.active');
+            if (active) {
+                active.scrollIntoView({ block: 'center', behavior: 'instant' });
+            }
+        }
+    })();
+    </script>
+</body>
+</html>

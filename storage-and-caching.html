@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Storage and Caching - docsfy</title>
+    <meta name="description" content="AI-powered documentation generator that turns GitHub repositories into polished static documentation websites">
+    <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <a href="index.html" class="sidebar-logo">docsfy</a>
+            <p class="sidebar-tagline">AI-powered documentation generator that turns GitHub repositories into polished static documentation websites</p>
+        </div>
+
+        <div class="sidebar-search">
+            <input type="text" id="search-input" placeholder="Search... (⌘K)" autocomplete="off" readonly>
+            <div id="search-results" class="search-results"></div>
+        </div>
+
+        <nav class="sidebar-nav">
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Getting Started</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="introduction.html"
+                           class="nav-link">
+                            Introduction
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="installation.html"
+                           class="nav-link">
+                            Installation
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="quickstart.html"
+                           class="nav-link">
+                            Quickstart
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="docker-deployment.html"
+                           class="nav-link">
+                            Docker Deployment
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Configuration</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="configuration.html"
+                           class="nav-link">
+                            Configuration Reference
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="ai-providers.html"
+                           class="nav-link">
+                            AI Providers
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Usage</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="generating-docs.html"
+                           class="nav-link">
+                            Generating Documentation
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="serving-and-downloading.html"
+                           class="nav-link">
+                            Serving and Downloading
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="generated-site-features.html"
+                           class="nav-link">
+                            Generated Site Features
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="llm-friendly-output.html"
+                           class="nav-link">
+                            LLM-Friendly Output
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">API Reference</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="api-overview.html"
+                           class="nav-link">
+                            API Overview
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="api-generation.html"
+                           class="nav-link">
+                            Generation Endpoint
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="api-projects.html"
+                           class="nav-link">
+                            Project Management Endpoints
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="api-serving.html"
+                           class="nav-link">
+                            Serving and Download Endpoints
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Architecture</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="architecture-overview.html"
+                           class="nav-link">
+                            Architecture Overview
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="project-structure.html"
+                           class="nav-link">
+                            Project Structure
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="ai-generation-pipeline.html"
+                           class="nav-link">
+                            AI Generation Pipeline
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="storage-and-caching.html"
+                           class="nav-link active">
+                            Storage and Caching
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Development</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="development-setup.html"
+                           class="nav-link">
+                            Development Setup
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="testing.html"
+                           class="nav-link">
+                            Testing
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="code-quality.html"
+                           class="nav-link">
+                            Code Quality
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+        </nav>
+    </aside>
+
+    <div class="main-wrapper">
+        <header class="top-bar">
+            <div class="top-bar-left">
+                <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebar" aria-expanded="false">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                </button>
+                <a href="index.html" class="top-bar-title">docsfy</a>
+            </div>
+            <div class="top-bar-spacer"></div>
+            <div class="top-bar-right">
+                <button class="top-bar-search-btn" id="search-trigger" aria-label="Search">
+                    <kbd>&#8984;K</kbd> Search
+                </button>
+                
+                <a href="https://github.com/myk-org/docsfy" target="_blank" rel="noopener noreferrer" class="top-bar-github" id="github-link" data-repo-url="https://github.com/myk-org/docsfy">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                    <span class="github-stars" id="github-stars"></span>
+                </a>
+                
+                <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+                    <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                    </svg>
+                    <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <main class="content">
+            <article class="article">
+                <div class="article-body">
+                    <!-- content is pre-rendered from markdown by the server, not user input -->
+                    <h1 id="storage-and-caching">Storage and Caching</h1>
+<p>docsfy uses a two-tier persistence strategy: a SQLite database for project metadata and the local filesystem for generated content. This separation keeps structured queries fast while allowing large markdown and HTML files to live on disk where they can be served directly.</p>
+<h2 id="sqlite-database">SQLite Database</h2>
+<h3 id="location">Location</h3>
+<p>The database file is stored at <code>{DATA_DIR}/docsfy.db</code>, where <code>DATA_DIR</code> defaults to <code>/data</code> and is configurable via environment variable:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># src/docsfy/storage.py</span>
+<span class="n">DB_PATH</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;DATA_DIR&quot;</span><span class="p">,</span> <span class="s2">&quot;/data&quot;</span><span class="p">))</span> <span class="o">/</span> <span class="s2">&quot;docsfy.db&quot;</span>
+</code></pre></div>
+
+<p>In Docker deployments, this path lives inside the mounted volume:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># docker-compose.yaml</span>
+<span class="nt">volumes</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./data:/data</span>
+</code></pre></div>
+
+<h3 id="schema">Schema</h3>
+<p>docsfy uses a single <code>projects</code> table, created automatically on application startup via <code>init_db()</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="k">IF</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">EXISTS</span><span class="w"> </span><span class="n">projects</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="n">name</span><span class="w"> </span><span class="nb">TEXT</span><span class="w"> </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="p">,</span>
+<span class="w">    </span><span class="n">repo_url</span><span class="w"> </span><span class="nb">TEXT</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">status</span><span class="w"> </span><span class="nb">TEXT</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="s1">&#39;generating&#39;</span><span class="p">,</span>
+<span class="w">    </span><span class="n">last_commit_sha</span><span class="w"> </span><span class="nb">TEXT</span><span class="p">,</span>
+<span class="w">    </span><span class="n">last_generated</span><span class="w"> </span><span class="nb">TEXT</span><span class="p">,</span>
+<span class="w">    </span><span class="n">page_count</span><span class="w"> </span><span class="nb">INTEGER</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">    </span><span class="n">error_message</span><span class="w"> </span><span class="nb">TEXT</span><span class="p">,</span>
+<span class="w">    </span><span class="n">plan_json</span><span class="w"> </span><span class="nb">TEXT</span><span class="p">,</span>
+<span class="w">    </span><span class="n">created_at</span><span class="w"> </span><span class="k">TIMESTAMP</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="k">CURRENT_TIMESTAMP</span><span class="p">,</span>
+<span class="w">    </span><span class="n">updated_at</span><span class="w"> </span><span class="k">TIMESTAMP</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="k">CURRENT_TIMESTAMP</span>
+<span class="p">)</span>
+</code></pre></div>
+
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>name</code></td>
+<td><code>TEXT PRIMARY KEY</code></td>
+<td>Project identifier, derived from the repository name</td>
+</tr>
+<tr>
+<td><code>repo_url</code></td>
+<td><code>TEXT NOT NULL</code></td>
+<td>Git clone URL or local path used as source</td>
+</tr>
+<tr>
+<td><code>status</code></td>
+<td><code>TEXT NOT NULL</code></td>
+<td>Current state: <code>generating</code>, <code>ready</code>, or <code>error</code></td>
+</tr>
+<tr>
+<td><code>last_commit_sha</code></td>
+<td><code>TEXT</code></td>
+<td>Git SHA at which documentation was last generated</td>
+</tr>
+<tr>
+<td><code>last_generated</code></td>
+<td><code>TEXT</code></td>
+<td>Timestamp of last successful generation</td>
+</tr>
+<tr>
+<td><code>page_count</code></td>
+<td><code>INTEGER</code></td>
+<td>Number of documentation pages produced</td>
+</tr>
+<tr>
+<td><code>error_message</code></td>
+<td><code>TEXT</code></td>
+<td>Error details when <code>status = 'error'</code></td>
+</tr>
+<tr>
+<td><code>plan_json</code></td>
+<td><code>TEXT</code></td>
+<td>Serialized JSON of the documentation plan</td>
+</tr>
+<tr>
+<td><code>created_at</code></td>
+<td><code>TIMESTAMP</code></td>
+<td>Record creation time</td>
+</tr>
+<tr>
+<td><code>updated_at</code></td>
+<td><code>TIMESTAMP</code></td>
+<td>Last modification time</td>
+</tr>
+</tbody>
+</table>
+<h3 id="status-lifecycle">Status Lifecycle</h3>
+<p>The <code>status</code> column is validated against a fixed set of allowed values:</p>
+<div class="highlight"><pre><span></span><code><span class="n">VALID_STATUSES</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">({</span><span class="s2">&quot;generating&quot;</span><span class="p">,</span> <span class="s2">&quot;ready&quot;</span><span class="p">,</span> <span class="s2">&quot;error&quot;</span><span class="p">})</span>
+</code></pre></div>
+
+<p>A project progresses through these states during generation:</p>
+<div class="highlight"><pre><span></span><code>generating  ──►  ready
+     │
+     └──────►  error
+</code></pre></div>
+
+<ul>
+<li><strong><code>generating</code></strong> — Set when a generation request is accepted. Updated incrementally as pages are produced (<code>page_count</code> increases).</li>
+<li><strong><code>ready</code></strong> — Set once all pages are generated and the HTML site is rendered.</li>
+<li><strong><code>error</code></strong> — Set if any unrecoverable failure occurs. The <code>error_message</code> column captures the details.</li>
+</ul>
+<h3 id="database-operations">Database Operations</h3>
+<p>All database access is asynchronous via <code>aiosqlite</code>. Every query uses parameterized placeholders to prevent SQL injection:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># src/docsfy/storage.py</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">save_project</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">repo_url</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">status</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;generating&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">async</span> <span class="k">with</span> <span class="n">aiosqlite</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">DB_PATH</span><span class="p">)</span> <span class="k">as</span> <span class="n">db</span><span class="p">:</span>
+        <span class="k">await</span> <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;INSERT INTO projects (name, repo_url, status, updated_at)</span>
+<span class="sd">               VALUES (?, ?, ?, CURRENT_TIMESTAMP)</span>
+<span class="sd">               ON CONFLICT(name) DO UPDATE SET</span>
+<span class="sd">               repo_url = excluded.repo_url,</span>
+<span class="sd">               status = excluded.status,</span>
+<span class="sd">               error_message = NULL,</span>
+<span class="sd">               updated_at = CURRENT_TIMESTAMP&quot;&quot;&quot;</span><span class="p">,</span>
+            <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">repo_url</span><span class="p">,</span> <span class="n">status</span><span class="p">),</span>
+        <span class="p">)</span>
+        <span class="k">await</span> <span class="n">db</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+</code></pre></div>
+
+<p>The <code>save_project</code> function uses <code>INSERT ... ON CONFLICT</code> (upsert) so that re-generating an existing project updates the record rather than failing.</p>
+<p>The <code>update_project_status</code> function builds its <code>SET</code> clause dynamically, but only from hardcoded column names — never from user input:</p>
+<div class="highlight"><pre><span></span><code><span class="n">fields</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;status = ?&quot;</span><span class="p">,</span> <span class="s2">&quot;updated_at = CURRENT_TIMESTAMP&quot;</span><span class="p">]</span>
+<span class="n">values</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">status</span><span class="p">]</span>
+<span class="k">if</span> <span class="n">last_commit_sha</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="n">fields</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;last_commit_sha = ?&quot;</span><span class="p">)</span>
+    <span class="n">values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">last_commit_sha</span><span class="p">)</span>
+<span class="c1"># ... additional optional fields</span>
+</code></pre></div>
+
+<blockquote>
+<p><strong>Note:</strong> The <code>plan_json</code> column is updated early in the generation pipeline so that API consumers can inspect the documentation structure while pages are still being generated.</p>
+</blockquote>
+<h2 id="filesystem-layout">Filesystem Layout</h2>
+<p>Each project gets its own directory tree under <code>/data/projects/</code>. The three-level structure separates the documentation plan, cached intermediate files, and the final rendered site:</p>
+<div class="highlight"><pre><span></span><code>/data/
+├── docsfy.db                          # SQLite database
+└── projects/
+    └── {project-name}/
+        ├── plan.json                  # Documentation structure
+        ├── cache/
+        │   └── pages/
+        │       ├── introduction.md    # Cached AI-generated markdown
+        │       ├── quickstart.md
+        │       ├── configuration.md
+        │       └── *.md
+        └── site/                      # Final rendered output
+            ├── index.html             # Landing page
+            ├── introduction.html      # Rendered content pages
+            ├── introduction.md        # Raw markdown copies
+            ├── quickstart.html
+            ├── quickstart.md
+            ├── assets/
+            │   ├── style.css
+            │   ├── search.js
+            │   ├── theme.js
+            │   ├── copy.js
+            │   ├── callouts.js
+            │   ├── codelabels.js
+            │   ├── scrollspy.js
+            │   └── github.js
+            ├── search-index.json      # Client-side search data
+            ├── llms.txt               # AI-readable page index
+            └── llms-full.txt          # All pages concatenated
+</code></pre></div>
+
+<h3 id="path-helper-functions">Path Helper Functions</h3>
+<p>Three functions in <code>storage.py</code> provide consistent access to each level of the tree. All three validate the project name before constructing a path:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># src/docsfy/storage.py</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_project_dir</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">PROJECTS_DIR</span> <span class="o">/</span> <span class="n">_validate_name</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">get_project_site_dir</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">PROJECTS_DIR</span> <span class="o">/</span> <span class="n">_validate_name</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;site&quot;</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">get_project_cache_dir</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">PROJECTS_DIR</span> <span class="o">/</span> <span class="n">_validate_name</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;cache&quot;</span> <span class="o">/</span> <span class="s2">&quot;pages&quot;</span>
+</code></pre></div>
+
+<h3 id="planjson">plan.json</h3>
+<p>The documentation plan is a JSON file written to the project root after generation completes. It captures the project's structure, navigation hierarchy, and metadata:</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;project_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;my-library&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;tagline&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;A fast data processing library&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;repo_url&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://github.com/org/my-library&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;navigation&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;group&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Getting Started&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;pages&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">&quot;slug&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;introduction&quot;</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Introduction&quot;</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Overview of the library&quot;</span>
+<span class="w">        </span><span class="p">},</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">&quot;slug&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;quickstart&quot;</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Quick Start&quot;</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Get started fast&quot;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">      </span><span class="p">]</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">]</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<p>This file is also stored in the database's <code>plan_json</code> column for fast API access without filesystem reads.</p>
+<h3 id="site-directory">site/ Directory</h3>
+<p>The renderer (<code>renderer.py</code>) produces the final HTML site by cleaning the output directory and rebuilding it from scratch:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># src/docsfy/renderer.py</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">render_site</span><span class="p">(</span><span class="n">plan</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">pages</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="n">output_dir</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">output_dir</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+        <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">output_dir</span><span class="p">)</span>
+    <span class="n">output_dir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</code></pre></div>
+
+<p>Each page slug produces two files: <code>{slug}.html</code> (rendered HTML) and <code>{slug}.md</code> (raw markdown). The site also includes:</p>
+<ul>
+<li><strong><code>search-index.json</code></strong> — An array of objects with <code>slug</code>, <code>title</code>, and <code>content</code> (truncated to 2000 characters) for client-side search.</li>
+<li><strong><code>llms.txt</code></strong> — An index of all pages in a format optimized for LLM consumption.</li>
+<li><strong><code>llms-full.txt</code></strong> — The complete concatenated markdown of every page.</li>
+</ul>
+<h2 id="page-level-caching-strategy">Page-Level Caching Strategy</h2>
+<p>docsfy caches each documentation page individually as a markdown file under <code>cache/pages/</code>. This allows the system to skip expensive AI generation calls for pages that have already been produced.</p>
+<h3 id="cache-lookup">Cache Lookup</h3>
+<p>When generating a page, the system first checks whether a cached version exists:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># src/docsfy/generator.py</span>
+<span class="n">cache_file</span> <span class="o">=</span> <span class="n">cache_dir</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">slug</span><span class="si">}</span><span class="s2">.md&quot;</span>
+<span class="k">if</span> <span class="n">use_cache</span> <span class="ow">and</span> <span class="n">cache_file</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+    <span class="k">return</span> <span class="n">cache_file</span><span class="o">.</span><span class="n">read_text</span><span class="p">(</span><span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+</code></pre></div>
+
+<p>If <code>use_cache</code> is <code>True</code> and the file exists, the cached content is returned immediately — no AI call is made.</p>
+<h3 id="cache-write">Cache Write</h3>
+<p>After a page is generated by the AI, it is always written to the cache directory:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># src/docsfy/generator.py</span>
+<span class="n">output</span> <span class="o">=</span> <span class="n">_strip_ai_preamble</span><span class="p">(</span><span class="n">output</span><span class="p">)</span>
+<span class="n">cache_dir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">cache_file</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+</code></pre></div>
+
+<blockquote>
+<p><strong>Note:</strong> The <code>_strip_ai_preamble()</code> function removes any AI "thinking" or planning text that appears before the first markdown heading, ensuring clean content in the cache.</p>
+</blockquote>
+<h3 id="progress-tracking">Progress Tracking</h3>
+<p>After each page is written to cache, the current count of cached <code>.md</code> files is reported back to the database so API consumers can track generation progress:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># src/docsfy/generator.py</span>
+<span class="n">existing_pages</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">cache_dir</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">&quot;*.md&quot;</span><span class="p">)))</span>
+<span class="k">await</span> <span class="n">update_project_status</span><span class="p">(</span>
+    <span class="n">project_name</span><span class="p">,</span> <span class="n">status</span><span class="o">=</span><span class="s2">&quot;generating&quot;</span><span class="p">,</span> <span class="n">page_count</span><span class="o">=</span><span class="n">existing_pages</span>
+<span class="p">)</span>
+</code></pre></div>
+
+<h3 id="concurrent-generation">Concurrent Generation</h3>
+<p>Pages are generated concurrently with a configurable concurrency limit. Each page independently checks its own cache, so a mix of cached and uncached pages is handled efficiently:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># src/docsfy/generator.py</span>
+<span class="n">MAX_CONCURRENT_PAGES</span> <span class="o">=</span> <span class="mi">5</span>
+
+<span class="n">results</span> <span class="o">=</span> <span class="k">await</span> <span class="n">run_parallel_with_limit</span><span class="p">(</span>
+    <span class="n">coroutines</span><span class="p">,</span> <span class="n">max_concurrency</span><span class="o">=</span><span class="n">MAX_CONCURRENT_PAGES</span>
+<span class="p">)</span>
+</code></pre></div>
+
+<p>Failed pages receive placeholder content rather than blocking the entire generation:</p>
+<div class="highlight"><pre><span></span><code><span class="n">pages</span><span class="p">[</span><span class="n">page_info</span><span class="p">[</span><span class="s2">&quot;slug&quot;</span><span class="p">]]</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="sa">f</span><span class="s2">&quot;# </span><span class="si">{</span><span class="n">page_info</span><span class="p">[</span><span class="s1">&#39;title&#39;</span><span class="p">]</span><span class="si">}</span><span class="se">\n\n</span><span class="s2">*Documentation generation failed.*&quot;</span>
+<span class="p">)</span>
+</code></pre></div>
+
+<h3 id="cache-invalidation">Cache Invalidation</h3>
+<p>Cache invalidation happens through two mechanisms:</p>
+<p><strong>1. Commit SHA comparison</strong> — On non-forced generation, the system compares the repository's current commit SHA against the stored <code>last_commit_sha</code>. If they match and the project status is <code>ready</code>, generation is skipped entirely:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># src/docsfy/main.py</span>
+<span class="n">existing</span> <span class="o">=</span> <span class="k">await</span> <span class="n">get_project</span><span class="p">(</span><span class="n">project_name</span><span class="p">)</span>
+<span class="k">if</span> <span class="p">(</span>
+    <span class="n">existing</span>
+    <span class="ow">and</span> <span class="n">existing</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;last_commit_sha&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="n">commit_sha</span>
+    <span class="ow">and</span> <span class="n">existing</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;status&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;ready&quot;</span>
+<span class="p">):</span>
+    <span class="k">await</span> <span class="n">update_project_status</span><span class="p">(</span><span class="n">project_name</span><span class="p">,</span> <span class="n">status</span><span class="o">=</span><span class="s2">&quot;ready&quot;</span><span class="p">)</span>
+    <span class="k">return</span>
+</code></pre></div>
+
+<p><strong>2. Force regeneration</strong> — When <code>force=True</code> is passed in the API request, the entire cache directory is deleted and page count is reset to zero:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># src/docsfy/main.py</span>
+<span class="k">if</span> <span class="n">force</span><span class="p">:</span>
+    <span class="n">cache_dir</span> <span class="o">=</span> <span class="n">get_project_cache_dir</span><span class="p">(</span><span class="n">project_name</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">cache_dir</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+        <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">cache_dir</span><span class="p">)</span>
+    <span class="k">await</span> <span class="n">update_project_status</span><span class="p">(</span><span class="n">project_name</span><span class="p">,</span> <span class="n">status</span><span class="o">=</span><span class="s2">&quot;generating&quot;</span><span class="p">,</span> <span class="n">page_count</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</code></pre></div>
+
+<blockquote>
+<p><strong>Tip:</strong> Use <code>"force": true</code> in the generate request when you've made changes to AI prompts or want to regenerate documentation even if the repository hasn't changed:
+<code>bash
+curl -X POST http://localhost:8000/api/generate \
+  -H "Content-Type: application/json" \
+  -d '{"repo_url": "https://github.com/org/repo", "force": true}'</code></p>
+</blockquote>
+<h3 id="deletion-cleanup">Deletion Cleanup</h3>
+<p>When a project is deleted via the API, both the database record and the entire project directory (including cache and site) are removed:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># src/docsfy/main.py</span>
+<span class="n">deleted</span> <span class="o">=</span> <span class="k">await</span> <span class="n">delete_project</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+<span class="n">project_dir</span> <span class="o">=</span> <span class="n">get_project_dir</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+<span class="k">if</span> <span class="n">project_dir</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+    <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">project_dir</span><span class="p">)</span>
+</code></pre></div>
+
+<h2 id="path-traversal-security">Path Traversal Security</h2>
+<p>docsfy employs a defense-in-depth strategy with four layers of validation to prevent path traversal attacks.</p>
+<h3 id="layer-1-project-name-validation-storage">Layer 1: Project Name Validation (Storage)</h3>
+<p>All filesystem path construction passes through <code>_validate_name()</code>, which enforces a strict allowlist regex:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># src/docsfy/storage.py</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_validate_name</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Validate project name to prevent path traversal.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;^[a-zA-Z0-9][a-zA-Z0-9._-]*$&quot;</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Invalid project name: &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39;&quot;</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">name</span>
+</code></pre></div>
+
+<p>This pattern ensures:
+- The name starts with an alphanumeric character (no leading <code>.</code> or <code>-</code>)
+- Only alphanumeric characters, dots, underscores, and hyphens are allowed
+- No slashes, spaces, or <code>..</code> sequences can appear</p>
+<h3 id="layer-2-api-endpoint-validation">Layer 2: API Endpoint Validation</h3>
+<p>A duplicate validation at the HTTP layer catches invalid names early and returns a proper <code>400 Bad Request</code> response:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># src/docsfy/main.py</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_validate_project_name</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Validate project name to prevent path traversal.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">_re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;^[a-zA-Z0-9][a-zA-Z0-9._-]*$&quot;</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="n">status_code</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span> <span class="n">detail</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Invalid project name: &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">name</span>
+</code></pre></div>
+
+<p>This is applied to every endpoint that accepts a project name parameter: <code>GET /api/projects/{name}</code>, <code>DELETE /api/projects/{name}</code>, <code>GET /api/projects/{name}/download</code>, and <code>GET /docs/{project}/{path}</code>.</p>
+<h3 id="layer-3-page-slug-validation">Layer 3: Page Slug Validation</h3>
+<p>Page slugs — used to construct cache file paths — are validated at both the individual page and batch levels:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># src/docsfy/generator.py</span>
+<span class="k">if</span> <span class="s2">&quot;/&quot;</span> <span class="ow">in</span> <span class="n">slug</span> <span class="ow">or</span> <span class="s2">&quot;</span><span class="se">\\</span><span class="s2">&quot;</span> <span class="ow">in</span> <span class="n">slug</span> <span class="ow">or</span> <span class="n">slug</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">&quot;..&quot;</span> <span class="ow">in</span> <span class="n">slug</span><span class="p">:</span>
+    <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Invalid page slug: &#39;</span><span class="si">{</span><span class="n">slug</span><span class="si">}</span><span class="s2">&#39;&quot;</span>
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+</code></pre></div>
+
+<p>In <code>generate_all_pages()</code>, invalid slugs are logged and silently skipped rather than causing the entire generation to fail:</p>
+<div class="highlight"><pre><span></span><code><span class="k">if</span> <span class="s2">&quot;/&quot;</span> <span class="ow">in</span> <span class="n">slug</span> <span class="ow">or</span> <span class="s2">&quot;</span><span class="se">\\</span><span class="s2">&quot;</span> <span class="ow">in</span> <span class="n">slug</span> <span class="ow">or</span> <span class="n">slug</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">&quot;..&quot;</span> <span class="ow">in</span> <span class="n">slug</span><span class="p">:</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">_label</span><span class="si">}</span><span class="s2">] Skipping path-unsafe slug: &#39;</span><span class="si">{</span><span class="n">slug</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+    <span class="k">continue</span>
+</code></pre></div>
+
+<p>The renderer applies the same check when writing output files:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># src/docsfy/renderer.py</span>
+<span class="k">for</span> <span class="n">slug</span><span class="p">,</span> <span class="n">content</span> <span class="ow">in</span> <span class="n">pages</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="k">if</span> <span class="s2">&quot;/&quot;</span> <span class="ow">in</span> <span class="n">slug</span> <span class="ow">or</span> <span class="s2">&quot;</span><span class="se">\\</span><span class="s2">&quot;</span> <span class="ow">in</span> <span class="n">slug</span> <span class="ow">or</span> <span class="n">slug</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">&quot;..&quot;</span> <span class="ow">in</span> <span class="n">slug</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Skipping invalid slug: </span><span class="si">{</span><span class="n">slug</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+
+<h3 id="layer-4-resolved-path-verification">Layer 4: Resolved Path Verification</h3>
+<p>The file-serving endpoint applies a final structural check using Python's <code>Path.resolve()</code> and <code>relative_to()</code>. This catches any traversal attempt that might bypass string-level validation:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># src/docsfy/main.py</span>
+<span class="nd">@app</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/docs/</span><span class="si">{project}</span><span class="s2">/{path:path}&quot;</span><span class="p">)</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">serve_docs</span><span class="p">(</span><span class="n">project</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;index.html&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FileResponse</span><span class="p">:</span>
+    <span class="n">project</span> <span class="o">=</span> <span class="n">_validate_project_name</span><span class="p">(</span><span class="n">project</span><span class="p">)</span>
+    <span class="n">site_dir</span> <span class="o">=</span> <span class="n">get_project_site_dir</span><span class="p">(</span><span class="n">project</span><span class="p">)</span>
+    <span class="n">file_path</span> <span class="o">=</span> <span class="n">site_dir</span> <span class="o">/</span> <span class="n">path</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">file_path</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span><span class="o">.</span><span class="n">relative_to</span><span class="p">(</span><span class="n">site_dir</span><span class="o">.</span><span class="n">resolve</span><span class="p">())</span>
+    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="n">status_code</span><span class="o">=</span><span class="mi">403</span><span class="p">,</span> <span class="n">detail</span><span class="o">=</span><span class="s2">&quot;Access denied&quot;</span><span class="p">)</span>
+</code></pre></div>
+
+<p>This resolves symlinks and <code>..</code> components in the actual filesystem, then verifies that the resulting absolute path is still within the expected <code>site/</code> directory. If not, the request is rejected with <code>403 Access denied</code>.</p>
+<blockquote>
+<p><strong>Warning:</strong> The <code>resolve()</code> + <code>relative_to()</code> check is the most critical security boundary. It operates on the real filesystem path after symlink resolution, making it resistant to encoding tricks and double-dot sequences that might slip through regex-based validation.</p>
+</blockquote>
+<h3 id="defense-summary">Defense Summary</h3>
+<table>
+<thead>
+<tr>
+<th>Layer</th>
+<th>Location</th>
+<th>Mechanism</th>
+<th>Response</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>storage._validate_name()</code></td>
+<td>Alphanumeric regex</td>
+<td><code>ValueError</code></td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>main._validate_project_name()</code></td>
+<td>Same regex at HTTP boundary</td>
+<td><code>400 Bad Request</code></td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>generator.generate_page()</code></td>
+<td>Slash/dot checks on slugs</td>
+<td><code>ValueError</code> or skip</td>
+</tr>
+<tr>
+<td>4</td>
+<td><code>main.serve_docs()</code></td>
+<td><code>Path.resolve().relative_to()</code></td>
+<td><code>403 Access Denied</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="sql-injection-prevention">SQL Injection Prevention</h3>
+<p>All database queries use parameterized placeholders (<code>?</code>), and the dynamic field construction in <code>update_project_status</code> uses only hardcoded column names:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># src/docsfy/storage.py</span>
+<span class="k">await</span> <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;SELECT * FROM projects WHERE name = ?&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">name</span><span class="p">,))</span>
+</code></pre></div>
+
+<blockquote>
+<p><strong>Note:</strong> The <code>update_project_status</code> function constructs a dynamic <code>SET</code> clause, but the field names in the <code>fields</code> list are always string literals (<code>"status = ?"</code>, <code>"last_commit_sha = ?"</code>, etc.) — never derived from user input.</p>
+</blockquote>
+<h2 id="configuration-reference">Configuration Reference</h2>
+<p>Storage-related settings are managed through environment variables, loaded via Pydantic Settings:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># src/docsfy/config.py</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Settings</span><span class="p">(</span><span class="n">BaseSettings</span><span class="p">):</span>
+    <span class="n">data_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;/data&quot;</span>
+</code></pre></div>
+
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>DATA_DIR</code></td>
+<td><code>/data</code></td>
+<td>Root directory for the SQLite database and all project files</td>
+</tr>
+</tbody>
+</table>
+<p>In Docker deployments, mount a host volume to persist data across container restarts:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># docker-compose.yaml</span>
+<span class="nt">services</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">docsfy</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">volumes</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./data:/data</span>
+</code></pre></div>
+
+<blockquote>
+<p><strong>Warning:</strong> If <code>DATA_DIR</code> is not backed by a persistent volume, all project data — database, cached pages, and rendered sites — will be lost when the container is removed.</p>
+</blockquote>
+                </div>
+            </article>
+            <nav class="page-nav">
+                
+                <a href="ai-generation-pipeline.html" class="page-nav-link page-nav-prev">
+                    <span class="page-nav-label">Previous</span>
+                    <span class="page-nav-title">AI Generation Pipeline</span>
+                </a>
+                
+                
+                <a href="development-setup.html" class="page-nav-link page-nav-next">
+                    <span class="page-nav-label">Next</span>
+                    <span class="page-nav-title">Development Setup</span>
+                </a>
+                
+            </nav>
+            
+            <aside class="toc-sidebar">
+                <div class="toc-container">
+                    <h3>On this page</h3>
+                    <div class="toc">
+<ul>
+<li><a href="#sqlite-database">SQLite Database</a><ul>
+<li><a href="#location">Location</a></li>
+<li><a href="#schema">Schema</a></li>
+<li><a href="#status-lifecycle">Status Lifecycle</a></li>
+<li><a href="#database-operations">Database Operations</a></li>
+</ul>
+</li>
+<li><a href="#filesystem-layout">Filesystem Layout</a><ul>
+<li><a href="#path-helper-functions">Path Helper Functions</a></li>
+<li><a href="#planjson">plan.json</a></li>
+<li><a href="#site-directory">site/ Directory</a></li>
+</ul>
+</li>
+<li><a href="#page-level-caching-strategy">Page-Level Caching Strategy</a><ul>
+<li><a href="#cache-lookup">Cache Lookup</a></li>
+<li><a href="#cache-write">Cache Write</a></li>
+<li><a href="#progress-tracking">Progress Tracking</a></li>
+<li><a href="#concurrent-generation">Concurrent Generation</a></li>
+<li><a href="#cache-invalidation">Cache Invalidation</a></li>
+<li><a href="#deletion-cleanup">Deletion Cleanup</a></li>
+</ul>
+</li>
+<li><a href="#path-traversal-security">Path Traversal Security</a><ul>
+<li><a href="#layer-1-project-name-validation-storage">Layer 1: Project Name Validation (Storage)</a></li>
+<li><a href="#layer-2-api-endpoint-validation">Layer 2: API Endpoint Validation</a></li>
+<li><a href="#layer-3-page-slug-validation">Layer 3: Page Slug Validation</a></li>
+<li><a href="#layer-4-resolved-path-verification">Layer 4: Resolved Path Verification</a></li>
+<li><a href="#defense-summary">Defense Summary</a></li>
+<li><a href="#sql-injection-prevention">SQL Injection Prevention</a></li>
+</ul>
+</li>
+<li><a href="#configuration-reference">Configuration Reference</a></li>
+</ul>
+</div>
+
+                </div>
+            </aside>
+            
+        </main>
+
+        <footer class="footer">
+            <p>Built with <a href="https://github.com/docsfy/docsfy">docsfy</a></p>
+        </footer>
+    </div>
+
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <script src="assets/theme.js"></script>
+    <script src="assets/search.js"></script>
+    <script src="assets/copy.js"></script>
+    <script src="assets/callouts.js"></script>
+    <script src="assets/scrollspy.js"></script>
+    <script src="assets/codelabels.js"></script>
+    <script src="assets/github.js"></script>
+    <script>
+    (function() {
+        var toggle = document.getElementById('sidebar-toggle');
+        var sidebar = document.getElementById('sidebar');
+        var overlay = document.getElementById('sidebar-overlay');
+        if (toggle && sidebar) {
+            toggle.addEventListener('click', function() {
+                sidebar.classList.toggle('open');
+                if (overlay) overlay.classList.toggle('open');
+                var expanded = sidebar.classList.contains('open');
+                toggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+            });
+        }
+        if (overlay) {
+            overlay.addEventListener('click', function() {
+                sidebar.classList.remove('open');
+                overlay.classList.remove('open');
+                if (toggle) toggle.setAttribute('aria-expanded', 'false');
+            });
+        }
+    })();
+    </script>
+    <script>
+    (function() {
+        var sidebar = document.querySelector('.sidebar-nav') || document.querySelector('.sidebar');
+        if (!sidebar) return;
+
+        // Restore scroll position
+        var saved = sessionStorage.getItem('sidebar-scroll');
+        if (saved) sidebar.scrollTop = parseInt(saved, 10);
+
+        // Save scroll position before navigating
+        sidebar.addEventListener('scroll', function() {
+            sessionStorage.setItem('sidebar-scroll', sidebar.scrollTop.toString());
+        });
+
+        // Also scroll active link into view if no saved position
+        if (!saved) {
+            var active = sidebar.querySelector('.nav-link.active');
+            if (active) {
+                active.scrollIntoView({ block: 'center', behavior: 'instant' });
+            }
+        }
+    })();
+    </script>
+</body>
+</html>

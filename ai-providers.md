@@ -1,201 +1,267 @@
 # AI Providers
 
-docsfy supports multiple AI CLI providers for documentation generation. Each provider is an external CLI tool that docsfy invokes as a subprocess to analyze repositories and generate content. This page covers the supported providers, how they are configured, and how docsfy interacts with them.
+docsfy delegates documentation generation to external AI CLI tools. It supports three providers out of the box: **Claude Code**, **Gemini CLI**, and **Cursor Agent**. Each provider is invoked as a subprocess, receiving prompts via stdin and returning generated content via stdout.
 
 ## Supported Providers
 
-docsfy supports three AI CLI providers out of the box:
+| Provider | CLI Binary | Installation Method |
+|----------|-----------|---------------------|
+| Claude Code | `claude` | `curl -fsSL https://claude.ai/install.sh \| bash` |
+| Gemini CLI | `gemini` | `npm install -g @google/gemini-cli` |
+| Cursor Agent | `agent` | `curl -fsSL https://cursor.com/install \| bash` |
 
-| Provider | CLI Binary | Description |
-|----------|-----------|-------------|
-| **Claude Code** | `claude` | Anthropic's CLI for Claude models |
-| **Cursor Agent** | `agent` | Cursor's autonomous coding agent |
-| **Gemini CLI** | `gemini` | Google's Gemini CLI tool |
+All three CLIs are installed automatically in the Docker image. When running outside Docker, you must install the CLI for your chosen provider manually.
 
-All three providers are installed in the Docker image during build and are available at runtime regardless of which one is selected.
+### How Providers Are Invoked
 
-### Installation in Docker
+Each provider uses different CLI flags and working-directory strategies:
 
-Each provider is installed using its official installation method:
+| Provider | Command Pattern | CWD Handling |
+|----------|----------------|--------------|
+| Claude | `claude --model <model> --dangerously-skip-permissions -p` | subprocess `cwd` set to repo path |
+| Gemini | `gemini --model <model> --yolo` | subprocess `cwd` set to repo path |
+| Cursor | `agent --force --model <model> --print --workspace <path>` | `--workspace` flag (manages its own cwd) |
 
-```bash
-# Claude Code
-curl -fsSL https://claude.ai/install.sh | bash
-
-# Cursor Agent
-curl -fsSL https://cursor.com/install | bash
-
-# Gemini CLI
-npm install -g @google/gemini-cli
-```
-
-> **Note:** Provider CLIs are unpinned and always install the latest version. This ensures access to the newest features and models but means builds are not fully reproducible.
-
-## Provider Configuration
-
-### The `ProviderConfig` Dataclass
-
-Each provider is represented by a frozen dataclass that defines its binary, command builder, and CWD behavior:
+Prompts are passed via stdin to all providers:
 
 ```python
-@dataclass(frozen=True)
+subprocess.run(cmd, input=prompt, capture_output=True, text=True)
+```
+
+Execution is non-blocking — each invocation runs inside `asyncio.to_thread()`, and up to 5 pages are generated concurrently:
+
+```python
+MAX_CONCURRENT_PAGES = 5
+```
+
+### Provider Architecture
+
+Provider configuration is managed by the `ai-cli-runner` package, which docsfy re-exports through its `ai_client` module:
+
+```python
+# src/docsfy/ai_client.py
+from ai_cli_runner import (
+    PROVIDERS,
+    VALID_AI_PROVIDERS,
+    ProviderConfig,
+    call_ai_cli,
+    check_ai_cli_available,
+    get_ai_cli_timeout,
+    run_parallel_with_limit,
+)
+```
+
+Each provider is represented as a `ProviderConfig` dataclass:
+
+```python
+@dataclass
 class ProviderConfig:
     binary: str
     build_cmd: Callable
     uses_own_cwd: bool = False
 ```
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `binary` | `str` | The CLI executable name (e.g., `claude`, `gemini`, `agent`) |
-| `build_cmd` | `Callable` | A function that constructs the full command with arguments |
-| `uses_own_cwd` | `bool` | Whether the provider manages its own working directory. Defaults to `False` |
+The valid provider set is enforced at runtime:
 
-## Command Interfaces
+```python
+VALID_AI_PROVIDERS = frozenset({"claude", "gemini", "cursor"})
+```
 
-Each provider has a distinct CLI interface with different flags for model selection, permission handling, and output control.
+## Selecting a Provider
+
+The AI provider is resolved through a layered configuration system. Per-request values take precedence over environment defaults.
+
+### Priority Order
+
+1. **Request-level override** — `ai_provider` field in the API request body
+2. **Environment variable** — `AI_PROVIDER` in your `.env` file
+3. **Default** — `claude`
+
+The resolution happens in the API handler:
+
+```python
+# src/docsfy/main.py
+ai_provider = request.ai_provider or settings.ai_provider
+```
+
+### Setting the Provider via Environment
+
+Create or edit your `.env` file:
+
+```bash
+AI_PROVIDER=claude
+```
+
+Valid values are `claude`, `gemini`, or `cursor`.
+
+### Setting the Provider per Request
+
+Override the provider for a single generation request:
+
+```bash
+curl -X POST http://localhost:8000/api/generate \
+  -H "Content-Type: application/json" \
+  -d '{
+    "repo_url": "https://github.com/org/my-project",
+    "ai_provider": "gemini"
+  }'
+```
+
+The `ai_provider` field accepts a `Literal["claude", "gemini", "cursor"]` value. Any other value will be rejected by Pydantic validation.
+
+### Availability Check
+
+Before starting generation, docsfy verifies the selected provider is installed and responsive:
+
+```python
+# src/docsfy/main.py
+available, msg = await check_ai_cli_available(ai_provider, ai_model)
+if not available:
+    await update_project_status(project_name, status="error", error_message=msg)
+    return
+```
+
+If the CLI binary is missing or fails the availability check, the project status is set to `error` with a descriptive message.
+
+## Model Selection
+
+Model selection follows the same layered resolution pattern as provider selection.
+
+### Priority Order
+
+1. **Request-level override** — `ai_model` field in the API request body
+2. **Environment variable** — `AI_MODEL` in your `.env` file
+3. **Default** — `claude-opus-4-6[1m]`
+
+```python
+# src/docsfy/main.py
+ai_model = request.ai_model or settings.ai_model
+```
+
+### The `[1m]` Notation
+
+The default model identifier `claude-opus-4-6[1m]` uses a bracket suffix to specify the context window size — in this case, 1 million tokens. This is a valid part of the Claude model identifier, not docsfy-specific syntax.
+
+```python
+# src/docsfy/config.py
+ai_model: str = "claude-opus-4-6[1m]"  # [1m] = 1 million token context window
+```
+
+### Configuring via Environment
+
+```bash
+# .env
+AI_MODEL=claude-opus-4-6[1m]
+```
+
+### Configuring per Request
+
+```bash
+curl -X POST http://localhost:8000/api/generate \
+  -H "Content-Type: application/json" \
+  -d '{
+    "repo_url": "https://github.com/org/my-project",
+    "ai_provider": "gemini",
+    "ai_model": "gemini-2.5-pro"
+  }'
+```
+
+### Model Examples by Provider
+
+| Provider | Example Models |
+|----------|---------------|
+| Claude | `claude-opus-4-6[1m]`, `claude-opus-4-6` |
+| Gemini | `gemini-2.5-pro` |
+| Cursor | `opus` |
+
+> **Note:** The model string is passed directly to the provider CLI via the `--model` flag. Refer to each provider's documentation for the full list of supported model identifiers.
+
+## Timeout Tuning
+
+AI CLI calls can take significant time for large repositories. The timeout controls how long docsfy waits for each CLI invocation before treating it as a failure.
+
+### Configuration
+
+The timeout is specified in seconds and must be a positive integer (greater than 0).
+
+```python
+# src/docsfy/config.py
+ai_cli_timeout: int = Field(default=60, gt=0)
+```
+
+### Priority Order
+
+1. **Request-level override** — `ai_cli_timeout` field in the API request body
+2. **Environment variable** — `AI_CLI_TIMEOUT` in your `.env` file
+3. **Default** — `60` seconds
+
+```python
+# src/docsfy/main.py
+ai_cli_timeout=request.ai_cli_timeout or settings.ai_cli_timeout,
+```
+
+### Setting via Environment
+
+```bash
+# .env
+AI_CLI_TIMEOUT=120
+```
+
+### Setting per Request
+
+```bash
+curl -X POST http://localhost:8000/api/generate \
+  -H "Content-Type: application/json" \
+  -d '{
+    "repo_url": "https://github.com/org/my-project",
+    "ai_cli_timeout": 180
+  }'
+```
+
+### Validation
+
+A timeout of `0` or any negative value is rejected at startup or request time:
+
+```python
+ai_cli_timeout: int | None = Field(default=None, gt=0)
+```
+
+> **Tip:** Large repositories with many source files may need higher timeouts. Start with the default of 60 seconds and increase if you see timeout errors in the generation logs.
+
+> **Warning:** Setting an extremely high timeout (e.g., 600+) means a stuck provider process will block that generation slot for the entire duration. The system runs up to 5 page generations concurrently, so stuck processes can exhaust capacity.
+
+## Provider-Specific Setup
+
+Each provider requires its own authentication credentials. Configure these in your `.env` file.
 
 ### Claude Code
 
-```bash
-claude --model <model> --dangerously-skip-permissions -p
-```
+Claude Code supports two authentication methods: a direct API key or Vertex AI.
 
-| Flag | Purpose |
-|------|---------|
-| `--model <model>` | Specifies which Claude model to use |
-| `--dangerously-skip-permissions` | Bypasses interactive permission prompts for file access |
-| `-p` | Enables prompt mode — reads the prompt from stdin |
-
-Claude Code accepts the prompt via stdin and writes its response to stdout. It relies on the subprocess working directory to access repository files.
-
-### Gemini CLI
+#### Option 1: API Key
 
 ```bash
-gemini --model <model> --yolo
-```
-
-| Flag | Purpose |
-|------|---------|
-| `--model <model>` | Specifies which Gemini model to use |
-| `--yolo` | Runs in unrestricted mode, skipping confirmation prompts |
-
-Like Claude Code, Gemini CLI reads from stdin and uses the subprocess working directory for file access.
-
-### Cursor Agent
-
-```bash
-agent --force --model <model> --print --workspace <path>
-```
-
-| Flag | Purpose |
-|------|---------|
-| `--force` | Forces execution without interactive confirmations |
-| `--model <model>` | Specifies which model to use |
-| `--print` | Outputs results to stdout instead of applying changes |
-| `--workspace <path>` | Sets the working directory for the agent explicitly |
-
-> **Warning:** Cursor Agent is the only provider that manages its own working directory via the `--workspace` flag. Its `ProviderConfig` sets `uses_own_cwd=True`, which changes how docsfy invokes the subprocess. See [CWD Handling](#cwd-handling) below.
-
-## CWD Handling
-
-docsfy needs each AI provider to have access to the cloned repository so it can explore the codebase and generate accurate documentation. How the working directory is set depends on the provider.
-
-### Standard Approach (Claude Code & Gemini CLI)
-
-For providers where `uses_own_cwd=False` (the default), docsfy sets the working directory using the `cwd` parameter of `subprocess.run`:
-
-```python
-subprocess.run(
-    cmd,
-    input=prompt,
-    capture_output=True,
-    text=True,
-    cwd=repo_path  # subprocess starts in the cloned repo directory
-)
-```
-
-This means the AI CLI process starts with its current working directory set to the repository root. The AI can then use relative paths to read any file in the repo.
-
-### Workspace Flag Approach (Cursor Agent)
-
-Cursor Agent handles its own CWD via the `--workspace` flag. When `uses_own_cwd=True`, docsfy passes the repository path as a command-line argument instead of setting `cwd`:
-
-```python
-# Cursor handles CWD internally via --workspace
-cmd = f"agent --force --model {model} --print --workspace {repo_path}"
-
-subprocess.run(
-    cmd,
-    input=prompt,
-    capture_output=True,
-    text=True
-    # No cwd parameter — Cursor uses --workspace instead
-)
-```
-
-> **Tip:** The `uses_own_cwd` flag in `ProviderConfig` allows docsfy to transparently handle both CWD strategies. The pipeline code checks this flag to decide whether to set `cwd` on the subprocess or let the provider handle it.
-
-### CWD in the Pipeline
-
-The working directory is set for both AI-driven pipeline stages:
-
-1. **Stage 2 — AI Planner:** The AI runs with access to the full repository so it can analyze the codebase and produce a `plan.json` with the documentation structure.
-2. **Stage 3 — AI Content Generator:** For each page defined in `plan.json`, the AI runs with access to the repository so it can explore relevant source files and write accurate content.
-
-## Provider Selection
-
-### Environment Variable
-
-The active provider is selected via the `AI_PROVIDER` environment variable:
-
-```bash
-AI_PROVIDER=claude    # Use Claude Code (default)
-AI_PROVIDER=gemini    # Use Gemini CLI
-AI_PROVIDER=cursor    # Use Cursor Agent
-```
-
-### Default Configuration
-
-| Setting | Environment Variable | Default Value |
-|---------|---------------------|---------------|
-| Provider | `AI_PROVIDER` | `claude` |
-| Model | `AI_MODEL` | `claude-opus-4-6[1m]` |
-| Timeout | `AI_CLI_TIMEOUT` | `60` (minutes) |
-
-### Full `.env` Example
-
-```bash
-# AI Configuration
+# .env
 AI_PROVIDER=claude
-AI_MODEL=claude-opus-4-6[1m]
-AI_CLI_TIMEOUT=60
-
-# Claude - Option 1: API Key
 ANTHROPIC_API_KEY=sk-ant-...
-
-# Claude - Option 2: Vertex AI
-# CLAUDE_CODE_USE_VERTEX=1
-# CLOUD_ML_REGION=us-east5
-# ANTHROPIC_VERTEX_PROJECT_ID=my-project
-
-# Gemini
-# GEMINI_API_KEY=AIza...
-
-# Cursor
-# CURSOR_API_KEY=cur_...
-
-# Logging
-LOG_LEVEL=INFO
 ```
 
-> **Note:** Only the credentials for your selected provider need to be set. Claude Code supports two authentication methods: direct API key (`ANTHROPIC_API_KEY`) or Google Cloud Vertex AI (`CLAUDE_CODE_USE_VERTEX` with associated GCP settings).
+#### Option 2: Vertex AI
 
-### Mounting Credentials in Docker
+For organizations using Google Cloud's Vertex AI to access Claude models:
 
-When running with Docker Compose, provider credentials can be passed via the `.env` file or mounted as volumes. For example, Claude Code with Vertex AI authentication requires GCP credentials:
+```bash
+# .env
+AI_PROVIDER=claude
+CLAUDE_CODE_USE_VERTEX=1
+CLOUD_ML_REGION=us-east5
+ANTHROPIC_VERTEX_PROJECT_ID=my-gcp-project-id
+```
+
+When running in Docker, mount your gcloud credentials as a read-only volume so the Claude CLI can authenticate with Vertex AI:
 
 ```yaml
+# docker-compose.yaml
 services:
   docsfy:
     build: .
@@ -204,62 +270,105 @@ services:
     env_file: .env
     volumes:
       - ./data:/data
-      - ~/.config/gcloud:/home/appuser/.config/gcloud:ro  # GCP credentials for Vertex AI
-      - ./cursor:/home/appuser/.config/cursor              # Cursor config
+      - ~/.config/gcloud:/home/appuser/.config/gcloud:ro
 ```
 
-## Invocation Details
+> **Note:** The `CLAUDE_CODE_USE_VERTEX`, `CLOUD_ML_REGION`, and `ANTHROPIC_VERTEX_PROJECT_ID` variables are read directly by the Claude Code CLI — docsfy passes them through to the subprocess environment automatically.
 
-### Subprocess Execution
+### Gemini CLI
 
-All providers follow the same invocation pattern regardless of their specific CLI flags:
+```bash
+# .env
+AI_PROVIDER=gemini
+GEMINI_API_KEY=your-gemini-api-key
+```
+
+The Gemini CLI is installed globally via npm during the Docker build:
+
+```dockerfile
+RUN mkdir -p /home/appuser/.npm-global \
+    && npm config set prefix '/home/appuser/.npm-global' \
+    && npm install -g @google/gemini-cli
+```
+
+### Cursor Agent
+
+```bash
+# .env
+AI_PROVIDER=cursor
+CURSOR_API_KEY=your-cursor-api-key
+```
+
+When running in Docker, you may need to mount the Cursor configuration directory for persistent settings:
+
+```yaml
+volumes:
+  - ./cursor:/home/appuser/.config/cursor
+```
+
+## Full Configuration Reference
+
+Here is the complete `.env.example` with all AI-related settings:
+
+```bash
+# AI Configuration
+AI_PROVIDER=claude
+AI_MODEL=claude-opus-4-6[1m]
+AI_CLI_TIMEOUT=60
+
+# Claude - Option 1: API Key
+# ANTHROPIC_API_KEY=
+
+# Claude - Option 2: Vertex AI
+# CLAUDE_CODE_USE_VERTEX=1
+# CLOUD_ML_REGION=
+# ANTHROPIC_VERTEX_PROJECT_ID=
+
+# Gemini
+# GEMINI_API_KEY=
+
+# Cursor
+# CURSOR_API_KEY=
+
+# Logging
+LOG_LEVEL=INFO
+```
+
+The configuration is loaded using Pydantic Settings, which reads from the `.env` file automatically:
 
 ```python
-subprocess.run(
-    cmd,
-    input=prompt,          # Prompt is passed via stdin
-    capture_output=True,   # Capture stdout and stderr
-    text=True              # Use text mode (not binary)
-)
+# src/docsfy/config.py
+class Settings(BaseSettings):
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="ignore",
+    )
+
+    ai_provider: str = "claude"
+    ai_model: str = "claude-opus-4-6[1m]"
+    ai_cli_timeout: int = Field(default=60, gt=0)
+    log_level: str = "INFO"
+    data_dir: str = "/data"
 ```
 
-Execution is wrapped in `asyncio.to_thread()` for non-blocking operation within the async FastAPI pipeline:
+Settings are cached for the lifetime of the process via `@lru_cache`, so environment changes require a restart.
 
-```python
-result = await asyncio.to_thread(subprocess.run, ...)
+## Combining Provider, Model, and Timeout
+
+All three settings can be overridden together in a single request:
+
+```bash
+curl -X POST http://localhost:8000/api/generate \
+  -H "Content-Type: application/json" \
+  -d '{
+    "repo_url": "https://github.com/org/my-project",
+    "ai_provider": "gemini",
+    "ai_model": "gemini-2.5-pro",
+    "ai_cli_timeout": 120
+  }'
 ```
 
-The return type from the invocation wrapper is `tuple[bool, str]` — a boolean success flag and the output string.
+This generates documentation using the Gemini CLI with the `gemini-2.5-pro` model and a 2-minute timeout per page — regardless of what is configured in the `.env` file.
 
-### Availability Check
-
-Before starting the generation pipeline, docsfy performs a lightweight availability check by sending a simple `"Hi"` prompt to the configured provider. This validates that:
-
-- The CLI binary is installed and on `PATH`
-- Authentication credentials are valid
-- The provider is responsive
-
-If this check fails, the generation request is rejected before any expensive operations (like cloning the repository) begin.
-
-### JSON Response Parsing
-
-AI providers return free-form text that contains JSON. docsfy uses a multi-strategy extraction approach to reliably parse structured data from provider responses:
-
-1. **Direct parse** — Attempt `json.loads()` on the raw output
-2. **Brace matching** — Find the outermost `{...}` block by matching braces
-3. **Code block extraction** — Look for ` ```json ... ``` ` markdown fenced blocks
-4. **Regex recovery** — Use regex patterns as a last-resort fallback
-
-This layered approach handles the variety of response formats that different AI providers produce — some return pure JSON, others wrap it in markdown, and others include conversational text around the structured data.
-
-## Provider Comparison
-
-| Aspect | Claude Code | Gemini CLI | Cursor Agent |
-|--------|------------|-----------|--------------|
-| Binary | `claude` | `gemini` | `agent` |
-| Permission bypass | `--dangerously-skip-permissions` | `--yolo` | `--force` |
-| Output mode | `-p` (prompt mode) | Implicit (stdin/stdout) | `--print` |
-| CWD method | Subprocess `cwd` param | Subprocess `cwd` param | `--workspace` flag |
-| `uses_own_cwd` | `False` | `False` | `True` |
-| Auth options | API Key or Vertex AI | API Key | API Key |
-| Install method | Shell script (`curl`) | Shell script (`curl`) | npm global package |
+> **Tip:** Per-request overrides are useful for testing a different provider without changing your deployment configuration. The `.env` values remain the defaults for all other requests.

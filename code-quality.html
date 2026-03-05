@@ -4,14 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Code Quality - docsfy</title>
-    <meta name="description" content="AI-powered documentation site generator that creates polished, Mintlify-quality static HTML docs from GitHub repositories">
+    <meta name="description" content="AI-powered documentation generator that turns GitHub repositories into polished static documentation websites">
     <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <a href="index.html" class="sidebar-logo">docsfy</a>
-            <p class="sidebar-tagline">AI-powered documentation site generator that creates polished, Mintlify-quality static HTML docs from GitHub repositories</p>
+            <p class="sidebar-tagline">AI-powered documentation generator that turns GitHub repositories into polished static documentation websites</p>
         </div>
 
         <div class="sidebar-search">
@@ -33,6 +33,13 @@
                     </li>
                     
                     <li>
+                        <a href="installation.html"
+                           class="nav-link">
+                            Installation
+                        </a>
+                    </li>
+                    
+                    <li>
                         <a href="quickstart.html"
                            class="nav-link">
                             Quickstart
@@ -40,44 +47,9 @@
                     </li>
                     
                     <li>
-                        <a href="installation.html"
+                        <a href="docker-deployment.html"
                            class="nav-link">
-                            Installation
-                        </a>
-                    </li>
-                    
-                </ul>
-            </div>
-            
-            <div class="nav-group">
-                <h3 class="nav-group-title">Core Concepts</h3>
-                <ul class="nav-group-pages">
-                    
-                    <li>
-                        <a href="architecture.html"
-                           class="nav-link">
-                            Architecture
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="generation-pipeline.html"
-                           class="nav-link">
-                            Generation Pipeline
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="ai-providers.html"
-                           class="nav-link">
-                            AI Providers
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="incremental-updates.html"
-                           class="nav-link">
-                            Incremental Updates
+                            Docker Deployment
                         </a>
                     </li>
                     
@@ -89,23 +61,16 @@
                 <ul class="nav-group-pages">
                     
                     <li>
-                        <a href="environment-variables.html"
+                        <a href="configuration.html"
                            class="nav-link">
-                            Environment Variables
+                            Configuration Reference
                         </a>
                     </li>
                     
                     <li>
-                        <a href="ai-provider-setup.html"
+                        <a href="ai-providers.html"
                            class="nav-link">
-                            AI Provider Setup
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="docker-configuration.html"
-                           class="nav-link">
-                            Docker Configuration
+                            AI Providers
                         </a>
                     </li>
                     
@@ -124,16 +89,23 @@
                     </li>
                     
                     <li>
-                        <a href="serving-docs.html"
+                        <a href="serving-and-downloading.html"
                            class="nav-link">
-                            Serving Documentation
+                            Serving and Downloading
                         </a>
                     </li>
                     
                     <li>
-                        <a href="managing-projects.html"
+                        <a href="generated-site-features.html"
                            class="nav-link">
-                            Managing Projects
+                            Generated Site Features
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="llm-friendly-output.html"
+                           class="nav-link">
+                            LLM-Friendly Output
                         </a>
                     </li>
                     
@@ -145,51 +117,30 @@
                 <ul class="nav-group-pages">
                     
                     <li>
-                        <a href="api-generate.html"
+                        <a href="api-overview.html"
                            class="nav-link">
-                            POST /api/generate
+                            API Overview
                         </a>
                     </li>
                     
                     <li>
-                        <a href="api-status.html"
+                        <a href="api-generation.html"
                            class="nav-link">
-                            GET /api/status
+                            Generation Endpoint
                         </a>
                     </li>
                     
                     <li>
                         <a href="api-projects.html"
                            class="nav-link">
-                            GET /api/projects/{name}
+                            Project Management Endpoints
                         </a>
                     </li>
                     
                     <li>
-                        <a href="api-projects-delete.html"
+                        <a href="api-serving.html"
                            class="nav-link">
-                            DELETE /api/projects/{name}
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="api-download.html"
-                           class="nav-link">
-                            GET /api/projects/{name}/download
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="api-docs-serving.html"
-                           class="nav-link">
-                            GET /docs/{project}/{path}
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="api-health.html"
-                           class="nav-link">
-                            GET /health
+                            Serving and Download Endpoints
                         </a>
                     </li>
                     
@@ -197,27 +148,34 @@
             </div>
             
             <div class="nav-group">
-                <h3 class="nav-group-title">Generated Sites</h3>
+                <h3 class="nav-group-title">Architecture</h3>
                 <ul class="nav-group-pages">
                     
                     <li>
-                        <a href="html-theme.html"
+                        <a href="architecture-overview.html"
                            class="nav-link">
-                            HTML Theme &amp; Features
+                            Architecture Overview
                         </a>
                     </li>
                     
                     <li>
-                        <a href="plan-json-schema.html"
+                        <a href="project-structure.html"
                            class="nav-link">
-                            Plan JSON Schema
+                            Project Structure
                         </a>
                     </li>
                     
                     <li>
-                        <a href="customization.html"
+                        <a href="ai-generation-pipeline.html"
                            class="nav-link">
-                            Customization
+                            AI Generation Pipeline
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="storage-and-caching.html"
+                           class="nav-link">
+                            Storage and Caching
                         </a>
                     </li>
                     
@@ -232,13 +190,6 @@
                         <a href="development-setup.html"
                            class="nav-link">
                             Development Setup
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="project-structure.html"
-                           class="nav-link">
-                            Project Structure
                         </a>
                     </li>
                     
@@ -296,471 +247,349 @@
 
         <main class="content">
             <article class="article">
-                <h1 class="article-title">Code Quality</h1>
                 <div class="article-body">
                     <!-- content is pre-rendered from markdown by the server, not user input -->
                     <h1 id="code-quality">Code Quality</h1>
-<p>docsfy enforces code quality through a layered system of automated checks that run before every commit. The toolchain — adopted from the <a href="https://github.com/pr-test-oracle">pr-test-oracle</a> project — combines linting, formatting, type checking, and secret detection into a single pre-commit workflow.</p>
+<p>docsfy enforces code quality through a layered set of automated checks that run on every commit. The project uses <a href="https://pre-commit.com/">pre-commit</a> as the orchestration layer, combining linting, formatting, type checking, and security scanning into a single developer workflow.</p>
 <h2 id="overview">Overview</h2>
 <table>
 <thead>
 <tr>
 <th>Tool</th>
+<th>Version</th>
 <th>Purpose</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><a href="#pre-commit-hooks">Pre-commit</a></td>
-<td>Git hook framework that orchestrates all checks</td>
+<td>Ruff</td>
+<td>v0.15.2</td>
+<td>Python linting and code formatting</td>
 </tr>
 <tr>
-<td><a href="#ruff-linting-and-formatting">Ruff</a></td>
-<td>Fast Python linter and formatter (replaces black, isort, and most flake8 rules)</td>
+<td>Flake8</td>
+<td>v7.3.0</td>
+<td>RedHatQE M511 mutable default detection</td>
 </tr>
 <tr>
-<td><a href="#mypy-strict-type-checking">Mypy</a></td>
-<td>Static type checker in strict mode</td>
+<td>mypy</td>
+<td>v1.19.1</td>
+<td>Strict static type checking</td>
 </tr>
 <tr>
-<td><a href="#flake8">Flake8</a></td>
-<td>Supplementary linting for rules not covered by ruff</td>
+<td>detect-secrets</td>
+<td>v1.5.0</td>
+<td>Prevent secrets from entering the codebase</td>
 </tr>
 <tr>
-<td><a href="#gitleaks">Gitleaks</a></td>
-<td>Scans commits for hardcoded secrets and credentials</td>
+<td>gitleaks</td>
+<td>v8.30.0</td>
+<td>Scan git history for leaked secrets</td>
 </tr>
 <tr>
-<td><a href="#detect-secrets">detect-secrets</a></td>
-<td>Baseline-aware secret detection to prevent new secrets from entering the codebase</td>
+<td>tox (unused-code)</td>
+<td>—</td>
+<td>Dead code detection via <code>pyutils-unusedcode</code></td>
 </tr>
 </tbody>
 </table>
 <h2 id="pre-commit-hooks">Pre-commit Hooks</h2>
-<p><a href="https://pre-commit.com/">Pre-commit</a> is the entry point for all code quality checks. It intercepts <code>git commit</code> and runs every configured hook against staged files. If any hook fails, the commit is blocked until the issue is fixed.</p>
-<h3 id="installation">Installation</h3>
-<p>Pre-commit is installed as a development dependency via <code>uv</code>:</p>
-<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>sync<span class="w"> </span>--dev
+<p>All checks are configured in <code>.pre-commit-config.yaml</code> and run automatically before each commit. The project also integrates with <a href="https://pre-commit.ci/">pre-commit.ci</a> for continuous integration, with automatic PR auto-fix disabled:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">ci</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">autofix_prs</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="w">  </span><span class="nt">autoupdate_commit_msg</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;ci:</span><span class="nv"> </span><span class="s">[pre-commit.ci]</span><span class="nv"> </span><span class="s">pre-commit</span><span class="nv"> </span><span class="s">autoupdate&quot;</span>
 </code></pre></div>
 
-<p>Then activate the hooks in your local repository:</p>
-<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>run<span class="w"> </span>pre-commit<span class="w"> </span>install
+<h3 id="standard-hooks">Standard Hooks</h3>
+<p>The first layer of pre-commit hooks catches common issues before any language-specific tooling runs:</p>
+<div class="highlight"><pre><span></span><code><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">repo</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://github.com/pre-commit/pre-commit-hooks</span>
+<span class="w">  </span><span class="nt">rev</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">v6.0.0</span>
+<span class="w">  </span><span class="nt">hooks</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">check-added-large-files</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">check-docstring-first</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">check-executables-have-shebangs</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">check-merge-conflict</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">check-symlinks</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">detect-private-key</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mixed-line-ending</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">debug-statements</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">trailing-whitespace</span>
+<span class="w">      </span><span class="nt">args</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">--markdown-linebreak-ext=md</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">end-of-file-fixer</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">check-ast</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">check-builtin-literals</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">check-toml</span>
 </code></pre></div>
 
+<p>These hooks enforce baseline hygiene: no large binaries, no merge conflict markers, no stray <code>breakpoint()</code> or <code>pdb</code> calls, consistent line endings, and valid Python AST in every <code>.py</code> file.</p>
+<h3 id="installing-pre-commit">Installing Pre-commit</h3>
+<p>To set up the hooks locally:</p>
+<div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>pre-commit
+pre-commit<span class="w"> </span>install
+</code></pre></div>
+
+<p>To run all hooks against the entire codebase on demand:</p>
+<div class="highlight"><pre><span></span><code>pre-commit<span class="w"> </span>run<span class="w"> </span>--all-files
+</code></pre></div>
+
+<h2 id="ruff-linting-and-formatting">Ruff — Linting and Formatting</h2>
+<p><a href="https://docs.astral.sh/ruff/">Ruff</a> serves as the primary linter and code formatter for the project. It replaces tools like isort, pyflakes, pycodestyle, and Black with a single, fast Rust-based tool.</p>
+<p>Both the linter and formatter are registered as separate pre-commit hooks:</p>
+<div class="highlight"><pre><span></span><code><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">repo</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://github.com/astral-sh/ruff-pre-commit</span>
+<span class="w">  </span><span class="nt">rev</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">v0.15.2</span>
+<span class="w">  </span><span class="nt">hooks</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ruff</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ruff-format</span>
+</code></pre></div>
+
+<p>The project uses ruff's default rule set with no custom configuration — there is no <code>[tool.ruff]</code> section in <code>pyproject.toml</code> and no standalone <code>ruff.toml</code> file. The defaults include pyflakes (<code>F</code>), pycodestyle (<code>E</code>, <code>W</code>), and isort (<code>I</code>) rules.</p>
+<blockquote>
+<p><strong>Tip:</strong> Ruff can auto-fix many issues. Run <code>ruff check --fix .</code> to apply safe fixes, or <code>ruff format .</code> to reformat the codebase.</p>
+</blockquote>
+<h2 id="flake8-m511-mutable-default-detection">Flake8 — M511 Mutable Default Detection</h2>
+<p>Flake8 is retained alongside ruff specifically for the <a href="https://github.com/RedHatQE/flake8-plugins">RedHatQE flake8-plugins</a> package, which provides the <strong>M511</strong> rule. This rule detects mutable default arguments in function signatures — a common Python pitfall where a mutable object (like a list or dict) is used as a default parameter value and shared across all calls.</p>
 <h3 id="configuration">Configuration</h3>
-<p>The <code>.pre-commit-config.yaml</code> file defines all hooks and their versions:</p>
-<div class="highlight"><pre><span></span><code><span class="nt">repos</span><span class="p">:</span>
-<span class="w">  </span><span class="c1"># Standard pre-commit hooks</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">repo</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://github.com/pre-commit/pre-commit-hooks</span>
-<span class="w">    </span><span class="nt">rev</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">v5.0.0</span>
-<span class="w">    </span><span class="nt">hooks</span><span class="p">:</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">trailing-whitespace</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">end-of-file-fixer</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">check-yaml</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">check-toml</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">check-added-large-files</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">debug-statements</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">check-merge-conflict</span>
-
-<span class="w">  </span><span class="c1"># Ruff - linting and formatting</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">repo</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://github.com/astral-sh/ruff-pre-commit</span>
-<span class="w">    </span><span class="nt">rev</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">v0.9.7</span>
-<span class="w">    </span><span class="nt">hooks</span><span class="p">:</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ruff</span>
-<span class="w">        </span><span class="nt">args</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">--fix</span><span class="p p-Indicator">]</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ruff-format</span>
-
-<span class="w">  </span><span class="c1"># Mypy - strict type checking</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">repo</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://github.com/pre-commit/mirrors-mypy</span>
-<span class="w">    </span><span class="nt">rev</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">v1.15.0</span>
-<span class="w">    </span><span class="nt">hooks</span><span class="p">:</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mypy</span>
-<span class="w">        </span><span class="nt">additional_dependencies</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">fastapi</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">uvicorn</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">jinja2</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">aiosqlite</span><span class="p p-Indicator">]</span>
-<span class="w">        </span><span class="nt">args</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">--strict</span><span class="p p-Indicator">]</span>
-
-<span class="w">  </span><span class="c1"># Flake8 - supplementary linting</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">repo</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://github.com/PyCQA/flake8</span>
-<span class="w">    </span><span class="nt">rev</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">7.1.2</span>
-<span class="w">    </span><span class="nt">hooks</span><span class="p">:</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">flake8</span>
-
-<span class="w">  </span><span class="c1"># Gitleaks - secret scanning</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">repo</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://github.com/gitleaks/gitleaks</span>
-<span class="w">    </span><span class="nt">rev</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">v8.22.1</span>
-<span class="w">    </span><span class="nt">hooks</span><span class="p">:</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gitleaks</span>
-
-<span class="w">  </span><span class="c1"># detect-secrets - baseline secret detection</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">repo</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://github.com/Yelp/detect-secrets</span>
-<span class="w">    </span><span class="nt">rev</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">v1.5.0</span>
-<span class="w">    </span><span class="nt">hooks</span><span class="p">:</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">detect-secrets</span>
-<span class="w">        </span><span class="nt">args</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&#39;--baseline&#39;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&#39;.secrets.baseline&#39;</span><span class="p p-Indicator">]</span>
-</code></pre></div>
-
-<h3 id="running-hooks-manually">Running Hooks Manually</h3>
-<p>Run all hooks against every file (not just staged changes):</p>
-<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>run<span class="w"> </span>pre-commit<span class="w"> </span>run<span class="w"> </span>--all-files
-</code></pre></div>
-
-<p>Run a specific hook:</p>
-<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>run<span class="w"> </span>pre-commit<span class="w"> </span>run<span class="w"> </span>ruff<span class="w"> </span>--all-files
-uv<span class="w"> </span>run<span class="w"> </span>pre-commit<span class="w"> </span>run<span class="w"> </span>mypy<span class="w"> </span>--all-files
-</code></pre></div>
-
-<blockquote>
-<p><strong>Tip:</strong> Run <code>pre-commit run --all-files</code> after pulling changes or updating hook versions to catch issues early before your next commit.</p>
-</blockquote>
-<h2 id="ruff-linting-and-formatting">Ruff Linting and Formatting</h2>
-<p><a href="https://docs.astral.sh/ruff/">Ruff</a> is an extremely fast Python linter and formatter written in Rust. It replaces black, isort, pycodestyle, pyflakes, and many flake8 plugins in a single tool.</p>
-<p>docsfy uses ruff for two purposes via separate pre-commit hooks:</p>
-<ul>
-<li><strong><code>ruff</code></strong> — linting with auto-fix enabled (<code>--fix</code>)</li>
-<li><strong><code>ruff-format</code></strong> — code formatting (consistent style enforcement)</li>
-</ul>
-<h3 id="configuration_1">Configuration</h3>
-<p>Ruff is configured in <code>pyproject.toml</code>:</p>
-<div class="highlight"><pre><span></span><code><span class="k">[tool.ruff]</span>
-<span class="n">target-version</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;py312&quot;</span>
-<span class="n">line-length</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">120</span>
-
-<span class="k">[tool.ruff.lint]</span>
-<span class="n">select</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span>
-<span class="w">    </span><span class="s2">&quot;E&quot;</span><span class="p">,</span><span class="w">      </span><span class="c1"># pycodestyle errors</span>
-<span class="w">    </span><span class="s2">&quot;W&quot;</span><span class="p">,</span><span class="w">      </span><span class="c1"># pycodestyle warnings</span>
-<span class="w">    </span><span class="s2">&quot;F&quot;</span><span class="p">,</span><span class="w">      </span><span class="c1"># pyflakes</span>
-<span class="w">    </span><span class="s2">&quot;I&quot;</span><span class="p">,</span><span class="w">      </span><span class="c1"># isort</span>
-<span class="w">    </span><span class="s2">&quot;N&quot;</span><span class="p">,</span><span class="w">      </span><span class="c1"># pep8-naming</span>
-<span class="w">    </span><span class="s2">&quot;UP&quot;</span><span class="p">,</span><span class="w">     </span><span class="c1"># pyupgrade</span>
-<span class="w">    </span><span class="s2">&quot;B&quot;</span><span class="p">,</span><span class="w">      </span><span class="c1"># flake8-bugbear</span>
-<span class="w">    </span><span class="s2">&quot;SIM&quot;</span><span class="p">,</span><span class="w">    </span><span class="c1"># flake8-simplify</span>
-<span class="w">    </span><span class="s2">&quot;RUF&quot;</span><span class="p">,</span><span class="w">    </span><span class="c1"># ruff-specific rules</span>
-<span class="p">]</span>
-
-<span class="k">[tool.ruff.lint.isort]</span>
-<span class="n">known-first-party</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;docsfy&quot;</span><span class="p">]</span>
-</code></pre></div>
-
-<h3 id="what-ruff-checks">What Ruff Checks</h3>
-<table>
-<thead>
-<tr>
-<th>Rule Set</th>
-<th>Code</th>
-<th>What It Catches</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>pycodestyle</td>
-<td><code>E</code>, <code>W</code></td>
-<td>Style violations (whitespace, indentation, line length)</td>
-</tr>
-<tr>
-<td>pyflakes</td>
-<td><code>F</code></td>
-<td>Unused imports, undefined names, redefined variables</td>
-</tr>
-<tr>
-<td>isort</td>
-<td><code>I</code></td>
-<td>Import ordering and grouping</td>
-</tr>
-<tr>
-<td>pep8-naming</td>
-<td><code>N</code></td>
-<td>Naming convention violations</td>
-</tr>
-<tr>
-<td>pyupgrade</td>
-<td><code>UP</code></td>
-<td>Code that can use newer Python 3.12+ syntax</td>
-</tr>
-<tr>
-<td>flake8-bugbear</td>
-<td><code>B</code></td>
-<td>Common bugs and design problems</td>
-</tr>
-<tr>
-<td>flake8-simplify</td>
-<td><code>SIM</code></td>
-<td>Code that can be simplified</td>
-</tr>
-<tr>
-<td>ruff-specific</td>
-<td><code>RUF</code></td>
-<td>Ruff's own additional checks</td>
-</tr>
-</tbody>
-</table>
-<h3 id="auto-fix-behavior">Auto-fix Behavior</h3>
-<p>The <code>--fix</code> flag in the pre-commit hook means ruff will automatically fix issues where safe to do so. For example:</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># Before: ruff auto-fixes unused import (F401)</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
-
-<span class="k">def</span><span class="w"> </span><span class="nf">get_version</span><span class="p">():</span>
-    <span class="k">return</span> <span class="n">sys</span><span class="o">.</span><span class="n">version</span>
-
-<span class="c1"># After: ruff removes the unused `os` import</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
-
-<span class="k">def</span><span class="w"> </span><span class="nf">get_version</span><span class="p">():</span>
-    <span class="k">return</span> <span class="n">sys</span><span class="o">.</span><span class="n">version</span>
-</code></pre></div>
-
-<p>Import ordering is also handled automatically:</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># Before: unordered imports (I001)</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">docsfy.renderer</span><span class="w"> </span><span class="kn">import</span> <span class="n">render_html</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">fastapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">FastAPI</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
-
-<span class="c1"># After: ruff reorders into standard/third-party/first-party groups</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
-
-<span class="kn">from</span><span class="w"> </span><span class="nn">fastapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">FastAPI</span>
-
-<span class="kn">from</span><span class="w"> </span><span class="nn">docsfy.renderer</span><span class="w"> </span><span class="kn">import</span> <span class="n">render_html</span>
-</code></pre></div>
-
-<blockquote>
-<p><strong>Note:</strong> Ruff's formatter (<code>ruff-format</code>) runs as a separate hook after the linter. This ensures that any auto-fixed code is also properly formatted.</p>
-</blockquote>
-<h2 id="mypy-strict-type-checking">Mypy Strict Type Checking</h2>
-<p><a href="https://mypy-lang.org/">Mypy</a> performs static type analysis to catch type errors before runtime. docsfy runs mypy in <strong>strict mode</strong>, which enables all optional type-checking flags for maximum safety.</p>
-<h3 id="configuration_2">Configuration</h3>
-<p>Mypy is configured in <code>pyproject.toml</code>:</p>
-<div class="highlight"><pre><span></span><code><span class="k">[tool.mypy]</span>
-<span class="n">python_version</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;3.12&quot;</span>
-<span class="n">strict</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
-<span class="n">warn_return_any</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
-<span class="n">warn_unused_configs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
-<span class="n">disallow_untyped_defs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
-<span class="n">disallow_incomplete_defs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
-<span class="n">check_untyped_defs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
-<span class="n">no_implicit_optional</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
-<span class="n">warn_redundant_casts</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
-<span class="n">warn_unused_ignores</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
-</code></pre></div>
-
-<h3 id="what-strict-mode-enforces">What Strict Mode Enforces</h3>
-<p>Strict mode is the combination of several flags that together require comprehensive type annotations:</p>
-<ul>
-<li><strong><code>disallow_untyped_defs</code></strong> — Every function must have type annotations for all parameters and the return type</li>
-<li><strong><code>disallow_incomplete_defs</code></strong> — Partial annotations (e.g., annotating some but not all parameters) are rejected</li>
-<li><strong><code>no_implicit_optional</code></strong> — <code>None</code> defaults don't automatically make a parameter <code>Optional</code>; you must write <code>str | None</code> explicitly</li>
-<li><strong><code>warn_return_any</code></strong> — Functions typed as returning a specific type but actually returning <code>Any</code> trigger a warning</li>
-</ul>
-<h3 id="examples">Examples</h3>
-<p>Functions must have complete type annotations:</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># Passes mypy --strict</span>
-<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">generate_docs</span><span class="p">(</span><span class="n">repo_url</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">project_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate documentation for a repository.&quot;&quot;&quot;</span>
-    <span class="o">...</span>
-
-<span class="c1"># Fails mypy --strict: missing parameter and return type annotations</span>
-<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">generate_docs</span><span class="p">(</span><span class="n">repo_url</span><span class="p">,</span> <span class="n">project_name</span><span class="p">):</span>
-    <span class="o">...</span>
-</code></pre></div>
-
-<p>Optional parameters must be explicitly annotated:</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># Passes mypy --strict</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">get_provider</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ProviderConfig</span><span class="p">:</span>
-    <span class="o">...</span>
-
-<span class="c1"># Fails mypy --strict: implicit Optional is not allowed</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">get_provider</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ProviderConfig</span><span class="p">:</span>
-    <span class="o">...</span>
-</code></pre></div>
-
-<blockquote>
-<p><strong>Warning:</strong> The pre-commit mypy hook lists <code>additional_dependencies</code> (fastapi, uvicorn, jinja2, aiosqlite) so that mypy can resolve third-party type stubs. If you add a new dependency to the project, you may need to add it here as well for type checking to pass.</p>
-</blockquote>
-<h2 id="flake8">Flake8</h2>
-<p><a href="https://flake8.pycqa.org/">Flake8</a> provides supplementary linting that catches issues outside ruff's rule set. While ruff covers most of flake8's core rules, flake8 is retained for its plugin ecosystem and as a secondary verification layer.</p>
-<h3 id="configuration_3">Configuration</h3>
-<p>Flake8 is configured in <code>pyproject.toml</code> (via the <code>[tool.flake8]</code> section if using <code>pyproject-flake8</code>) or in a <code>.flake8</code> file:</p>
+<p>The <code>.flake8</code> configuration file restricts flake8 to only the M511 rule:</p>
 <div class="highlight"><pre><span></span><code><span class="k">[flake8]</span>
-<span class="na">max-line-length</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">120</span>
-<span class="na">extend-ignore</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">E203, W503</span>
-<span class="na">per-file-ignores</span><span class="w"> </span><span class="o">=</span>
-<span class="w">    </span><span class="na">__init__.py</span><span class="o">:</span><span class="s">F401</span>
+<span class="na">select</span><span class="o">=</span><span class="s">M511</span>
+
+<span class="na">exclude</span><span class="w"> </span><span class="o">=</span>
+<span class="w">    </span><span class="na">doc,</span>
+<span class="w">    </span><span class="na">.tox,</span>
+<span class="w">    </span><span class="na">.git,</span>
+<span class="w">    </span><span class="na">*.yml,</span>
+<span class="w">    </span><span class="na">Pipfile.*,</span>
+<span class="w">    </span><span class="na">docs/*,</span>
+<span class="w">    </span><span class="na">.cache/*</span>
 </code></pre></div>
 
+<p>The pre-commit hook also pulls in <code>flake8-mutable</code> as an additional dependency:</p>
+<div class="highlight"><pre><span></span><code><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">repo</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://github.com/PyCQA/flake8</span>
+<span class="w">  </span><span class="nt">rev</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">7.3.0</span>
+<span class="w">  </span><span class="nt">hooks</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">flake8</span>
+<span class="w">      </span><span class="nt">args</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">--config=.flake8</span><span class="p p-Indicator">]</span>
+<span class="w">      </span><span class="nt">additional_dependencies</span><span class="p">:</span>
+<span class="w">        </span><span class="c1"># Tracks main branch intentionally for latest RedHatQE flake8 plugins</span>
+<span class="w">        </span><span class="p p-Indicator">[</span><span class="nv">git+https</span><span class="p p-Indicator">:</span><span class="nv">//github.com/RedHatQE/flake8-plugins.git</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">flake8-mutable</span><span class="p p-Indicator">]</span>
+</code></pre></div>
+
+<blockquote>
+<p><strong>Note:</strong> The RedHatQE plugin dependency tracks the <code>main</code> branch intentionally to pick up the latest rules without waiting for a release.</p>
+</blockquote>
+<h3 id="what-m511-catches">What M511 Catches</h3>
+<p>M511 flags code like this:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Bad — mutable default argument</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">process_items</span><span class="p">(</span><span class="n">items</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="n">items</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;new&quot;</span><span class="p">)</span>  <span class="c1"># mutates the shared default</span>
+</code></pre></div>
+
+<p>The correct pattern, used throughout the docsfy codebase, is to use immutable defaults or factory functions:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Good — immutable default with Pydantic Field factory</span>
+<span class="n">navigation</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">NavGroup</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">)</span>
+</code></pre></div>
+
+<h2 id="mypy-strict-type-checking">mypy — Strict Type Checking</h2>
+<p>The project enforces strict static type checking with <a href="https://mypy.readthedocs.io/">mypy</a>. All source code (excluding tests) must have complete, correct type annotations.</p>
+<h3 id="configuration_1">Configuration</h3>
+<p>The mypy configuration in <code>pyproject.toml</code> enables nearly every strictness flag:</p>
+<div class="highlight"><pre><span></span><code><span class="k">[tool.mypy]</span>
+<span class="n">check_untyped_defs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
+<span class="n">disallow_any_generics</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
+<span class="n">disallow_incomplete_defs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
+<span class="n">disallow_untyped_defs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
+<span class="n">no_implicit_optional</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
+<span class="n">show_error_codes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
+<span class="n">warn_unused_ignores</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
+<span class="n">strict_equality</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
+<span class="n">extra_checks</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
+<span class="n">warn_unused_configs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
+<span class="n">warn_redundant_casts</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
+</code></pre></div>
+
+<p>Key strictness options and what they enforce:</p>
 <table>
 <thead>
 <tr>
-<th>Setting</th>
-<th>Value</th>
-<th>Reason</th>
+<th>Option</th>
+<th>Effect</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>max-line-length</code></td>
-<td><code>120</code></td>
-<td>Matches ruff's <code>line-length</code> setting</td>
+<td><code>disallow_untyped_defs</code></td>
+<td>Every function must have type annotations</td>
 </tr>
 <tr>
-<td><code>extend-ignore: E203</code></td>
-<td>—</td>
-<td>Conflicts with formatting around slice notation</td>
+<td><code>disallow_any_generics</code></td>
+<td>Generic types (e.g., <code>list</code>, <code>dict</code>) must specify their type parameters</td>
 </tr>
 <tr>
-<td><code>extend-ignore: W503</code></td>
-<td>—</td>
-<td>Deprecated rule about line breaks before binary operators</td>
+<td><code>disallow_incomplete_defs</code></td>
+<td>Partially annotated functions are rejected</td>
 </tr>
 <tr>
-<td><code>per-file-ignores: __init__.py:F401</code></td>
-<td>—</td>
-<td>Allows unused imports in <code>__init__.py</code> (re-exports)</td>
+<td><code>no_implicit_optional</code></td>
+<td><code>None</code> defaults don't automatically make the type optional</td>
+</tr>
+<tr>
+<td><code>strict_equality</code></td>
+<td>Prevents comparing unrelated types with <code>==</code></td>
+</tr>
+<tr>
+<td><code>extra_checks</code></td>
+<td>Enables additional miscellaneous checks</td>
 </tr>
 </tbody>
 </table>
+<h3 id="pre-commit-integration">Pre-commit Integration</h3>
+<p>The mypy pre-commit hook excludes tests and ships with type stub packages for the project's dependencies:</p>
+<div class="highlight"><pre><span></span><code><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">repo</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://github.com/pre-commit/mirrors-mypy</span>
+<span class="w">  </span><span class="nt">rev</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">v1.19.1</span>
+<span class="w">  </span><span class="nt">hooks</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mypy</span>
+<span class="w">      </span><span class="nt">exclude</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">(tests/)</span>
+<span class="w">      </span><span class="nt">additional_dependencies</span><span class="p">:</span>
+<span class="w">        </span><span class="p p-Indicator">[</span><span class="nv">types-requests</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">types-PyYAML</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">types-colorama</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">types-aiofiles</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">pydantic</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">types-Markdown</span><span class="p p-Indicator">]</span>
+</code></pre></div>
+
 <blockquote>
-<p><strong>Note:</strong> The <code>max-line-length</code> setting should always match ruff's <code>line-length</code> in <code>pyproject.toml</code> to avoid conflicting results between the two tools.</p>
+<p><strong>Note:</strong> Tests are excluded from mypy checking (<code>exclude: (tests/)</code>) to allow more flexible typing in test code, where mocks and fixtures often don't carry precise types.</p>
 </blockquote>
-<h2 id="gitleaks">Gitleaks</h2>
-<p><a href="https://gitleaks.io/">Gitleaks</a> is a SAST (Static Application Security Testing) tool that scans git commits for hardcoded secrets such as API keys, tokens, passwords, and private keys.</p>
-<h3 id="how-it-works">How It Works</h3>
-<p>The gitleaks pre-commit hook scans the contents of staged files before each commit. If a potential secret is detected, the commit is blocked with a report identifying the file, line, and type of secret found.</p>
-<h3 id="configuration_4">Configuration</h3>
-<p>Gitleaks uses its built-in rules by default. A custom <code>.gitleaks.toml</code> can be added to fine-tune detection:</p>
-<div class="highlight"><pre><span></span><code><span class="k">[allowlist]</span>
-<span class="n">description</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;Global allowlist&quot;</span>
+<h3 id="code-examples">Code Examples</h3>
+<p>The strict configuration shapes how all code in the project is written. Every function signature carries full type annotations, including return types:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># From src/docsfy/storage.py</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">update_project_status</span><span class="p">(</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">status</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">last_commit_sha</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">page_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">error_message</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">plan_json</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+</code></pre></div>
+
+<p>Pydantic models use modern union syntax and <code>Literal</code> types for constrained values:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># From src/docsfy/models.py</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Literal</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">GenerateRequest</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+    <span class="n">repo_url</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Git repository URL (HTTPS or SSH)&quot;</span>
+    <span class="p">)</span>
+    <span class="n">ai_provider</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;claude&quot;</span><span class="p">,</span> <span class="s2">&quot;gemini&quot;</span><span class="p">,</span> <span class="s2">&quot;cursor&quot;</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">ai_cli_timeout</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">gt</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</code></pre></div>
+
+<p>Return types are always explicit, including for functions that return complex structures:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># From src/docsfy/storage.py</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_project</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="o">...</span>
+
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">list_projects</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]]:</span>
+    <span class="o">...</span>
+</code></pre></div>
+
+<h2 id="security-scanning">Security Scanning</h2>
+<p>The project uses two complementary tools to prevent secrets from entering the repository.</p>
+<h3 id="detect-secrets">detect-secrets</h3>
+<p><a href="https://github.com/Yelp/detect-secrets">detect-secrets</a> by Yelp scans staged files for high-entropy strings, API keys, passwords, and other potential secrets before they are committed:</p>
+<div class="highlight"><pre><span></span><code><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">repo</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://github.com/Yelp/detect-secrets</span>
+<span class="w">  </span><span class="nt">rev</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">v1.5.0</span>
+<span class="w">  </span><span class="nt">hooks</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">detect-secrets</span>
+</code></pre></div>
+
+<p>This hook runs with default detection rules and blocks commits that contain patterns matching known secret formats.</p>
+<h3 id="gitleaks">gitleaks</h3>
+<p><a href="https://github.com/gitleaks/gitleaks">gitleaks</a> provides an additional layer of secret scanning that inspects the full git history, not just staged changes. This catches secrets that may have been committed before <code>detect-secrets</code> was installed.</p>
+<div class="highlight"><pre><span></span><code><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">repo</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://github.com/gitleaks/gitleaks</span>
+<span class="w">  </span><span class="nt">rev</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">v8.30.0</span>
+<span class="w">  </span><span class="nt">hooks</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gitleaks</span>
+</code></pre></div>
+
+<p>The gitleaks configuration in <code>.gitleaks.toml</code> extends the default ruleset and allowlists the test file that intentionally contains mock URL patterns:</p>
+<div class="highlight"><pre><span></span><code><span class="k">[extend]</span>
+<span class="n">useDefault</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
+
+<span class="k">[allowlist]</span>
 <span class="n">paths</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span>
-<span class="w">    </span><span class="s1">&#39;&#39;&#39;\.secrets\.baseline$&#39;&#39;&#39;</span><span class="p">,</span>
-<span class="w">    </span><span class="s1">&#39;&#39;&#39;\.env\.example$&#39;&#39;&#39;</span><span class="p">,</span>
+<span class="w">    </span><span class="s1">&#39;&#39;&#39;tests/test_repository\.py&#39;&#39;&#39;</span><span class="p">,</span>
 <span class="p">]</span>
 </code></pre></div>
 
-<h3 id="example-output">Example Output</h3>
-<p>When gitleaks detects a secret, you'll see output like:</p>
-<div class="highlight"><pre><span></span><code>Finding:  ANTHROPIC_API_KEY=sk-ant-api03-real-key-here
-RuleID:   generic-api-key
-Entropy:  4.2
-File:     .env
-Line:     2
-Commit:   (staged)
+<blockquote>
+<p><strong>Warning:</strong> If gitleaks flags a legitimate secret that was accidentally committed, simply removing it from the current code is not enough — the secret remains in git history. Rotate the credential immediately and consider rewriting history with <code>git filter-repo</code>.</p>
+</blockquote>
+<h2 id="tox-unused-code-detection">Tox — Unused Code Detection</h2>
+<p>The project uses <a href="https://tox.wiki/">tox</a> to run a dead code detection pass alongside the regular test suite. The <code>tox.toml</code> configuration defines two environments:</p>
+<div class="highlight"><pre><span></span><code><span class="n">skipsdist</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
+
+<span class="n">envlist</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;unused-code&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;unittests&quot;</span><span class="p">]</span>
+
+<span class="k">[env.unused-code]</span>
+<span class="n">deps</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;python-utility-scripts&quot;</span><span class="p">]</span>
+<span class="n">commands</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span>
+<span class="w">  </span><span class="p">[</span>
+<span class="w">    </span><span class="s2">&quot;pyutils-unusedcode&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="p">],</span>
+<span class="p">]</span>
+
+<span class="k">[env.unittests]</span>
+<span class="n">deps</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;uv&quot;</span><span class="p">]</span>
+<span class="n">commands</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span>
+<span class="w">  </span><span class="p">[</span>
+<span class="w">    </span><span class="s2">&quot;uv&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">&quot;run&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">&quot;--extra&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">&quot;dev&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">&quot;pytest&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">&quot;-n&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">&quot;auto&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">&quot;tests&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="p">],</span>
+<span class="p">]</span>
+</code></pre></div>
+
+<h3 id="the-unused-code-environment">The <code>unused-code</code> Environment</h3>
+<p>The <code>unused-code</code> environment installs <a href="https://github.com/RedHatQE/python-utility-scripts">python-utility-scripts</a> and runs <code>pyutils-unusedcode</code>, which analyzes the codebase for functions, classes, imports, and variables that are defined but never referenced. This helps prevent code rot and keeps the codebase lean.</p>
+<p>Run it with:</p>
+<div class="highlight"><pre><span></span><code>tox<span class="w"> </span>-e<span class="w"> </span>unused-code
+</code></pre></div>
+
+<h3 id="the-unittests-environment">The <code>unittests</code> Environment</h3>
+<p>The <code>unittests</code> environment runs the full pytest suite using <a href="https://docs.astral.sh/uv/">uv</a> as the package manager, with parallel execution via <code>pytest-xdist</code>:</p>
+<div class="highlight"><pre><span></span><code>tox<span class="w"> </span>-e<span class="w"> </span>unittests
+</code></pre></div>
+
+<p>To run both environments:</p>
+<div class="highlight"><pre><span></span><code>tox
 </code></pre></div>
 
 <blockquote>
-<p><strong>Warning:</strong> Never commit <code>.env</code> files or any file containing real API keys. Use <code>.env.example</code> with placeholder values instead. The project's <code>.gitignore</code> should exclude <code>.env</code> and other sensitive files.</p>
+<p><strong>Tip:</strong> The <code>unused-code</code> check is fast and non-destructive. Consider running it after removing or refactoring features to catch any newly orphaned code.</p>
 </blockquote>
-<h3 id="handling-false-positives">Handling False Positives</h3>
-<p>If gitleaks flags a false positive (e.g., a test fixture or documentation example), you can suppress it inline:</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># gitleaks:allow</span>
-<span class="n">EXAMPLE_KEY</span> <span class="o">=</span> <span class="s2">&quot;sk-ant-api03-placeholder-not-real&quot;</span>
+<h2 id="workflow-summary">Workflow Summary</h2>
+<p>The following diagram shows when each tool runs in the development workflow:</p>
+<div class="highlight"><pre><span></span><code>git commit
+  └─► pre-commit hooks
+        ├─► Standard checks (whitespace, AST, merge conflicts, ...)
+        ├─► Ruff lint + format
+        ├─► Flake8 M511 (mutable defaults)
+        ├─► detect-secrets
+        ├─► gitleaks
+        └─► mypy strict type checking
+
+tox (on-demand / CI)
+  ├─► unused-code (pyutils-unusedcode)
+  └─► unittests (pytest -n auto)
+
+pre-commit.ci (on push / PR)
+  └─► Runs all pre-commit hooks in CI
 </code></pre></div>
 
-<h2 id="detect-secrets">detect-secrets</h2>
-<p><a href="https://github.com/Yelp/detect-secrets">detect-secrets</a> takes a baseline-aware approach to secret detection. Rather than scanning all files every time, it maintains a <code>.secrets.baseline</code> file that tracks known findings, and only alerts on <strong>new</strong> secrets introduced after the baseline was established.</p>
-<h3 id="how-it-works_1">How It Works</h3>
-<ol>
-<li>A <code>.secrets.baseline</code> file is generated and committed to the repository</li>
-<li>On each commit, detect-secrets compares staged files against the baseline</li>
-<li>Only new secrets (not present in the baseline) trigger a failure</li>
-<li>Known false positives are tracked in the baseline and ignored</li>
-</ol>
-<h3 id="generating-the-baseline">Generating the Baseline</h3>
-<p>Create the initial baseline:</p>
-<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>run<span class="w"> </span>detect-secrets<span class="w"> </span>scan<span class="w"> </span>&gt;<span class="w"> </span>.secrets.baseline
-</code></pre></div>
-
-<h3 id="auditing-the-baseline">Auditing the Baseline</h3>
-<p>After generating or updating the baseline, audit it to mark findings as true or false positives:</p>
-<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>run<span class="w"> </span>detect-secrets<span class="w"> </span>audit<span class="w"> </span>.secrets.baseline
-</code></pre></div>
-
-<p>This launches an interactive session where each finding is presented for review. Findings marked as false positives are ignored in future scans.</p>
-<h3 id="updating-the-baseline">Updating the Baseline</h3>
-<p>When new files are added or existing secrets are rotated, update the baseline:</p>
-<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>run<span class="w"> </span>detect-secrets<span class="w"> </span>scan<span class="w"> </span>--baseline<span class="w"> </span>.secrets.baseline
-</code></pre></div>
-
-<blockquote>
-<p><strong>Tip:</strong> Run <code>detect-secrets audit .secrets.baseline</code> after every baseline update to ensure new findings are properly classified.</p>
-</blockquote>
-<h2 id="running-all-checks">Running All Checks</h2>
-<h3 id="via-pre-commit">Via Pre-commit</h3>
-<p>The standard way to run all code quality checks:</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># Run against staged files only (happens automatically on commit)</span>
-uv<span class="w"> </span>run<span class="w"> </span>pre-commit<span class="w"> </span>run
-
-<span class="c1"># Run against all files in the repository</span>
-uv<span class="w"> </span>run<span class="w"> </span>pre-commit<span class="w"> </span>run<span class="w"> </span>--all-files
-</code></pre></div>
-
-<h3 id="via-tox">Via Tox</h3>
-<p>Tox provides an additional layer for running checks in isolated environments:</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># Run all tox environments (tests + quality checks)</span>
-uv<span class="w"> </span>run<span class="w"> </span>tox
-
-<span class="c1"># Run a specific environment</span>
-uv<span class="w"> </span>run<span class="w"> </span>tox<span class="w"> </span>-e<span class="w"> </span>lint
-</code></pre></div>
-
-<h2 id="troubleshooting">Troubleshooting</h2>
-<h3 id="pre-commit-hook-fails-on-commit">Pre-commit Hook Fails on Commit</h3>
-<p>If a hook fails, read the error output to identify which tool flagged the issue. Common scenarios:</p>
-<table>
-<thead>
-<tr>
-<th>Tool</th>
-<th>Common Failure</th>
-<th>Resolution</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>ruff</td>
-<td><code>F401 unused import</code></td>
-<td>Remove the unused import or add <code># noqa: F401</code> if intentional</td>
-</tr>
-<tr>
-<td>ruff-format</td>
-<td>File reformatted</td>
-<td>Stage the reformatted file and commit again</td>
-</tr>
-<tr>
-<td>mypy</td>
-<td><code>Missing return type</code></td>
-<td>Add type annotations to the function signature</td>
-</tr>
-<tr>
-<td>flake8</td>
-<td><code>E501 line too long</code></td>
-<td>Break the line or check that <code>max-line-length</code> matches ruff</td>
-</tr>
-<tr>
-<td>gitleaks</td>
-<td>Secret detected</td>
-<td>Remove the secret, use environment variables instead</td>
-</tr>
-<tr>
-<td>detect-secrets</td>
-<td>New secret found</td>
-<td>Remove it, or update the baseline if it's a false positive</td>
-</tr>
-</tbody>
-</table>
-<h3 id="skipping-hooks-emergency-only">Skipping Hooks (Emergency Only)</h3>
-<p>In rare cases where you need to bypass pre-commit hooks:</p>
-<div class="highlight"><pre><span></span><code>git<span class="w"> </span>commit<span class="w"> </span>--no-verify<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;emergency fix: description&quot;</span>
-</code></pre></div>
-
-<blockquote>
-<p><strong>Warning:</strong> Use <code>--no-verify</code> sparingly and only in genuine emergencies. All skipped checks should be run manually afterwards with <code>pre-commit run --all-files</code> to ensure no issues are left unresolved.</p>
-</blockquote>
-<h3 id="updating-hook-versions">Updating Hook Versions</h3>
-<p>Keep pre-commit hooks up to date:</p>
-<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>run<span class="w"> </span>pre-commit<span class="w"> </span>autoupdate
-</code></pre></div>
-
-<p>This updates the <code>rev</code> field for each repo in <code>.pre-commit-config.yaml</code> to the latest available tag.</p>
+<p>All pre-commit hooks run automatically on every commit. The tox environments (<code>unused-code</code> and <code>unittests</code>) are designed to be run on demand during development or as part of a CI pipeline. The pre-commit.ci integration ensures that all hooks also run on every push and pull request.</p>
                 </div>
             </article>
             <nav class="page-nav">
@@ -782,52 +611,33 @@ uv<span class="w"> </span>run<span class="w"> </span>tox<span class="w"> </span>
 <ul>
 <li><a href="#overview">Overview</a></li>
 <li><a href="#pre-commit-hooks">Pre-commit Hooks</a><ul>
-<li><a href="#installation">Installation</a></li>
+<li><a href="#standard-hooks">Standard Hooks</a></li>
+<li><a href="#installing-pre-commit">Installing Pre-commit</a></li>
+</ul>
+</li>
+<li><a href="#ruff-linting-and-formatting">Ruff — Linting and Formatting</a></li>
+<li><a href="#flake8-m511-mutable-default-detection">Flake8 — M511 Mutable Default Detection</a><ul>
 <li><a href="#configuration">Configuration</a></li>
-<li><a href="#running-hooks-manually">Running Hooks Manually</a></li>
+<li><a href="#what-m511-catches">What M511 Catches</a></li>
 </ul>
 </li>
-<li><a href="#ruff-linting-and-formatting">Ruff Linting and Formatting</a><ul>
+<li><a href="#mypy-strict-type-checking">mypy — Strict Type Checking</a><ul>
 <li><a href="#configuration_1">Configuration</a></li>
-<li><a href="#what-ruff-checks">What Ruff Checks</a></li>
-<li><a href="#auto-fix-behavior">Auto-fix Behavior</a></li>
+<li><a href="#pre-commit-integration">Pre-commit Integration</a></li>
+<li><a href="#code-examples">Code Examples</a></li>
 </ul>
 </li>
-<li><a href="#mypy-strict-type-checking">Mypy Strict Type Checking</a><ul>
-<li><a href="#configuration_2">Configuration</a></li>
-<li><a href="#what-strict-mode-enforces">What Strict Mode Enforces</a></li>
-<li><a href="#examples">Examples</a></li>
+<li><a href="#security-scanning">Security Scanning</a><ul>
+<li><a href="#detect-secrets">detect-secrets</a></li>
+<li><a href="#gitleaks">gitleaks</a></li>
 </ul>
 </li>
-<li><a href="#flake8">Flake8</a><ul>
-<li><a href="#configuration_3">Configuration</a></li>
+<li><a href="#tox-unused-code-detection">Tox — Unused Code Detection</a><ul>
+<li><a href="#the-unused-code-environment">The unused-code Environment</a></li>
+<li><a href="#the-unittests-environment">The unittests Environment</a></li>
 </ul>
 </li>
-<li><a href="#gitleaks">Gitleaks</a><ul>
-<li><a href="#how-it-works">How It Works</a></li>
-<li><a href="#configuration_4">Configuration</a></li>
-<li><a href="#example-output">Example Output</a></li>
-<li><a href="#handling-false-positives">Handling False Positives</a></li>
-</ul>
-</li>
-<li><a href="#detect-secrets">detect-secrets</a><ul>
-<li><a href="#how-it-works_1">How It Works</a></li>
-<li><a href="#generating-the-baseline">Generating the Baseline</a></li>
-<li><a href="#auditing-the-baseline">Auditing the Baseline</a></li>
-<li><a href="#updating-the-baseline">Updating the Baseline</a></li>
-</ul>
-</li>
-<li><a href="#running-all-checks">Running All Checks</a><ul>
-<li><a href="#via-pre-commit">Via Pre-commit</a></li>
-<li><a href="#via-tox">Via Tox</a></li>
-</ul>
-</li>
-<li><a href="#troubleshooting">Troubleshooting</a><ul>
-<li><a href="#pre-commit-hook-fails-on-commit">Pre-commit Hook Fails on Commit</a></li>
-<li><a href="#skipping-hooks-emergency-only">Skipping Hooks (Emergency Only)</a></li>
-<li><a href="#updating-hook-versions">Updating Hook Versions</a></li>
-</ul>
-</li>
+<li><a href="#workflow-summary">Workflow Summary</a></li>
 </ul>
 </div>
 
@@ -869,6 +679,29 @@ uv<span class="w"> </span>run<span class="w"> </span>tox<span class="w"> </span>
                 overlay.classList.remove('open');
                 if (toggle) toggle.setAttribute('aria-expanded', 'false');
             });
+        }
+    })();
+    </script>
+    <script>
+    (function() {
+        var sidebar = document.querySelector('.sidebar-nav') || document.querySelector('.sidebar');
+        if (!sidebar) return;
+
+        // Restore scroll position
+        var saved = sessionStorage.getItem('sidebar-scroll');
+        if (saved) sidebar.scrollTop = parseInt(saved, 10);
+
+        // Save scroll position before navigating
+        sidebar.addEventListener('scroll', function() {
+            sessionStorage.setItem('sidebar-scroll', sidebar.scrollTop.toString());
+        });
+
+        // Also scroll active link into view if no saved position
+        if (!saved) {
+            var active = sidebar.querySelector('.nav-link.active');
+            if (active) {
+                active.scrollIntoView({ block: 'center', behavior: 'instant' });
+            }
         }
     })();
     </script>

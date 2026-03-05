@@ -4,14 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Providers - docsfy</title>
-    <meta name="description" content="AI-powered documentation site generator that creates polished, Mintlify-quality static HTML docs from GitHub repositories">
+    <meta name="description" content="AI-powered documentation generator that turns GitHub repositories into polished static documentation websites">
     <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <a href="index.html" class="sidebar-logo">docsfy</a>
-            <p class="sidebar-tagline">AI-powered documentation site generator that creates polished, Mintlify-quality static HTML docs from GitHub repositories</p>
+            <p class="sidebar-tagline">AI-powered documentation generator that turns GitHub repositories into polished static documentation websites</p>
         </div>
 
         <div class="sidebar-search">
@@ -33,6 +33,13 @@
                     </li>
                     
                     <li>
+                        <a href="installation.html"
+                           class="nav-link">
+                            Installation
+                        </a>
+                    </li>
+                    
+                    <li>
                         <a href="quickstart.html"
                            class="nav-link">
                             Quickstart
@@ -40,44 +47,9 @@
                     </li>
                     
                     <li>
-                        <a href="installation.html"
+                        <a href="docker-deployment.html"
                            class="nav-link">
-                            Installation
-                        </a>
-                    </li>
-                    
-                </ul>
-            </div>
-            
-            <div class="nav-group">
-                <h3 class="nav-group-title">Core Concepts</h3>
-                <ul class="nav-group-pages">
-                    
-                    <li>
-                        <a href="architecture.html"
-                           class="nav-link">
-                            Architecture
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="generation-pipeline.html"
-                           class="nav-link">
-                            Generation Pipeline
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="ai-providers.html"
-                           class="nav-link active">
-                            AI Providers
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="incremental-updates.html"
-                           class="nav-link">
-                            Incremental Updates
+                            Docker Deployment
                         </a>
                     </li>
                     
@@ -89,23 +61,16 @@
                 <ul class="nav-group-pages">
                     
                     <li>
-                        <a href="environment-variables.html"
+                        <a href="configuration.html"
                            class="nav-link">
-                            Environment Variables
+                            Configuration Reference
                         </a>
                     </li>
                     
                     <li>
-                        <a href="ai-provider-setup.html"
-                           class="nav-link">
-                            AI Provider Setup
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="docker-configuration.html"
-                           class="nav-link">
-                            Docker Configuration
+                        <a href="ai-providers.html"
+                           class="nav-link active">
+                            AI Providers
                         </a>
                     </li>
                     
@@ -124,16 +89,23 @@
                     </li>
                     
                     <li>
-                        <a href="serving-docs.html"
+                        <a href="serving-and-downloading.html"
                            class="nav-link">
-                            Serving Documentation
+                            Serving and Downloading
                         </a>
                     </li>
                     
                     <li>
-                        <a href="managing-projects.html"
+                        <a href="generated-site-features.html"
                            class="nav-link">
-                            Managing Projects
+                            Generated Site Features
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="llm-friendly-output.html"
+                           class="nav-link">
+                            LLM-Friendly Output
                         </a>
                     </li>
                     
@@ -145,51 +117,30 @@
                 <ul class="nav-group-pages">
                     
                     <li>
-                        <a href="api-generate.html"
+                        <a href="api-overview.html"
                            class="nav-link">
-                            POST /api/generate
+                            API Overview
                         </a>
                     </li>
                     
                     <li>
-                        <a href="api-status.html"
+                        <a href="api-generation.html"
                            class="nav-link">
-                            GET /api/status
+                            Generation Endpoint
                         </a>
                     </li>
                     
                     <li>
                         <a href="api-projects.html"
                            class="nav-link">
-                            GET /api/projects/{name}
+                            Project Management Endpoints
                         </a>
                     </li>
                     
                     <li>
-                        <a href="api-projects-delete.html"
+                        <a href="api-serving.html"
                            class="nav-link">
-                            DELETE /api/projects/{name}
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="api-download.html"
-                           class="nav-link">
-                            GET /api/projects/{name}/download
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="api-docs-serving.html"
-                           class="nav-link">
-                            GET /docs/{project}/{path}
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="api-health.html"
-                           class="nav-link">
-                            GET /health
+                            Serving and Download Endpoints
                         </a>
                     </li>
                     
@@ -197,27 +148,34 @@
             </div>
             
             <div class="nav-group">
-                <h3 class="nav-group-title">Generated Sites</h3>
+                <h3 class="nav-group-title">Architecture</h3>
                 <ul class="nav-group-pages">
                     
                     <li>
-                        <a href="html-theme.html"
+                        <a href="architecture-overview.html"
                            class="nav-link">
-                            HTML Theme &amp; Features
+                            Architecture Overview
                         </a>
                     </li>
                     
                     <li>
-                        <a href="plan-json-schema.html"
+                        <a href="project-structure.html"
                            class="nav-link">
-                            Plan JSON Schema
+                            Project Structure
                         </a>
                     </li>
                     
                     <li>
-                        <a href="customization.html"
+                        <a href="ai-generation-pipeline.html"
                            class="nav-link">
-                            Customization
+                            AI Generation Pipeline
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="storage-and-caching.html"
+                           class="nav-link">
+                            Storage and Caching
                         </a>
                     </li>
                     
@@ -232,13 +190,6 @@
                         <a href="development-setup.html"
                            class="nav-link">
                             Development Setup
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="project-structure.html"
-                           class="nav-link">
-                            Project Structure
                         </a>
                     </li>
                     
@@ -296,278 +247,262 @@
 
         <main class="content">
             <article class="article">
-                <h1 class="article-title">AI Providers</h1>
                 <div class="article-body">
                     <!-- content is pre-rendered from markdown by the server, not user input -->
                     <h1 id="ai-providers">AI Providers</h1>
-<p>docsfy supports multiple AI CLI providers for documentation generation. Each provider is an external CLI tool that docsfy invokes as a subprocess to analyze repositories and generate content. This page covers the supported providers, how they are configured, and how docsfy interacts with them.</p>
+<p>docsfy delegates documentation generation to external AI CLI tools. It supports three providers out of the box: <strong>Claude Code</strong>, <strong>Gemini CLI</strong>, and <strong>Cursor Agent</strong>. Each provider is invoked as a subprocess, receiving prompts via stdin and returning generated content via stdout.</p>
 <h2 id="supported-providers">Supported Providers</h2>
-<p>docsfy supports three AI CLI providers out of the box:</p>
 <table>
 <thead>
 <tr>
 <th>Provider</th>
 <th>CLI Binary</th>
-<th>Description</th>
+<th>Installation Method</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><strong>Claude Code</strong></td>
+<td>Claude Code</td>
 <td><code>claude</code></td>
-<td>Anthropic's CLI for Claude models</td>
+<td><code>curl -fsSL https://claude.ai/install.sh \| bash</code></td>
 </tr>
 <tr>
-<td><strong>Cursor Agent</strong></td>
-<td><code>agent</code></td>
-<td>Cursor's autonomous coding agent</td>
-</tr>
-<tr>
-<td><strong>Gemini CLI</strong></td>
+<td>Gemini CLI</td>
 <td><code>gemini</code></td>
-<td>Google's Gemini CLI tool</td>
+<td><code>npm install -g @google/gemini-cli</code></td>
+</tr>
+<tr>
+<td>Cursor Agent</td>
+<td><code>agent</code></td>
+<td><code>curl -fsSL https://cursor.com/install \| bash</code></td>
 </tr>
 </tbody>
 </table>
-<p>All three providers are installed in the Docker image during build and are available at runtime regardless of which one is selected.</p>
-<h3 id="installation-in-docker">Installation in Docker</h3>
-<p>Each provider is installed using its official installation method:</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># Claude Code</span>
-curl<span class="w"> </span>-fsSL<span class="w"> </span>https://claude.ai/install.sh<span class="w"> </span><span class="p">|</span><span class="w"> </span>bash
-
-<span class="c1"># Cursor Agent</span>
-curl<span class="w"> </span>-fsSL<span class="w"> </span>https://cursor.com/install<span class="w"> </span><span class="p">|</span><span class="w"> </span>bash
-
-<span class="c1"># Gemini CLI</span>
-npm<span class="w"> </span>install<span class="w"> </span>-g<span class="w"> </span>@google/gemini-cli
+<p>All three CLIs are installed automatically in the Docker image. When running outside Docker, you must install the CLI for your chosen provider manually.</p>
+<h3 id="how-providers-are-invoked">How Providers Are Invoked</h3>
+<p>Each provider uses different CLI flags and working-directory strategies:</p>
+<table>
+<thead>
+<tr>
+<th>Provider</th>
+<th>Command Pattern</th>
+<th>CWD Handling</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Claude</td>
+<td><code>claude --model &lt;model&gt; --dangerously-skip-permissions -p</code></td>
+<td>subprocess <code>cwd</code> set to repo path</td>
+</tr>
+<tr>
+<td>Gemini</td>
+<td><code>gemini --model &lt;model&gt; --yolo</code></td>
+<td>subprocess <code>cwd</code> set to repo path</td>
+</tr>
+<tr>
+<td>Cursor</td>
+<td><code>agent --force --model &lt;model&gt; --print --workspace &lt;path&gt;</code></td>
+<td><code>--workspace</code> flag (manages its own cwd)</td>
+</tr>
+</tbody>
+</table>
+<p>Prompts are passed via stdin to all providers:</p>
+<div class="highlight"><pre><span></span><code><span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="nb">input</span><span class="o">=</span><span class="n">prompt</span><span class="p">,</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </code></pre></div>
 
-<blockquote>
-<p><strong>Note:</strong> Provider CLIs are unpinned and always install the latest version. This ensures access to the newest features and models but means builds are not fully reproducible.</p>
-</blockquote>
-<h2 id="provider-configuration">Provider Configuration</h2>
-<h3 id="the-providerconfig-dataclass">The <code>ProviderConfig</code> Dataclass</h3>
-<p>Each provider is represented by a frozen dataclass that defines its binary, command builder, and CWD behavior:</p>
-<div class="highlight"><pre><span></span><code><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<p>Execution is non-blocking — each invocation runs inside <code>asyncio.to_thread()</code>, and up to 5 pages are generated concurrently:</p>
+<div class="highlight"><pre><span></span><code><span class="n">MAX_CONCURRENT_PAGES</span> <span class="o">=</span> <span class="mi">5</span>
+</code></pre></div>
+
+<h3 id="provider-architecture">Provider Architecture</h3>
+<p>Provider configuration is managed by the <code>ai-cli-runner</code> package, which docsfy re-exports through its <code>ai_client</code> module:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># src/docsfy/ai_client.py</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ai_cli_runner</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">PROVIDERS</span><span class="p">,</span>
+    <span class="n">VALID_AI_PROVIDERS</span><span class="p">,</span>
+    <span class="n">ProviderConfig</span><span class="p">,</span>
+    <span class="n">call_ai_cli</span><span class="p">,</span>
+    <span class="n">check_ai_cli_available</span><span class="p">,</span>
+    <span class="n">get_ai_cli_timeout</span><span class="p">,</span>
+    <span class="n">run_parallel_with_limit</span><span class="p">,</span>
+<span class="p">)</span>
+</code></pre></div>
+
+<p>Each provider is represented as a <code>ProviderConfig</code> dataclass:</p>
+<div class="highlight"><pre><span></span><code><span class="nd">@dataclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">ProviderConfig</span><span class="p">:</span>
     <span class="n">binary</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">build_cmd</span><span class="p">:</span> <span class="n">Callable</span>
     <span class="n">uses_own_cwd</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
 </code></pre></div>
 
-<table>
-<thead>
-<tr>
-<th>Field</th>
-<th>Type</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>binary</code></td>
-<td><code>str</code></td>
-<td>The CLI executable name (e.g., <code>claude</code>, <code>gemini</code>, <code>agent</code>)</td>
-</tr>
-<tr>
-<td><code>build_cmd</code></td>
-<td><code>Callable</code></td>
-<td>A function that constructs the full command with arguments</td>
-</tr>
-<tr>
-<td><code>uses_own_cwd</code></td>
-<td><code>bool</code></td>
-<td>Whether the provider manages its own working directory. Defaults to <code>False</code></td>
-</tr>
-</tbody>
-</table>
-<h2 id="command-interfaces">Command Interfaces</h2>
-<p>Each provider has a distinct CLI interface with different flags for model selection, permission handling, and output control.</p>
-<h3 id="claude-code">Claude Code</h3>
-<div class="highlight"><pre><span></span><code>claude<span class="w"> </span>--model<span class="w"> </span>&lt;model&gt;<span class="w"> </span>--dangerously-skip-permissions<span class="w"> </span>-p
+<p>The valid provider set is enforced at runtime:</p>
+<div class="highlight"><pre><span></span><code><span class="n">VALID_AI_PROVIDERS</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">({</span><span class="s2">&quot;claude&quot;</span><span class="p">,</span> <span class="s2">&quot;gemini&quot;</span><span class="p">,</span> <span class="s2">&quot;cursor&quot;</span><span class="p">})</span>
 </code></pre></div>
 
-<table>
-<thead>
-<tr>
-<th>Flag</th>
-<th>Purpose</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>--model &lt;model&gt;</code></td>
-<td>Specifies which Claude model to use</td>
-</tr>
-<tr>
-<td><code>--dangerously-skip-permissions</code></td>
-<td>Bypasses interactive permission prompts for file access</td>
-</tr>
-<tr>
-<td><code>-p</code></td>
-<td>Enables prompt mode — reads the prompt from stdin</td>
-</tr>
-</tbody>
-</table>
-<p>Claude Code accepts the prompt via stdin and writes its response to stdout. It relies on the subprocess working directory to access repository files.</p>
-<h3 id="gemini-cli">Gemini CLI</h3>
-<div class="highlight"><pre><span></span><code>gemini<span class="w"> </span>--model<span class="w"> </span>&lt;model&gt;<span class="w"> </span>--yolo
-</code></pre></div>
-
-<table>
-<thead>
-<tr>
-<th>Flag</th>
-<th>Purpose</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>--model &lt;model&gt;</code></td>
-<td>Specifies which Gemini model to use</td>
-</tr>
-<tr>
-<td><code>--yolo</code></td>
-<td>Runs in unrestricted mode, skipping confirmation prompts</td>
-</tr>
-</tbody>
-</table>
-<p>Like Claude Code, Gemini CLI reads from stdin and uses the subprocess working directory for file access.</p>
-<h3 id="cursor-agent">Cursor Agent</h3>
-<div class="highlight"><pre><span></span><code>agent<span class="w"> </span>--force<span class="w"> </span>--model<span class="w"> </span>&lt;model&gt;<span class="w"> </span>--print<span class="w"> </span>--workspace<span class="w"> </span>&lt;path&gt;
-</code></pre></div>
-
-<table>
-<thead>
-<tr>
-<th>Flag</th>
-<th>Purpose</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>--force</code></td>
-<td>Forces execution without interactive confirmations</td>
-</tr>
-<tr>
-<td><code>--model &lt;model&gt;</code></td>
-<td>Specifies which model to use</td>
-</tr>
-<tr>
-<td><code>--print</code></td>
-<td>Outputs results to stdout instead of applying changes</td>
-</tr>
-<tr>
-<td><code>--workspace &lt;path&gt;</code></td>
-<td>Sets the working directory for the agent explicitly</td>
-</tr>
-</tbody>
-</table>
-<blockquote>
-<p><strong>Warning:</strong> Cursor Agent is the only provider that manages its own working directory via the <code>--workspace</code> flag. Its <code>ProviderConfig</code> sets <code>uses_own_cwd=True</code>, which changes how docsfy invokes the subprocess. See <a href="#cwd-handling">CWD Handling</a> below.</p>
-</blockquote>
-<h2 id="cwd-handling">CWD Handling</h2>
-<p>docsfy needs each AI provider to have access to the cloned repository so it can explore the codebase and generate accurate documentation. How the working directory is set depends on the provider.</p>
-<h3 id="standard-approach-claude-code-gemini-cli">Standard Approach (Claude Code &amp; Gemini CLI)</h3>
-<p>For providers where <code>uses_own_cwd=False</code> (the default), docsfy sets the working directory using the <code>cwd</code> parameter of <code>subprocess.run</code>:</p>
-<div class="highlight"><pre><span></span><code><span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
-    <span class="n">cmd</span><span class="p">,</span>
-    <span class="nb">input</span><span class="o">=</span><span class="n">prompt</span><span class="p">,</span>
-    <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">text</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">cwd</span><span class="o">=</span><span class="n">repo_path</span>  <span class="c1"># subprocess starts in the cloned repo directory</span>
-<span class="p">)</span>
-</code></pre></div>
-
-<p>This means the AI CLI process starts with its current working directory set to the repository root. The AI can then use relative paths to read any file in the repo.</p>
-<h3 id="workspace-flag-approach-cursor-agent">Workspace Flag Approach (Cursor Agent)</h3>
-<p>Cursor Agent handles its own CWD via the <code>--workspace</code> flag. When <code>uses_own_cwd=True</code>, docsfy passes the repository path as a command-line argument instead of setting <code>cwd</code>:</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># Cursor handles CWD internally via --workspace</span>
-<span class="n">cmd</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;agent --force --model </span><span class="si">{</span><span class="n">model</span><span class="si">}</span><span class="s2"> --print --workspace </span><span class="si">{</span><span class="n">repo_path</span><span class="si">}</span><span class="s2">&quot;</span>
-
-<span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
-    <span class="n">cmd</span><span class="p">,</span>
-    <span class="nb">input</span><span class="o">=</span><span class="n">prompt</span><span class="p">,</span>
-    <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">text</span><span class="o">=</span><span class="kc">True</span>
-    <span class="c1"># No cwd parameter — Cursor uses --workspace instead</span>
-<span class="p">)</span>
-</code></pre></div>
-
-<blockquote>
-<p><strong>Tip:</strong> The <code>uses_own_cwd</code> flag in <code>ProviderConfig</code> allows docsfy to transparently handle both CWD strategies. The pipeline code checks this flag to decide whether to set <code>cwd</code> on the subprocess or let the provider handle it.</p>
-</blockquote>
-<h3 id="cwd-in-the-pipeline">CWD in the Pipeline</h3>
-<p>The working directory is set for both AI-driven pipeline stages:</p>
+<h2 id="selecting-a-provider">Selecting a Provider</h2>
+<p>The AI provider is resolved through a layered configuration system. Per-request values take precedence over environment defaults.</p>
+<h3 id="priority-order">Priority Order</h3>
 <ol>
-<li><strong>Stage 2 — AI Planner:</strong> The AI runs with access to the full repository so it can analyze the codebase and produce a <code>plan.json</code> with the documentation structure.</li>
-<li><strong>Stage 3 — AI Content Generator:</strong> For each page defined in <code>plan.json</code>, the AI runs with access to the repository so it can explore relevant source files and write accurate content.</li>
+<li><strong>Request-level override</strong> — <code>ai_provider</code> field in the API request body</li>
+<li><strong>Environment variable</strong> — <code>AI_PROVIDER</code> in your <code>.env</code> file</li>
+<li><strong>Default</strong> — <code>claude</code></li>
 </ol>
-<h2 id="provider-selection">Provider Selection</h2>
-<h3 id="environment-variable">Environment Variable</h3>
-<p>The active provider is selected via the <code>AI_PROVIDER</code> environment variable:</p>
-<div class="highlight"><pre><span></span><code><span class="nv">AI_PROVIDER</span><span class="o">=</span>claude<span class="w">    </span><span class="c1"># Use Claude Code (default)</span>
-<span class="nv">AI_PROVIDER</span><span class="o">=</span>gemini<span class="w">    </span><span class="c1"># Use Gemini CLI</span>
-<span class="nv">AI_PROVIDER</span><span class="o">=</span>cursor<span class="w">    </span><span class="c1"># Use Cursor Agent</span>
+<p>The resolution happens in the API handler:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># src/docsfy/main.py</span>
+<span class="n">ai_provider</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">ai_provider</span> <span class="ow">or</span> <span class="n">settings</span><span class="o">.</span><span class="n">ai_provider</span>
 </code></pre></div>
 
-<h3 id="default-configuration">Default Configuration</h3>
+<h3 id="setting-the-provider-via-environment">Setting the Provider via Environment</h3>
+<p>Create or edit your <code>.env</code> file:</p>
+<div class="highlight"><pre><span></span><code><span class="nv">AI_PROVIDER</span><span class="o">=</span>claude
+</code></pre></div>
+
+<p>Valid values are <code>claude</code>, <code>gemini</code>, or <code>cursor</code>.</p>
+<h3 id="setting-the-provider-per-request">Setting the Provider per Request</h3>
+<p>Override the provider for a single generation request:</p>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/api/generate<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{</span>
+<span class="s1">    &quot;repo_url&quot;: &quot;https://github.com/org/my-project&quot;,</span>
+<span class="s1">    &quot;ai_provider&quot;: &quot;gemini&quot;</span>
+<span class="s1">  }&#39;</span>
+</code></pre></div>
+
+<p>The <code>ai_provider</code> field accepts a <code>Literal["claude", "gemini", "cursor"]</code> value. Any other value will be rejected by Pydantic validation.</p>
+<h3 id="availability-check">Availability Check</h3>
+<p>Before starting generation, docsfy verifies the selected provider is installed and responsive:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># src/docsfy/main.py</span>
+<span class="n">available</span><span class="p">,</span> <span class="n">msg</span> <span class="o">=</span> <span class="k">await</span> <span class="n">check_ai_cli_available</span><span class="p">(</span><span class="n">ai_provider</span><span class="p">,</span> <span class="n">ai_model</span><span class="p">)</span>
+<span class="k">if</span> <span class="ow">not</span> <span class="n">available</span><span class="p">:</span>
+    <span class="k">await</span> <span class="n">update_project_status</span><span class="p">(</span><span class="n">project_name</span><span class="p">,</span> <span class="n">status</span><span class="o">=</span><span class="s2">&quot;error&quot;</span><span class="p">,</span> <span class="n">error_message</span><span class="o">=</span><span class="n">msg</span><span class="p">)</span>
+    <span class="k">return</span>
+</code></pre></div>
+
+<p>If the CLI binary is missing or fails the availability check, the project status is set to <code>error</code> with a descriptive message.</p>
+<h2 id="model-selection">Model Selection</h2>
+<p>Model selection follows the same layered resolution pattern as provider selection.</p>
+<h3 id="priority-order_1">Priority Order</h3>
+<ol>
+<li><strong>Request-level override</strong> — <code>ai_model</code> field in the API request body</li>
+<li><strong>Environment variable</strong> — <code>AI_MODEL</code> in your <code>.env</code> file</li>
+<li><strong>Default</strong> — <code>claude-opus-4-6[1m]</code></li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="c1"># src/docsfy/main.py</span>
+<span class="n">ai_model</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">ai_model</span> <span class="ow">or</span> <span class="n">settings</span><span class="o">.</span><span class="n">ai_model</span>
+</code></pre></div>
+
+<h3 id="the-1m-notation">The <code>[1m]</code> Notation</h3>
+<p>The default model identifier <code>claude-opus-4-6[1m]</code> uses a bracket suffix to specify the context window size — in this case, 1 million tokens. This is a valid part of the Claude model identifier, not docsfy-specific syntax.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># src/docsfy/config.py</span>
+<span class="n">ai_model</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;claude-opus-4-6[1m]&quot;</span>  <span class="c1"># [1m] = 1 million token context window</span>
+</code></pre></div>
+
+<h3 id="configuring-via-environment">Configuring via Environment</h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># .env</span>
+<span class="nv">AI_MODEL</span><span class="o">=</span>claude-opus-4-6<span class="o">[</span>1m<span class="o">]</span>
+</code></pre></div>
+
+<h3 id="configuring-per-request">Configuring per Request</h3>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/api/generate<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{</span>
+<span class="s1">    &quot;repo_url&quot;: &quot;https://github.com/org/my-project&quot;,</span>
+<span class="s1">    &quot;ai_provider&quot;: &quot;gemini&quot;,</span>
+<span class="s1">    &quot;ai_model&quot;: &quot;gemini-2.5-pro&quot;</span>
+<span class="s1">  }&#39;</span>
+</code></pre></div>
+
+<h3 id="model-examples-by-provider">Model Examples by Provider</h3>
 <table>
 <thead>
 <tr>
-<th>Setting</th>
-<th>Environment Variable</th>
-<th>Default Value</th>
+<th>Provider</th>
+<th>Example Models</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Provider</td>
-<td><code>AI_PROVIDER</code></td>
-<td><code>claude</code></td>
+<td>Claude</td>
+<td><code>claude-opus-4-6[1m]</code>, <code>claude-opus-4-6</code></td>
 </tr>
 <tr>
-<td>Model</td>
-<td><code>AI_MODEL</code></td>
-<td><code>claude-opus-4-6[1m]</code></td>
+<td>Gemini</td>
+<td><code>gemini-2.5-pro</code></td>
 </tr>
 <tr>
-<td>Timeout</td>
-<td><code>AI_CLI_TIMEOUT</code></td>
-<td><code>60</code> (minutes)</td>
+<td>Cursor</td>
+<td><code>opus</code></td>
 </tr>
 </tbody>
 </table>
-<h3 id="full-env-example">Full <code>.env</code> Example</h3>
-<div class="highlight"><pre><span></span><code><span class="c1"># AI Configuration</span>
-<span class="nv">AI_PROVIDER</span><span class="o">=</span>claude
-<span class="nv">AI_MODEL</span><span class="o">=</span>claude-opus-4-6<span class="o">[</span>1m<span class="o">]</span>
-<span class="nv">AI_CLI_TIMEOUT</span><span class="o">=</span><span class="m">60</span>
+<blockquote>
+<p><strong>Note:</strong> The model string is passed directly to the provider CLI via the <code>--model</code> flag. Refer to each provider's documentation for the full list of supported model identifiers.</p>
+</blockquote>
+<h2 id="timeout-tuning">Timeout Tuning</h2>
+<p>AI CLI calls can take significant time for large repositories. The timeout controls how long docsfy waits for each CLI invocation before treating it as a failure.</p>
+<h3 id="configuration">Configuration</h3>
+<p>The timeout is specified in seconds and must be a positive integer (greater than 0).</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># src/docsfy/config.py</span>
+<span class="n">ai_cli_timeout</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="mi">60</span><span class="p">,</span> <span class="n">gt</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</code></pre></div>
 
-<span class="c1"># Claude - Option 1: API Key</span>
-<span class="nv">ANTHROPIC_API_KEY</span><span class="o">=</span>sk-ant-...
+<h3 id="priority-order_2">Priority Order</h3>
+<ol>
+<li><strong>Request-level override</strong> — <code>ai_cli_timeout</code> field in the API request body</li>
+<li><strong>Environment variable</strong> — <code>AI_CLI_TIMEOUT</code> in your <code>.env</code> file</li>
+<li><strong>Default</strong> — <code>60</code> seconds</li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="c1"># src/docsfy/main.py</span>
+<span class="n">ai_cli_timeout</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">ai_cli_timeout</span> <span class="ow">or</span> <span class="n">settings</span><span class="o">.</span><span class="n">ai_cli_timeout</span><span class="p">,</span>
+</code></pre></div>
 
-<span class="c1"># Claude - Option 2: Vertex AI</span>
-<span class="c1"># CLAUDE_CODE_USE_VERTEX=1</span>
-<span class="c1"># CLOUD_ML_REGION=us-east5</span>
-<span class="c1"># ANTHROPIC_VERTEX_PROJECT_ID=my-project</span>
+<h3 id="setting-via-environment">Setting via Environment</h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># .env</span>
+<span class="nv">AI_CLI_TIMEOUT</span><span class="o">=</span><span class="m">120</span>
+</code></pre></div>
 
-<span class="c1"># Gemini</span>
-<span class="c1"># GEMINI_API_KEY=AIza...</span>
+<h3 id="setting-per-request">Setting per Request</h3>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/api/generate<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{</span>
+<span class="s1">    &quot;repo_url&quot;: &quot;https://github.com/org/my-project&quot;,</span>
+<span class="s1">    &quot;ai_cli_timeout&quot;: 180</span>
+<span class="s1">  }&#39;</span>
+</code></pre></div>
 
-<span class="c1"># Cursor</span>
-<span class="c1"># CURSOR_API_KEY=cur_...</span>
-
-<span class="c1"># Logging</span>
-<span class="nv">LOG_LEVEL</span><span class="o">=</span>INFO
+<h3 id="validation">Validation</h3>
+<p>A timeout of <code>0</code> or any negative value is rejected at startup or request time:</p>
+<div class="highlight"><pre><span></span><code><span class="n">ai_cli_timeout</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">gt</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 </code></pre></div>
 
 <blockquote>
-<p><strong>Note:</strong> Only the credentials for your selected provider need to be set. Claude Code supports two authentication methods: direct API key (<code>ANTHROPIC_API_KEY</code>) or Google Cloud Vertex AI (<code>CLAUDE_CODE_USE_VERTEX</code> with associated GCP settings).</p>
+<p><strong>Tip:</strong> Large repositories with many source files may need higher timeouts. Start with the default of 60 seconds and increase if you see timeout errors in the generation logs.</p>
+<p><strong>Warning:</strong> Setting an extremely high timeout (e.g., 600+) means a stuck provider process will block that generation slot for the entire duration. The system runs up to 5 page generations concurrently, so stuck processes can exhaust capacity.</p>
 </blockquote>
-<h3 id="mounting-credentials-in-docker">Mounting Credentials in Docker</h3>
-<p>When running with Docker Compose, provider credentials can be passed via the <code>.env</code> file or mounted as volumes. For example, Claude Code with Vertex AI authentication requires GCP credentials:</p>
-<div class="highlight"><pre><span></span><code><span class="nt">services</span><span class="p">:</span>
+<h2 id="provider-specific-setup">Provider-Specific Setup</h2>
+<p>Each provider requires its own authentication credentials. Configure these in your <code>.env</code> file.</p>
+<h3 id="claude-code">Claude Code</h3>
+<p>Claude Code supports two authentication methods: a direct API key or Vertex AI.</p>
+<h4 id="option-1-api-key">Option 1: API Key</h4>
+<div class="highlight"><pre><span></span><code><span class="c1"># .env</span>
+<span class="nv">AI_PROVIDER</span><span class="o">=</span>claude
+<span class="nv">ANTHROPIC_API_KEY</span><span class="o">=</span>sk-ant-...
+</code></pre></div>
+
+<h4 id="option-2-vertex-ai">Option 2: Vertex AI</h4>
+<p>For organizations using Google Cloud's Vertex AI to access Claude models:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># .env</span>
+<span class="nv">AI_PROVIDER</span><span class="o">=</span>claude
+<span class="nv">CLAUDE_CODE_USE_VERTEX</span><span class="o">=</span><span class="m">1</span>
+<span class="nv">CLOUD_ML_REGION</span><span class="o">=</span>us-east5
+<span class="nv">ANTHROPIC_VERTEX_PROJECT_ID</span><span class="o">=</span>my-gcp-project-id
+</code></pre></div>
+
+<p>When running in Docker, mount your gcloud credentials as a read-only volume so the Claude CLI can authenticate with Vertex AI:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># docker-compose.yaml</span>
+<span class="nt">services</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">docsfy</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">build</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">.</span>
 <span class="w">    </span><span class="nt">ports</span><span class="p">:</span>
@@ -575,111 +510,106 @@ npm<span class="w"> </span>install<span class="w"> </span>-g<span class="w"> </s
 <span class="w">    </span><span class="nt">env_file</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">.env</span>
 <span class="w">    </span><span class="nt">volumes</span><span class="p">:</span>
 <span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./data:/data</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">~/.config/gcloud:/home/appuser/.config/gcloud:ro</span><span class="w">  </span><span class="c1"># GCP credentials for Vertex AI</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./cursor:/home/appuser/.config/cursor</span><span class="w">              </span><span class="c1"># Cursor config</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">~/.config/gcloud:/home/appuser/.config/gcloud:ro</span>
 </code></pre></div>
 
-<h2 id="invocation-details">Invocation Details</h2>
-<h3 id="subprocess-execution">Subprocess Execution</h3>
-<p>All providers follow the same invocation pattern regardless of their specific CLI flags:</p>
-<div class="highlight"><pre><span></span><code><span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
-    <span class="n">cmd</span><span class="p">,</span>
-    <span class="nb">input</span><span class="o">=</span><span class="n">prompt</span><span class="p">,</span>          <span class="c1"># Prompt is passed via stdin</span>
-    <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>   <span class="c1"># Capture stdout and stderr</span>
-    <span class="n">text</span><span class="o">=</span><span class="kc">True</span>              <span class="c1"># Use text mode (not binary)</span>
-<span class="p">)</span>
+<blockquote>
+<p><strong>Note:</strong> The <code>CLAUDE_CODE_USE_VERTEX</code>, <code>CLOUD_ML_REGION</code>, and <code>ANTHROPIC_VERTEX_PROJECT_ID</code> variables are read directly by the Claude Code CLI — docsfy passes them through to the subprocess environment automatically.</p>
+</blockquote>
+<h3 id="gemini-cli">Gemini CLI</h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># .env</span>
+<span class="nv">AI_PROVIDER</span><span class="o">=</span>gemini
+<span class="nv">GEMINI_API_KEY</span><span class="o">=</span>your-gemini-api-key
 </code></pre></div>
 
-<p>Execution is wrapped in <code>asyncio.to_thread()</code> for non-blocking operation within the async FastAPI pipeline:</p>
-<div class="highlight"><pre><span></span><code><span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">to_thread</span><span class="p">(</span><span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span>
+<p>The Gemini CLI is installed globally via npm during the Docker build:</p>
+<div class="highlight"><pre><span></span><code><span class="k">RUN</span><span class="w"> </span>mkdir<span class="w"> </span>-p<span class="w"> </span>/home/appuser/.npm-global<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span><span class="o">&amp;&amp;</span><span class="w"> </span>npm<span class="w"> </span>config<span class="w"> </span><span class="nb">set</span><span class="w"> </span>prefix<span class="w"> </span><span class="s1">&#39;/home/appuser/.npm-global&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span><span class="o">&amp;&amp;</span><span class="w"> </span>npm<span class="w"> </span>install<span class="w"> </span>-g<span class="w"> </span>@google/gemini-cli
 </code></pre></div>
 
-<p>The return type from the invocation wrapper is <code>tuple[bool, str]</code> — a boolean success flag and the output string.</p>
-<h3 id="availability-check">Availability Check</h3>
-<p>Before starting the generation pipeline, docsfy performs a lightweight availability check by sending a simple <code>"Hi"</code> prompt to the configured provider. This validates that:</p>
-<ul>
-<li>The CLI binary is installed and on <code>PATH</code></li>
-<li>Authentication credentials are valid</li>
-<li>The provider is responsive</li>
-</ul>
-<p>If this check fails, the generation request is rejected before any expensive operations (like cloning the repository) begin.</p>
-<h3 id="json-response-parsing">JSON Response Parsing</h3>
-<p>AI providers return free-form text that contains JSON. docsfy uses a multi-strategy extraction approach to reliably parse structured data from provider responses:</p>
-<ol>
-<li><strong>Direct parse</strong> — Attempt <code>json.loads()</code> on the raw output</li>
-<li><strong>Brace matching</strong> — Find the outermost <code>{...}</code> block by matching braces</li>
-<li><strong>Code block extraction</strong> — Look for <code>```json ... ```</code> markdown fenced blocks</li>
-<li><strong>Regex recovery</strong> — Use regex patterns as a last-resort fallback</li>
-</ol>
-<p>This layered approach handles the variety of response formats that different AI providers produce — some return pure JSON, others wrap it in markdown, and others include conversational text around the structured data.</p>
-<h2 id="provider-comparison">Provider Comparison</h2>
-<table>
-<thead>
-<tr>
-<th>Aspect</th>
-<th>Claude Code</th>
-<th>Gemini CLI</th>
-<th>Cursor Agent</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Binary</td>
-<td><code>claude</code></td>
-<td><code>gemini</code></td>
-<td><code>agent</code></td>
-</tr>
-<tr>
-<td>Permission bypass</td>
-<td><code>--dangerously-skip-permissions</code></td>
-<td><code>--yolo</code></td>
-<td><code>--force</code></td>
-</tr>
-<tr>
-<td>Output mode</td>
-<td><code>-p</code> (prompt mode)</td>
-<td>Implicit (stdin/stdout)</td>
-<td><code>--print</code></td>
-</tr>
-<tr>
-<td>CWD method</td>
-<td>Subprocess <code>cwd</code> param</td>
-<td>Subprocess <code>cwd</code> param</td>
-<td><code>--workspace</code> flag</td>
-</tr>
-<tr>
-<td><code>uses_own_cwd</code></td>
-<td><code>False</code></td>
-<td><code>False</code></td>
-<td><code>True</code></td>
-</tr>
-<tr>
-<td>Auth options</td>
-<td>API Key or Vertex AI</td>
-<td>API Key</td>
-<td>API Key</td>
-</tr>
-<tr>
-<td>Install method</td>
-<td>Shell script (<code>curl</code>)</td>
-<td>Shell script (<code>curl</code>)</td>
-<td>npm global package</td>
-</tr>
-</tbody>
-</table>
+<h3 id="cursor-agent">Cursor Agent</h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># .env</span>
+<span class="nv">AI_PROVIDER</span><span class="o">=</span>cursor
+<span class="nv">CURSOR_API_KEY</span><span class="o">=</span>your-cursor-api-key
+</code></pre></div>
+
+<p>When running in Docker, you may need to mount the Cursor configuration directory for persistent settings:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">volumes</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./cursor:/home/appuser/.config/cursor</span>
+</code></pre></div>
+
+<h2 id="full-configuration-reference">Full Configuration Reference</h2>
+<p>Here is the complete <code>.env.example</code> with all AI-related settings:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># AI Configuration</span>
+<span class="nv">AI_PROVIDER</span><span class="o">=</span>claude
+<span class="nv">AI_MODEL</span><span class="o">=</span>claude-opus-4-6<span class="o">[</span>1m<span class="o">]</span>
+<span class="nv">AI_CLI_TIMEOUT</span><span class="o">=</span><span class="m">60</span>
+
+<span class="c1"># Claude - Option 1: API Key</span>
+<span class="c1"># ANTHROPIC_API_KEY=</span>
+
+<span class="c1"># Claude - Option 2: Vertex AI</span>
+<span class="c1"># CLAUDE_CODE_USE_VERTEX=1</span>
+<span class="c1"># CLOUD_ML_REGION=</span>
+<span class="c1"># ANTHROPIC_VERTEX_PROJECT_ID=</span>
+
+<span class="c1"># Gemini</span>
+<span class="c1"># GEMINI_API_KEY=</span>
+
+<span class="c1"># Cursor</span>
+<span class="c1"># CURSOR_API_KEY=</span>
+
+<span class="c1"># Logging</span>
+<span class="nv">LOG_LEVEL</span><span class="o">=</span>INFO
+</code></pre></div>
+
+<p>The configuration is loaded using Pydantic Settings, which reads from the <code>.env</code> file automatically:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># src/docsfy/config.py</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Settings</span><span class="p">(</span><span class="n">BaseSettings</span><span class="p">):</span>
+    <span class="n">model_config</span> <span class="o">=</span> <span class="n">SettingsConfigDict</span><span class="p">(</span>
+        <span class="n">env_file</span><span class="o">=</span><span class="s2">&quot;.env&quot;</span><span class="p">,</span>
+        <span class="n">env_file_encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">,</span>
+        <span class="n">extra</span><span class="o">=</span><span class="s2">&quot;ignore&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">ai_provider</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;claude&quot;</span>
+    <span class="n">ai_model</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;claude-opus-4-6[1m]&quot;</span>
+    <span class="n">ai_cli_timeout</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="mi">60</span><span class="p">,</span> <span class="n">gt</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">log_level</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;INFO&quot;</span>
+    <span class="n">data_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;/data&quot;</span>
+</code></pre></div>
+
+<p>Settings are cached for the lifetime of the process via <code>@lru_cache</code>, so environment changes require a restart.</p>
+<h2 id="combining-provider-model-and-timeout">Combining Provider, Model, and Timeout</h2>
+<p>All three settings can be overridden together in a single request:</p>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/api/generate<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{</span>
+<span class="s1">    &quot;repo_url&quot;: &quot;https://github.com/org/my-project&quot;,</span>
+<span class="s1">    &quot;ai_provider&quot;: &quot;gemini&quot;,</span>
+<span class="s1">    &quot;ai_model&quot;: &quot;gemini-2.5-pro&quot;,</span>
+<span class="s1">    &quot;ai_cli_timeout&quot;: 120</span>
+<span class="s1">  }&#39;</span>
+</code></pre></div>
+
+<p>This generates documentation using the Gemini CLI with the <code>gemini-2.5-pro</code> model and a 2-minute timeout per page — regardless of what is configured in the <code>.env</code> file.</p>
+<blockquote>
+<p><strong>Tip:</strong> Per-request overrides are useful for testing a different provider without changing your deployment configuration. The <code>.env</code> values remain the defaults for all other requests.</p>
+</blockquote>
                 </div>
             </article>
             <nav class="page-nav">
                 
-                <a href="generation-pipeline.html" class="page-nav-link page-nav-prev">
+                <a href="configuration.html" class="page-nav-link page-nav-prev">
                     <span class="page-nav-label">Previous</span>
-                    <span class="page-nav-title">Generation Pipeline</span>
+                    <span class="page-nav-title">Configuration Reference</span>
                 </a>
                 
                 
-                <a href="incremental-updates.html" class="page-nav-link page-nav-next">
+                <a href="generating-docs.html" class="page-nav-link page-nav-next">
                     <span class="page-nav-label">Next</span>
-                    <span class="page-nav-title">Incremental Updates</span>
+                    <span class="page-nav-title">Generating Documentation</span>
                 </a>
                 
             </nav>
@@ -690,39 +620,41 @@ npm<span class="w"> </span>install<span class="w"> </span>-g<span class="w"> </s
                     <div class="toc">
 <ul>
 <li><a href="#supported-providers">Supported Providers</a><ul>
-<li><a href="#installation-in-docker">Installation in Docker</a></li>
+<li><a href="#how-providers-are-invoked">How Providers Are Invoked</a></li>
+<li><a href="#provider-architecture">Provider Architecture</a></li>
 </ul>
 </li>
-<li><a href="#provider-configuration">Provider Configuration</a><ul>
-<li><a href="#the-providerconfig-dataclass">The ProviderConfig Dataclass</a></li>
+<li><a href="#selecting-a-provider">Selecting a Provider</a><ul>
+<li><a href="#priority-order">Priority Order</a></li>
+<li><a href="#setting-the-provider-via-environment">Setting the Provider via Environment</a></li>
+<li><a href="#setting-the-provider-per-request">Setting the Provider per Request</a></li>
+<li><a href="#availability-check">Availability Check</a></li>
 </ul>
 </li>
-<li><a href="#command-interfaces">Command Interfaces</a><ul>
+<li><a href="#model-selection">Model Selection</a><ul>
+<li><a href="#priority-order_1">Priority Order</a></li>
+<li><a href="#the-1m-notation">The [1m] Notation</a></li>
+<li><a href="#configuring-via-environment">Configuring via Environment</a></li>
+<li><a href="#configuring-per-request">Configuring per Request</a></li>
+<li><a href="#model-examples-by-provider">Model Examples by Provider</a></li>
+</ul>
+</li>
+<li><a href="#timeout-tuning">Timeout Tuning</a><ul>
+<li><a href="#configuration">Configuration</a></li>
+<li><a href="#priority-order_2">Priority Order</a></li>
+<li><a href="#setting-via-environment">Setting via Environment</a></li>
+<li><a href="#setting-per-request">Setting per Request</a></li>
+<li><a href="#validation">Validation</a></li>
+</ul>
+</li>
+<li><a href="#provider-specific-setup">Provider-Specific Setup</a><ul>
 <li><a href="#claude-code">Claude Code</a></li>
 <li><a href="#gemini-cli">Gemini CLI</a></li>
 <li><a href="#cursor-agent">Cursor Agent</a></li>
 </ul>
 </li>
-<li><a href="#cwd-handling">CWD Handling</a><ul>
-<li><a href="#standard-approach-claude-code-gemini-cli">Standard Approach (Claude Code &amp; Gemini CLI)</a></li>
-<li><a href="#workspace-flag-approach-cursor-agent">Workspace Flag Approach (Cursor Agent)</a></li>
-<li><a href="#cwd-in-the-pipeline">CWD in the Pipeline</a></li>
-</ul>
-</li>
-<li><a href="#provider-selection">Provider Selection</a><ul>
-<li><a href="#environment-variable">Environment Variable</a></li>
-<li><a href="#default-configuration">Default Configuration</a></li>
-<li><a href="#full-env-example">Full .env Example</a></li>
-<li><a href="#mounting-credentials-in-docker">Mounting Credentials in Docker</a></li>
-</ul>
-</li>
-<li><a href="#invocation-details">Invocation Details</a><ul>
-<li><a href="#subprocess-execution">Subprocess Execution</a></li>
-<li><a href="#availability-check">Availability Check</a></li>
-<li><a href="#json-response-parsing">JSON Response Parsing</a></li>
-</ul>
-</li>
-<li><a href="#provider-comparison">Provider Comparison</a></li>
+<li><a href="#full-configuration-reference">Full Configuration Reference</a></li>
+<li><a href="#combining-provider-model-and-timeout">Combining Provider, Model, and Timeout</a></li>
 </ul>
 </div>
 
@@ -764,6 +696,29 @@ npm<span class="w"> </span>install<span class="w"> </span>-g<span class="w"> </s
                 overlay.classList.remove('open');
                 if (toggle) toggle.setAttribute('aria-expanded', 'false');
             });
+        }
+    })();
+    </script>
+    <script>
+    (function() {
+        var sidebar = document.querySelector('.sidebar-nav') || document.querySelector('.sidebar');
+        if (!sidebar) return;
+
+        // Restore scroll position
+        var saved = sessionStorage.getItem('sidebar-scroll');
+        if (saved) sidebar.scrollTop = parseInt(saved, 10);
+
+        // Save scroll position before navigating
+        sidebar.addEventListener('scroll', function() {
+            sessionStorage.setItem('sidebar-scroll', sidebar.scrollTop.toString());
+        });
+
+        // Also scroll active link into view if no saved position
+        if (!saved) {
+            var active = sidebar.querySelector('.nav-link.active');
+            if (active) {
+                active.scrollIntoView({ block: 'center', behavior: 'instant' });
+            }
         }
     })();
     </script>

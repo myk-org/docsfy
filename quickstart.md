@@ -1,36 +1,33 @@
 # Quickstart
 
-Get docsfy running locally and generate your first AI-powered documentation site in minutes.
+Generate your first documentation site in minutes. This guide walks you through starting the docsfy server, sending a generate request with a GitHub repository URL, and viewing the rendered documentation.
 
 ## Prerequisites
 
-Before you begin, make sure you have the following installed on your machine:
+Before you begin, make sure you have:
 
-- **Docker** (v20.10 or later) and **Docker Compose** (v2.0 or later)
-- **Git** for cloning the docsfy repository
-- An **API key** for at least one supported AI provider:
+- **Docker** and **Docker Compose** installed (recommended), _or_ **Python 3.12+** with [uv](https://docs.astral.sh/uv/) installed
+- **An AI provider API key** — at least one of:
   - [Anthropic API key](https://console.anthropic.com/) for Claude
-  - [Google AI API key](https://ai.google.dev/) for Gemini
-  - [Cursor API key](https://cursor.com/) for Cursor Agent
+  - [Google API key](https://aistudio.google.com/) for Gemini
+  - [Cursor API key](https://cursor.com/) for Cursor
 
-> **Note:** docsfy uses AI CLI tools (Claude Code, Gemini CLI, or Cursor Agent) under the hood. The Docker image installs these automatically — you only need to provide the appropriate API credentials.
+## Step 1: Clone and Configure
 
-## Step 1: Clone the Repository
+Clone the repository and set up your environment:
 
 ```bash
-git clone https://github.com/myakove/docsfy.git
+git clone https://github.com/myk-org/docsfy.git
 cd docsfy
 ```
 
-## Step 2: Configure Environment Variables
-
-Create a `.env` file from the provided example:
+Copy the example environment file and add your API key:
 
 ```bash
 cp .env.example .env
 ```
 
-Open `.env` in your editor and configure your AI provider credentials. At minimum, you need to set the provider and supply one set of API credentials:
+Open `.env` and configure your AI provider credentials. At minimum, set the API key for your chosen provider:
 
 ```bash
 # AI Configuration
@@ -38,261 +35,234 @@ AI_PROVIDER=claude
 AI_MODEL=claude-opus-4-6[1m]
 AI_CLI_TIMEOUT=60
 
+# Claude - Option 1: API Key
+ANTHROPIC_API_KEY=sk-ant-...
+
+# Claude - Option 2: Vertex AI
+# CLAUDE_CODE_USE_VERTEX=1
+# CLOUD_ML_REGION=
+# ANTHROPIC_VERTEX_PROJECT_ID=
+
+# Gemini
+# GEMINI_API_KEY=
+
+# Cursor
+# CURSOR_API_KEY=
+
 # Logging
 LOG_LEVEL=INFO
 ```
 
-Then uncomment and fill in the credentials for your chosen provider.
+> **Tip:** The `[1m]` suffix in the model name `claude-opus-4-6[1m]` specifies a 1 million token context window — this is a valid model identifier, not a typo.
 
-### Option A: Claude with API Key
+## Step 2: Start the Server
 
-```bash
-AI_PROVIDER=claude
-ANTHROPIC_API_KEY=sk-ant-...
-```
-
-### Option B: Claude with Vertex AI
+### With Docker (recommended)
 
 ```bash
-AI_PROVIDER=claude
-CLAUDE_CODE_USE_VERTEX=1
-CLOUD_ML_REGION=us-central1
-ANTHROPIC_VERTEX_PROJECT_ID=your-gcp-project-id
+docker compose up
 ```
 
-> **Note:** When using Vertex AI, the Docker Compose configuration mounts your local GCP credentials into the container at `~/.config/gcloud`. Make sure you have authenticated with `gcloud auth application-default login` before starting the service.
+This builds the container image, installs all three AI CLIs (Claude, Cursor, Gemini), and starts the server. Your generated documentation persists in the `./data` volume on the host.
 
-### Option C: Gemini
+```yaml
+# docker-compose.yaml
+services:
+  docsfy:
+    build: .
+    ports:
+      - "8000:8000"
+    env_file: .env
+    volumes:
+      - ./data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+```
+
+### Without Docker
 
 ```bash
-AI_PROVIDER=gemini
-GEMINI_API_KEY=your-gemini-api-key
+uv sync
+uv run docsfy
 ```
 
-### Option D: Cursor
+> **Note:** When running without Docker, you must have at least one AI CLI installed on your system. Install Claude Code with `curl -fsSL https://claude.ai/install.sh | bash`, Gemini CLI with `npm install -g @google/gemini-cli`, or Cursor Agent with `curl -fsSL https://cursor.com/install | bash`.
 
-```bash
-AI_PROVIDER=cursor
-CURSOR_API_KEY=your-cursor-api-key
-```
-
-> **Tip:** Start with Claude (`AI_PROVIDER=claude`) for the best results. It is the default provider and uses the `claude-opus-4-6[1m]` model, which produces high-quality documentation structure and content.
-
-## Step 3: Start docsfy with Docker Compose
-
-Build and launch the service:
-
-```bash
-docker compose up --build
-```
-
-Docker will:
-
-1. Build the image from `python:3.12-slim` using a multi-stage build
-2. Install system dependencies (git, curl, Node.js, npm)
-3. Install AI CLI tools (Claude Code, Gemini CLI, Cursor Agent)
-4. Install Python dependencies with `uv`
-5. Start the FastAPI server on port **8000**
-
-Wait for the health check to pass. You should see output indicating the server is ready:
-
-```
-docsfy-docsfy-1  | INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
-```
-
-Verify the service is healthy:
+The server starts on **http://localhost:8000** by default. Verify it's running:
 
 ```bash
 curl http://localhost:8000/health
 ```
 
-> **Tip:** Run in detached mode with `docker compose up --build -d` to free up your terminal. View logs anytime with `docker compose logs -f`.
+```json
+{"status": "ok"}
+```
 
-## Step 4: Generate Your First Documentation Site
+## Step 3: Generate Documentation
 
-Trigger documentation generation for any GitHub repository by sending a POST request to the `/api/generate` endpoint:
+Send a POST request to `/api/generate` with a GitHub repository URL:
 
 ```bash
 curl -X POST http://localhost:8000/api/generate \
   -H "Content-Type: application/json" \
-  -d '{"repo_url": "https://github.com/pallets/flask"}'
+  -d '{"repo_url": "https://github.com/fastapi/fastapi"}'
 ```
 
-This kicks off the four-stage generation pipeline:
+The server responds immediately with a `202 Accepted` status while generation runs in the background:
 
-| Stage | What happens |
-|-------|-------------|
-| **Clone** | Shallow-clones the repository (`--depth 1`) to a temporary directory |
-| **AI Planner** | AI analyzes the entire codebase and produces a `plan.json` with page structure, sections, and navigation |
-| **AI Content Generator** | For each page in the plan, AI explores the repo and writes markdown content (pages run concurrently) |
-| **HTML Renderer** | Converts markdown + plan into a polished static HTML site with Jinja2 templates |
+```json
+{"project": "fastapi", "status": "generating"}
+```
 
-> **Warning:** Generation can take several minutes depending on the size of the repository and your AI provider's response time. The `AI_CLI_TIMEOUT` setting (default: 60 minutes) controls how long each AI invocation is allowed to run.
+The project name is derived automatically from the repository URL — `https://github.com/fastapi/fastapi` becomes `fastapi`.
 
-## Step 5: Monitor Generation Progress
+> **Note:** Generation is an asynchronous process. Depending on repository size and complexity, it can take several minutes. The AI clones the repository, plans the documentation structure, then generates each page with full codebase context.
 
-Check the status of all projects:
+### What happens behind the scenes
+
+1. **Clone** — The repository is shallow-cloned (`git clone --depth 1`) into a temporary directory
+2. **Plan** — The AI analyzes the entire codebase and produces a documentation plan with navigation groups and page definitions
+3. **Generate** — Up to 5 pages are generated concurrently, each with full repository context available to the AI
+4. **Render** — Markdown pages are converted to a polished static HTML site with navigation, search, syntax highlighting, and theme support
+
+## Step 4: Check Generation Status
+
+Poll the status endpoint to see when generation completes:
 
 ```bash
 curl http://localhost:8000/api/status
 ```
 
-The response lists each project and its current status — `generating`, `ready`, or `error`.
+```json
+{
+  "projects": [
+    {
+      "name": "fastapi",
+      "repo_url": "https://github.com/fastapi/fastapi",
+      "status": "ready",
+      "last_commit_sha": "abc123def456...",
+      "last_generated": "2026-03-05T12:00:00",
+      "page_count": 12
+    }
+  ]
+}
+```
 
-To get detailed information about a specific project:
+The `status` field transitions through these states:
+
+| Status | Meaning |
+|---|---|
+| `generating` | Documentation is being created |
+| `ready` | Generation complete — docs are available to view |
+| `error` | Something went wrong — check `error_message` for details |
+
+For more detail on a specific project, use the project endpoint:
 
 ```bash
-curl http://localhost:8000/api/projects/flask
+curl http://localhost:8000/api/projects/fastapi
 ```
 
-This returns metadata including the last generated timestamp, commit SHA, and list of generated pages.
+## Step 5: View Your Documentation
 
-## Step 6: View Your Documentation
-
-Once generation is complete (status: `ready`), open your browser and navigate to:
+Once the status shows `ready`, open the documentation in your browser:
 
 ```
-http://localhost:8000/docs/flask/
+http://localhost:8000/docs/fastapi/
 ```
 
 The generated site includes:
 
-- **Sidebar navigation** — auto-generated from the documentation structure
-- **Dark/light theme toggle** — click to switch between themes
-- **Full-text search** — client-side search powered by lunr.js across all pages
-- **Syntax highlighting** — code blocks highlighted with highlight.js
-- **Callout boxes** — info, note, and warning callouts for important content
-- **Responsive design** — works on desktop and mobile
+- Sidebar navigation organized by topic groups
+- Dark and light theme toggle
+- Full-text client-side search
+- Syntax-highlighted code blocks with copy buttons
+- Previous/Next page navigation
+- Table of contents for each page
+- GitHub repository link with star count
 
-## Step 7: Download for Self-Hosting (Optional)
+### Download for self-hosting
 
-If you want to host the documentation site elsewhere (GitHub Pages, Netlify, S3, etc.), download the static HTML as a `.tar.gz` archive:
-
-```bash
-curl -O http://localhost:8000/api/projects/flask/download
-```
-
-Extract and serve with any static file server:
+You can also download the entire site as a portable archive to deploy on any static hosting provider:
 
 ```bash
-tar -xzf flask.tar.gz
-cd flask/site
-python -m http.server 3000
+curl -o fastapi-docs.tar.gz http://localhost:8000/api/projects/fastapi/download
+tar -xzf fastapi-docs.tar.gz
 ```
 
-The site is fully self-contained — no server-side dependencies required.
+The extracted directory contains a fully self-contained static site (HTML, CSS, JS) ready to deploy to GitHub Pages, Netlify, Vercel, or any web server. It also includes `llms.txt` and `llms-full.txt` files for LLM-friendly consumption.
 
-## Docker Compose Volume Mounts
+## Additional Options
 
-The `docker-compose.yaml` mounts three volumes:
+### Use a different AI provider
 
-```yaml
-volumes:
-  - ./data:/data                                        # Project data and SQLite database
-  - ~/.config/gcloud:/home/appuser/.config/gcloud:ro    # GCP credentials (for Vertex AI)
-  - ./cursor:/home/appuser/.config/cursor               # Cursor configuration
-```
-
-| Mount | Purpose |
-|-------|---------|
-| `./data:/data` | Persists generated documentation, cached markdown, and the SQLite database (`docsfy.db`) across container restarts |
-| `~/.config/gcloud` | Read-only mount of GCP credentials for Claude via Vertex AI |
-| `./cursor` | Cursor Agent configuration directory |
-
-> **Note:** The `./data` directory is created automatically. It stores all project data in the following structure:
->
-> ```
-> data/
-> ├── docsfy.db                    # SQLite metadata database
-> └── projects/
->     └── flask/
->         ├── plan.json            # Documentation structure from AI
->         ├── cache/
->         │   └── pages/*.md       # Cached markdown (for incremental updates)
->         └── site/                # Final rendered HTML site
->             ├── index.html
->             ├── *.html
->             ├── search-index.json
->             └── assets/
->                 ├── style.css
->                 ├── search.js
->                 ├── theme-toggle.js
->                 └── highlight.js
-> ```
-
-## Regenerating Documentation
-
-When a repository is updated, docsfy supports incremental regeneration. Send the same POST request again:
+Override the default AI provider and model per request:
 
 ```bash
 curl -X POST http://localhost:8000/api/generate \
   -H "Content-Type: application/json" \
-  -d '{"repo_url": "https://github.com/pallets/flask"}'
+  -d '{
+    "repo_url": "https://github.com/org/repo",
+    "ai_provider": "gemini",
+    "ai_model": "gemini-2.0-flash-exp"
+  }'
 ```
 
-docsfy compares the current commit SHA against the previously stored one. If changes are detected, it:
+Supported providers: `claude`, `gemini`, `cursor`.
 
-1. Re-runs the AI Planner to check for structural changes
-2. Regenerates only the affected pages (or all pages if the structure changed)
-3. Re-renders the HTML site
+### Generate from a local repository
 
-This saves significant time and API costs compared to a full regeneration.
-
-## Removing a Project
-
-To delete a project and all its generated documentation:
+If you have a repository on disk, pass `repo_path` instead of `repo_url`:
 
 ```bash
-curl -X DELETE http://localhost:8000/api/projects/flask
+curl -X POST http://localhost:8000/api/generate \
+  -H "Content-Type: application/json" \
+  -d '{"repo_path": "/path/to/your/repo"}'
 ```
 
-## API Reference Summary
+> **Warning:** Provide either `repo_url` or `repo_path`, not both. The request will be rejected if both are set.
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `POST` | `/api/generate` | Start documentation generation for a repository |
-| `GET` | `/api/status` | List all projects and their generation status |
-| `GET` | `/api/projects/{name}` | Get project details and metadata |
-| `DELETE` | `/api/projects/{name}` | Remove a project and its documentation |
-| `GET` | `/api/projects/{name}/download` | Download the static site as `.tar.gz` |
-| `GET` | `/docs/{project}/{path}` | Serve generated documentation pages |
-| `GET` | `/health` | Health check endpoint |
+### Force regeneration
 
-## Troubleshooting
-
-### Container fails to start
-
-Check the logs for errors:
+By default, docsfy caches generated pages and skips regeneration if the repository hasn't changed (same commit SHA). To force a full regeneration and clear the cache:
 
 ```bash
-docker compose logs docsfy
+curl -X POST http://localhost:8000/api/generate \
+  -H "Content-Type: application/json" \
+  -d '{"repo_url": "https://github.com/org/repo", "force": true}'
 ```
 
-Common causes:
+### Delete a project
 
-- Missing or invalid `.env` file — ensure the file exists and has valid syntax
-- Port 8000 already in use — stop the conflicting service or change the port mapping in `docker-compose.yaml`
-
-### Generation fails with `error` status
-
-Check the project details for error information:
+Remove a project and all its generated files:
 
 ```bash
-curl http://localhost:8000/api/projects/<project-name>
+curl -X DELETE http://localhost:8000/api/projects/fastapi
 ```
 
-Common causes:
-
-- **Invalid API key** — verify your AI provider credentials in `.env`
-- **Repository not accessible** — ensure the repo URL is correct and publicly accessible (or that git credentials are configured for private repos)
-- **AI CLI timeout** — for very large repositories, increase `AI_CLI_TIMEOUT` in `.env`
-
-### Health check fails
-
-```bash
-curl -v http://localhost:8000/health
+```json
+{"deleted": "fastapi"}
 ```
 
-If the health endpoint does not respond, the FastAPI server may not have started. Check the container logs for Python errors or missing dependencies.
+## Configuration Reference
 
-> **Tip:** Set `LOG_LEVEL=DEBUG` in your `.env` file for more detailed output when troubleshooting.
+All settings can be configured via environment variables in your `.env` file:
+
+| Variable | Default | Description |
+|---|---|---|
+| `AI_PROVIDER` | `claude` | AI provider (`claude`, `gemini`, or `cursor`) |
+| `AI_MODEL` | `claude-opus-4-6[1m]` | Model identifier |
+| `AI_CLI_TIMEOUT` | `60` | AI generation timeout in minutes |
+| `LOG_LEVEL` | `INFO` | Logging level (`DEBUG`, `INFO`, `WARNING`, `ERROR`) |
+| `DATA_DIR` | `/data` | Directory for database and generated sites |
+| `HOST` | `0.0.0.0` | Server bind address |
+| `PORT` | `8000` | Server port |
+| `DEBUG` | `false` | Enable auto-reload for development |
+
+## Next Steps
+
+- Explore the interactive API docs at **http://localhost:8000/docs** (auto-generated by FastAPI)
+- Check the generated `llms.txt` file at `http://localhost:8000/docs/{project}/llms.txt` for an LLM-friendly index of the documentation
+- Set `LOG_LEVEL=DEBUG` in your `.env` for detailed generation logs

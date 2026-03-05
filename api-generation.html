@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generation Endpoint - docsfy</title>
+    <meta name="description" content="AI-powered documentation generator that turns GitHub repositories into polished static documentation websites">
+    <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <a href="index.html" class="sidebar-logo">docsfy</a>
+            <p class="sidebar-tagline">AI-powered documentation generator that turns GitHub repositories into polished static documentation websites</p>
+        </div>
+
+        <div class="sidebar-search">
+            <input type="text" id="search-input" placeholder="Search... (⌘K)" autocomplete="off" readonly>
+            <div id="search-results" class="search-results"></div>
+        </div>
+
+        <nav class="sidebar-nav">
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Getting Started</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="introduction.html"
+                           class="nav-link">
+                            Introduction
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="installation.html"
+                           class="nav-link">
+                            Installation
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="quickstart.html"
+                           class="nav-link">
+                            Quickstart
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="docker-deployment.html"
+                           class="nav-link">
+                            Docker Deployment
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Configuration</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="configuration.html"
+                           class="nav-link">
+                            Configuration Reference
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="ai-providers.html"
+                           class="nav-link">
+                            AI Providers
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Usage</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="generating-docs.html"
+                           class="nav-link">
+                            Generating Documentation
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="serving-and-downloading.html"
+                           class="nav-link">
+                            Serving and Downloading
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="generated-site-features.html"
+                           class="nav-link">
+                            Generated Site Features
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="llm-friendly-output.html"
+                           class="nav-link">
+                            LLM-Friendly Output
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">API Reference</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="api-overview.html"
+                           class="nav-link">
+                            API Overview
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="api-generation.html"
+                           class="nav-link active">
+                            Generation Endpoint
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="api-projects.html"
+                           class="nav-link">
+                            Project Management Endpoints
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="api-serving.html"
+                           class="nav-link">
+                            Serving and Download Endpoints
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Architecture</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="architecture-overview.html"
+                           class="nav-link">
+                            Architecture Overview
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="project-structure.html"
+                           class="nav-link">
+                            Project Structure
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="ai-generation-pipeline.html"
+                           class="nav-link">
+                            AI Generation Pipeline
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="storage-and-caching.html"
+                           class="nav-link">
+                            Storage and Caching
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Development</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="development-setup.html"
+                           class="nav-link">
+                            Development Setup
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="testing.html"
+                           class="nav-link">
+                            Testing
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="code-quality.html"
+                           class="nav-link">
+                            Code Quality
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+        </nav>
+    </aside>
+
+    <div class="main-wrapper">
+        <header class="top-bar">
+            <div class="top-bar-left">
+                <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebar" aria-expanded="false">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                </button>
+                <a href="index.html" class="top-bar-title">docsfy</a>
+            </div>
+            <div class="top-bar-spacer"></div>
+            <div class="top-bar-right">
+                <button class="top-bar-search-btn" id="search-trigger" aria-label="Search">
+                    <kbd>&#8984;K</kbd> Search
+                </button>
+                
+                <a href="https://github.com/myk-org/docsfy" target="_blank" rel="noopener noreferrer" class="top-bar-github" id="github-link" data-repo-url="https://github.com/myk-org/docsfy">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                    <span class="github-stars" id="github-stars"></span>
+                </a>
+                
+                <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+                    <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                    </svg>
+                    <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <main class="content">
+            <article class="article">
+                <div class="article-body">
+                    <!-- content is pre-rendered from markdown by the server, not user input -->
+                    <h1 id="generation-endpoint">Generation Endpoint</h1>
+<p>The generation endpoint triggers asynchronous documentation generation for a git repository. It accepts either a remote repository URL or a local filesystem path and returns immediately while generation runs in the background.</p>
+<h2 id="endpoint">Endpoint</h2>
+<div class="highlight"><pre><span></span><code>POST /api/generate
+</code></pre></div>
+
+<p><strong>Content-Type:</strong> <code>application/json</code></p>
+<p><strong>Success Status Code:</strong> <code>202 Accepted</code></p>
+<hr />
+<h2 id="request-body-schema">Request Body Schema</h2>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Required</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>repo_url</code></td>
+<td><code>string \| null</code></td>
+<td>Conditional</td>
+<td><code>null</code></td>
+<td>Git repository URL (HTTPS or SSH)</td>
+</tr>
+<tr>
+<td><code>repo_path</code></td>
+<td><code>string \| null</code></td>
+<td>Conditional</td>
+<td><code>null</code></td>
+<td>Absolute path to a local git repository</td>
+</tr>
+<tr>
+<td><code>ai_provider</code></td>
+<td><code>string \| null</code></td>
+<td>No</td>
+<td>Server default</td>
+<td>AI provider to use for generation</td>
+</tr>
+<tr>
+<td><code>ai_model</code></td>
+<td><code>string \| null</code></td>
+<td>No</td>
+<td>Server default</td>
+<td>AI model identifier</td>
+</tr>
+<tr>
+<td><code>ai_cli_timeout</code></td>
+<td><code>integer \| null</code></td>
+<td>No</td>
+<td>Server default</td>
+<td>Timeout in seconds for AI CLI operations</td>
+</tr>
+<tr>
+<td><code>force</code></td>
+<td><code>boolean</code></td>
+<td>No</td>
+<td><code>false</code></td>
+<td>Force full regeneration, ignoring cache</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Note:</strong> Exactly one of <code>repo_url</code> or <code>repo_path</code> must be provided. See <a href="#mutual-exclusivity-of-repo_url-and-repo_path">Mutual Exclusivity</a> below.</p>
+</blockquote>
+<h3 id="repo_url"><code>repo_url</code></h3>
+<p>A git repository URL in HTTPS or SSH format. When provided, the server clones the repository to a temporary directory before generating documentation.</p>
+<p>Accepted formats:</p>
+<div class="highlight"><pre><span></span><code># HTTPS (with or without .git suffix)
+https://github.com/org/repo
+https://github.com/org/repo.git
+
+# SSH (with or without .git suffix)
+git@github.com:org/repo
+git@github.com:org/repo.git
+</code></pre></div>
+
+<p>The URL is validated against two regular expression patterns:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># HTTPS pattern</span>
+<span class="sa">r</span><span class="s2">&quot;^https?://[\w.\-]+/[\w.\-]+/[\w.\-]+(\.git)?$&quot;</span>
+
+<span class="c1"># SSH pattern</span>
+<span class="sa">r</span><span class="s2">&quot;^git@[\w.\-]+:[\w.\-]+/[\w.\-]+(\.git)?$&quot;</span>
+</code></pre></div>
+
+<blockquote>
+<p><strong>Warning:</strong> URLs with trailing slashes, query parameters, fragments, or subpaths (e.g., <code>https://github.com/org/repo/tree/main</code>) will be rejected by validation.</p>
+</blockquote>
+<h3 id="repo_path"><code>repo_path</code></h3>
+<p>An absolute filesystem path to a local git repository. When provided, the server reads the repository directly without cloning.</p>
+<p>Two checks are performed during validation:</p>
+<ol>
+<li>The path must exist on the filesystem</li>
+<li>The path must contain a <code>.git</code> subdirectory (confirming it is a git repository root)</li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+<span class="k">if</span> <span class="ow">not</span> <span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Repository path does not exist: &#39;</span><span class="si">{</span><span class="n">v</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+<span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">path</span> <span class="o">/</span> <span class="s2">&quot;.git&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Not a git repository (no .git directory): &#39;</span><span class="si">{</span><span class="n">v</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+</code></pre></div>
+
+<h3 id="ai_provider"><code>ai_provider</code></h3>
+<p>The AI provider CLI to use for documentation generation. Accepted values:</p>
+<table>
+<thead>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>"claude"</code></td>
+<td>Anthropic Claude CLI</td>
+</tr>
+<tr>
+<td><code>"gemini"</code></td>
+<td>Google Gemini CLI</td>
+</tr>
+<tr>
+<td><code>"cursor"</code></td>
+<td>Cursor AI CLI</td>
+</tr>
+</tbody>
+</table>
+<p>When omitted, the server falls back to the <code>AI_PROVIDER</code> environment variable or the built-in default of <code>"claude"</code>.</p>
+<h3 id="ai_model"><code>ai_model</code></h3>
+<p>The specific AI model to use within the chosen provider. This is a free-form string — no server-side validation is performed on the model name.</p>
+<p>When omitted, the server falls back to the <code>AI_MODEL</code> environment variable or the built-in default of <code>"claude-opus-4-6[1m]"</code>.</p>
+<h3 id="ai_cli_timeout"><code>ai_cli_timeout</code></h3>
+<p>Timeout in seconds for individual AI CLI operations. Must be a positive integer (greater than 0).</p>
+<p>When omitted, the server falls back to the <code>AI_CLI_TIMEOUT</code> environment variable or the built-in default of <code>60</code> seconds.</p>
+<h3 id="force"><code>force</code></h3>
+<p>When set to <code>true</code>, the endpoint clears the project's page cache and regenerates all documentation from scratch. When <code>false</code> (the default), the server skips regeneration if the repository's HEAD commit SHA matches the last successfully generated commit.</p>
+<hr />
+<h2 id="mutual-exclusivity-of-repo_url-and-repo_path">Mutual Exclusivity of <code>repo_url</code> and <code>repo_path</code></h2>
+<p>The request body must contain exactly one of <code>repo_url</code> or <code>repo_path</code>. This constraint is enforced by a Pydantic model validator that runs after individual field validation:</p>
+<div class="highlight"><pre><span></span><code><span class="nd">@model_validator</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s2">&quot;after&quot;</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">validate_source</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">GenerateRequest</span><span class="p">:</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">repo_url</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">repo_path</span><span class="p">:</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Either &#39;repo_url&#39; or &#39;repo_path&#39; must be provided&quot;</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">repo_url</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">repo_path</span><span class="p">:</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Provide either &#39;repo_url&#39; or &#39;repo_path&#39;, not both&quot;</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+    <span class="k">return</span> <span class="bp">self</span>
+</code></pre></div>
+
+<p>The three possible outcomes:</p>
+<table>
+<thead>
+<tr>
+<th><code>repo_url</code></th>
+<th><code>repo_path</code></th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>provided</td>
+<td>omitted</td>
+<td>Valid — clone remote repository</td>
+</tr>
+<tr>
+<td>omitted</td>
+<td>provided</td>
+<td>Valid — use local repository</td>
+</tr>
+<tr>
+<td>omitted</td>
+<td>omitted</td>
+<td><strong>422</strong> — <code>"Either 'repo_url' or 'repo_path' must be provided"</code></td>
+</tr>
+<tr>
+<td>provided</td>
+<td>provided</td>
+<td><strong>422</strong> — <code>"Provide either 'repo_url' or 'repo_path', not both"</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="response-format">Response Format</h2>
+<h3 id="success-202-accepted">Success (<code>202 Accepted</code>)</h3>
+<p>Generation is started as a background task. The endpoint returns immediately without waiting for completion.</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;project&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;repo&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;generating&quot;</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>project</code></td>
+<td><code>string</code></td>
+<td>Derived project name (used to query status and retrieve docs)</td>
+</tr>
+<tr>
+<td><code>status</code></td>
+<td><code>string</code></td>
+<td>Always <code>"generating"</code> on a successful request</td>
+</tr>
+</tbody>
+</table>
+<h4 id="project-name-derivation">Project Name Derivation</h4>
+<p>The project name is automatically extracted from the repository source:</p>
+<ul>
+<li><strong>From <code>repo_url</code></strong>: the last path segment of the URL, with <code>.git</code> stripped if present</li>
+<li><code>https://github.com/org/my-app.git</code> → <code>"my-app"</code></li>
+<li>
+<p><code>git@github.com:org/my-app</code> → <code>"my-app"</code></p>
+</li>
+<li>
+<p><strong>From <code>repo_path</code></strong>: the resolved directory name</p>
+</li>
+<li><code>/home/user/projects/my-app</code> → <code>"my-app"</code></li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="nd">@property</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">project_name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">repo_url</span><span class="p">:</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">repo_url</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">name</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.git&quot;</span><span class="p">):</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="n">name</span><span class="p">[:</span><span class="o">-</span><span class="mi">4</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">name</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">repo_path</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">repo_path</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span><span class="o">.</span><span class="n">name</span>
+    <span class="k">return</span> <span class="s2">&quot;unknown&quot;</span>
+</code></pre></div>
+
+<h3 id="error-responses">Error Responses</h3>
+<h4 id="409-conflict-concurrent-generation"><code>409 Conflict</code> — Concurrent Generation</h4>
+<p>Returned when a generation task is already in progress for the same project name.</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;detail&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Project &#39;repo&#39; is already being generated&quot;</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<p>The server tracks active generations in a module-level set. A project name is added to this set when generation begins and removed when it completes (whether successfully or with an error).</p>
+<h4 id="422-unprocessable-entity-validation-error"><code>422 Unprocessable Entity</code> — Validation Error</h4>
+<p>Returned when the request body fails validation. FastAPI returns errors in the standard Pydantic validation error format:</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;detail&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;value_error&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;loc&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;body&quot;</span><span class="p">],</span>
+<span class="w">      </span><span class="nt">&quot;msg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Value error, Either &#39;repo_url&#39; or &#39;repo_path&#39; must be provided&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;input&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{},</span>
+<span class="w">      </span><span class="nt">&quot;url&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://errors.pydantic.dev/2.11/v/value_error&quot;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">]</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<p>Common validation errors:</p>
+<table>
+<thead>
+<tr>
+<th>Condition</th>
+<th>Error Message</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Neither source provided</td>
+<td><code>Either 'repo_url' or 'repo_path' must be provided</code></td>
+</tr>
+<tr>
+<td>Both sources provided</td>
+<td><code>Provide either 'repo_url' or 'repo_path', not both</code></td>
+</tr>
+<tr>
+<td>Malformed URL</td>
+<td><code>Invalid git repository URL: '&lt;url&gt;'</code></td>
+</tr>
+<tr>
+<td>Path does not exist</td>
+<td><code>Repository path does not exist: '&lt;path&gt;'</code></td>
+</tr>
+<tr>
+<td>Path is not a git repository</td>
+<td><code>Not a git repository (no .git directory): '&lt;path&gt;'</code></td>
+</tr>
+<tr>
+<td><code>ai_cli_timeout</code> ≤ 0</td>
+<td><code>Input should be greater than 0</code></td>
+</tr>
+<tr>
+<td>Invalid <code>ai_provider</code></td>
+<td><code>Input should be 'claude', 'gemini' or 'cursor'</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="examples">Examples</h2>
+<h3 id="generate-from-a-remote-https-repository">Generate from a remote HTTPS repository</h3>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/api/generate<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{&quot;repo_url&quot;: &quot;https://github.com/org/repo.git&quot;}&#39;</span>
+</code></pre></div>
+
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;project&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;repo&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;generating&quot;</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<h3 id="generate-from-an-ssh-url">Generate from an SSH URL</h3>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/api/generate<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{&quot;repo_url&quot;: &quot;git@github.com:org/repo.git&quot;}&#39;</span>
+</code></pre></div>
+
+<h3 id="generate-from-a-local-repository">Generate from a local repository</h3>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/api/generate<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{&quot;repo_path&quot;: &quot;/home/user/projects/my-app&quot;}&#39;</span>
+</code></pre></div>
+
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;project&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;my-app&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;generating&quot;</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<h3 id="force-regeneration-with-custom-ai-settings">Force regeneration with custom AI settings</h3>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/api/generate<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{</span>
+<span class="s1">    &quot;repo_url&quot;: &quot;https://github.com/org/repo.git&quot;,</span>
+<span class="s1">    &quot;ai_provider&quot;: &quot;gemini&quot;,</span>
+<span class="s1">    &quot;ai_model&quot;: &quot;gemini-2.5-pro&quot;,</span>
+<span class="s1">    &quot;ai_cli_timeout&quot;: 120,</span>
+<span class="s1">    &quot;force&quot;: true</span>
+<span class="s1">  }&#39;</span>
+</code></pre></div>
+
+<h3 id="invalid-request-both-sources-provided">Invalid request — both sources provided</h3>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/api/generate<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{</span>
+<span class="s1">    &quot;repo_url&quot;: &quot;https://github.com/org/repo.git&quot;,</span>
+<span class="s1">    &quot;repo_path&quot;: &quot;/home/user/projects/repo&quot;</span>
+<span class="s1">  }&#39;</span>
+</code></pre></div>
+
+<p>Returns <code>422</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;detail&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;value_error&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;loc&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;body&quot;</span><span class="p">],</span>
+<span class="w">      </span><span class="nt">&quot;msg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Value error, Provide either &#39;repo_url&#39; or &#39;repo_path&#39;, not both&quot;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">]</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<hr />
+<h2 id="background-generation-lifecycle">Background Generation Lifecycle</h2>
+<p>The <code>POST /api/generate</code> endpoint is asynchronous by design. Understanding the background lifecycle is important for integrating with this endpoint.</p>
+<ol>
+<li><strong>Request accepted</strong> — The endpoint validates the request, records the project with status <code>"generating"</code>, and spawns a background task.</li>
+<li><strong>AI CLI check</strong> — The background task verifies that the configured AI CLI tool is available. If not, the project status is set to <code>"error"</code>.</li>
+<li><strong>Repository resolution</strong> — For <code>repo_url</code>, the repository is cloned to a temporary directory. For <code>repo_path</code>, the local path is used directly.</li>
+<li><strong>Cache check</strong> (when <code>force</code> is <code>false</code>) — If the repository HEAD commit SHA matches the last successful generation, the task completes immediately without regenerating.</li>
+<li><strong>Planning</strong> — The AI generates a documentation plan (page structure and navigation).</li>
+<li><strong>Page generation</strong> — Each documentation page is generated by the AI, with caching support.</li>
+<li><strong>Rendering</strong> — The generated pages are rendered into a static site.</li>
+<li><strong>Completion</strong> — The project status is updated to <code>"ready"</code> with the commit SHA and page count.</li>
+</ol>
+<p>If any step fails, the project status is set to <code>"error"</code> with a descriptive error message.</p>
+<blockquote>
+<p><strong>Tip:</strong> After submitting a generation request, poll <code>GET /api/projects/{name}</code> using the <code>project</code> value from the response to track progress and check for completion or errors.</p>
+</blockquote>
+<hr />
+<h2 id="server-defaults">Server Defaults</h2>
+<p>When optional fields are omitted from the request, the server applies defaults from environment variables or built-in values:</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Environment Variable</th>
+<th>Built-in Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ai_provider</code></td>
+<td><code>AI_PROVIDER</code></td>
+<td><code>"claude"</code></td>
+</tr>
+<tr>
+<td><code>ai_model</code></td>
+<td><code>AI_MODEL</code></td>
+<td><code>"claude-opus-4-6[1m]"</code></td>
+</tr>
+<tr>
+<td><code>ai_cli_timeout</code></td>
+<td><code>AI_CLI_TIMEOUT</code></td>
+<td><code>60</code></td>
+</tr>
+</tbody>
+</table>
+<p>These can be configured via a <code>.env</code> file in the project root:</p>
+<div class="highlight"><pre><span></span><code>AI_PROVIDER=claude
+AI_MODEL=claude-opus-4-6[1m]
+AI_CLI_TIMEOUT=60
+</code></pre></div>
+                </div>
+            </article>
+            <nav class="page-nav">
+                
+                <a href="api-overview.html" class="page-nav-link page-nav-prev">
+                    <span class="page-nav-label">Previous</span>
+                    <span class="page-nav-title">API Overview</span>
+                </a>
+                
+                
+                <a href="api-projects.html" class="page-nav-link page-nav-next">
+                    <span class="page-nav-label">Next</span>
+                    <span class="page-nav-title">Project Management Endpoints</span>
+                </a>
+                
+            </nav>
+            
+            <aside class="toc-sidebar">
+                <div class="toc-container">
+                    <h3>On this page</h3>
+                    <div class="toc">
+<ul>
+<li><a href="#endpoint">Endpoint</a></li>
+<li><a href="#request-body-schema">Request Body Schema</a><ul>
+<li><a href="#repo_url">repo_url</a></li>
+<li><a href="#repo_path">repo_path</a></li>
+<li><a href="#ai_provider">ai_provider</a></li>
+<li><a href="#ai_model">ai_model</a></li>
+<li><a href="#ai_cli_timeout">ai_cli_timeout</a></li>
+<li><a href="#force">force</a></li>
+</ul>
+</li>
+<li><a href="#mutual-exclusivity-of-repo_url-and-repo_path">Mutual Exclusivity of repo_url and repo_path</a></li>
+<li><a href="#response-format">Response Format</a><ul>
+<li><a href="#success-202-accepted">Success (202 Accepted)</a></li>
+<li><a href="#error-responses">Error Responses</a></li>
+</ul>
+</li>
+<li><a href="#examples">Examples</a><ul>
+<li><a href="#generate-from-a-remote-https-repository">Generate from a remote HTTPS repository</a></li>
+<li><a href="#generate-from-an-ssh-url">Generate from an SSH URL</a></li>
+<li><a href="#generate-from-a-local-repository">Generate from a local repository</a></li>
+<li><a href="#force-regeneration-with-custom-ai-settings">Force regeneration with custom AI settings</a></li>
+<li><a href="#invalid-request-both-sources-provided">Invalid request — both sources provided</a></li>
+</ul>
+</li>
+<li><a href="#background-generation-lifecycle">Background Generation Lifecycle</a></li>
+<li><a href="#server-defaults">Server Defaults</a></li>
+</ul>
+</div>
+
+                </div>
+            </aside>
+            
+        </main>
+
+        <footer class="footer">
+            <p>Built with <a href="https://github.com/docsfy/docsfy">docsfy</a></p>
+        </footer>
+    </div>
+
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <script src="assets/theme.js"></script>
+    <script src="assets/search.js"></script>
+    <script src="assets/copy.js"></script>
+    <script src="assets/callouts.js"></script>
+    <script src="assets/scrollspy.js"></script>
+    <script src="assets/codelabels.js"></script>
+    <script src="assets/github.js"></script>
+    <script>
+    (function() {
+        var toggle = document.getElementById('sidebar-toggle');
+        var sidebar = document.getElementById('sidebar');
+        var overlay = document.getElementById('sidebar-overlay');
+        if (toggle && sidebar) {
+            toggle.addEventListener('click', function() {
+                sidebar.classList.toggle('open');
+                if (overlay) overlay.classList.toggle('open');
+                var expanded = sidebar.classList.contains('open');
+                toggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+            });
+        }
+        if (overlay) {
+            overlay.addEventListener('click', function() {
+                sidebar.classList.remove('open');
+                overlay.classList.remove('open');
+                if (toggle) toggle.setAttribute('aria-expanded', 'false');
+            });
+        }
+    })();
+    </script>
+    <script>
+    (function() {
+        var sidebar = document.querySelector('.sidebar-nav') || document.querySelector('.sidebar');
+        if (!sidebar) return;
+
+        // Restore scroll position
+        var saved = sessionStorage.getItem('sidebar-scroll');
+        if (saved) sidebar.scrollTop = parseInt(saved, 10);
+
+        // Save scroll position before navigating
+        sidebar.addEventListener('scroll', function() {
+            sessionStorage.setItem('sidebar-scroll', sidebar.scrollTop.toString());
+        });
+
+        // Also scroll active link into view if no saved position
+        if (!saved) {
+            var active = sidebar.querySelector('.nav-link.active');
+            if (active) {
+                active.scrollIntoView({ block: 'center', behavior: 'instant' });
+            }
+        }
+    })();
+    </script>
+</body>
+</html>

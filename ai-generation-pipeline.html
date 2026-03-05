@@ -1,0 +1,1043 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Generation Pipeline - docsfy</title>
+    <meta name="description" content="AI-powered documentation generator that turns GitHub repositories into polished static documentation websites">
+    <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <a href="index.html" class="sidebar-logo">docsfy</a>
+            <p class="sidebar-tagline">AI-powered documentation generator that turns GitHub repositories into polished static documentation websites</p>
+        </div>
+
+        <div class="sidebar-search">
+            <input type="text" id="search-input" placeholder="Search... (⌘K)" autocomplete="off" readonly>
+            <div id="search-results" class="search-results"></div>
+        </div>
+
+        <nav class="sidebar-nav">
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Getting Started</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="introduction.html"
+                           class="nav-link">
+                            Introduction
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="installation.html"
+                           class="nav-link">
+                            Installation
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="quickstart.html"
+                           class="nav-link">
+                            Quickstart
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="docker-deployment.html"
+                           class="nav-link">
+                            Docker Deployment
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Configuration</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="configuration.html"
+                           class="nav-link">
+                            Configuration Reference
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="ai-providers.html"
+                           class="nav-link">
+                            AI Providers
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Usage</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="generating-docs.html"
+                           class="nav-link">
+                            Generating Documentation
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="serving-and-downloading.html"
+                           class="nav-link">
+                            Serving and Downloading
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="generated-site-features.html"
+                           class="nav-link">
+                            Generated Site Features
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="llm-friendly-output.html"
+                           class="nav-link">
+                            LLM-Friendly Output
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">API Reference</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="api-overview.html"
+                           class="nav-link">
+                            API Overview
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="api-generation.html"
+                           class="nav-link">
+                            Generation Endpoint
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="api-projects.html"
+                           class="nav-link">
+                            Project Management Endpoints
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="api-serving.html"
+                           class="nav-link">
+                            Serving and Download Endpoints
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Architecture</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="architecture-overview.html"
+                           class="nav-link">
+                            Architecture Overview
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="project-structure.html"
+                           class="nav-link">
+                            Project Structure
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="ai-generation-pipeline.html"
+                           class="nav-link active">
+                            AI Generation Pipeline
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="storage-and-caching.html"
+                           class="nav-link">
+                            Storage and Caching
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Development</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="development-setup.html"
+                           class="nav-link">
+                            Development Setup
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="testing.html"
+                           class="nav-link">
+                            Testing
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="code-quality.html"
+                           class="nav-link">
+                            Code Quality
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+        </nav>
+    </aside>
+
+    <div class="main-wrapper">
+        <header class="top-bar">
+            <div class="top-bar-left">
+                <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebar" aria-expanded="false">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                </button>
+                <a href="index.html" class="top-bar-title">docsfy</a>
+            </div>
+            <div class="top-bar-spacer"></div>
+            <div class="top-bar-right">
+                <button class="top-bar-search-btn" id="search-trigger" aria-label="Search">
+                    <kbd>&#8984;K</kbd> Search
+                </button>
+                
+                <a href="https://github.com/myk-org/docsfy" target="_blank" rel="noopener noreferrer" class="top-bar-github" id="github-link" data-repo-url="https://github.com/myk-org/docsfy">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                    <span class="github-stars" id="github-stars"></span>
+                </a>
+                
+                <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+                    <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                    </svg>
+                    <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <main class="content">
+            <article class="article">
+                <div class="article-body">
+                    <!-- content is pre-rendered from markdown by the server, not user input -->
+                    <h1 id="ai-generation-pipeline">AI Generation Pipeline</h1>
+<p>The AI generation pipeline is the core engine of docsfy. It transforms a repository into structured documentation through a two-phase workflow: first planning the documentation structure, then generating markdown content for each page. This page explains how each phase works, how concurrency is managed, and how caching enables incremental updates.</p>
+<h2 id="pipeline-overview">Pipeline Overview</h2>
+<p>When a generation request is received, docsfy orchestrates the full pipeline inside <code>_run_generation()</code> in <code>main.py</code>:</p>
+<ol>
+<li><strong>Validate</strong> the AI provider is available</li>
+<li><strong>Clone</strong> the repository (or resolve a local path)</li>
+<li><strong>Check</strong> whether cached output is already up to date</li>
+<li><strong>Phase 1</strong> — Run the AI planner to produce a documentation structure</li>
+<li><strong>Phase 2</strong> — Generate markdown content for every page (up to 5 in parallel)</li>
+<li><strong>Render</strong> the final HTML site from the generated markdown</li>
+</ol>
+<div class="highlight"><pre><span></span><code>┌──────────────┐     ┌──────────────────┐     ┌──────────────────┐
+│  Repository  │────▶│  Phase 1: Plan   │────▶│  Phase 2: Pages  │
+│  (clone/     │     │  (AI explores    │     │  (up to 5        │
+│   local)     │     │   codebase)      │     │   concurrent)    │
+└──────────────┘     └──────────────────┘     └────────┬─────────┘
+                                                       │
+                                              ┌────────▼─────────┐
+                                              │   Render Site    │
+                                              │   (HTML + assets)│
+                                              └──────────────────┘
+</code></pre></div>
+
+<p>The pipeline runs as a background <code>asyncio</code> task, allowing the API to return HTTP 202 immediately while generation proceeds:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># main.py — generation is kicked off as a background task</span>
+<span class="n">asyncio</span><span class="o">.</span><span class="n">create_task</span><span class="p">(</span>
+    <span class="n">_run_generation</span><span class="p">(</span>
+        <span class="n">repo_url</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">repo_url</span><span class="p">,</span>
+        <span class="n">repo_path</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">repo_path</span><span class="p">,</span>
+        <span class="n">project_name</span><span class="o">=</span><span class="n">project_name</span><span class="p">,</span>
+        <span class="n">ai_provider</span><span class="o">=</span><span class="n">ai_provider</span><span class="p">,</span>
+        <span class="n">ai_model</span><span class="o">=</span><span class="n">ai_model</span><span class="p">,</span>
+        <span class="n">ai_cli_timeout</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">ai_cli_timeout</span> <span class="ow">or</span> <span class="n">settings</span><span class="o">.</span><span class="n">ai_cli_timeout</span><span class="p">,</span>
+        <span class="n">force</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">force</span><span class="p">,</span>
+    <span class="p">)</span>
+<span class="p">)</span>
+</code></pre></div>
+
+<h2 id="phase-1-documentation-planning">Phase 1: Documentation Planning</h2>
+<p>Phase 1 asks the AI to explore the entire repository and produce a structured documentation plan as JSON. This plan defines the navigation groups, page slugs, titles, and descriptions that Phase 2 will use.</p>
+<h3 id="how-the-planner-works">How the Planner Works</h3>
+<p>The planner is implemented in <code>generator.py</code> as <code>run_planner()</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">run_planner</span><span class="p">(</span>
+    <span class="n">repo_path</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span>
+    <span class="n">project_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">ai_provider</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">ai_model</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">ai_cli_timeout</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">project_name</span><span class="si">}</span><span class="s2">] Calling AI planner&quot;</span><span class="p">)</span>
+    <span class="n">prompt</span> <span class="o">=</span> <span class="n">build_planner_prompt</span><span class="p">(</span><span class="n">project_name</span><span class="p">)</span>
+    <span class="n">success</span><span class="p">,</span> <span class="n">output</span> <span class="o">=</span> <span class="k">await</span> <span class="n">call_ai_cli</span><span class="p">(</span>
+        <span class="n">prompt</span><span class="o">=</span><span class="n">prompt</span><span class="p">,</span>
+        <span class="n">cwd</span><span class="o">=</span><span class="n">repo_path</span><span class="p">,</span>
+        <span class="n">ai_provider</span><span class="o">=</span><span class="n">ai_provider</span><span class="p">,</span>
+        <span class="n">ai_model</span><span class="o">=</span><span class="n">ai_model</span><span class="p">,</span>
+        <span class="n">ai_cli_timeout</span><span class="o">=</span><span class="n">ai_cli_timeout</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">success</span><span class="p">:</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Planner failed: </span><span class="si">{</span><span class="n">output</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+    <span class="n">plan</span> <span class="o">=</span> <span class="n">parse_json_response</span><span class="p">(</span><span class="n">output</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">plan</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Failed to parse planner output as JSON&quot;</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">project_name</span><span class="si">}</span><span class="s2">] Plan generated: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">plan</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;navigation&#39;</span><span class="p">,</span><span class="w"> </span><span class="p">[]))</span><span class="si">}</span><span class="s2"> groups&quot;</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">plan</span>
+</code></pre></div>
+
+<p>Key details:</p>
+<ul>
+<li>The AI runs <strong>inside the repository directory</strong> (<code>cwd=repo_path</code>), giving it full access to read source code, configs, tests, and CI/CD pipelines.</li>
+<li>The prompt explicitly instructs the AI to <strong>not rely on the README</strong> — it should understand the project from its code.</li>
+<li>The planner output must be <strong>valid JSON only</strong> — no markdown code blocks, no explanatory text.</li>
+</ul>
+<h3 id="planner-prompt">Planner Prompt</h3>
+<p>The prompt is built by <code>build_planner_prompt()</code> in <code>prompts.py</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">build_planner_prompt</span><span class="p">(</span><span class="n">project_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;You are a technical documentation planner. Explore this repository thoroughly.</span>
+<span class="s2">Explore the source code, configuration files, tests, CI/CD pipelines, and project structure.</span>
+<span class="s2">Do NOT rely on the README — understand the project from its code and configuration.</span>
+
+<span class="s2">Then create a documentation plan as a JSON object. The plan should cover:</span>
+<span class="s2">- Introduction and overview</span>
+<span class="s2">- Installation / getting started</span>
+<span class="s2">- Configuration (if applicable)</span>
+<span class="s2">- Usage guides for key features</span>
+<span class="s2">- API reference (if the project has an API)</span>
+<span class="s2">- Any other sections that would help users understand and use this project</span>
+
+<span class="s2">Project name: </span><span class="si">{</span><span class="n">project_name</span><span class="si">}</span>
+
+<span class="s2">CRITICAL: Your response must be ONLY a valid JSON object. No text before or after.</span>
+<span class="s2">No markdown code blocks.</span>
+
+<span class="s2">Output format:</span>
+<span class="si">{</span><span class="n">PLAN_SCHEMA</span><span class="si">}</span><span class="s2">&quot;&quot;&quot;</span>
+</code></pre></div>
+
+<h3 id="plan-schema">Plan Schema</h3>
+<p>The expected JSON structure is defined by <code>PLAN_SCHEMA</code> and validated by Pydantic models:</p>
+<div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">DocPage</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+    <span class="n">slug</span><span class="p">:</span> <span class="nb">str</span>          <span class="c1"># URL-friendly page identifier (e.g., &quot;getting-started&quot;)</span>
+    <span class="n">title</span><span class="p">:</span> <span class="nb">str</span>         <span class="c1"># Human-readable title (e.g., &quot;Getting Started&quot;)</span>
+    <span class="n">description</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>  <span class="c1"># Brief description of what the page covers</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">NavGroup</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+    <span class="n">group</span><span class="p">:</span> <span class="nb">str</span>             <span class="c1"># Section group name (e.g., &quot;Guides&quot;)</span>
+    <span class="n">pages</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">DocPage</span><span class="p">]</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">DocPlan</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+    <span class="n">project_name</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">tagline</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="n">navigation</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">NavGroup</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">)</span>
+</code></pre></div>
+
+<p>A typical plan output looks like:</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;project_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;my-project&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;tagline&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;A CLI tool for managing deployments&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;navigation&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;group&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Getting Started&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;pages&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">&quot;slug&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;introduction&quot;</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Introduction&quot;</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Overview of the project and its key features&quot;</span>
+<span class="w">        </span><span class="p">},</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">&quot;slug&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;installation&quot;</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Installation&quot;</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;How to install and set up the tool&quot;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">      </span><span class="p">]</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;group&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Guides&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;pages&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">&quot;slug&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;configuration&quot;</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Configuration&quot;</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Configuration options and environment variables&quot;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">      </span><span class="p">]</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">]</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<h3 id="robust-json-parsing">Robust JSON Parsing</h3>
+<p>Since AI models sometimes wrap JSON in markdown code blocks or include thinking/preamble text, docsfy uses a multi-strategy parser in <code>json_parser.py</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">parse_json_response</span><span class="p">(</span><span class="n">raw_text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="n">text</span> <span class="o">=</span> <span class="n">raw_text</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">text</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="c1"># Strategy 1: Direct JSON parse</span>
+    <span class="k">if</span> <span class="n">text</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;{&quot;</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">JSONDecodeError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">):</span>
+            <span class="k">pass</span>
+    <span class="c1"># Strategy 2: Brace-matching extraction</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">_extract_json_by_braces</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">result</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">result</span>
+    <span class="c1"># Strategy 3: Code block extraction</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">_extract_json_from_code_blocks</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">result</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">result</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Failed to parse AI response as JSON&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="kc">None</span>
+</code></pre></div>
+
+<p>The three strategies, in order:</p>
+<table>
+<thead>
+<tr>
+<th>Strategy</th>
+<th>Description</th>
+<th>Handles</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Direct parse</td>
+<td><code>json.loads()</code> on the full text</td>
+<td>Clean JSON responses</td>
+</tr>
+<tr>
+<td>Brace-matching</td>
+<td>Finds first <code>{</code>, tracks nesting depth, extracts to matching <code>}</code></td>
+<td>JSON with surrounding text/thinking</td>
+</tr>
+<tr>
+<td>Code block extraction</td>
+<td>Regex extracts content from <code>```json</code> blocks</td>
+<td>JSON wrapped in markdown</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Note:</strong> The brace-matching strategy correctly handles nested braces, quoted strings, and escape characters. If one strategy fails, the parser silently falls through to the next.</p>
+</blockquote>
+<h3 id="storing-the-plan">Storing the Plan</h3>
+<p>After the plan is generated, it is persisted in two places:</p>
+<ol>
+<li><strong>Database</strong> — stored as <code>plan_json</code> so the API can expose document structure while pages are still generating</li>
+<li><strong>Filesystem</strong> — written to <code>{project_dir}/plan.json</code> for downstream rendering</li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="c1"># main.py — _generate_from_path()</span>
+<span class="k">await</span> <span class="n">update_project_status</span><span class="p">(</span>
+    <span class="n">project_name</span><span class="p">,</span>
+    <span class="n">status</span><span class="o">=</span><span class="s2">&quot;generating&quot;</span><span class="p">,</span>
+    <span class="n">plan_json</span><span class="o">=</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">plan</span><span class="p">),</span>
+<span class="p">)</span>
+</code></pre></div>
+
+<h2 id="phase-2-content-generation">Phase 2: Content Generation</h2>
+<p>Phase 2 takes the plan from Phase 1 and generates markdown content for each page. Pages are generated concurrently with a configurable concurrency limit to avoid overwhelming the AI provider.</p>
+<h3 id="single-page-generation">Single Page Generation</h3>
+<p>Each page is generated by <code>generate_page()</code> in <code>generator.py</code>. The function:</p>
+<ol>
+<li>Checks the cache for an existing result</li>
+<li>Builds a page-specific prompt</li>
+<li>Calls the AI with the repository as working directory</li>
+<li>Strips any AI preamble from the output</li>
+<li>Caches the result to disk</li>
+<li>Updates the project's page count in the database</li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">generate_page</span><span class="p">(</span>
+    <span class="n">repo_path</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span>
+    <span class="n">slug</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">title</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">description</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">cache_dir</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span>
+    <span class="n">ai_provider</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">ai_model</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">ai_cli_timeout</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">use_cache</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">project_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="c1"># Validate slug to prevent path traversal</span>
+    <span class="k">if</span> <span class="s2">&quot;/&quot;</span> <span class="ow">in</span> <span class="n">slug</span> <span class="ow">or</span> <span class="s2">&quot;</span><span class="se">\\</span><span class="s2">&quot;</span> <span class="ow">in</span> <span class="n">slug</span> <span class="ow">or</span> <span class="n">slug</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">&quot;..&quot;</span> <span class="ow">in</span> <span class="n">slug</span><span class="p">:</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Invalid page slug: &#39;</span><span class="si">{</span><span class="n">slug</span><span class="si">}</span><span class="s2">&#39;&quot;</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+    <span class="n">cache_file</span> <span class="o">=</span> <span class="n">cache_dir</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">slug</span><span class="si">}</span><span class="s2">.md&quot;</span>
+    <span class="k">if</span> <span class="n">use_cache</span> <span class="ow">and</span> <span class="n">cache_file</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">_label</span><span class="si">}</span><span class="s2">] Using cached page: </span><span class="si">{</span><span class="n">slug</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">cache_file</span><span class="o">.</span><span class="n">read_text</span><span class="p">(</span><span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+
+    <span class="n">prompt</span> <span class="o">=</span> <span class="n">build_page_prompt</span><span class="p">(</span>
+        <span class="n">project_name</span><span class="o">=</span><span class="n">repo_path</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">page_title</span><span class="o">=</span><span class="n">title</span><span class="p">,</span> <span class="n">page_description</span><span class="o">=</span><span class="n">description</span>
+    <span class="p">)</span>
+    <span class="n">success</span><span class="p">,</span> <span class="n">output</span> <span class="o">=</span> <span class="k">await</span> <span class="n">call_ai_cli</span><span class="p">(</span>
+        <span class="n">prompt</span><span class="o">=</span><span class="n">prompt</span><span class="p">,</span>
+        <span class="n">cwd</span><span class="o">=</span><span class="n">repo_path</span><span class="p">,</span>
+        <span class="n">ai_provider</span><span class="o">=</span><span class="n">ai_provider</span><span class="p">,</span>
+        <span class="n">ai_model</span><span class="o">=</span><span class="n">ai_model</span><span class="p">,</span>
+        <span class="n">ai_cli_timeout</span><span class="o">=</span><span class="n">ai_cli_timeout</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">success</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">_label</span><span class="si">}</span><span class="s2">] Failed to generate page &#39;</span><span class="si">{</span><span class="n">slug</span><span class="si">}</span><span class="s2">&#39;: </span><span class="si">{</span><span class="n">output</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;# </span><span class="si">{</span><span class="n">title</span><span class="si">}</span><span class="se">\n\n</span><span class="s2">*Documentation generation failed. Please re-run.*&quot;</span>
+
+    <span class="n">output</span> <span class="o">=</span> <span class="n">_strip_ai_preamble</span><span class="p">(</span><span class="n">output</span><span class="p">)</span>
+    <span class="n">cache_dir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">cache_file</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">output</span>
+</code></pre></div>
+
+<h3 id="page-prompt">Page Prompt</h3>
+<p>Each page gets its own tailored prompt via <code>build_page_prompt()</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">build_page_prompt</span><span class="p">(</span><span class="n">project_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">page_title</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">page_description</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;You are a technical documentation writer. Explore this repository to write</span>
+<span class="s2">the &quot;</span><span class="si">{</span><span class="n">page_title</span><span class="si">}</span><span class="s2">&quot; page for the </span><span class="si">{</span><span class="n">project_name</span><span class="si">}</span><span class="s2"> documentation.</span>
+
+<span class="s2">Page description: </span><span class="si">{</span><span class="n">page_description</span><span class="si">}</span>
+
+<span class="s2">Explore the codebase as needed. Read source files, configs, tests, and CI/CD pipelines</span>
+<span class="s2">to write comprehensive, accurate documentation. Do NOT rely on the README.</span>
+
+<span class="s2">Write in markdown format. Include:</span>
+<span class="s2">- Clear explanations</span>
+<span class="s2">- Code examples from the actual codebase (not made up)</span>
+<span class="s2">- Configuration snippets where relevant</span>
+
+<span class="s2">Use these callout formats for special content:</span>
+<span class="s2">- Notes: &gt; **Note:** text</span>
+<span class="s2">- Warnings: &gt; **Warning:** text</span>
+<span class="s2">- Tips: &gt; **Tip:** text</span>
+
+<span class="s2">Output ONLY the markdown content for this page. No wrapping, no explanation.&quot;&quot;&quot;</span>
+</code></pre></div>
+
+<blockquote>
+<p><strong>Tip:</strong> The page description from Phase 1 gives the AI focused guidance on what to cover, while still allowing it to explore the codebase freely for relevant details.</p>
+</blockquote>
+<h3 id="stripping-ai-preamble">Stripping AI Preamble</h3>
+<p>Some AI models emit thinking or planning text before the actual markdown content. The <code>_strip_ai_preamble()</code> helper handles this by scanning the first 10 lines for a markdown header (<code>#</code>):</p>
+<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">_strip_ai_preamble</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Strip AI thinking/planning text that appears before actual content.&quot;&quot;&quot;</span>
+    <span class="n">lines</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">line</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">lines</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="o">&gt;</span> <span class="mi">10</span><span class="p">:</span>
+            <span class="k">break</span>
+        <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;#&quot;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lines</span><span class="p">[</span><span class="n">i</span><span class="p">:])</span>
+    <span class="k">return</span> <span class="n">text</span>
+</code></pre></div>
+
+<p>If no header is found within the first 10 lines, the full text is returned unchanged.</p>
+<h3 id="parallel-execution">Parallel Execution</h3>
+<p>All pages are generated concurrently through <code>generate_all_pages()</code>, which collects coroutines and dispatches them with a concurrency limit:</p>
+<div class="highlight"><pre><span></span><code><span class="n">MAX_CONCURRENT_PAGES</span> <span class="o">=</span> <span class="mi">5</span>
+
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">generate_all_pages</span><span class="p">(</span>
+    <span class="n">repo_path</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span>
+    <span class="n">plan</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+    <span class="n">cache_dir</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span>
+    <span class="n">ai_provider</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">ai_model</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">ai_cli_timeout</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">use_cache</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">project_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+    <span class="c1"># ... extract pages from plan ...</span>
+
+    <span class="n">coroutines</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">generate_page</span><span class="p">(</span>
+            <span class="n">repo_path</span><span class="o">=</span><span class="n">repo_path</span><span class="p">,</span>
+            <span class="n">slug</span><span class="o">=</span><span class="n">p</span><span class="p">[</span><span class="s2">&quot;slug&quot;</span><span class="p">],</span>
+            <span class="n">title</span><span class="o">=</span><span class="n">p</span><span class="p">[</span><span class="s2">&quot;title&quot;</span><span class="p">],</span>
+            <span class="n">description</span><span class="o">=</span><span class="n">p</span><span class="p">[</span><span class="s2">&quot;description&quot;</span><span class="p">],</span>
+            <span class="n">cache_dir</span><span class="o">=</span><span class="n">cache_dir</span><span class="p">,</span>
+            <span class="n">ai_provider</span><span class="o">=</span><span class="n">ai_provider</span><span class="p">,</span>
+            <span class="n">ai_model</span><span class="o">=</span><span class="n">ai_model</span><span class="p">,</span>
+            <span class="n">ai_cli_timeout</span><span class="o">=</span><span class="n">ai_cli_timeout</span><span class="p">,</span>
+            <span class="n">use_cache</span><span class="o">=</span><span class="n">use_cache</span><span class="p">,</span>
+            <span class="n">project_name</span><span class="o">=</span><span class="n">project_name</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">all_pages</span>
+    <span class="p">]</span>
+
+    <span class="n">results</span> <span class="o">=</span> <span class="k">await</span> <span class="n">run_parallel_with_limit</span><span class="p">(</span>
+        <span class="n">coroutines</span><span class="p">,</span> <span class="n">max_concurrency</span><span class="o">=</span><span class="n">MAX_CONCURRENT_PAGES</span>
+    <span class="p">)</span>
+</code></pre></div>
+
+<p>The <code>run_parallel_with_limit()</code> function is provided by the <code>ai-cli-runner</code> library and uses an <code>asyncio.Semaphore</code> internally to cap active AI calls at 5.</p>
+<div class="highlight"><pre><span></span><code>Page generation timeline (MAX_CONCURRENT_PAGES = 5):
+
+Time ──────────────────────────────────────────────────▶
+
+Slot 1: ████ intro ████    ████ api-ref ████
+Slot 2: ██ quickstart ██   ████ config ████
+Slot 3: ████ install ████       ██ faq ██
+Slot 4: ██ usage ██        ██ deploy ██
+Slot 5: ███ arch ███       █ troubleshoot █
+</code></pre></div>
+
+<blockquote>
+<p><strong>Warning:</strong> The <code>MAX_CONCURRENT_PAGES</code> constant is set to 5 in <code>generator.py</code>. Increasing it may lead to rate limiting from AI providers or excessive resource consumption.</p>
+</blockquote>
+<h3 id="slug-validation">Slug Validation</h3>
+<p>Before processing, each page slug is validated at two levels to prevent path traversal attacks:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># In generate_all_pages() — skips unsafe slugs with a warning</span>
+<span class="k">if</span> <span class="s2">&quot;/&quot;</span> <span class="ow">in</span> <span class="n">slug</span> <span class="ow">or</span> <span class="s2">&quot;</span><span class="se">\\</span><span class="s2">&quot;</span> <span class="ow">in</span> <span class="n">slug</span> <span class="ow">or</span> <span class="n">slug</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">&quot;..&quot;</span> <span class="ow">in</span> <span class="n">slug</span><span class="p">:</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">_label</span><span class="si">}</span><span class="s2">] Skipping path-unsafe slug: &#39;</span><span class="si">{</span><span class="n">slug</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+    <span class="k">continue</span>
+
+<span class="c1"># In generate_page() — raises ValueError for unsafe slugs</span>
+<span class="k">if</span> <span class="s2">&quot;/&quot;</span> <span class="ow">in</span> <span class="n">slug</span> <span class="ow">or</span> <span class="s2">&quot;</span><span class="se">\\</span><span class="s2">&quot;</span> <span class="ow">in</span> <span class="n">slug</span> <span class="ow">or</span> <span class="n">slug</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">&quot;..&quot;</span> <span class="ow">in</span> <span class="n">slug</span><span class="p">:</span>
+    <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Invalid page slug: &#39;</span><span class="si">{</span><span class="n">slug</span><span class="si">}</span><span class="s2">&#39;&quot;</span>
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+</code></pre></div>
+
+<h3 id="result-aggregation">Result Aggregation</h3>
+<p>After all coroutines complete, results are paired with their page metadata. Failed pages receive fallback content instead of crashing the entire pipeline:</p>
+<div class="highlight"><pre><span></span><code><span class="n">pages</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="k">for</span> <span class="n">page_info</span><span class="p">,</span> <span class="n">result</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">all_pages</span><span class="p">,</span> <span class="n">results</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="ne">Exception</span><span class="p">):</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">_label</span><span class="si">}</span><span class="s2">] Page generation failed for &#39;</span><span class="si">{</span><span class="n">page_info</span><span class="p">[</span><span class="s1">&#39;slug&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&#39;: </span><span class="si">{</span><span class="n">result</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+        <span class="n">pages</span><span class="p">[</span><span class="n">page_info</span><span class="p">[</span><span class="s2">&quot;slug&quot;</span><span class="p">]]</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;# </span><span class="si">{</span><span class="n">page_info</span><span class="p">[</span><span class="s1">&#39;title&#39;</span><span class="p">]</span><span class="si">}</span><span class="se">\n\n</span><span class="s2">*Documentation generation failed.*&quot;</span>
+        <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">pages</span><span class="p">[</span><span class="n">page_info</span><span class="p">[</span><span class="s2">&quot;slug&quot;</span><span class="p">]]</span> <span class="o">=</span> <span class="n">result</span>
+</code></pre></div>
+
+<blockquote>
+<p><strong>Note:</strong> Phase 1 (planning) is treated as <strong>critical</strong> — if it fails, the entire pipeline stops with a <code>RuntimeError</code>. Phase 2 (page generation) is <strong>best-effort</strong> — individual page failures produce fallback content and the pipeline continues.</p>
+</blockquote>
+<h2 id="caching-and-incremental-updates">Caching and Incremental Updates</h2>
+<p>Docsfy implements caching at multiple levels to avoid redundant AI calls and support resumable generation.</p>
+<h3 id="cache-directory-structure">Cache Directory Structure</h3>
+<p>Each project's cached pages are stored as individual markdown files:</p>
+<div class="highlight"><pre><span></span><code>/data/projects/{project_name}/
+├── cache/
+│   └── pages/
+│       ├── introduction.md
+│       ├── quickstart.md
+│       ├── configuration.md
+│       └── api-reference.md
+├── site/              # Rendered HTML output
+│   ├── index.html
+│   ├── introduction.html
+│   └── ...
+└── plan.json          # Documentation structure
+</code></pre></div>
+
+<p>The cache directory path is resolved by <code>get_project_cache_dir()</code> in <code>storage.py</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_project_cache_dir</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">PROJECTS_DIR</span> <span class="o">/</span> <span class="n">_validate_name</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;cache&quot;</span> <span class="o">/</span> <span class="s2">&quot;pages&quot;</span>
+</code></pre></div>
+
+<h3 id="per-page-caching">Per-Page Caching</h3>
+<p>When <code>use_cache=True</code>, each page checks for a cached file before calling the AI:</p>
+<div class="highlight"><pre><span></span><code><span class="n">cache_file</span> <span class="o">=</span> <span class="n">cache_dir</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">slug</span><span class="si">}</span><span class="s2">.md&quot;</span>
+<span class="k">if</span> <span class="n">use_cache</span> <span class="ow">and</span> <span class="n">cache_file</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">_label</span><span class="si">}</span><span class="s2">] Using cached page: </span><span class="si">{</span><span class="n">slug</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">cache_file</span><span class="o">.</span><span class="n">read_text</span><span class="p">(</span><span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+</code></pre></div>
+
+<p>After generation, every page is written to the cache regardless of success or failure:</p>
+<div class="highlight"><pre><span></span><code><span class="n">cache_dir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">cache_file</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+</code></pre></div>
+
+<p>This means if generation is interrupted (e.g., server restart, timeout), previously completed pages are preserved and won't be regenerated on the next run.</p>
+<h3 id="commit-based-freshness">Commit-Based Freshness</h3>
+<p>Before starting the pipeline, docsfy compares the repository's current commit SHA against the stored value:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># main.py — _generate_from_path()</span>
+<span class="n">existing</span> <span class="o">=</span> <span class="k">await</span> <span class="n">get_project</span><span class="p">(</span><span class="n">project_name</span><span class="p">)</span>
+<span class="k">if</span> <span class="p">(</span>
+    <span class="n">existing</span>
+    <span class="ow">and</span> <span class="n">existing</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;last_commit_sha&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="n">commit_sha</span>
+    <span class="ow">and</span> <span class="n">existing</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;status&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;ready&quot;</span>
+<span class="p">):</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">project_name</span><span class="si">}</span><span class="s2">] Project is up to date at </span><span class="si">{</span><span class="n">commit_sha</span><span class="p">[:</span><span class="mi">8</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">await</span> <span class="n">update_project_status</span><span class="p">(</span><span class="n">project_name</span><span class="p">,</span> <span class="n">status</span><span class="o">=</span><span class="s2">&quot;ready&quot;</span><span class="p">)</span>
+    <span class="k">return</span>
+</code></pre></div>
+
+<p>If the commit SHA matches and the project status is <code>"ready"</code>, the entire pipeline is skipped. This prevents unnecessary regeneration when re-triggering documentation for an unchanged repository.</p>
+<h3 id="force-regeneration">Force Regeneration</h3>
+<p>Setting <code>force=True</code> in the generation request bypasses all caching:</p>
+<div class="highlight"><pre><span></span><code><span class="k">if</span> <span class="n">force</span><span class="p">:</span>
+    <span class="n">cache_dir</span> <span class="o">=</span> <span class="n">get_project_cache_dir</span><span class="p">(</span><span class="n">project_name</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">cache_dir</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+        <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">cache_dir</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">project_name</span><span class="si">}</span><span class="s2">] Cleared cache (force=True)&quot;</span><span class="p">)</span>
+    <span class="k">await</span> <span class="n">update_project_status</span><span class="p">(</span><span class="n">project_name</span><span class="p">,</span> <span class="n">status</span><span class="o">=</span><span class="s2">&quot;generating&quot;</span><span class="p">,</span> <span class="n">page_count</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</code></pre></div>
+
+<p>When forced:
+- The entire cache directory is deleted
+- The page count is reset to 0
+- <code>use_cache</code> is set to <code>False</code> in the <code>generate_all_pages()</code> call
+- Every page is regenerated from scratch</p>
+<h2 id="duplicate-generation-prevention">Duplicate Generation Prevention</h2>
+<p>A global in-memory set tracks projects currently being generated, preventing concurrent generation of the same project:</p>
+<div class="highlight"><pre><span></span><code><span class="n">_generating</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+
+<span class="c1"># In the generate() endpoint:</span>
+<span class="k">if</span> <span class="n">project_name</span> <span class="ow">in</span> <span class="n">_generating</span><span class="p">:</span>
+    <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span>
+        <span class="n">status_code</span><span class="o">=</span><span class="mi">409</span><span class="p">,</span>
+        <span class="n">detail</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Project &#39;</span><span class="si">{</span><span class="n">project_name</span><span class="si">}</span><span class="s2">&#39; is already being generated&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+<span class="n">_generating</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">project_name</span><span class="p">)</span>
+</code></pre></div>
+
+<p>The project name is removed from the set in a <code>finally</code> block to ensure cleanup even on failure:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># In _run_generation():</span>
+<span class="k">finally</span><span class="p">:</span>
+    <span class="n">_generating</span><span class="o">.</span><span class="n">discard</span><span class="p">(</span><span class="n">project_name</span><span class="p">)</span>
+</code></pre></div>
+
+<h2 id="error-handling">Error Handling</h2>
+<p>The pipeline uses a layered error handling strategy:</p>
+<table>
+<thead>
+<tr>
+<th>Layer</th>
+<th>Behavior</th>
+<th>Rationale</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>AI provider check</td>
+<td>Fails fast with error status</td>
+<td>No point starting without a working provider</td>
+</tr>
+<tr>
+<td>Phase 1 (planner)</td>
+<td>Raises <code>RuntimeError</code></td>
+<td>Cannot generate pages without a plan</td>
+</tr>
+<tr>
+<td>Phase 2 (per-page)</td>
+<td>Logs warning, uses fallback content</td>
+<td>One failed page shouldn't block others</td>
+</tr>
+<tr>
+<td>Phase 2 (aggregation)</td>
+<td>Catches exceptions per result</td>
+<td>Ensures all pages produce output</td>
+</tr>
+<tr>
+<td>Pipeline wrapper</td>
+<td>Catches all exceptions, sets status to <code>"error"</code></td>
+<td>API consumers see the failure reason</td>
+</tr>
+</tbody>
+</table>
+<div class="highlight"><pre><span></span><code><span class="c1"># main.py — _run_generation() wraps everything</span>
+<span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Generation failed for </span><span class="si">{</span><span class="n">project_name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">await</span> <span class="n">update_project_status</span><span class="p">(</span>
+        <span class="n">project_name</span><span class="p">,</span> <span class="n">status</span><span class="o">=</span><span class="s2">&quot;error&quot;</span><span class="p">,</span> <span class="n">error_message</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">exc</span><span class="p">)</span>
+    <span class="p">)</span>
+<span class="k">finally</span><span class="p">:</span>
+    <span class="n">_generating</span><span class="o">.</span><span class="n">discard</span><span class="p">(</span><span class="n">project_name</span><span class="p">)</span>
+</code></pre></div>
+
+<h2 id="project-status-tracking">Project Status Tracking</h2>
+<p>Throughout the pipeline, the project status is updated in the SQLite database so API consumers can monitor progress:</p>
+<div class="highlight"><pre><span></span><code>save_project(status=&quot;generating&quot;)        # Request received
+  │
+  ├─ check_ai_cli_available()
+  │   └─ [fail] → status=&quot;error&quot;
+  │
+  ├─ run_planner()
+  │   └─ update_project_status(plan_json=...)   # Plan available
+  │
+  ├─ generate_page() × N
+  │   └─ update_project_status(page_count=N)    # Progress updates
+  │
+  ├─ render_site()
+  │
+  └─ update_project_status(
+         status=&quot;ready&quot;,
+         last_commit_sha=...,
+         page_count=...,
+     )                                          # Complete
+</code></pre></div>
+
+<p>The page count is updated incrementally as each page completes, by counting cached markdown files:</p>
+<div class="highlight"><pre><span></span><code><span class="k">if</span> <span class="n">project_name</span><span class="p">:</span>
+    <span class="n">existing_pages</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">cache_dir</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">&quot;*.md&quot;</span><span class="p">)))</span>
+    <span class="k">await</span> <span class="n">update_project_status</span><span class="p">(</span>
+        <span class="n">project_name</span><span class="p">,</span> <span class="n">status</span><span class="o">=</span><span class="s2">&quot;generating&quot;</span><span class="p">,</span> <span class="n">page_count</span><span class="o">=</span><span class="n">existing_pages</span>
+    <span class="p">)</span>
+</code></pre></div>
+
+<h2 id="ai-provider-configuration">AI Provider Configuration</h2>
+<p>The pipeline delegates all AI communication to the <code>ai-cli-runner</code> library, which manages provider-specific CLI tools:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># ai_client.py — re-exports from ai-cli-runner</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ai_cli_runner</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">PROVIDERS</span><span class="p">,</span>              <span class="c1"># Dict of provider configurations</span>
+    <span class="n">VALID_AI_PROVIDERS</span><span class="p">,</span>     <span class="c1"># frozenset: {&quot;claude&quot;, &quot;gemini&quot;, &quot;cursor&quot;}</span>
+    <span class="n">ProviderConfig</span><span class="p">,</span>         <span class="c1"># Dataclass with binary path, build command, etc.</span>
+    <span class="n">call_ai_cli</span><span class="p">,</span>            <span class="c1"># Main function for making AI calls</span>
+    <span class="n">check_ai_cli_available</span><span class="p">,</span> <span class="c1"># Validates provider and model availability</span>
+    <span class="n">get_ai_cli_timeout</span><span class="p">,</span>     <span class="c1"># Gets timeout for a provider</span>
+    <span class="n">run_parallel_with_limit</span><span class="p">,</span><span class="c1"># Concurrency-limited parallel execution</span>
+<span class="p">)</span>
+</code></pre></div>
+
+<p>Default settings in <code>config.py</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Settings</span><span class="p">(</span><span class="n">BaseSettings</span><span class="p">):</span>
+    <span class="n">ai_provider</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;claude&quot;</span>
+    <span class="n">ai_model</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;claude-opus-4-6[1m]&quot;</span>  <span class="c1"># [1m] = 1 million token context window</span>
+    <span class="n">ai_cli_timeout</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="mi">60</span><span class="p">,</span> <span class="n">gt</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</code></pre></div>
+
+<p>These can be overridden via environment variables or per-request:</p>
+<table>
+<thead>
+<tr>
+<th>Setting</th>
+<th>Env Variable</th>
+<th>Per-Request Field</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Provider</td>
+<td><code>AI_PROVIDER</code></td>
+<td><code>ai_provider</code></td>
+<td><code>claude</code></td>
+</tr>
+<tr>
+<td>Model</td>
+<td><code>AI_MODEL</code></td>
+<td><code>ai_model</code></td>
+<td><code>claude-opus-4-6[1m]</code></td>
+</tr>
+<tr>
+<td>Timeout</td>
+<td><code>AI_CLI_TIMEOUT</code></td>
+<td><code>ai_cli_timeout</code></td>
+<td><code>60</code> seconds</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Tip:</strong> The <code>[1m]</code> suffix on the default model specifies a 1 million token context window, giving the AI ample room to explore large codebases during both planning and page generation.</p>
+</blockquote>
+<h2 id="testing-the-pipeline">Testing the Pipeline</h2>
+<p>The generator test suite in <code>tests/test_generator.py</code> validates both phases by mocking the AI calls:</p>
+<div class="highlight"><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">test_run_planner</span><span class="p">(</span><span class="n">tmp_path</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">sample_plan</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">docsfy.generator</span><span class="w"> </span><span class="kn">import</span> <span class="n">run_planner</span>
+
+    <span class="k">with</span> <span class="n">patch</span><span class="p">(</span>
+        <span class="s2">&quot;docsfy.generator.call_ai_cli&quot;</span><span class="p">,</span> <span class="n">return_value</span><span class="o">=</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">sample_plan</span><span class="p">))</span>
+    <span class="p">):</span>
+        <span class="n">plan</span> <span class="o">=</span> <span class="k">await</span> <span class="n">run_planner</span><span class="p">(</span>
+            <span class="n">repo_path</span><span class="o">=</span><span class="n">tmp_path</span><span class="p">,</span>
+            <span class="n">project_name</span><span class="o">=</span><span class="s2">&quot;test-repo&quot;</span><span class="p">,</span>
+            <span class="n">ai_provider</span><span class="o">=</span><span class="s2">&quot;claude&quot;</span><span class="p">,</span>
+            <span class="n">ai_model</span><span class="o">=</span><span class="s2">&quot;opus&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">assert</span> <span class="n">plan</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+    <span class="k">assert</span> <span class="n">plan</span><span class="p">[</span><span class="s2">&quot;project_name&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;test-repo&quot;</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">plan</span><span class="p">[</span><span class="s2">&quot;navigation&quot;</span><span class="p">])</span> <span class="o">==</span> <span class="mi">1</span>
+
+
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">test_generate_page_uses_cache</span><span class="p">(</span><span class="n">tmp_path</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">docsfy.generator</span><span class="w"> </span><span class="kn">import</span> <span class="n">generate_page</span>
+
+    <span class="n">cache_dir</span> <span class="o">=</span> <span class="n">tmp_path</span> <span class="o">/</span> <span class="s2">&quot;cache&quot;</span>
+    <span class="n">cache_dir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">()</span>
+    <span class="n">cached</span> <span class="o">=</span> <span class="n">cache_dir</span> <span class="o">/</span> <span class="s2">&quot;introduction.md&quot;</span>
+    <span class="n">cached</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="s2">&quot;# Cached content&quot;</span><span class="p">)</span>
+
+    <span class="n">md</span> <span class="o">=</span> <span class="k">await</span> <span class="n">generate_page</span><span class="p">(</span>
+        <span class="n">repo_path</span><span class="o">=</span><span class="n">tmp_path</span><span class="p">,</span>
+        <span class="n">slug</span><span class="o">=</span><span class="s2">&quot;introduction&quot;</span><span class="p">,</span>
+        <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Introduction&quot;</span><span class="p">,</span>
+        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Overview&quot;</span><span class="p">,</span>
+        <span class="n">cache_dir</span><span class="o">=</span><span class="n">cache_dir</span><span class="p">,</span>
+        <span class="n">ai_provider</span><span class="o">=</span><span class="s2">&quot;claude&quot;</span><span class="p">,</span>
+        <span class="n">ai_model</span><span class="o">=</span><span class="s2">&quot;opus&quot;</span><span class="p">,</span>
+        <span class="n">use_cache</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="k">assert</span> <span class="n">md</span> <span class="o">==</span> <span class="s2">&quot;# Cached content&quot;</span>
+</code></pre></div>
+
+<p>Key test scenarios covered:</p>
+<ul>
+<li>Successful planner execution and JSON parsing</li>
+<li>Planner failure (AI returns error)</li>
+<li>Planner with invalid JSON output</li>
+<li>Page generation with AI mock</li>
+<li>Page generation from cache (no AI call made)</li>
+</ul>
+                </div>
+            </article>
+            <nav class="page-nav">
+                
+                <a href="project-structure.html" class="page-nav-link page-nav-prev">
+                    <span class="page-nav-label">Previous</span>
+                    <span class="page-nav-title">Project Structure</span>
+                </a>
+                
+                
+                <a href="storage-and-caching.html" class="page-nav-link page-nav-next">
+                    <span class="page-nav-label">Next</span>
+                    <span class="page-nav-title">Storage and Caching</span>
+                </a>
+                
+            </nav>
+            
+            <aside class="toc-sidebar">
+                <div class="toc-container">
+                    <h3>On this page</h3>
+                    <div class="toc">
+<ul>
+<li><a href="#pipeline-overview">Pipeline Overview</a></li>
+<li><a href="#phase-1-documentation-planning">Phase 1: Documentation Planning</a><ul>
+<li><a href="#how-the-planner-works">How the Planner Works</a></li>
+<li><a href="#planner-prompt">Planner Prompt</a></li>
+<li><a href="#plan-schema">Plan Schema</a></li>
+<li><a href="#robust-json-parsing">Robust JSON Parsing</a></li>
+<li><a href="#storing-the-plan">Storing the Plan</a></li>
+</ul>
+</li>
+<li><a href="#phase-2-content-generation">Phase 2: Content Generation</a><ul>
+<li><a href="#single-page-generation">Single Page Generation</a></li>
+<li><a href="#page-prompt">Page Prompt</a></li>
+<li><a href="#stripping-ai-preamble">Stripping AI Preamble</a></li>
+<li><a href="#parallel-execution">Parallel Execution</a></li>
+<li><a href="#slug-validation">Slug Validation</a></li>
+<li><a href="#result-aggregation">Result Aggregation</a></li>
+</ul>
+</li>
+<li><a href="#caching-and-incremental-updates">Caching and Incremental Updates</a><ul>
+<li><a href="#cache-directory-structure">Cache Directory Structure</a></li>
+<li><a href="#per-page-caching">Per-Page Caching</a></li>
+<li><a href="#commit-based-freshness">Commit-Based Freshness</a></li>
+<li><a href="#force-regeneration">Force Regeneration</a></li>
+</ul>
+</li>
+<li><a href="#duplicate-generation-prevention">Duplicate Generation Prevention</a></li>
+<li><a href="#error-handling">Error Handling</a></li>
+<li><a href="#project-status-tracking">Project Status Tracking</a></li>
+<li><a href="#ai-provider-configuration">AI Provider Configuration</a></li>
+<li><a href="#testing-the-pipeline">Testing the Pipeline</a></li>
+</ul>
+</div>
+
+                </div>
+            </aside>
+            
+        </main>
+
+        <footer class="footer">
+            <p>Built with <a href="https://github.com/docsfy/docsfy">docsfy</a></p>
+        </footer>
+    </div>
+
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <script src="assets/theme.js"></script>
+    <script src="assets/search.js"></script>
+    <script src="assets/copy.js"></script>
+    <script src="assets/callouts.js"></script>
+    <script src="assets/scrollspy.js"></script>
+    <script src="assets/codelabels.js"></script>
+    <script src="assets/github.js"></script>
+    <script>
+    (function() {
+        var toggle = document.getElementById('sidebar-toggle');
+        var sidebar = document.getElementById('sidebar');
+        var overlay = document.getElementById('sidebar-overlay');
+        if (toggle && sidebar) {
+            toggle.addEventListener('click', function() {
+                sidebar.classList.toggle('open');
+                if (overlay) overlay.classList.toggle('open');
+                var expanded = sidebar.classList.contains('open');
+                toggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+            });
+        }
+        if (overlay) {
+            overlay.addEventListener('click', function() {
+                sidebar.classList.remove('open');
+                overlay.classList.remove('open');
+                if (toggle) toggle.setAttribute('aria-expanded', 'false');
+            });
+        }
+    })();
+    </script>
+    <script>
+    (function() {
+        var sidebar = document.querySelector('.sidebar-nav') || document.querySelector('.sidebar');
+        if (!sidebar) return;
+
+        // Restore scroll position
+        var saved = sessionStorage.getItem('sidebar-scroll');
+        if (saved) sidebar.scrollTop = parseInt(saved, 10);
+
+        // Save scroll position before navigating
+        sidebar.addEventListener('scroll', function() {
+            sessionStorage.setItem('sidebar-scroll', sidebar.scrollTop.toString());
+        });
+
+        // Also scroll active link into view if no saved position
+        if (!saved) {
+            var active = sidebar.querySelector('.nav-link.active');
+            if (active) {
+                active.scrollIntoView({ block: 'center', behavior: 'instant' });
+            }
+        }
+    })();
+    </script>
+</body>
+</html>

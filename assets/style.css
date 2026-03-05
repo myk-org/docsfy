@@ -1332,7 +1332,7 @@ pre:hover .copy-btn {
 /* --------------------------------------------------------------------------
    Code Language Labels
    -------------------------------------------------------------------------- */
-.code-lang-label {
+.code-label {
     position: absolute;
     top: 8px;
     right: 60px;

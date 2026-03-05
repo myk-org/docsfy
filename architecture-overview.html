@@ -1,0 +1,1057 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Architecture Overview - docsfy</title>
+    <meta name="description" content="AI-powered documentation generator that turns GitHub repositories into polished static documentation websites">
+    <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <a href="index.html" class="sidebar-logo">docsfy</a>
+            <p class="sidebar-tagline">AI-powered documentation generator that turns GitHub repositories into polished static documentation websites</p>
+        </div>
+
+        <div class="sidebar-search">
+            <input type="text" id="search-input" placeholder="Search... (⌘K)" autocomplete="off" readonly>
+            <div id="search-results" class="search-results"></div>
+        </div>
+
+        <nav class="sidebar-nav">
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Getting Started</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="introduction.html"
+                           class="nav-link">
+                            Introduction
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="installation.html"
+                           class="nav-link">
+                            Installation
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="quickstart.html"
+                           class="nav-link">
+                            Quickstart
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="docker-deployment.html"
+                           class="nav-link">
+                            Docker Deployment
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Configuration</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="configuration.html"
+                           class="nav-link">
+                            Configuration Reference
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="ai-providers.html"
+                           class="nav-link">
+                            AI Providers
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Usage</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="generating-docs.html"
+                           class="nav-link">
+                            Generating Documentation
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="serving-and-downloading.html"
+                           class="nav-link">
+                            Serving and Downloading
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="generated-site-features.html"
+                           class="nav-link">
+                            Generated Site Features
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="llm-friendly-output.html"
+                           class="nav-link">
+                            LLM-Friendly Output
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">API Reference</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="api-overview.html"
+                           class="nav-link">
+                            API Overview
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="api-generation.html"
+                           class="nav-link">
+                            Generation Endpoint
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="api-projects.html"
+                           class="nav-link">
+                            Project Management Endpoints
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="api-serving.html"
+                           class="nav-link">
+                            Serving and Download Endpoints
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Architecture</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="architecture-overview.html"
+                           class="nav-link active">
+                            Architecture Overview
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="project-structure.html"
+                           class="nav-link">
+                            Project Structure
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="ai-generation-pipeline.html"
+                           class="nav-link">
+                            AI Generation Pipeline
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="storage-and-caching.html"
+                           class="nav-link">
+                            Storage and Caching
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Development</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="development-setup.html"
+                           class="nav-link">
+                            Development Setup
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="testing.html"
+                           class="nav-link">
+                            Testing
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="code-quality.html"
+                           class="nav-link">
+                            Code Quality
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+        </nav>
+    </aside>
+
+    <div class="main-wrapper">
+        <header class="top-bar">
+            <div class="top-bar-left">
+                <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebar" aria-expanded="false">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                </button>
+                <a href="index.html" class="top-bar-title">docsfy</a>
+            </div>
+            <div class="top-bar-spacer"></div>
+            <div class="top-bar-right">
+                <button class="top-bar-search-btn" id="search-trigger" aria-label="Search">
+                    <kbd>&#8984;K</kbd> Search
+                </button>
+                
+                <a href="https://github.com/myk-org/docsfy" target="_blank" rel="noopener noreferrer" class="top-bar-github" id="github-link" data-repo-url="https://github.com/myk-org/docsfy">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                    <span class="github-stars" id="github-stars"></span>
+                </a>
+                
+                <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+                    <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                    </svg>
+                    <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <main class="content">
+            <article class="article">
+                <div class="article-body">
+                    <!-- content is pre-rendered from markdown by the server, not user input -->
+                    <h1 id="architecture-overview">Architecture Overview</h1>
+<p>docsfy follows a layered architecture that separates concerns across five major subsystems: a FastAPI web layer for HTTP handling, a two-phase AI generation pipeline, a markdown-to-HTML rendering engine, SQLite-backed project storage, and a filesystem-based page cache. This page describes how these components fit together and how data flows through the system.</p>
+<h2 id="system-architecture-diagram">System Architecture Diagram</h2>
+<div class="highlight"><pre><span></span><code>┌─────────────────────────────────────────────────────────────────┐
+│                        HTTP Clients                             │
+└─────────────────────┬───────────────────────────────────────────┘
+                      │
+┌─────────────────────▼───────────────────────────────────────────┐
+│                   FastAPI Web Layer                              │
+│  POST /api/generate  GET /api/status  GET /docs/{project}/{path}│
+│  GET /api/projects   DELETE /api/projects  GET /health          │
+└──────┬──────────────────────┬──────────────────────┬────────────┘
+       │                      │                      │
+       ▼                      ▼                      ▼
+┌──────────────┐    ┌─────────────────┐    ┌─────────────────────┐
+│  AI Pipeline │    │  SQLite Storage │    │  Static File Server  │
+│  (2 phases)  │    │   (aiosqlite)   │    │  (rendered HTML)     │
+│              │    │                 │    │                      │
+│ ┌──────────┐ │    │  projects table │    │  /data/projects/     │
+│ │ Planner  │ │    │  ┌───────────┐  │    │    {name}/site/      │
+│ └────┬─────┘ │    │  │name (PK)  │  │    │      index.html      │
+│      │       │    │  │repo_url   │  │    │      {slug}.html     │
+│      ▼       │    │  │status     │  │    │      {slug}.md       │
+│ ┌──────────┐ │    │  │commit_sha │  │    │      assets/         │
+│ │ Content  │ │    │  │plan_json  │  │    │      search-index.json│
+│ │Generator │ │    │  │page_count │  │    └─────────────────────┘
+│ └──────────┘ │    │  └───────────┘  │
+└──────┬───────┘    └────────┬────────┘
+       │                     │
+       ▼                     │
+┌──────────────┐             │
+│   Renderer   │◄────────────┘
+│  (Markdown → │
+│   HTML via   │
+│   Jinja2)    │
+└──────┬───────┘
+       │
+       ▼
+┌──────────────┐
+│  Filesystem  │
+│    Cache     │
+│ /cache/pages │
+│   {slug}.md  │
+└──────────────┘
+</code></pre></div>
+
+<h2 id="module-map">Module Map</h2>
+<p>Each Python module in <code>src/docsfy/</code> owns a single responsibility:</p>
+<table>
+<thead>
+<tr>
+<th>Module</th>
+<th>Responsibility</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>main.py</code></td>
+<td>FastAPI application, routes, background task orchestration</td>
+</tr>
+<tr>
+<td><code>config.py</code></td>
+<td>Pydantic settings loaded from environment / <code>.env</code></td>
+</tr>
+<tr>
+<td><code>models.py</code></td>
+<td>Request/response Pydantic models with validation</td>
+</tr>
+<tr>
+<td><code>generator.py</code></td>
+<td>Two-phase AI generation pipeline (planning + content)</td>
+</tr>
+<tr>
+<td><code>ai_client.py</code></td>
+<td>Thin re-export wrapper around <code>ai-cli-runner</code></td>
+</tr>
+<tr>
+<td><code>prompts.py</code></td>
+<td>Prompt templates for the planner and page writer</td>
+</tr>
+<tr>
+<td><code>json_parser.py</code></td>
+<td>Robust JSON extraction from AI responses</td>
+</tr>
+<tr>
+<td><code>repository.py</code></td>
+<td>Git clone and local repo operations</td>
+</tr>
+<tr>
+<td><code>storage.py</code></td>
+<td>SQLite database operations and filesystem path helpers</td>
+</tr>
+<tr>
+<td><code>renderer.py</code></td>
+<td>Markdown-to-HTML conversion and Jinja2 site rendering</td>
+</tr>
+</tbody>
+</table>
+<h2 id="fastapi-web-layer">FastAPI Web Layer</h2>
+<p>The web layer lives in <code>main.py</code> and provides six HTTP endpoints. The application uses FastAPI's async lifespan context manager to initialize the database on startup:</p>
+<div class="highlight"><pre><span></span><code><span class="nd">@asynccontextmanager</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">lifespan</span><span class="p">(</span><span class="n">app</span><span class="p">:</span> <span class="n">FastAPI</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncIterator</span><span class="p">[</span><span class="kc">None</span><span class="p">]:</span>
+    <span class="k">await</span> <span class="n">init_db</span><span class="p">()</span>
+    <span class="k">yield</span>
+
+
+<span class="n">app</span> <span class="o">=</span> <span class="n">FastAPI</span><span class="p">(</span>
+    <span class="n">title</span><span class="o">=</span><span class="s2">&quot;docsfy&quot;</span><span class="p">,</span>
+    <span class="n">description</span><span class="o">=</span><span class="s2">&quot;AI-powered documentation generator&quot;</span><span class="p">,</span>
+    <span class="n">version</span><span class="o">=</span><span class="s2">&quot;0.1.0&quot;</span><span class="p">,</span>
+    <span class="n">lifespan</span><span class="o">=</span><span class="n">lifespan</span><span class="p">,</span>
+<span class="p">)</span>
+</code></pre></div>
+
+<h3 id="api-endpoints">API Endpoints</h3>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Route</th>
+<th>Status</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GET</code></td>
+<td><code>/health</code></td>
+<td>200</td>
+<td>Health check for container orchestrators</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/api/status</code></td>
+<td>200</td>
+<td>List all projects with their generation status</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/api/generate</code></td>
+<td>202</td>
+<td>Start documentation generation (async)</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/api/projects/{name}</code></td>
+<td>200</td>
+<td>Get project details including plan JSON</td>
+</tr>
+<tr>
+<td><code>DELETE</code></td>
+<td><code>/api/projects/{name}</code></td>
+<td>200</td>
+<td>Delete a project and its generated files</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/api/projects/{name}/download</code></td>
+<td>200</td>
+<td>Download generated docs as a <code>.tar.gz</code> archive</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/docs/{project}/{path:path}</code></td>
+<td>200</td>
+<td>Serve generated HTML documentation pages</td>
+</tr>
+</tbody>
+</table>
+<h3 id="asynchronous-generation">Asynchronous Generation</h3>
+<p>The <code>POST /api/generate</code> endpoint returns <code>202 Accepted</code> immediately and spawns a background task with <code>asyncio.create_task</code>. A module-level <code>set</code> prevents concurrent generation of the same project:</p>
+<div class="highlight"><pre><span></span><code><span class="n">_generating</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+
+<span class="nd">@app</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s2">&quot;/api/generate&quot;</span><span class="p">,</span> <span class="n">status_code</span><span class="o">=</span><span class="mi">202</span><span class="p">)</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">generate</span><span class="p">(</span><span class="n">request</span><span class="p">:</span> <span class="n">GenerateRequest</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+    <span class="n">settings</span> <span class="o">=</span> <span class="n">get_settings</span><span class="p">()</span>
+    <span class="n">ai_provider</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">ai_provider</span> <span class="ow">or</span> <span class="n">settings</span><span class="o">.</span><span class="n">ai_provider</span>
+    <span class="n">ai_model</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">ai_model</span> <span class="ow">or</span> <span class="n">settings</span><span class="o">.</span><span class="n">ai_model</span>
+    <span class="n">project_name</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">project_name</span>
+
+    <span class="k">if</span> <span class="n">project_name</span> <span class="ow">in</span> <span class="n">_generating</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span>
+            <span class="n">status_code</span><span class="o">=</span><span class="mi">409</span><span class="p">,</span>
+            <span class="n">detail</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Project &#39;</span><span class="si">{</span><span class="n">project_name</span><span class="si">}</span><span class="s2">&#39; is already being generated&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="n">_generating</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">project_name</span><span class="p">)</span>
+    <span class="k">await</span> <span class="n">save_project</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">project_name</span><span class="p">,</span> <span class="n">repo_url</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">repo_url</span> <span class="ow">or</span> <span class="n">request</span><span class="o">.</span><span class="n">repo_path</span> <span class="ow">or</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">status</span><span class="o">=</span><span class="s2">&quot;generating&quot;</span><span class="p">)</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">asyncio</span><span class="o">.</span><span class="n">create_task</span><span class="p">(</span>
+            <span class="n">_run_generation</span><span class="p">(</span>
+                <span class="n">repo_url</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">repo_url</span><span class="p">,</span>
+                <span class="n">repo_path</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">repo_path</span><span class="p">,</span>
+                <span class="n">project_name</span><span class="o">=</span><span class="n">project_name</span><span class="p">,</span>
+                <span class="n">ai_provider</span><span class="o">=</span><span class="n">ai_provider</span><span class="p">,</span>
+                <span class="n">ai_model</span><span class="o">=</span><span class="n">ai_model</span><span class="p">,</span>
+                <span class="n">ai_cli_timeout</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">ai_cli_timeout</span> <span class="ow">or</span> <span class="n">settings</span><span class="o">.</span><span class="n">ai_cli_timeout</span><span class="p">,</span>
+                <span class="n">force</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">force</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="n">_generating</span><span class="o">.</span><span class="n">discard</span><span class="p">(</span><span class="n">project_name</span><span class="p">)</span>
+        <span class="k">raise</span>
+
+    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;project&quot;</span><span class="p">:</span> <span class="n">project_name</span><span class="p">,</span> <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;generating&quot;</span><span class="p">}</span>
+</code></pre></div>
+
+<p>The background task is cancellation-safe — a <code>finally</code> block guarantees the project name is removed from the <code>_generating</code> set regardless of how the task ends.</p>
+<h3 id="path-traversal-protection">Path Traversal Protection</h3>
+<p>All user-supplied project names and file paths are validated before they reach the filesystem. The document serving endpoint uses <code>resolve().relative_to()</code> to ensure the requested path stays inside the site directory:</p>
+<div class="highlight"><pre><span></span><code><span class="nd">@app</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/docs/</span><span class="si">{project}</span><span class="s2">/{path:path}&quot;</span><span class="p">)</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">serve_docs</span><span class="p">(</span><span class="n">project</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;index.html&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FileResponse</span><span class="p">:</span>
+    <span class="n">project</span> <span class="o">=</span> <span class="n">_validate_project_name</span><span class="p">(</span><span class="n">project</span><span class="p">)</span>
+    <span class="n">site_dir</span> <span class="o">=</span> <span class="n">get_project_site_dir</span><span class="p">(</span><span class="n">project</span><span class="p">)</span>
+    <span class="n">file_path</span> <span class="o">=</span> <span class="n">site_dir</span> <span class="o">/</span> <span class="n">path</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">file_path</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span><span class="o">.</span><span class="n">relative_to</span><span class="p">(</span><span class="n">site_dir</span><span class="o">.</span><span class="n">resolve</span><span class="p">())</span>
+    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="n">status_code</span><span class="o">=</span><span class="mi">403</span><span class="p">,</span> <span class="n">detail</span><span class="o">=</span><span class="s2">&quot;Access denied&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">file_path</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">file_path</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
+        <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="n">status_code</span><span class="o">=</span><span class="mi">404</span><span class="p">,</span> <span class="n">detail</span><span class="o">=</span><span class="s2">&quot;File not found&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">FileResponse</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span>
+</code></pre></div>
+
+<h2 id="two-phase-ai-generation-pipeline">Two-Phase AI Generation Pipeline</h2>
+<p>Documentation generation is split into two distinct phases: <strong>planning</strong> (structure) and <strong>content</strong> (writing). This separation enables caching, parallel content generation, and incremental progress tracking.</p>
+<h3 id="phase-1-planning">Phase 1: Planning</h3>
+<p>The planner calls the AI CLI with the repository as its working directory. The AI analyzes the full codebase — source files, tests, configurations — and produces a structured documentation plan as JSON:</p>
+<div class="highlight"><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">run_planner</span><span class="p">(</span>
+    <span class="n">repo_path</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span>
+    <span class="n">project_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">ai_provider</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">ai_model</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">ai_cli_timeout</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+    <span class="n">prompt</span> <span class="o">=</span> <span class="n">build_planner_prompt</span><span class="p">(</span><span class="n">project_name</span><span class="p">)</span>
+    <span class="n">success</span><span class="p">,</span> <span class="n">output</span> <span class="o">=</span> <span class="k">await</span> <span class="n">call_ai_cli</span><span class="p">(</span>
+        <span class="n">prompt</span><span class="o">=</span><span class="n">prompt</span><span class="p">,</span>
+        <span class="n">cwd</span><span class="o">=</span><span class="n">repo_path</span><span class="p">,</span>
+        <span class="n">ai_provider</span><span class="o">=</span><span class="n">ai_provider</span><span class="p">,</span>
+        <span class="n">ai_model</span><span class="o">=</span><span class="n">ai_model</span><span class="p">,</span>
+        <span class="n">ai_cli_timeout</span><span class="o">=</span><span class="n">ai_cli_timeout</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">success</span><span class="p">:</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Planner failed: </span><span class="si">{</span><span class="n">output</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+    <span class="n">plan</span> <span class="o">=</span> <span class="n">parse_json_response</span><span class="p">(</span><span class="n">output</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">plan</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Failed to parse planner output as JSON&quot;</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">plan</span>
+</code></pre></div>
+
+<p>The planner prompt (from <code>prompts.py</code>) instructs the AI to produce a JSON object following this schema:</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;project_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string - project name&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;tagline&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string - one-line project description&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;navigation&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;group&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string - section group name&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;pages&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">&quot;slug&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string - URL-friendly page identifier&quot;</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string - human-readable page title&quot;</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string - brief description of what this page covers&quot;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">      </span><span class="p">]</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">]</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<p>The plan is stored in the database as JSON, allowing API consumers to see the documentation structure while pages are still being generated.</p>
+<h3 id="phase-2-content-generation">Phase 2: Content Generation</h3>
+<p>With the plan in hand, <code>generate_all_pages</code> dispatches individual page generation tasks. Each task sends a page-specific prompt to the AI CLI with the repository as context:</p>
+<div class="highlight"><pre><span></span><code><span class="n">MAX_CONCURRENT_PAGES</span> <span class="o">=</span> <span class="mi">5</span>
+
+<span class="n">results</span> <span class="o">=</span> <span class="k">await</span> <span class="n">run_parallel_with_limit</span><span class="p">(</span>
+    <span class="n">coroutines</span><span class="p">,</span> <span class="n">max_concurrency</span><span class="o">=</span><span class="n">MAX_CONCURRENT_PAGES</span>
+<span class="p">)</span>
+</code></pre></div>
+
+<p>Concurrency is capped at 5 simultaneous page generations to avoid overloading AI provider rate limits. Each page task follows this flow:</p>
+<ol>
+<li><strong>Check cache</strong> — if <code>use_cache=True</code> and a cached markdown file exists, return it immediately</li>
+<li><strong>Call AI</strong> — generate markdown content using <code>build_page_prompt()</code></li>
+<li><strong>Strip preamble</strong> — remove any AI thinking/planning text before the first <code>#</code> heading (within the first 10 lines)</li>
+<li><strong>Write cache</strong> — save the generated markdown to the filesystem cache</li>
+<li><strong>Update progress</strong> — increment <code>page_count</code> in the database so clients can track progress</li>
+</ol>
+<p>If any individual page fails, the pipeline does not abort. Instead, it inserts a placeholder:</p>
+<div class="highlight"><pre><span></span><code><span class="k">if</span> <span class="ow">not</span> <span class="n">success</span><span class="p">:</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;# </span><span class="si">{</span><span class="n">title</span><span class="si">}</span><span class="se">\n\n</span><span class="s2">*Documentation generation failed. Please re-run.*&quot;</span>
+</code></pre></div>
+
+<h3 id="robust-json-parsing">Robust JSON Parsing</h3>
+<p>AI models don't always produce clean JSON. The <code>json_parser.py</code> module implements a three-strategy fallback to extract JSON from AI responses:</p>
+<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">parse_json_response</span><span class="p">(</span><span class="n">raw_text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="n">text</span> <span class="o">=</span> <span class="n">raw_text</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">text</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="c1"># Strategy 1: Direct parse (text starts with &quot;{&quot;)</span>
+    <span class="k">if</span> <span class="n">text</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;{&quot;</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">JSONDecodeError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">):</span>
+            <span class="k">pass</span>
+    <span class="c1"># Strategy 2: Find balanced braces</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">_extract_json_by_braces</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">result</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">result</span>
+    <span class="c1"># Strategy 3: Extract from markdown code blocks</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">_extract_json_from_code_blocks</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">result</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">result</span>
+    <span class="k">return</span> <span class="kc">None</span>
+</code></pre></div>
+
+<p>The brace-matching strategy (<code>_extract_json_by_braces</code>) tracks brace depth while respecting string literals, handling cases where the AI includes explanatory text before or after the JSON.</p>
+<h3 id="ai-provider-abstraction">AI Provider Abstraction</h3>
+<p>The <code>ai_client.py</code> module re-exports the <code>ai-cli-runner</code> package, which provides a unified interface across multiple AI providers:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">ai_cli_runner</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">PROVIDERS</span><span class="p">,</span>
+    <span class="n">VALID_AI_PROVIDERS</span><span class="p">,</span>
+    <span class="n">ProviderConfig</span><span class="p">,</span>
+    <span class="n">call_ai_cli</span><span class="p">,</span>
+    <span class="n">check_ai_cli_available</span><span class="p">,</span>
+    <span class="n">get_ai_cli_timeout</span><span class="p">,</span>
+    <span class="n">run_parallel_with_limit</span><span class="p">,</span>
+<span class="p">)</span>
+</code></pre></div>
+
+<p>Three providers are supported: <code>claude</code> (Anthropic), <code>gemini</code> (Google), and <code>cursor</code> (Cursor). The provider is selected per-request or falls back to the configured default. Before generation starts, <code>check_ai_cli_available()</code> verifies that the CLI and credentials are properly set up.</p>
+<h2 id="markdown-to-html-rendering">Markdown-to-HTML Rendering</h2>
+<p>The <code>renderer.py</code> module converts AI-generated markdown into a complete static documentation site using Python-Markdown and Jinja2.</p>
+<h3 id="markdown-processing">Markdown Processing</h3>
+<p>Markdown is converted to HTML with four extensions enabled:</p>
+<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">_md_to_html</span><span class="p">(</span><span class="n">md_text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+    <span class="n">md</span> <span class="o">=</span> <span class="n">markdown</span><span class="o">.</span><span class="n">Markdown</span><span class="p">(</span>
+        <span class="n">extensions</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;fenced_code&quot;</span><span class="p">,</span> <span class="s2">&quot;codehilite&quot;</span><span class="p">,</span> <span class="s2">&quot;tables&quot;</span><span class="p">,</span> <span class="s2">&quot;toc&quot;</span><span class="p">],</span>
+        <span class="n">extension_configs</span><span class="o">=</span><span class="p">{</span>
+            <span class="s2">&quot;codehilite&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;css_class&quot;</span><span class="p">:</span> <span class="s2">&quot;highlight&quot;</span><span class="p">,</span> <span class="s2">&quot;guess_lang&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">},</span>
+            <span class="s2">&quot;toc&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;toc_depth&quot;</span><span class="p">:</span> <span class="s2">&quot;2-3&quot;</span><span class="p">},</span>
+        <span class="p">},</span>
+    <span class="p">)</span>
+    <span class="n">content_html</span> <span class="o">=</span> <span class="n">md</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="n">md_text</span><span class="p">)</span>
+    <span class="n">toc_html</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">md</span><span class="p">,</span> <span class="s2">&quot;toc&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">content_html</span><span class="p">,</span> <span class="n">toc_html</span>
+</code></pre></div>
+
+<table>
+<thead>
+<tr>
+<th>Extension</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>fenced_code</code></td>
+<td>Triple-backtick code blocks with language annotations</td>
+</tr>
+<tr>
+<td><code>codehilite</code></td>
+<td>Syntax highlighting via Pygments</td>
+</tr>
+<tr>
+<td><code>tables</code></td>
+<td>Pipe-delimited markdown tables</td>
+</tr>
+<tr>
+<td><code>toc</code></td>
+<td>Auto-generated table of contents from h2–h3 headings</td>
+</tr>
+</tbody>
+</table>
+<h3 id="jinja2-templates">Jinja2 Templates</h3>
+<p>The Jinja2 environment is lazily initialized as a module-level singleton with HTML auto-escaping enabled:</p>
+<div class="highlight"><pre><span></span><code><span class="n">_jinja_env</span><span class="p">:</span> <span class="n">Environment</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_get_jinja_env</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Environment</span><span class="p">:</span>
+    <span class="k">global</span> <span class="n">_jinja_env</span>
+    <span class="k">if</span> <span class="n">_jinja_env</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">_jinja_env</span> <span class="o">=</span> <span class="n">Environment</span><span class="p">(</span>
+            <span class="n">loader</span><span class="o">=</span><span class="n">FileSystemLoader</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">TEMPLATES_DIR</span><span class="p">)),</span>
+            <span class="n">autoescape</span><span class="o">=</span><span class="n">select_autoescape</span><span class="p">([</span><span class="s2">&quot;html&quot;</span><span class="p">]),</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="n">_jinja_env</span>
+</code></pre></div>
+
+<p>Two templates drive the output:</p>
+<p><strong><code>page.html</code></strong> — Individual documentation pages with:
+- Sidebar navigation with grouped page links and active page highlighting
+- Client-side search input (bound to <code>search-index.json</code>)
+- Main content area with rendered HTML
+- Table of contents sidebar (generated from h2/h3 headings)
+- Previous/next page navigation links
+- Theme toggle (light/dark) and GitHub repository link</p>
+<p><strong><code>index.html</code></strong> — Landing page with:
+- Hero section with project name, tagline, and "Get Started" call-to-action
+- Card grid showing each navigation group and its pages</p>
+<h3 id="site-output-structure">Site Output Structure</h3>
+<p>The <code>render_site</code> function orchestrates the full rendering pipeline. It produces this file structure:</p>
+<div class="highlight"><pre><span></span><code>site/
+├── index.html              # Landing page
+├── {slug}.html             # One HTML page per documentation topic
+├── {slug}.md               # Source markdown (also published)
+├── assets/
+│   ├── style.css           # Main stylesheet with dark mode support
+│   ├── theme.js            # Light/dark theme toggle
+│   ├── search.js           # Client-side full-text search (⌘K)
+│   ├── copy.js             # Copy-to-clipboard for code blocks
+│   ├── callouts.js         # Styled Note/Warning/Tip blocks
+│   ├── scrollspy.js        # Active sidebar link tracking
+│   ├── codelabels.js       # Language labels on code fences
+│   └── github.js           # GitHub star count widget
+├── search-index.json       # Search index (first 2000 chars per page)
+├── llms.txt                # LLM-readable page index
+└── llms-full.txt           # LLM-readable full content dump
+</code></pre></div>
+
+<blockquote>
+<p><strong>Note:</strong> Both <code>llms.txt</code> and <code>llms-full.txt</code> follow the emerging convention for making documentation accessible to large language models. <code>llms.txt</code> contains a structured index with page titles and descriptions, while <code>llms-full.txt</code> concatenates the full markdown content of every page.</p>
+</blockquote>
+<h2 id="sqlite-storage">SQLite Storage</h2>
+<p>Project metadata is stored in a single SQLite table using <code>aiosqlite</code> for async-compatible access. The database file defaults to <code>/data/docsfy.db</code>.</p>
+<h3 id="schema">Schema</h3>
+<div class="highlight"><pre><span></span><code><span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="k">IF</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">EXISTS</span><span class="w"> </span><span class="n">projects</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="n">name</span><span class="w"> </span><span class="nb">TEXT</span><span class="w"> </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="p">,</span>
+<span class="w">    </span><span class="n">repo_url</span><span class="w"> </span><span class="nb">TEXT</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">status</span><span class="w"> </span><span class="nb">TEXT</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="s1">&#39;generating&#39;</span><span class="p">,</span>
+<span class="w">    </span><span class="n">last_commit_sha</span><span class="w"> </span><span class="nb">TEXT</span><span class="p">,</span>
+<span class="w">    </span><span class="n">last_generated</span><span class="w"> </span><span class="nb">TEXT</span><span class="p">,</span>
+<span class="w">    </span><span class="n">page_count</span><span class="w"> </span><span class="nb">INTEGER</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">    </span><span class="n">error_message</span><span class="w"> </span><span class="nb">TEXT</span><span class="p">,</span>
+<span class="w">    </span><span class="n">plan_json</span><span class="w"> </span><span class="nb">TEXT</span><span class="p">,</span>
+<span class="w">    </span><span class="n">created_at</span><span class="w"> </span><span class="k">TIMESTAMP</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="k">CURRENT_TIMESTAMP</span><span class="p">,</span>
+<span class="w">    </span><span class="n">updated_at</span><span class="w"> </span><span class="k">TIMESTAMP</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="k">CURRENT_TIMESTAMP</span>
+<span class="p">)</span>
+</code></pre></div>
+
+<h3 id="project-lifecycle-states">Project Lifecycle States</h3>
+<p>A project moves through three statuses during its lifecycle:</p>
+<div class="highlight"><pre><span></span><code>generating ──► ready
+     │
+     └──────► error
+</code></pre></div>
+
+<table>
+<thead>
+<tr>
+<th>Status</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>generating</code></td>
+<td>AI pipeline is running; <code>page_count</code> updates incrementally</td>
+</tr>
+<tr>
+<td><code>ready</code></td>
+<td>Generation complete; HTML is being served</td>
+</tr>
+<tr>
+<td><code>error</code></td>
+<td>Generation failed; <code>error_message</code> contains details</td>
+</tr>
+</tbody>
+</table>
+<p>Status transitions are enforced with a validation set:</p>
+<div class="highlight"><pre><span></span><code><span class="n">VALID_STATUSES</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">({</span><span class="s2">&quot;generating&quot;</span><span class="p">,</span> <span class="s2">&quot;ready&quot;</span><span class="p">,</span> <span class="s2">&quot;error&quot;</span><span class="p">})</span>
+</code></pre></div>
+
+<h3 id="upsert-and-partial-updates">Upsert and Partial Updates</h3>
+<p>The <code>save_project</code> function uses <code>ON CONFLICT</code> for upsert behavior, allowing re-generation of an existing project without deleting the record first. The <code>update_project_status</code> function dynamically builds its <code>SET</code> clause to only update provided fields:</p>
+<div class="highlight"><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">update_project_status</span><span class="p">(</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">status</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">last_commit_sha</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">page_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">error_message</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">plan_json</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="n">fields</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;status = ?&quot;</span><span class="p">,</span> <span class="s2">&quot;updated_at = CURRENT_TIMESTAMP&quot;</span><span class="p">]</span>
+    <span class="n">values</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">status</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">last_commit_sha</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">fields</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;last_commit_sha = ?&quot;</span><span class="p">)</span>
+        <span class="n">values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">last_commit_sha</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">page_count</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">fields</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;page_count = ?&quot;</span><span class="p">)</span>
+        <span class="n">values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">page_count</span><span class="p">)</span>
+    <span class="c1"># ... additional optional fields</span>
+    <span class="k">if</span> <span class="n">status</span> <span class="o">==</span> <span class="s2">&quot;ready&quot;</span><span class="p">:</span>
+        <span class="n">fields</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;last_generated = CURRENT_TIMESTAMP&quot;</span><span class="p">)</span>
+    <span class="n">values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+    <span class="k">await</span> <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;UPDATE projects SET </span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">fields</span><span class="p">)</span><span class="si">}</span><span class="s2"> WHERE name = ?&quot;</span><span class="p">,</span> <span class="n">values</span>
+    <span class="p">)</span>
+</code></pre></div>
+
+<blockquote>
+<p><strong>Tip:</strong> All queries use parameterized values. The <code>fields</code> list is built from hardcoded column names only — no user input is interpolated into the SQL.</p>
+</blockquote>
+<h2 id="filesystem-based-caching">Filesystem-Based Caching</h2>
+<p>docsfy uses a simple filesystem cache to avoid re-generating pages when the repository hasn't changed. Each project's files live under a validated directory structure:</p>
+<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_project_dir</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">PROJECTS_DIR</span> <span class="o">/</span> <span class="n">_validate_name</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">get_project_site_dir</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">PROJECTS_DIR</span> <span class="o">/</span> <span class="n">_validate_name</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;site&quot;</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">get_project_cache_dir</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">PROJECTS_DIR</span> <span class="o">/</span> <span class="n">_validate_name</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;cache&quot;</span> <span class="o">/</span> <span class="s2">&quot;pages&quot;</span>
+</code></pre></div>
+
+<p>This produces the following layout on disk:</p>
+<div class="highlight"><pre><span></span><code>/data/projects/{project_name}/
+├── plan.json                # Saved documentation plan
+├── cache/
+│   └── pages/
+│       ├── overview.md      # Cached AI-generated markdown
+│       ├── installation.md
+│       └── api-reference.md
+└── site/
+    ├── index.html           # Final rendered output
+    ├── overview.html
+    └── ...
+</code></pre></div>
+
+<h3 id="cache-invalidation-strategy">Cache Invalidation Strategy</h3>
+<p>Cache validity is determined by <strong>git commit SHA</strong>. When a generation request arrives, the system checks whether the stored commit SHA matches the current HEAD:</p>
+<div class="highlight"><pre><span></span><code><span class="n">existing</span> <span class="o">=</span> <span class="k">await</span> <span class="n">get_project</span><span class="p">(</span><span class="n">project_name</span><span class="p">)</span>
+<span class="k">if</span> <span class="p">(</span>
+    <span class="n">existing</span>
+    <span class="ow">and</span> <span class="n">existing</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;last_commit_sha&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="n">commit_sha</span>
+    <span class="ow">and</span> <span class="n">existing</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;status&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;ready&quot;</span>
+<span class="p">):</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">project_name</span><span class="si">}</span><span class="s2">] Project is up to date at </span><span class="si">{</span><span class="n">commit_sha</span><span class="p">[:</span><span class="mi">8</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">await</span> <span class="n">update_project_status</span><span class="p">(</span><span class="n">project_name</span><span class="p">,</span> <span class="n">status</span><span class="o">=</span><span class="s2">&quot;ready&quot;</span><span class="p">)</span>
+    <span class="k">return</span>
+</code></pre></div>
+
+<p>When <code>force=True</code> is set, the entire cache directory is cleared and generation runs from scratch:</p>
+<div class="highlight"><pre><span></span><code><span class="k">if</span> <span class="n">force</span><span class="p">:</span>
+    <span class="n">cache_dir</span> <span class="o">=</span> <span class="n">get_project_cache_dir</span><span class="p">(</span><span class="n">project_name</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">cache_dir</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+        <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">cache_dir</span><span class="p">)</span>
+</code></pre></div>
+
+<blockquote>
+<p><strong>Warning:</strong> Setting <code>force=True</code> deletes all cached pages and triggers full AI regeneration, which consumes additional API credits and time.</p>
+</blockquote>
+<h2 id="request-lifecycle">Request Lifecycle</h2>
+<p>The complete lifecycle of a documentation generation request:</p>
+<div class="highlight"><pre><span></span><code>1. Client sends POST /api/generate
+      │
+2. Pydantic validates request (repo_url XOR repo_path, URL format, etc.)
+      │
+3. Check _generating set → 409 if already in progress
+      │
+4. Save project to SQLite (status=&quot;generating&quot;)
+      │
+5. Spawn asyncio background task → return 202 Accepted
+      │
+      ▼ (background)
+6. Verify AI CLI availability (check_ai_cli_available)
+      │
+7. Clone repo (--depth 1) or read local repo → get commit SHA
+      │
+8. Check if up-to-date (same SHA + status=ready + !force) → skip if yes
+      │
+9. Phase 1: run_planner() → AI analyzes codebase → JSON plan
+      │
+10. Store plan_json in database
+      │
+11. Phase 2: generate_all_pages() → up to 5 concurrent AI calls
+      │       Each page: check cache → call AI → strip preamble → write cache
+      │
+12. render_site() → markdown to HTML via Jinja2
+      │       Outputs: HTML pages, search index, static assets, llms.txt
+      │
+13. Update database (status=&quot;ready&quot;, commit_sha, page_count)
+      │
+14. Client polls GET /api/projects/{name} to check status
+      │
+15. Client views docs at GET /docs/{project}/{slug}.html
+</code></pre></div>
+
+<h2 id="configuration">Configuration</h2>
+<p>Application settings are managed through Pydantic's <code>BaseSettings</code>, which reads from environment variables and an optional <code>.env</code> file:</p>
+<div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Settings</span><span class="p">(</span><span class="n">BaseSettings</span><span class="p">):</span>
+    <span class="n">model_config</span> <span class="o">=</span> <span class="n">SettingsConfigDict</span><span class="p">(</span>
+        <span class="n">env_file</span><span class="o">=</span><span class="s2">&quot;.env&quot;</span><span class="p">,</span>
+        <span class="n">env_file_encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">,</span>
+        <span class="n">extra</span><span class="o">=</span><span class="s2">&quot;ignore&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">ai_provider</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;claude&quot;</span>
+    <span class="n">ai_model</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;claude-opus-4-6[1m]&quot;</span>
+    <span class="n">ai_cli_timeout</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="mi">60</span><span class="p">,</span> <span class="n">gt</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">log_level</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;INFO&quot;</span>
+    <span class="n">data_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;/data&quot;</span>
+</code></pre></div>
+
+<p>Settings are cached in memory with <code>@lru_cache</code> so the <code>.env</code> file is read only once:</p>
+<div class="highlight"><pre><span></span><code><span class="nd">@lru_cache</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_settings</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Settings</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">Settings</span><span class="p">()</span>
+</code></pre></div>
+
+<p>Per-request overrides (provider, model, timeout) take precedence over the global settings:</p>
+<div class="highlight"><pre><span></span><code><span class="n">ai_provider</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">ai_provider</span> <span class="ow">or</span> <span class="n">settings</span><span class="o">.</span><span class="n">ai_provider</span>
+<span class="n">ai_model</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">ai_model</span> <span class="ow">or</span> <span class="n">settings</span><span class="o">.</span><span class="n">ai_model</span>
+</code></pre></div>
+
+<h2 id="containerization">Containerization</h2>
+<p>The Dockerfile uses a multi-stage build to keep the production image small while installing all three AI CLI tools:</p>
+<div class="highlight"><pre><span></span><code><span class="c"># Builder stage: install Python dependencies</span>
+<span class="k">FROM</span><span class="w"> </span><span class="s">python:3.12-slim</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="s">builder</span>
+<span class="k">COPY</span><span class="w"> </span>--from<span class="o">=</span>ghcr.io/astral-sh/uv:0.5.14<span class="w"> </span>/uv<span class="w"> </span>/usr/local/bin/uv
+<span class="k">RUN</span><span class="w"> </span>uv<span class="w"> </span>sync<span class="w"> </span>--frozen<span class="w"> </span>--no-dev
+
+<span class="c"># Production stage: install AI CLIs + copy venv</span>
+<span class="k">FROM</span><span class="w"> </span><span class="s">python:3.12-slim</span>
+<span class="k">RUN</span><span class="w"> </span>curl<span class="w"> </span>-fsSL<span class="w"> </span>https://claude.ai/install.sh<span class="w"> </span><span class="p">|</span><span class="w"> </span>bash<span class="w">      </span>#<span class="w"> </span>Claude<span class="w"> </span>Code<span class="w"> </span>CLI
+<span class="k">RUN</span><span class="w"> </span>curl<span class="w"> </span>-fsSL<span class="w"> </span>https://cursor.com/install<span class="w"> </span><span class="p">|</span><span class="w"> </span>bash<span class="w">         </span>#<span class="w"> </span>Cursor<span class="w"> </span>Agent<span class="w"> </span>CLI
+<span class="k">RUN</span><span class="w"> </span>npm<span class="w"> </span>install<span class="w"> </span>-g<span class="w"> </span>@google/gemini-cli<span class="w">                     </span>#<span class="w"> </span>Gemini<span class="w"> </span>CLI
+
+<span class="k">ENTRYPOINT</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;uv&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;run&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;--no-sync&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;uvicorn&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;docsfy.main:app&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;--host&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;0.0.0.0&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;--port&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;8000&quot;</span><span class="p">]</span>
+</code></pre></div>
+
+<blockquote>
+<p><strong>Note:</strong> The <code>--no-sync</code> flag prevents <code>uv</code> from modifying the virtual environment at runtime. This is required for OpenShift compatibility, where containers run as an arbitrary UID that may not have write access to the <code>.venv</code> directory.</p>
+</blockquote>
+<h2 id="design-decisions">Design Decisions</h2>
+<table>
+<thead>
+<tr>
+<th>Decision</th>
+<th>Rationale</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Two-phase pipeline</strong></td>
+<td>Separating planning from content enables cached page-level regeneration and concurrent writing</td>
+</tr>
+<tr>
+<td><strong>Background tasks via <code>asyncio.create_task</code></strong></td>
+<td>Avoids blocking the HTTP response; clients poll for status</td>
+</tr>
+<tr>
+<td><strong>SQLite with <code>aiosqlite</code></strong></td>
+<td>Zero infrastructure dependencies; sufficient for metadata storage; async-compatible</td>
+</tr>
+<tr>
+<td><strong>Filesystem cache</strong></td>
+<td>Simple cache invalidation (by commit SHA); easy to inspect and clear; no external service</td>
+</tr>
+<tr>
+<td><strong>Jinja2 with <code>autoescape</code></strong></td>
+<td>Industry-standard templating with built-in XSS protection</td>
+</tr>
+<tr>
+<td><strong>Static site output</strong></td>
+<td>Generated docs are plain HTML files — fast to serve, easy to download, no runtime dependencies</td>
+</tr>
+<tr>
+<td><strong><code>MAX_CONCURRENT_PAGES = 5</code></strong></td>
+<td>Balances generation speed against AI provider rate limits</td>
+</tr>
+<tr>
+<td><strong>Slug validation at multiple layers</strong></td>
+<td>Prevents path traversal in cache writes, site rendering, and HTTP serving</td>
+</tr>
+</tbody>
+</table>
+                </div>
+            </article>
+            <nav class="page-nav">
+                
+                <a href="api-serving.html" class="page-nav-link page-nav-prev">
+                    <span class="page-nav-label">Previous</span>
+                    <span class="page-nav-title">Serving and Download Endpoints</span>
+                </a>
+                
+                
+                <a href="project-structure.html" class="page-nav-link page-nav-next">
+                    <span class="page-nav-label">Next</span>
+                    <span class="page-nav-title">Project Structure</span>
+                </a>
+                
+            </nav>
+            
+            <aside class="toc-sidebar">
+                <div class="toc-container">
+                    <h3>On this page</h3>
+                    <div class="toc">
+<ul>
+<li><a href="#system-architecture-diagram">System Architecture Diagram</a></li>
+<li><a href="#module-map">Module Map</a></li>
+<li><a href="#fastapi-web-layer">FastAPI Web Layer</a><ul>
+<li><a href="#api-endpoints">API Endpoints</a></li>
+<li><a href="#asynchronous-generation">Asynchronous Generation</a></li>
+<li><a href="#path-traversal-protection">Path Traversal Protection</a></li>
+</ul>
+</li>
+<li><a href="#two-phase-ai-generation-pipeline">Two-Phase AI Generation Pipeline</a><ul>
+<li><a href="#phase-1-planning">Phase 1: Planning</a></li>
+<li><a href="#phase-2-content-generation">Phase 2: Content Generation</a></li>
+<li><a href="#robust-json-parsing">Robust JSON Parsing</a></li>
+<li><a href="#ai-provider-abstraction">AI Provider Abstraction</a></li>
+</ul>
+</li>
+<li><a href="#markdown-to-html-rendering">Markdown-to-HTML Rendering</a><ul>
+<li><a href="#markdown-processing">Markdown Processing</a></li>
+<li><a href="#jinja2-templates">Jinja2 Templates</a></li>
+<li><a href="#site-output-structure">Site Output Structure</a></li>
+</ul>
+</li>
+<li><a href="#sqlite-storage">SQLite Storage</a><ul>
+<li><a href="#schema">Schema</a></li>
+<li><a href="#project-lifecycle-states">Project Lifecycle States</a></li>
+<li><a href="#upsert-and-partial-updates">Upsert and Partial Updates</a></li>
+</ul>
+</li>
+<li><a href="#filesystem-based-caching">Filesystem-Based Caching</a><ul>
+<li><a href="#cache-invalidation-strategy">Cache Invalidation Strategy</a></li>
+</ul>
+</li>
+<li><a href="#request-lifecycle">Request Lifecycle</a></li>
+<li><a href="#configuration">Configuration</a></li>
+<li><a href="#containerization">Containerization</a></li>
+<li><a href="#design-decisions">Design Decisions</a></li>
+</ul>
+</div>
+
+                </div>
+            </aside>
+            
+        </main>
+
+        <footer class="footer">
+            <p>Built with <a href="https://github.com/docsfy/docsfy">docsfy</a></p>
+        </footer>
+    </div>
+
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <script src="assets/theme.js"></script>
+    <script src="assets/search.js"></script>
+    <script src="assets/copy.js"></script>
+    <script src="assets/callouts.js"></script>
+    <script src="assets/scrollspy.js"></script>
+    <script src="assets/codelabels.js"></script>
+    <script src="assets/github.js"></script>
+    <script>
+    (function() {
+        var toggle = document.getElementById('sidebar-toggle');
+        var sidebar = document.getElementById('sidebar');
+        var overlay = document.getElementById('sidebar-overlay');
+        if (toggle && sidebar) {
+            toggle.addEventListener('click', function() {
+                sidebar.classList.toggle('open');
+                if (overlay) overlay.classList.toggle('open');
+                var expanded = sidebar.classList.contains('open');
+                toggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+            });
+        }
+        if (overlay) {
+            overlay.addEventListener('click', function() {
+                sidebar.classList.remove('open');
+                overlay.classList.remove('open');
+                if (toggle) toggle.setAttribute('aria-expanded', 'false');
+            });
+        }
+    })();
+    </script>
+    <script>
+    (function() {
+        var sidebar = document.querySelector('.sidebar-nav') || document.querySelector('.sidebar');
+        if (!sidebar) return;
+
+        // Restore scroll position
+        var saved = sessionStorage.getItem('sidebar-scroll');
+        if (saved) sidebar.scrollTop = parseInt(saved, 10);
+
+        // Save scroll position before navigating
+        sidebar.addEventListener('scroll', function() {
+            sessionStorage.setItem('sidebar-scroll', sidebar.scrollTop.toString());
+        });
+
+        // Also scroll active link into view if no saved position
+        if (!saved) {
+            var active = sidebar.querySelector('.nav-link.active');
+            if (active) {
+                active.scrollIntoView({ block: 'center', behavior: 'instant' });
+            }
+        }
+    })();
+    </script>
+</body>
+</html>

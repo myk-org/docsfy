@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Serving and Download Endpoints - docsfy</title>
+    <meta name="description" content="AI-powered documentation generator that turns GitHub repositories into polished static documentation websites">
+    <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <a href="index.html" class="sidebar-logo">docsfy</a>
+            <p class="sidebar-tagline">AI-powered documentation generator that turns GitHub repositories into polished static documentation websites</p>
+        </div>
+
+        <div class="sidebar-search">
+            <input type="text" id="search-input" placeholder="Search... (⌘K)" autocomplete="off" readonly>
+            <div id="search-results" class="search-results"></div>
+        </div>
+
+        <nav class="sidebar-nav">
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Getting Started</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="introduction.html"
+                           class="nav-link">
+                            Introduction
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="installation.html"
+                           class="nav-link">
+                            Installation
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="quickstart.html"
+                           class="nav-link">
+                            Quickstart
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="docker-deployment.html"
+                           class="nav-link">
+                            Docker Deployment
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Configuration</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="configuration.html"
+                           class="nav-link">
+                            Configuration Reference
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="ai-providers.html"
+                           class="nav-link">
+                            AI Providers
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Usage</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="generating-docs.html"
+                           class="nav-link">
+                            Generating Documentation
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="serving-and-downloading.html"
+                           class="nav-link">
+                            Serving and Downloading
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="generated-site-features.html"
+                           class="nav-link">
+                            Generated Site Features
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="llm-friendly-output.html"
+                           class="nav-link">
+                            LLM-Friendly Output
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">API Reference</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="api-overview.html"
+                           class="nav-link">
+                            API Overview
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="api-generation.html"
+                           class="nav-link">
+                            Generation Endpoint
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="api-projects.html"
+                           class="nav-link">
+                            Project Management Endpoints
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="api-serving.html"
+                           class="nav-link active">
+                            Serving and Download Endpoints
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Architecture</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="architecture-overview.html"
+                           class="nav-link">
+                            Architecture Overview
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="project-structure.html"
+                           class="nav-link">
+                            Project Structure
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="ai-generation-pipeline.html"
+                           class="nav-link">
+                            AI Generation Pipeline
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="storage-and-caching.html"
+                           class="nav-link">
+                            Storage and Caching
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Development</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="development-setup.html"
+                           class="nav-link">
+                            Development Setup
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="testing.html"
+                           class="nav-link">
+                            Testing
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="code-quality.html"
+                           class="nav-link">
+                            Code Quality
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+        </nav>
+    </aside>
+
+    <div class="main-wrapper">
+        <header class="top-bar">
+            <div class="top-bar-left">
+                <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebar" aria-expanded="false">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                </button>
+                <a href="index.html" class="top-bar-title">docsfy</a>
+            </div>
+            <div class="top-bar-spacer"></div>
+            <div class="top-bar-right">
+                <button class="top-bar-search-btn" id="search-trigger" aria-label="Search">
+                    <kbd>&#8984;K</kbd> Search
+                </button>
+                
+                <a href="https://github.com/myk-org/docsfy" target="_blank" rel="noopener noreferrer" class="top-bar-github" id="github-link" data-repo-url="https://github.com/myk-org/docsfy">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                    <span class="github-stars" id="github-stars"></span>
+                </a>
+                
+                <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+                    <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                    </svg>
+                    <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <main class="content">
+            <article class="article">
+                <div class="article-body">
+                    <!-- content is pre-rendered from markdown by the server, not user input -->
+                    <h1 id="serving-and-download-endpoints">Serving and Download Endpoints</h1>
+<p>docsfy exposes three read-only GET endpoints for consuming generated documentation: a static file server for browsing docs in the browser, a download endpoint for exporting an entire project as a compressed archive, and a health check for infrastructure probes.</p>
+<h2 id="health-check">Health Check</h2>
+<div class="highlight"><pre><span></span><code>GET /health
+</code></pre></div>
+
+<p>A minimal liveness probe that confirms the docsfy server is running and accepting requests. It has no dependencies on the database or filesystem.</p>
+<h3 id="response">Response</h3>
+<p><strong>Status:</strong> <code>200 OK</code>
+<strong>Content-Type:</strong> <code>application/json</code></p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ok&quot;</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<h3 id="usage">Usage</h3>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>http://localhost:8000/health
+</code></pre></div>
+
+<p>The handler is intentionally simple — it returns a fixed JSON response with no external checks:</p>
+<div class="highlight"><pre><span></span><code><span class="nd">@app</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/health&quot;</span><span class="p">)</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">health</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;ok&quot;</span><span class="p">}</span>
+</code></pre></div>
+
+<h3 id="docker-and-orchestration">Docker and Orchestration</h3>
+<p>Both the <code>Dockerfile</code> and <code>docker-compose.yaml</code> use this endpoint for container health monitoring.</p>
+<p><strong>Dockerfile:</strong></p>
+<div class="highlight"><pre><span></span><code><span class="k">HEALTHCHECK</span><span class="w"> </span>--interval<span class="o">=</span>30s<span class="w"> </span>--timeout<span class="o">=</span>10s<span class="w"> </span>--retries<span class="o">=</span><span class="m">3</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span><span class="k">CMD</span><span class="w"> </span>curl<span class="w"> </span>-f<span class="w"> </span>http://localhost:8000/health<span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="nb">exit</span><span class="w"> </span><span class="m">1</span>
+</code></pre></div>
+
+<p><strong>docker-compose.yaml:</strong></p>
+<div class="highlight"><pre><span></span><code><span class="nt">healthcheck</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">test</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;CMD&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;curl&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;-f&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;http://localhost:8000/health&quot;</span><span class="p p-Indicator">]</span>
+<span class="w">  </span><span class="nt">interval</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">30s</span>
+<span class="w">  </span><span class="nt">timeout</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10s</span>
+<span class="w">  </span><span class="nt">retries</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3</span>
+</code></pre></div>
+
+<blockquote>
+<p><strong>Tip:</strong> When deploying to Kubernetes, point your <code>livenessProbe</code> at <code>GET /health</code> on port <code>8000</code>. Since this endpoint has no side effects and no dependencies, it is also suitable as a <code>readinessProbe</code>.</p>
+</blockquote>
+<hr />
+<h2 id="serving-static-documentation">Serving Static Documentation</h2>
+<div class="highlight"><pre><span></span><code>GET /docs/{project}/{path}
+</code></pre></div>
+
+<p>Serves the rendered HTML, CSS, JavaScript, and other static files for a project's generated documentation site. This is the primary endpoint users visit in a browser to read documentation.</p>
+<h3 id="path-parameters">Path Parameters</h3>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>project</code></td>
+<td>string</td>
+<td>Yes</td>
+<td>Project name. Must match <code>^[a-zA-Z0-9][a-zA-Z0-9._-]*$</code></td>
+</tr>
+<tr>
+<td><code>path</code></td>
+<td>string</td>
+<td>No</td>
+<td>File path relative to the project's site directory. Defaults to <code>index.html</code></td>
+</tr>
+</tbody>
+</table>
+<p>The <code>path</code> parameter is a greedy path (<code>{path:path}</code> in FastAPI), so it can include subdirectories like <code>assets/style.css</code>.</p>
+<h3 id="response_1">Response</h3>
+<p><strong>Status:</strong> <code>200 OK</code>
+<strong>Content-Type:</strong> Automatically detected from file extension (e.g., <code>text/html</code>, <code>text/css</code>, <code>application/javascript</code>)</p>
+<p>Returns a <code>FileResponse</code> that streams the requested file.</p>
+<h3 id="error-responses">Error Responses</h3>
+<table>
+<thead>
+<tr>
+<th>Status</th>
+<th>Condition</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>400 Bad Request</code></td>
+<td>Project name fails validation</td>
+<td><code>"Invalid project name: '{name}'"</code></td>
+</tr>
+<tr>
+<td><code>403 Forbidden</code></td>
+<td>Path traversal attempt detected</td>
+<td><code>"Access denied"</code></td>
+</tr>
+<tr>
+<td><code>404 Not Found</code></td>
+<td>File does not exist or is a directory</td>
+<td><code>"File not found"</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="examples">Examples</h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Serve the landing page (index.html)</span>
+curl<span class="w"> </span>http://localhost:8000/docs/my-project/
+
+<span class="c1"># Serve a specific documentation page</span>
+curl<span class="w"> </span>http://localhost:8000/docs/my-project/getting-started.html
+
+<span class="c1"># Serve a static asset</span>
+curl<span class="w"> </span>http://localhost:8000/docs/my-project/assets/style.css
+
+<span class="c1"># Retrieve the raw markdown source for a page</span>
+curl<span class="w"> </span>http://localhost:8000/docs/my-project/overview.md
+
+<span class="c1"># Access the search index</span>
+curl<span class="w"> </span>http://localhost:8000/docs/my-project/search-index.json
+
+<span class="c1"># Fetch LLM-friendly documentation</span>
+curl<span class="w"> </span>http://localhost:8000/docs/my-project/llms.txt
+curl<span class="w"> </span>http://localhost:8000/docs/my-project/llms-full.txt
+</code></pre></div>
+
+<h3 id="file-structure">File Structure</h3>
+<p>Each generated project site lives under <code>{DATA_DIR}/projects/{name}/site/</code> and contains:</p>
+<table>
+<thead>
+<tr>
+<th>File / Directory</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>index.html</code></td>
+<td>Landing page with project overview and navigation</td>
+</tr>
+<tr>
+<td><code>{slug}.html</code></td>
+<td>Rendered HTML for each documentation page</td>
+</tr>
+<tr>
+<td><code>{slug}.md</code></td>
+<td>Raw markdown source for each page</td>
+</tr>
+<tr>
+<td><code>assets/</code></td>
+<td>Static CSS and JavaScript files</td>
+</tr>
+<tr>
+<td><code>search-index.json</code></td>
+<td>Client-side search index (JSON array)</td>
+</tr>
+<tr>
+<td><code>llms.txt</code></td>
+<td>LLM-friendly page index with links</td>
+</tr>
+<tr>
+<td><code>llms-full.txt</code></td>
+<td>Complete documentation concatenated for LLM consumption</td>
+</tr>
+</tbody>
+</table>
+<h3 id="security">Security</h3>
+<p>The handler applies two layers of protection against path traversal attacks:</p>
+<div class="highlight"><pre><span></span><code><span class="nd">@app</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/docs/</span><span class="si">{project}</span><span class="s2">/{path:path}&quot;</span><span class="p">)</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">serve_docs</span><span class="p">(</span><span class="n">project</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;index.html&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FileResponse</span><span class="p">:</span>
+    <span class="n">project</span> <span class="o">=</span> <span class="n">_validate_project_name</span><span class="p">(</span><span class="n">project</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">path</span> <span class="ow">or</span> <span class="n">path</span> <span class="o">==</span> <span class="s2">&quot;/&quot;</span><span class="p">:</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="s2">&quot;index.html&quot;</span>
+    <span class="n">site_dir</span> <span class="o">=</span> <span class="n">get_project_site_dir</span><span class="p">(</span><span class="n">project</span><span class="p">)</span>
+    <span class="n">file_path</span> <span class="o">=</span> <span class="n">site_dir</span> <span class="o">/</span> <span class="n">path</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">file_path</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span><span class="o">.</span><span class="n">relative_to</span><span class="p">(</span><span class="n">site_dir</span><span class="o">.</span><span class="n">resolve</span><span class="p">())</span>
+    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="n">status_code</span><span class="o">=</span><span class="mi">403</span><span class="p">,</span> <span class="n">detail</span><span class="o">=</span><span class="s2">&quot;Access denied&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">file_path</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">file_path</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
+        <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="n">status_code</span><span class="o">=</span><span class="mi">404</span><span class="p">,</span> <span class="n">detail</span><span class="o">=</span><span class="s2">&quot;File not found&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">FileResponse</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span>
+</code></pre></div>
+
+<ol>
+<li>
+<p><strong>Project name validation</strong> — The <code>_validate_project_name()</code> function rejects names that don't match <code>^[a-zA-Z0-9][a-zA-Z0-9._-]*$</code>, preventing directory traversal through the project parameter.</p>
+</li>
+<li>
+<p><strong>Resolved path containment</strong> — After constructing the full file path, the handler calls <code>resolve()</code> on both the file path and the site directory, then verifies the file is contained within the site directory using <code>relative_to()</code>. Any attempt to escape (e.g., <code>../../etc/passwd</code>) results in a <code>403</code>.</p>
+</li>
+</ol>
+<blockquote>
+<p><strong>Warning:</strong> The endpoint only serves regular files. Requesting a directory path (without a trailing filename) that doesn't map to an actual file will return <code>404</code>, not a directory listing.</p>
+</blockquote>
+<hr />
+<h2 id="archive-download">Archive Download</h2>
+<div class="highlight"><pre><span></span><code>GET /api/projects/{name}/download
+</code></pre></div>
+
+<p>Downloads the entire generated documentation site for a project as a gzip-compressed tar archive. Useful for offline access, CI/CD artifact collection, or hosting documentation on a separate static file server.</p>
+<h3 id="path-parameters_1">Path Parameters</h3>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>name</code></td>
+<td>string</td>
+<td>Yes</td>
+<td>Project name. Must match <code>^[a-zA-Z0-9][a-zA-Z0-9._-]*$</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="response_2">Response</h3>
+<p><strong>Status:</strong> <code>200 OK</code>
+<strong>Content-Type:</strong> <code>application/gzip</code>
+<strong>Content-Disposition:</strong> <code>attachment; filename={name}-docs.tar.gz</code></p>
+<p>The response is a <code>StreamingResponse</code> that streams the tar.gz archive in 8 KB chunks. The archive root directory is named after the project.</p>
+<h3 id="error-responses_1">Error Responses</h3>
+<table>
+<thead>
+<tr>
+<th>Status</th>
+<th>Condition</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>400 Bad Request</code></td>
+<td>Project name fails validation</td>
+<td><code>"Invalid project name: '{name}'"</code></td>
+</tr>
+<tr>
+<td><code>400 Bad Request</code></td>
+<td>Project is not in <code>ready</code> status</td>
+<td><code>"Project '{name}' is not ready (status: {status})"</code></td>
+</tr>
+<tr>
+<td><code>404 Not Found</code></td>
+<td>Project does not exist in the database</td>
+<td><code>"Project '{name}' not found"</code></td>
+</tr>
+<tr>
+<td><code>404 Not Found</code></td>
+<td>Site directory missing on disk</td>
+<td><code>"Site directory not found for '{name}'"</code></td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Note:</strong> Only projects with status <code>"ready"</code> can be downloaded. Projects still in <code>"generating"</code> or <code>"error"</code> status will return a <code>400</code> error. Check a project's status via <code>GET /api/projects/{name}</code> before attempting a download.</p>
+</blockquote>
+<h3 id="examples_1">Examples</h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Download as tar.gz</span>
+curl<span class="w"> </span>-OJ<span class="w"> </span>http://localhost:8000/api/projects/my-project/download
+
+<span class="c1"># Download with wget</span>
+wget<span class="w"> </span>http://localhost:8000/api/projects/my-project/download<span class="w"> </span>-O<span class="w"> </span>my-project-docs.tar.gz
+
+<span class="c1"># Extract the archive</span>
+tar<span class="w"> </span>-xzf<span class="w"> </span>my-project-docs.tar.gz
+
+<span class="c1"># View extracted contents</span>
+ls<span class="w"> </span>my-project/
+<span class="c1"># index.html  introduction.html  assets/  search-index.json  llms.txt  ...</span>
+</code></pre></div>
+
+<h3 id="implementation-details">Implementation Details</h3>
+<p>The archive is built on-the-fly into a temporary file, then streamed to the client with automatic cleanup:</p>
+<div class="highlight"><pre><span></span><code><span class="nd">@app</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/api/projects/</span><span class="si">{name}</span><span class="s2">/download&quot;</span><span class="p">)</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">download_project</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StreamingResponse</span><span class="p">:</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">_validate_project_name</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+    <span class="n">project</span> <span class="o">=</span> <span class="k">await</span> <span class="n">get_project</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">project</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="n">status_code</span><span class="o">=</span><span class="mi">404</span><span class="p">,</span> <span class="n">detail</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Project &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; not found&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">project</span><span class="p">[</span><span class="s2">&quot;status&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;ready&quot;</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span>
+            <span class="n">status_code</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span>
+            <span class="n">detail</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Project &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; is not ready (status: </span><span class="si">{</span><span class="n">project</span><span class="p">[</span><span class="s1">&#39;status&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="n">site_dir</span> <span class="o">=</span> <span class="n">get_project_site_dir</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">site_dir</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+        <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span>
+            <span class="n">status_code</span><span class="o">=</span><span class="mi">404</span><span class="p">,</span> <span class="n">detail</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Site directory not found for &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39;&quot;</span>
+        <span class="p">)</span>
+    <span class="n">tmp</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">NamedTemporaryFile</span><span class="p">(</span><span class="n">suffix</span><span class="o">=</span><span class="s2">&quot;.tar.gz&quot;</span><span class="p">,</span> <span class="n">delete</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">tar_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">tmp</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+    <span class="n">tmp</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="k">with</span> <span class="n">tarfile</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">tar_path</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;w:gz&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">tar</span><span class="p">:</span>
+        <span class="n">tar</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">site_dir</span><span class="p">),</span> <span class="n">arcname</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_stream_and_cleanup</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">AsyncIterator</span><span class="p">[</span><span class="nb">bytes</span><span class="p">]:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">tar_path</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="k">while</span> <span class="n">chunk</span> <span class="o">:=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">8192</span><span class="p">):</span>
+                    <span class="k">yield</span> <span class="n">chunk</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">tar_path</span><span class="o">.</span><span class="n">unlink</span><span class="p">(</span><span class="n">missing_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">StreamingResponse</span><span class="p">(</span>
+        <span class="n">_stream_and_cleanup</span><span class="p">(),</span>
+        <span class="n">media_type</span><span class="o">=</span><span class="s2">&quot;application/gzip&quot;</span><span class="p">,</span>
+        <span class="n">headers</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;Content-Disposition&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;attachment; filename=</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">-docs.tar.gz&quot;</span><span class="p">},</span>
+    <span class="p">)</span>
+</code></pre></div>
+
+<p>Key behaviors:</p>
+<ul>
+<li><strong>Temporary file lifecycle</strong> — The tar.gz is written to a temporary file, streamed to the client in 8 KB chunks, then deleted in the generator's <code>finally</code> block regardless of success or failure.</li>
+<li><strong>Archive structure</strong> — The <code>arcname=name</code> argument ensures the archive extracts into a directory named after the project rather than including the full server-side filesystem path.</li>
+<li><strong>Memory efficiency</strong> — The streaming approach avoids loading the entire archive into memory, making it safe for large documentation sites.</li>
+</ul>
+<h3 id="archive-contents">Archive Contents</h3>
+<p>The downloaded archive mirrors the site directory structure:</p>
+<div class="highlight"><pre><span></span><code>my-project/
+├── index.html
+├── introduction.html
+├── introduction.md
+├── getting-started.html
+├── getting-started.md
+├── assets/
+│   ├── style.css
+│   ├── theme.js
+│   ├── search.js
+│   ├── copy.js
+│   ├── callouts.js
+│   ├── codelabels.js
+│   ├── scrollspy.js
+│   └── github.js
+├── search-index.json
+├── llms.txt
+└── llms-full.txt
+</code></pre></div>
+
+<hr />
+<h2 id="project-name-validation">Project Name Validation</h2>
+<p>All three endpoints that accept a project name parameter (<code>/docs/{project}/...</code> and <code>/api/projects/{name}/download</code>) share the same validation logic:</p>
+<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">_validate_project_name</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Validate project name to prevent path traversal.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">_re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;^[a-zA-Z0-9][a-zA-Z0-9._-]*$&quot;</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="n">status_code</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span> <span class="n">detail</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Invalid project name: &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">name</span>
+</code></pre></div>
+
+<p><strong>Rules:</strong>
+- Must start with an alphanumeric character (<code>a-z</code>, <code>A-Z</code>, <code>0-9</code>)
+- May contain letters, digits, dots (<code>.</code>), underscores (<code>_</code>), and hyphens (<code>-</code>)
+- Cannot contain slashes, spaces, or other special characters</p>
+<p><strong>Valid names:</strong> <code>myproject</code>, <code>my-project</code>, <code>my_project.v2</code>, <code>React2024</code></p>
+<p><strong>Invalid names:</strong> <code>-project</code>, <code>my project</code>, <code>../etc</code>, <code>.hidden</code></p>
+<hr />
+<h2 id="data-directory-configuration">Data Directory Configuration</h2>
+<p>The site files served by these endpoints are stored on disk under the configurable <code>DATA_DIR</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="n">DB_PATH</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;DATA_DIR&quot;</span><span class="p">,</span> <span class="s2">&quot;/data&quot;</span><span class="p">))</span> <span class="o">/</span> <span class="s2">&quot;docsfy.db&quot;</span>
+<span class="n">DATA_DIR</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;DATA_DIR&quot;</span><span class="p">,</span> <span class="s2">&quot;/data&quot;</span><span class="p">))</span>
+<span class="n">PROJECTS_DIR</span> <span class="o">=</span> <span class="n">DATA_DIR</span> <span class="o">/</span> <span class="s2">&quot;projects&quot;</span>
+</code></pre></div>
+
+<p>Each project's rendered site lives at <code>{PROJECTS_DIR}/{name}/site/</code>. The default data directory is <code>/data</code>, which can be overridden with the <code>DATA_DIR</code> environment variable.</p>
+<p>When running with Docker Compose, this directory is typically mounted as a volume:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">volumes</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./data:/data</span>
+</code></pre></div>
+
+<hr />
+<h2 id="quick-reference">Quick Reference</h2>
+<table>
+<thead>
+<tr>
+<th>Endpoint</th>
+<th>Method</th>
+<th>Response Type</th>
+<th>Auth</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/health</code></td>
+<td>GET</td>
+<td>JSON</td>
+<td>None</td>
+<td>Liveness probe</td>
+</tr>
+<tr>
+<td><code>/docs/{project}/{path}</code></td>
+<td>GET</td>
+<td>File (HTML/CSS/JS/etc.)</td>
+<td>None</td>
+<td>Serve documentation files</td>
+</tr>
+<tr>
+<td><code>/api/projects/{name}/download</code></td>
+<td>GET</td>
+<td>Streaming tar.gz</td>
+<td>None</td>
+<td>Download full site archive</td>
+</tr>
+</tbody>
+</table>
+                </div>
+            </article>
+            <nav class="page-nav">
+                
+                <a href="api-projects.html" class="page-nav-link page-nav-prev">
+                    <span class="page-nav-label">Previous</span>
+                    <span class="page-nav-title">Project Management Endpoints</span>
+                </a>
+                
+                
+                <a href="architecture-overview.html" class="page-nav-link page-nav-next">
+                    <span class="page-nav-label">Next</span>
+                    <span class="page-nav-title">Architecture Overview</span>
+                </a>
+                
+            </nav>
+            
+            <aside class="toc-sidebar">
+                <div class="toc-container">
+                    <h3>On this page</h3>
+                    <div class="toc">
+<ul>
+<li><a href="#health-check">Health Check</a><ul>
+<li><a href="#response">Response</a></li>
+<li><a href="#usage">Usage</a></li>
+<li><a href="#docker-and-orchestration">Docker and Orchestration</a></li>
+</ul>
+</li>
+<li><a href="#serving-static-documentation">Serving Static Documentation</a><ul>
+<li><a href="#path-parameters">Path Parameters</a></li>
+<li><a href="#response_1">Response</a></li>
+<li><a href="#error-responses">Error Responses</a></li>
+<li><a href="#examples">Examples</a></li>
+<li><a href="#file-structure">File Structure</a></li>
+<li><a href="#security">Security</a></li>
+</ul>
+</li>
+<li><a href="#archive-download">Archive Download</a><ul>
+<li><a href="#path-parameters_1">Path Parameters</a></li>
+<li><a href="#response_2">Response</a></li>
+<li><a href="#error-responses_1">Error Responses</a></li>
+<li><a href="#examples_1">Examples</a></li>
+<li><a href="#implementation-details">Implementation Details</a></li>
+<li><a href="#archive-contents">Archive Contents</a></li>
+</ul>
+</li>
+<li><a href="#project-name-validation">Project Name Validation</a></li>
+<li><a href="#data-directory-configuration">Data Directory Configuration</a></li>
+<li><a href="#quick-reference">Quick Reference</a></li>
+</ul>
+</div>
+
+                </div>
+            </aside>
+            
+        </main>
+
+        <footer class="footer">
+            <p>Built with <a href="https://github.com/docsfy/docsfy">docsfy</a></p>
+        </footer>
+    </div>
+
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <script src="assets/theme.js"></script>
+    <script src="assets/search.js"></script>
+    <script src="assets/copy.js"></script>
+    <script src="assets/callouts.js"></script>
+    <script src="assets/scrollspy.js"></script>
+    <script src="assets/codelabels.js"></script>
+    <script src="assets/github.js"></script>
+    <script>
+    (function() {
+        var toggle = document.getElementById('sidebar-toggle');
+        var sidebar = document.getElementById('sidebar');
+        var overlay = document.getElementById('sidebar-overlay');
+        if (toggle && sidebar) {
+            toggle.addEventListener('click', function() {
+                sidebar.classList.toggle('open');
+                if (overlay) overlay.classList.toggle('open');
+                var expanded = sidebar.classList.contains('open');
+                toggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+            });
+        }
+        if (overlay) {
+            overlay.addEventListener('click', function() {
+                sidebar.classList.remove('open');
+                overlay.classList.remove('open');
+                if (toggle) toggle.setAttribute('aria-expanded', 'false');
+            });
+        }
+    })();
+    </script>
+    <script>
+    (function() {
+        var sidebar = document.querySelector('.sidebar-nav') || document.querySelector('.sidebar');
+        if (!sidebar) return;
+
+        // Restore scroll position
+        var saved = sessionStorage.getItem('sidebar-scroll');
+        if (saved) sidebar.scrollTop = parseInt(saved, 10);
+
+        // Save scroll position before navigating
+        sidebar.addEventListener('scroll', function() {
+            sessionStorage.setItem('sidebar-scroll', sidebar.scrollTop.toString());
+        });
+
+        // Also scroll active link into view if no saved position
+        if (!saved) {
+            var active = sidebar.querySelector('.nav-link.active');
+            if (active) {
+                active.scrollIntoView({ block: 'center', behavior: 'instant' });
+            }
+        }
+    })();
+    </script>
+</body>
+</html>

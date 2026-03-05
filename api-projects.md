@@ -1,177 +1,382 @@
-# GET /api/projects/{name}
+# Project Management Endpoints
 
-Retrieve detailed information about a documentation project, including its current status, the last generation timestamp, the commit SHA that was used, and a full listing of generated pages.
+The project management endpoints allow you to monitor, inspect, and clean up documentation projects managed by docsfy. These read and delete operations complement the generation endpoint by giving you full visibility into project state and lifecycle management.
 
-## Endpoint
+## GET /api/status
+
+Lists all tracked projects with their current generation status. This is the primary endpoint for dashboards and monitoring tools that need an overview of all documentation projects.
+
+### Request
+
+```
+GET /api/status
+```
+
+No query parameters or request body required.
+
+### Response
+
+Returns HTTP `200` with a JSON object containing a `projects` array. Projects are ordered by most recently updated first.
+
+```json
+{
+  "projects": [
+    {
+      "name": "my-repo",
+      "repo_url": "https://github.com/org/my-repo.git",
+      "status": "ready",
+      "last_commit_sha": "abc123def456",
+      "last_generated": "2025-09-15 14:30:00",
+      "page_count": 12
+    },
+    {
+      "name": "another-repo",
+      "repo_url": "https://github.com/org/another-repo.git",
+      "status": "generating",
+      "last_commit_sha": null,
+      "last_generated": null,
+      "page_count": 0
+    }
+  ]
+}
+```
+
+When no projects exist, the response contains an empty array:
+
+```json
+{
+  "projects": []
+}
+```
+
+### Response Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `name` | `string` | Unique project identifier, derived from the repository name |
+| `repo_url` | `string` | Source repository URL or local path |
+| `status` | `string` | Current state: `"generating"`, `"ready"`, or `"error"` |
+| `last_commit_sha` | `string \| null` | Git commit SHA of the last processed revision. `null` if generation hasn't completed |
+| `last_generated` | `string \| null` | Timestamp when documentation was last successfully generated. `null` if never completed |
+| `page_count` | `integer` | Number of documentation pages generated. `0` during initial generation |
+
+> **Note:** The `list_projects()` query in `storage.py` selects only the six fields shown above. Fields like `error_message`, `plan_json`, `created_at`, and `updated_at` are excluded from this summary view. Use `GET /api/projects/{name}` for full project details.
+
+### Example
+
+```bash
+curl http://localhost:8000/api/status
+```
+
+### Status Values
+
+The `status` field reflects where a project is in the generation lifecycle:
+
+| Status | Meaning |
+|--------|---------|
+| `generating` | Documentation generation is in progress. The AI planner and page generator are actively working. |
+| `ready` | Generation completed successfully. Documentation is available for viewing and download. |
+| `error` | Generation failed. Use `GET /api/projects/{name}` to retrieve the `error_message` with details. |
+
+These values are enforced at the storage layer as a fixed set:
+
+```python
+# src/docsfy/storage.py
+VALID_STATUSES = frozenset({"generating", "ready", "error"})
+```
+
+---
+
+## GET /api/projects/{name}
+
+Retrieves full details for a single project, including fields not returned by the status listing such as `error_message`, `plan_json`, and timestamps.
+
+### Request
 
 ```
 GET /api/projects/{name}
 ```
 
-## Path Parameters
+| Parameter | Location | Type | Description |
+|-----------|----------|------|-------------|
+| `name` | path | `string` | Project name. Must match `^[a-zA-Z0-9][a-zA-Z0-9._-]*$` |
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `name` | `string` | Yes | The unique project name assigned during generation. This corresponds to the directory name under `/data/projects/`. |
+### Response
 
-## Response
-
-### 200 OK
-
-Returns the full project details including metadata from the SQLite database and the page listing derived from the project's `plan.json`.
+Returns HTTP `200` with the complete project record:
 
 ```json
 {
-  "name": "my-project",
-  "repo_url": "https://github.com/example/my-project",
+  "name": "my-repo",
+  "repo_url": "https://github.com/org/my-repo.git",
   "status": "ready",
-  "last_generated": "2026-03-04T18:32:01Z",
-  "last_commit_sha": "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2",
-  "pages": [
-    "index.md",
-    "getting-started.md",
-    "configuration.md",
-    "api-reference.md"
-  ]
+  "last_commit_sha": "abc123def456",
+  "last_generated": "2025-09-15 14:30:00",
+  "page_count": 12,
+  "error_message": null,
+  "plan_json": "{\"project_name\": \"my-repo\", \"tagline\": \"...\", \"navigation\": [...]}",
+  "created_at": "2025-09-15 14:00:00",
+  "updated_at": "2025-09-15 14:30:00"
 }
 ```
 
-#### Response Fields
+### Response Fields
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `name` | `string` | The unique project identifier. |
-| `repo_url` | `string` | The GitHub repository URL (HTTPS or SSH) that this project was generated from. |
-| `status` | `string` | Current project state. One of `generating`, `ready`, or `error`. |
-| `last_generated` | `string` (ISO 8601) | Timestamp of the most recent documentation generation run. |
-| `last_commit_sha` | `string` | The full 40-character Git commit SHA from the repository at the time of the last generation. Used for [incremental updates](#incremental-updates-and-commit-tracking). |
-| `pages` | `array[string]` | List of documentation page filenames derived from the project's `plan.json`. These correspond to cached markdown files under `cache/pages/`. |
+| `name` | `string` | Unique project identifier |
+| `repo_url` | `string` | Source repository URL or local path |
+| `status` | `string` | `"generating"`, `"ready"`, or `"error"` |
+| `last_commit_sha` | `string \| null` | Git SHA of the last processed commit |
+| `last_generated` | `string \| null` | Timestamp of last successful generation |
+| `page_count` | `integer` | Number of generated documentation pages |
+| `error_message` | `string \| null` | Error details when `status` is `"error"`. `null` otherwise |
+| `plan_json` | `string \| null` | JSON-serialized documentation plan produced by the AI planner. Contains navigation structure, page slugs, titles, and descriptions |
+| `created_at` | `string` | Timestamp when the project was first created |
+| `updated_at` | `string` | Timestamp of the most recent update to this record |
 
-### Project Status Values
+### The Documentation Plan
 
-| Status | Meaning |
-|--------|---------|
-| `generating` | Documentation generation is currently in progress. The pipeline is running through clone, plan, content, and render stages. |
-| `ready` | Generation completed successfully. The static site is available for serving or download. |
-| `error` | The most recent generation attempt failed. Check generation logs for details. |
-
-### 404 Not Found
-
-Returned when no project exists with the given name.
+When `plan_json` is present, it deserializes to a structure matching the `DocPlan` model:
 
 ```json
 {
-  "detail": "Project not found: my-project"
-}
-```
-
-## Examples
-
-### Retrieve a project with completed documentation
-
-```bash
-curl http://localhost:8000/api/projects/my-project
-```
-
-```json
-{
-  "name": "my-project",
-  "repo_url": "https://github.com/example/my-project",
-  "status": "ready",
-  "last_generated": "2026-03-04T18:32:01Z",
-  "last_commit_sha": "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2",
-  "pages": [
-    "index.md",
-    "getting-started.md",
-    "configuration.md",
-    "api-reference.md"
+  "project_name": "my-repo",
+  "tagline": "A brief description of the project",
+  "navigation": [
+    {
+      "group": "Getting Started",
+      "pages": [
+        {
+          "slug": "introduction",
+          "title": "Introduction",
+          "description": "Overview of the project"
+        },
+        {
+          "slug": "installation",
+          "title": "Installation",
+          "description": "How to install and configure"
+        }
+      ]
+    }
   ]
 }
 ```
 
-### Check a project that is currently generating
+> **Tip:** The `plan_json` field is populated as soon as the AI planner finishes, even while individual pages are still being generated. You can use this to show users the planned documentation structure with a progress indicator before generation completes.
+
+### Error Responses
+
+| Status Code | Condition | Response Body |
+|-------------|-----------|---------------|
+| `400` | Invalid project name (fails regex validation) | `{"detail": "Invalid project name: '{name}'"}` |
+| `404` | Project does not exist in the database | `{"detail": "Project '{name}' not found"}` |
+
+### Name Validation
+
+Project names are validated against a strict regex pattern to prevent path traversal attacks:
+
+```python
+# src/docsfy/main.py
+def _validate_project_name(name: str) -> str:
+    """Validate project name to prevent path traversal."""
+    if not _re.match(r"^[a-zA-Z0-9][a-zA-Z0-9._-]*$", name):
+        raise HTTPException(status_code=400, detail=f"Invalid project name: '{name}'")
+    return name
+```
+
+Valid names: `my-repo`, `project_123`, `docs.v2`
+
+Invalid names: `.hidden`, `../etc/passwd`, `path/traversal`, `-leading-dash`
+
+### Examples
+
+**Fetch a completed project:**
 
 ```bash
-curl http://localhost:8000/api/projects/new-project
+curl http://localhost:8000/api/projects/my-repo
 ```
+
+**Check why a project failed:**
+
+```bash
+curl http://localhost:8000/api/projects/my-repo | jq '.error_message'
+```
+
+**Poll for generation completion:**
+
+```bash
+# Check status until generation finishes
+while true; do
+  STATUS=$(curl -s http://localhost:8000/api/projects/my-repo | jq -r '.status')
+  echo "Status: $STATUS"
+  [ "$STATUS" != "generating" ] && break
+  sleep 5
+done
+```
+
+---
+
+## DELETE /api/projects/{name}
+
+Removes a project from the database and deletes all generated files from disk, including the rendered HTML site, cached markdown pages, and the documentation plan.
+
+### Request
+
+```
+DELETE /api/projects/{name}
+```
+
+| Parameter | Location | Type | Description |
+|-----------|----------|------|-------------|
+| `name` | path | `string` | Project name. Must match `^[a-zA-Z0-9][a-zA-Z0-9._-]*$` |
+
+### Response
+
+Returns HTTP `200` on successful deletion:
 
 ```json
 {
-  "name": "new-project",
-  "repo_url": "https://github.com/example/new-project",
-  "status": "generating",
-  "last_generated": null,
-  "last_commit_sha": "f6e5d4c3b2a1f6e5d4c3b2a1f6e5d4c3b2a1f6e5",
-  "pages": []
+  "deleted": "my-repo"
 }
 ```
 
-> **Note:** While a project is in `generating` status, `last_generated` may be `null` if this is the first generation run. The `pages` array will be empty until the AI Planner and Content Generator stages complete.
+### What Gets Deleted
 
-### Query a project that failed generation
+The delete operation performs two steps:
+
+1. **Database record** — the project row is removed from the `projects` table in SQLite
+2. **Project directory** — the entire directory tree at `{DATA_DIR}/projects/{name}/` is removed, including:
+
+```
+{DATA_DIR}/projects/{name}/
+├── plan.json              # Documentation structure plan
+├── cache/
+│   └── pages/
+│       ├── introduction.md
+│       └── ...            # Cached AI-generated markdown
+└── site/
+    ├── index.html
+    ├── *.html             # Rendered HTML pages
+    ├── assets/
+    │   ├── style.css
+    │   ├── search.js
+    │   └── ...
+    └── search-index.json
+```
+
+The implementation from `main.py`:
+
+```python
+# src/docsfy/main.py
+@app.delete("/api/projects/{name}")
+async def delete_project_endpoint(name: str) -> dict[str, str]:
+    name = _validate_project_name(name)
+    deleted = await delete_project(name)
+    if not deleted:
+        raise HTTPException(status_code=404, detail=f"Project '{name}' not found")
+    project_dir = get_project_dir(name)
+    if project_dir.exists():
+        shutil.rmtree(project_dir)
+    return {"deleted": name}
+```
+
+> **Warning:** This operation is irreversible. All generated documentation, cached pages, and the AI-produced plan will be permanently deleted. To regenerate, you must submit a new `POST /api/generate` request.
+
+### Error Responses
+
+| Status Code | Condition | Response Body |
+|-------------|-----------|---------------|
+| `400` | Invalid project name (fails regex validation) | `{"detail": "Invalid project name: '{name}'"}` |
+| `404` | Project does not exist in the database | `{"detail": "Project '{name}' not found"}` |
+
+### Examples
+
+**Delete a project:**
 
 ```bash
-curl http://localhost:8000/api/projects/broken-project
+curl -X DELETE http://localhost:8000/api/projects/my-repo
 ```
 
-```json
-{
-  "name": "broken-project",
-  "repo_url": "https://github.com/example/broken-project",
-  "status": "error",
-  "last_generated": "2026-03-04T12:01:44Z",
-  "last_commit_sha": "d4c3b2a1f6e5d4c3b2a1f6e5d4c3b2a1f6e5d4c3",
-  "pages": []
-}
+**Delete and confirm removal:**
+
+```bash
+curl -X DELETE http://localhost:8000/api/projects/my-repo
+
+# Verify it's gone
+curl http://localhost:8000/api/projects/my-repo
+# Returns: {"detail": "Project 'my-repo' not found"} with HTTP 404
 ```
 
-> **Tip:** If a project is in `error` status, you can re-trigger generation by calling `POST /api/generate` with the same repository URL. The pipeline will re-clone and attempt a full generation.
+---
 
-## Incremental Updates and Commit Tracking
+## Database Schema
 
-The `last_commit_sha` field plays a key role in the incremental update system. When you trigger a re-generation for an existing project via `POST /api/generate`:
+All project management endpoints operate on the `projects` table in SQLite. The database is stored at `{DATA_DIR}/docsfy.db` (default: `/data/docsfy.db`) and is initialized automatically on application startup.
 
-1. docsfy fetches the repository and compares the current HEAD SHA against the stored `last_commit_sha`.
-2. If the SHA has changed, the AI Planner re-evaluates whether the documentation structure needs updating.
-3. Only pages affected by the changes are regenerated, keeping previously cached markdown pages intact.
-4. The `last_commit_sha` is updated to reflect the new HEAD after generation completes.
-
-This makes `GET /api/projects/{name}` useful for CI/CD integrations that need to determine whether documentation is current with the latest commit.
-
-## Storage Layout
-
-The data returned by this endpoint is assembled from two sources:
-
-**SQLite database** (`/data/docsfy.db`) stores the project metadata — name, repo URL, status, timestamps, and commit SHA.
-
-**Filesystem** (`/data/projects/{name}/`) holds the generated artifacts:
-
-```
-/data/projects/{name}/
-  plan.json             # Documentation structure from AI (source for pages listing)
-  cache/
-    pages/*.md          # AI-generated markdown (cached for incremental updates)
-  site/                 # Final rendered HTML
-    index.html
-    *.html
-    assets/
-      style.css
-      search.js
-      theme-toggle.js
-      highlight.js
-    search-index.json
+```sql
+-- src/docsfy/storage.py
+CREATE TABLE IF NOT EXISTS projects (
+    name TEXT PRIMARY KEY,
+    repo_url TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'generating',
+    last_commit_sha TEXT,
+    last_generated TEXT,
+    page_count INTEGER DEFAULT 0,
+    error_message TEXT,
+    plan_json TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+)
 ```
 
-The `pages` array in the response is derived from the `plan.json` file, which is produced by the AI Planner stage and defines the full navigation hierarchy and page structure of the generated documentation site.
+The `DATA_DIR` is configurable via environment variable:
 
-## Related Endpoints
+```python
+# src/docsfy/storage.py
+DB_PATH = Path(os.getenv("DATA_DIR", "/data")) / "docsfy.db"
+```
 
-| Method | Path | Description |
-|--------|------|-------------|
-| `POST` | `/api/generate` | Start documentation generation for a repository URL. |
-| `GET` | `/api/status` | List all projects and their generation status. |
-| `DELETE` | `/api/projects/{name}` | Remove a project and all its generated documentation. |
-| `GET` | `/api/projects/{name}/download` | Download the generated static site as a `.tar.gz` archive. |
-| `GET` | `/docs/{project}/{path}` | Serve the generated HTML documentation directly. |
+---
 
-> **Warning:** Calling `DELETE /api/projects/{name}` permanently removes the project metadata from the database and deletes all generated files from disk, including cached markdown pages. This action cannot be undone.
+## Common Patterns
+
+### Monitoring a Generation Workflow
+
+Combine the project management endpoints to track a project from generation through completion:
+
+```bash
+# 1. Start generation
+curl -X POST http://localhost:8000/api/generate \
+  -H "Content-Type: application/json" \
+  -d '{"repo_url": "https://github.com/org/my-repo.git"}'
+# Response: {"project": "my-repo", "status": "generating"}
+
+# 2. Monitor progress via project details
+curl http://localhost:8000/api/projects/my-repo
+# Shows page_count incrementing as pages are generated
+
+# 3. List all projects to see overall status
+curl http://localhost:8000/api/status
+
+# 4. Once status is "ready", view the generated docs
+# at http://localhost:8000/docs/my-repo/index.html
+```
+
+### Cleanup Workflow
+
+```bash
+# List all projects
+PROJECTS=$(curl -s http://localhost:8000/api/status | jq -r '.projects[].name')
+
+# Delete projects in error state
+for name in $PROJECTS; do
+  STATUS=$(curl -s "http://localhost:8000/api/projects/$name" | jq -r '.status')
+  if [ "$STATUS" = "error" ]; then
+    echo "Deleting failed project: $name"
+    curl -X DELETE "http://localhost:8000/api/projects/$name"
+  fi
+done
+```
+
+> **Note:** These endpoints have no authentication or rate limiting. In production deployments, consider placing a reverse proxy with authentication in front of the docsfy service, especially for the `DELETE` endpoint.

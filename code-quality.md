@@ -1,420 +1,353 @@
 # Code Quality
 
-docsfy enforces code quality through a layered system of automated checks that run before every commit. The toolchain — adopted from the [pr-test-oracle](https://github.com/pr-test-oracle) project — combines linting, formatting, type checking, and secret detection into a single pre-commit workflow.
+docsfy enforces code quality through a layered set of automated checks that run on every commit. The project uses [pre-commit](https://pre-commit.com/) as the orchestration layer, combining linting, formatting, type checking, and security scanning into a single developer workflow.
 
 ## Overview
 
-| Tool | Purpose |
-|------|---------|
-| [Pre-commit](#pre-commit-hooks) | Git hook framework that orchestrates all checks |
-| [Ruff](#ruff-linting-and-formatting) | Fast Python linter and formatter (replaces black, isort, and most flake8 rules) |
-| [Mypy](#mypy-strict-type-checking) | Static type checker in strict mode |
-| [Flake8](#flake8) | Supplementary linting for rules not covered by ruff |
-| [Gitleaks](#gitleaks) | Scans commits for hardcoded secrets and credentials |
-| [detect-secrets](#detect-secrets) | Baseline-aware secret detection to prevent new secrets from entering the codebase |
+| Tool | Version | Purpose |
+|------|---------|---------|
+| Ruff | v0.15.2 | Python linting and code formatting |
+| Flake8 | v7.3.0 | RedHatQE M511 mutable default detection |
+| mypy | v1.19.1 | Strict static type checking |
+| detect-secrets | v1.5.0 | Prevent secrets from entering the codebase |
+| gitleaks | v8.30.0 | Scan git history for leaked secrets |
+| tox (unused-code) | — | Dead code detection via `pyutils-unusedcode` |
 
 ## Pre-commit Hooks
 
-[Pre-commit](https://pre-commit.com/) is the entry point for all code quality checks. It intercepts `git commit` and runs every configured hook against staged files. If any hook fails, the commit is blocked until the issue is fixed.
-
-### Installation
-
-Pre-commit is installed as a development dependency via `uv`:
-
-```bash
-uv sync --dev
-```
-
-Then activate the hooks in your local repository:
-
-```bash
-uv run pre-commit install
-```
-
-### Configuration
-
-The `.pre-commit-config.yaml` file defines all hooks and their versions:
+All checks are configured in `.pre-commit-config.yaml` and run automatically before each commit. The project also integrates with [pre-commit.ci](https://pre-commit.ci/) for continuous integration, with automatic PR auto-fix disabled:
 
 ```yaml
-repos:
-  # Standard pre-commit hooks
-  - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v5.0.0
-    hooks:
-      - id: trailing-whitespace
-      - id: end-of-file-fixer
-      - id: check-yaml
-      - id: check-toml
-      - id: check-added-large-files
-      - id: debug-statements
-      - id: check-merge-conflict
-
-  # Ruff - linting and formatting
-  - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.9.7
-    hooks:
-      - id: ruff
-        args: [--fix]
-      - id: ruff-format
-
-  # Mypy - strict type checking
-  - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.15.0
-    hooks:
-      - id: mypy
-        additional_dependencies: [fastapi, uvicorn, jinja2, aiosqlite]
-        args: [--strict]
-
-  # Flake8 - supplementary linting
-  - repo: https://github.com/PyCQA/flake8
-    rev: 7.1.2
-    hooks:
-      - id: flake8
-
-  # Gitleaks - secret scanning
-  - repo: https://github.com/gitleaks/gitleaks
-    rev: v8.22.1
-    hooks:
-      - id: gitleaks
-
-  # detect-secrets - baseline secret detection
-  - repo: https://github.com/Yelp/detect-secrets
-    rev: v1.5.0
-    hooks:
-      - id: detect-secrets
-        args: ['--baseline', '.secrets.baseline']
+ci:
+  autofix_prs: false
+  autoupdate_commit_msg: "ci: [pre-commit.ci] pre-commit autoupdate"
 ```
 
-### Running Hooks Manually
+### Standard Hooks
 
-Run all hooks against every file (not just staged changes):
+The first layer of pre-commit hooks catches common issues before any language-specific tooling runs:
+
+```yaml
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v6.0.0
+  hooks:
+    - id: check-added-large-files
+    - id: check-docstring-first
+    - id: check-executables-have-shebangs
+    - id: check-merge-conflict
+    - id: check-symlinks
+    - id: detect-private-key
+    - id: mixed-line-ending
+    - id: debug-statements
+    - id: trailing-whitespace
+      args: [--markdown-linebreak-ext=md]
+    - id: end-of-file-fixer
+    - id: check-ast
+    - id: check-builtin-literals
+    - id: check-toml
+```
+
+These hooks enforce baseline hygiene: no large binaries, no merge conflict markers, no stray `breakpoint()` or `pdb` calls, consistent line endings, and valid Python AST in every `.py` file.
+
+### Installing Pre-commit
+
+To set up the hooks locally:
 
 ```bash
-uv run pre-commit run --all-files
+pip install pre-commit
+pre-commit install
 ```
 
-Run a specific hook:
+To run all hooks against the entire codebase on demand:
 
 ```bash
-uv run pre-commit run ruff --all-files
-uv run pre-commit run mypy --all-files
+pre-commit run --all-files
 ```
 
-> **Tip:** Run `pre-commit run --all-files` after pulling changes or updating hook versions to catch issues early before your next commit.
+## Ruff — Linting and Formatting
 
-## Ruff Linting and Formatting
+[Ruff](https://docs.astral.sh/ruff/) serves as the primary linter and code formatter for the project. It replaces tools like isort, pyflakes, pycodestyle, and Black with a single, fast Rust-based tool.
 
-[Ruff](https://docs.astral.sh/ruff/) is an extremely fast Python linter and formatter written in Rust. It replaces black, isort, pycodestyle, pyflakes, and many flake8 plugins in a single tool.
+Both the linter and formatter are registered as separate pre-commit hooks:
 
-docsfy uses ruff for two purposes via separate pre-commit hooks:
+```yaml
+- repo: https://github.com/astral-sh/ruff-pre-commit
+  rev: v0.15.2
+  hooks:
+    - id: ruff
+    - id: ruff-format
+```
 
-- **`ruff`** — linting with auto-fix enabled (`--fix`)
-- **`ruff-format`** — code formatting (consistent style enforcement)
+The project uses ruff's default rule set with no custom configuration — there is no `[tool.ruff]` section in `pyproject.toml` and no standalone `ruff.toml` file. The defaults include pyflakes (`F`), pycodestyle (`E`, `W`), and isort (`I`) rules.
+
+> **Tip:** Ruff can auto-fix many issues. Run `ruff check --fix .` to apply safe fixes, or `ruff format .` to reformat the codebase.
+
+## Flake8 — M511 Mutable Default Detection
+
+Flake8 is retained alongside ruff specifically for the [RedHatQE flake8-plugins](https://github.com/RedHatQE/flake8-plugins) package, which provides the **M511** rule. This rule detects mutable default arguments in function signatures — a common Python pitfall where a mutable object (like a list or dict) is used as a default parameter value and shared across all calls.
 
 ### Configuration
 
-Ruff is configured in `pyproject.toml`:
-
-```toml
-[tool.ruff]
-target-version = "py312"
-line-length = 120
-
-[tool.ruff.lint]
-select = [
-    "E",      # pycodestyle errors
-    "W",      # pycodestyle warnings
-    "F",      # pyflakes
-    "I",      # isort
-    "N",      # pep8-naming
-    "UP",     # pyupgrade
-    "B",      # flake8-bugbear
-    "SIM",    # flake8-simplify
-    "RUF",    # ruff-specific rules
-]
-
-[tool.ruff.lint.isort]
-known-first-party = ["docsfy"]
-```
-
-### What Ruff Checks
-
-| Rule Set | Code | What It Catches |
-|----------|------|----------------|
-| pycodestyle | `E`, `W` | Style violations (whitespace, indentation, line length) |
-| pyflakes | `F` | Unused imports, undefined names, redefined variables |
-| isort | `I` | Import ordering and grouping |
-| pep8-naming | `N` | Naming convention violations |
-| pyupgrade | `UP` | Code that can use newer Python 3.12+ syntax |
-| flake8-bugbear | `B` | Common bugs and design problems |
-| flake8-simplify | `SIM` | Code that can be simplified |
-| ruff-specific | `RUF` | Ruff's own additional checks |
-
-### Auto-fix Behavior
-
-The `--fix` flag in the pre-commit hook means ruff will automatically fix issues where safe to do so. For example:
-
-```python
-# Before: ruff auto-fixes unused import (F401)
-import os
-import sys
-
-def get_version():
-    return sys.version
-
-# After: ruff removes the unused `os` import
-import sys
-
-def get_version():
-    return sys.version
-```
-
-Import ordering is also handled automatically:
-
-```python
-# Before: unordered imports (I001)
-from docsfy.renderer import render_html
-import asyncio
-from fastapi import FastAPI
-import os
-
-# After: ruff reorders into standard/third-party/first-party groups
-import asyncio
-import os
-
-from fastapi import FastAPI
-
-from docsfy.renderer import render_html
-```
-
-> **Note:** Ruff's formatter (`ruff-format`) runs as a separate hook after the linter. This ensures that any auto-fixed code is also properly formatted.
-
-## Mypy Strict Type Checking
-
-[Mypy](https://mypy-lang.org/) performs static type analysis to catch type errors before runtime. docsfy runs mypy in **strict mode**, which enables all optional type-checking flags for maximum safety.
-
-### Configuration
-
-Mypy is configured in `pyproject.toml`:
-
-```toml
-[tool.mypy]
-python_version = "3.12"
-strict = true
-warn_return_any = true
-warn_unused_configs = true
-disallow_untyped_defs = true
-disallow_incomplete_defs = true
-check_untyped_defs = true
-no_implicit_optional = true
-warn_redundant_casts = true
-warn_unused_ignores = true
-```
-
-### What Strict Mode Enforces
-
-Strict mode is the combination of several flags that together require comprehensive type annotations:
-
-- **`disallow_untyped_defs`** — Every function must have type annotations for all parameters and the return type
-- **`disallow_incomplete_defs`** — Partial annotations (e.g., annotating some but not all parameters) are rejected
-- **`no_implicit_optional`** — `None` defaults don't automatically make a parameter `Optional`; you must write `str | None` explicitly
-- **`warn_return_any`** — Functions typed as returning a specific type but actually returning `Any` trigger a warning
-
-### Examples
-
-Functions must have complete type annotations:
-
-```python
-# Passes mypy --strict
-async def generate_docs(repo_url: str, project_name: str) -> tuple[bool, str]:
-    """Generate documentation for a repository."""
-    ...
-
-# Fails mypy --strict: missing parameter and return type annotations
-async def generate_docs(repo_url, project_name):
-    ...
-```
-
-Optional parameters must be explicitly annotated:
-
-```python
-# Passes mypy --strict
-def get_provider(name: str | None = None) -> ProviderConfig:
-    ...
-
-# Fails mypy --strict: implicit Optional is not allowed
-def get_provider(name: str = None) -> ProviderConfig:
-    ...
-```
-
-> **Warning:** The pre-commit mypy hook lists `additional_dependencies` (fastapi, uvicorn, jinja2, aiosqlite) so that mypy can resolve third-party type stubs. If you add a new dependency to the project, you may need to add it here as well for type checking to pass.
-
-## Flake8
-
-[Flake8](https://flake8.pycqa.org/) provides supplementary linting that catches issues outside ruff's rule set. While ruff covers most of flake8's core rules, flake8 is retained for its plugin ecosystem and as a secondary verification layer.
-
-### Configuration
-
-Flake8 is configured in `pyproject.toml` (via the `[tool.flake8]` section if using `pyproject-flake8`) or in a `.flake8` file:
+The `.flake8` configuration file restricts flake8 to only the M511 rule:
 
 ```ini
 [flake8]
-max-line-length = 120
-extend-ignore = E203, W503
-per-file-ignores =
-    __init__.py:F401
+select=M511
+
+exclude =
+    doc,
+    .tox,
+    .git,
+    *.yml,
+    Pipfile.*,
+    docs/*,
+    .cache/*
 ```
 
-| Setting | Value | Reason |
-|---------|-------|--------|
-| `max-line-length` | `120` | Matches ruff's `line-length` setting |
-| `extend-ignore: E203` | — | Conflicts with formatting around slice notation |
-| `extend-ignore: W503` | — | Deprecated rule about line breaks before binary operators |
-| `per-file-ignores: __init__.py:F401` | — | Allows unused imports in `__init__.py` (re-exports) |
+The pre-commit hook also pulls in `flake8-mutable` as an additional dependency:
 
-> **Note:** The `max-line-length` setting should always match ruff's `line-length` in `pyproject.toml` to avoid conflicting results between the two tools.
+```yaml
+- repo: https://github.com/PyCQA/flake8
+  rev: 7.3.0
+  hooks:
+    - id: flake8
+      args: [--config=.flake8]
+      additional_dependencies:
+        # Tracks main branch intentionally for latest RedHatQE flake8 plugins
+        [git+https://github.com/RedHatQE/flake8-plugins.git, flake8-mutable]
+```
 
-## Gitleaks
+> **Note:** The RedHatQE plugin dependency tracks the `main` branch intentionally to pick up the latest rules without waiting for a release.
 
-[Gitleaks](https://gitleaks.io/) is a SAST (Static Application Security Testing) tool that scans git commits for hardcoded secrets such as API keys, tokens, passwords, and private keys.
+### What M511 Catches
 
-### How It Works
+M511 flags code like this:
 
-The gitleaks pre-commit hook scans the contents of staged files before each commit. If a potential secret is detected, the commit is blocked with a report identifying the file, line, and type of secret found.
+```python
+# Bad — mutable default argument
+def process_items(items: list[str] = []) -> None:
+    items.append("new")  # mutates the shared default
+```
+
+The correct pattern, used throughout the docsfy codebase, is to use immutable defaults or factory functions:
+
+```python
+# Good — immutable default with Pydantic Field factory
+navigation: list[NavGroup] = Field(default_factory=list)
+```
+
+## mypy — Strict Type Checking
+
+The project enforces strict static type checking with [mypy](https://mypy.readthedocs.io/). All source code (excluding tests) must have complete, correct type annotations.
 
 ### Configuration
 
-Gitleaks uses its built-in rules by default. A custom `.gitleaks.toml` can be added to fine-tune detection:
+The mypy configuration in `pyproject.toml` enables nearly every strictness flag:
 
 ```toml
+[tool.mypy]
+check_untyped_defs = true
+disallow_any_generics = true
+disallow_incomplete_defs = true
+disallow_untyped_defs = true
+no_implicit_optional = true
+show_error_codes = true
+warn_unused_ignores = true
+strict_equality = true
+extra_checks = true
+warn_unused_configs = true
+warn_redundant_casts = true
+```
+
+Key strictness options and what they enforce:
+
+| Option | Effect |
+|--------|--------|
+| `disallow_untyped_defs` | Every function must have type annotations |
+| `disallow_any_generics` | Generic types (e.g., `list`, `dict`) must specify their type parameters |
+| `disallow_incomplete_defs` | Partially annotated functions are rejected |
+| `no_implicit_optional` | `None` defaults don't automatically make the type optional |
+| `strict_equality` | Prevents comparing unrelated types with `==` |
+| `extra_checks` | Enables additional miscellaneous checks |
+
+### Pre-commit Integration
+
+The mypy pre-commit hook excludes tests and ships with type stub packages for the project's dependencies:
+
+```yaml
+- repo: https://github.com/pre-commit/mirrors-mypy
+  rev: v1.19.1
+  hooks:
+    - id: mypy
+      exclude: (tests/)
+      additional_dependencies:
+        [types-requests, types-PyYAML, types-colorama, types-aiofiles, pydantic, types-Markdown]
+```
+
+> **Note:** Tests are excluded from mypy checking (`exclude: (tests/)`) to allow more flexible typing in test code, where mocks and fixtures often don't carry precise types.
+
+### Code Examples
+
+The strict configuration shapes how all code in the project is written. Every function signature carries full type annotations, including return types:
+
+```python
+# From src/docsfy/storage.py
+async def update_project_status(
+    name: str,
+    status: str,
+    last_commit_sha: str | None = None,
+    page_count: int | None = None,
+    error_message: str | None = None,
+    plan_json: str | None = None,
+) -> None:
+```
+
+Pydantic models use modern union syntax and `Literal` types for constrained values:
+
+```python
+# From src/docsfy/models.py
+from typing import Literal
+
+class GenerateRequest(BaseModel):
+    repo_url: str | None = Field(
+        default=None, description="Git repository URL (HTTPS or SSH)"
+    )
+    ai_provider: Literal["claude", "gemini", "cursor"] | None = None
+    ai_cli_timeout: int | None = Field(default=None, gt=0)
+```
+
+Return types are always explicit, including for functions that return complex structures:
+
+```python
+# From src/docsfy/storage.py
+async def get_project(name: str) -> dict[str, str | int | None] | None:
+    ...
+
+async def list_projects() -> list[dict[str, str | int | None]]:
+    ...
+```
+
+## Security Scanning
+
+The project uses two complementary tools to prevent secrets from entering the repository.
+
+### detect-secrets
+
+[detect-secrets](https://github.com/Yelp/detect-secrets) by Yelp scans staged files for high-entropy strings, API keys, passwords, and other potential secrets before they are committed:
+
+```yaml
+- repo: https://github.com/Yelp/detect-secrets
+  rev: v1.5.0
+  hooks:
+    - id: detect-secrets
+```
+
+This hook runs with default detection rules and blocks commits that contain patterns matching known secret formats.
+
+### gitleaks
+
+[gitleaks](https://github.com/gitleaks/gitleaks) provides an additional layer of secret scanning that inspects the full git history, not just staged changes. This catches secrets that may have been committed before `detect-secrets` was installed.
+
+```yaml
+- repo: https://github.com/gitleaks/gitleaks
+  rev: v8.30.0
+  hooks:
+    - id: gitleaks
+```
+
+The gitleaks configuration in `.gitleaks.toml` extends the default ruleset and allowlists the test file that intentionally contains mock URL patterns:
+
+```toml
+[extend]
+useDefault = true
+
 [allowlist]
-description = "Global allowlist"
 paths = [
-    '''\.secrets\.baseline$''',
-    '''\.env\.example$''',
+    '''tests/test_repository\.py''',
 ]
 ```
 
-### Example Output
+> **Warning:** If gitleaks flags a legitimate secret that was accidentally committed, simply removing it from the current code is not enough — the secret remains in git history. Rotate the credential immediately and consider rewriting history with `git filter-repo`.
 
-When gitleaks detects a secret, you'll see output like:
+## Tox — Unused Code Detection
 
+The project uses [tox](https://tox.wiki/) to run a dead code detection pass alongside the regular test suite. The `tox.toml` configuration defines two environments:
+
+```toml
+skipsdist = true
+
+envlist = ["unused-code", "unittests"]
+
+[env.unused-code]
+deps = ["python-utility-scripts"]
+commands = [
+  [
+    "pyutils-unusedcode",
+  ],
+]
+
+[env.unittests]
+deps = ["uv"]
+commands = [
+  [
+    "uv",
+    "run",
+    "--extra",
+    "dev",
+    "pytest",
+    "-n",
+    "auto",
+    "tests",
+  ],
+]
 ```
-Finding:  ANTHROPIC_API_KEY=sk-ant-api03-real-key-here
-RuleID:   generic-api-key
-Entropy:  4.2
-File:     .env
-Line:     2
-Commit:   (staged)
-```
 
-> **Warning:** Never commit `.env` files or any file containing real API keys. Use `.env.example` with placeholder values instead. The project's `.gitignore` should exclude `.env` and other sensitive files.
+### The `unused-code` Environment
 
-### Handling False Positives
+The `unused-code` environment installs [python-utility-scripts](https://github.com/RedHatQE/python-utility-scripts) and runs `pyutils-unusedcode`, which analyzes the codebase for functions, classes, imports, and variables that are defined but never referenced. This helps prevent code rot and keeps the codebase lean.
 
-If gitleaks flags a false positive (e.g., a test fixture or documentation example), you can suppress it inline:
-
-```python
-# gitleaks:allow
-EXAMPLE_KEY = "sk-ant-api03-placeholder-not-real"
-```
-
-## detect-secrets
-
-[detect-secrets](https://github.com/Yelp/detect-secrets) takes a baseline-aware approach to secret detection. Rather than scanning all files every time, it maintains a `.secrets.baseline` file that tracks known findings, and only alerts on **new** secrets introduced after the baseline was established.
-
-### How It Works
-
-1. A `.secrets.baseline` file is generated and committed to the repository
-2. On each commit, detect-secrets compares staged files against the baseline
-3. Only new secrets (not present in the baseline) trigger a failure
-4. Known false positives are tracked in the baseline and ignored
-
-### Generating the Baseline
-
-Create the initial baseline:
+Run it with:
 
 ```bash
-uv run detect-secrets scan > .secrets.baseline
+tox -e unused-code
 ```
 
-### Auditing the Baseline
+### The `unittests` Environment
 
-After generating or updating the baseline, audit it to mark findings as true or false positives:
+The `unittests` environment runs the full pytest suite using [uv](https://docs.astral.sh/uv/) as the package manager, with parallel execution via `pytest-xdist`:
 
 ```bash
-uv run detect-secrets audit .secrets.baseline
+tox -e unittests
 ```
 
-This launches an interactive session where each finding is presented for review. Findings marked as false positives are ignored in future scans.
-
-### Updating the Baseline
-
-When new files are added or existing secrets are rotated, update the baseline:
+To run both environments:
 
 ```bash
-uv run detect-secrets scan --baseline .secrets.baseline
+tox
 ```
 
-> **Tip:** Run `detect-secrets audit .secrets.baseline` after every baseline update to ensure new findings are properly classified.
+> **Tip:** The `unused-code` check is fast and non-destructive. Consider running it after removing or refactoring features to catch any newly orphaned code.
 
-## Running All Checks
+## Workflow Summary
 
-### Via Pre-commit
+The following diagram shows when each tool runs in the development workflow:
 
-The standard way to run all code quality checks:
+```
+git commit
+  └─► pre-commit hooks
+        ├─► Standard checks (whitespace, AST, merge conflicts, ...)
+        ├─► Ruff lint + format
+        ├─► Flake8 M511 (mutable defaults)
+        ├─► detect-secrets
+        ├─► gitleaks
+        └─► mypy strict type checking
 
-```bash
-# Run against staged files only (happens automatically on commit)
-uv run pre-commit run
+tox (on-demand / CI)
+  ├─► unused-code (pyutils-unusedcode)
+  └─► unittests (pytest -n auto)
 
-# Run against all files in the repository
-uv run pre-commit run --all-files
+pre-commit.ci (on push / PR)
+  └─► Runs all pre-commit hooks in CI
 ```
 
-### Via Tox
-
-Tox provides an additional layer for running checks in isolated environments:
-
-```bash
-# Run all tox environments (tests + quality checks)
-uv run tox
-
-# Run a specific environment
-uv run tox -e lint
-```
-
-## Troubleshooting
-
-### Pre-commit Hook Fails on Commit
-
-If a hook fails, read the error output to identify which tool flagged the issue. Common scenarios:
-
-| Tool | Common Failure | Resolution |
-|------|---------------|------------|
-| ruff | `F401 unused import` | Remove the unused import or add `# noqa: F401` if intentional |
-| ruff-format | File reformatted | Stage the reformatted file and commit again |
-| mypy | `Missing return type` | Add type annotations to the function signature |
-| flake8 | `E501 line too long` | Break the line or check that `max-line-length` matches ruff |
-| gitleaks | Secret detected | Remove the secret, use environment variables instead |
-| detect-secrets | New secret found | Remove it, or update the baseline if it's a false positive |
-
-### Skipping Hooks (Emergency Only)
-
-In rare cases where you need to bypass pre-commit hooks:
-
-```bash
-git commit --no-verify -m "emergency fix: description"
-```
-
-> **Warning:** Use `--no-verify` sparingly and only in genuine emergencies. All skipped checks should be run manually afterwards with `pre-commit run --all-files` to ensure no issues are left unresolved.
-
-### Updating Hook Versions
-
-Keep pre-commit hooks up to date:
-
-```bash
-uv run pre-commit autoupdate
-```
-
-This updates the `rev` field for each repo in `.pre-commit-config.yaml` to the latest available tag.
+All pre-commit hooks run automatically on every commit. The tox environments (`unused-code` and `unittests`) are designed to be run on demand during development or as part of a CI pipeline. The pre-commit.ci integration ensures that all hooks also run on every push and pull request.
