@@ -2404,6 +2404,17 @@
         /* ----- Restore Form State ----- */
         restoreFormState();
 
+        /* ----- Attach Event Listeners to Save Form State on Every Change ----- */
+        var repoInput = document.getElementById('gen-repo-url');
+        var providerSelect = document.getElementById('gen-provider');
+        var modelInput = document.getElementById('gen-model');
+        var forceCheck = document.getElementById('gen-force');
+
+        if (repoInput) repoInput.addEventListener('input', saveFormState);
+        if (providerSelect) providerSelect.addEventListener('change', saveFormState);
+        if (modelInput) modelInput.addEventListener('input', saveFormState);
+        if (forceCheck) forceCheck.addEventListener('change', saveFormState);
+
     })();
     </script>
 </body>
