@@ -43,10 +43,12 @@ async def init_db() -> None:
         """)
 
         # Migrate old databases: add columns if they don't exist
+        import sqlite3
+
         for column in ["ai_provider TEXT", "ai_model TEXT", "current_stage TEXT"]:
             try:
                 await db.execute(f"ALTER TABLE projects ADD COLUMN {column}")
-            except Exception:
+            except sqlite3.OperationalError:
                 pass  # Column already exists
 
         # Reset orphaned "generating" projects from previous server run

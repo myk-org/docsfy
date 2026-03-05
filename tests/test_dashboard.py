@@ -70,6 +70,6 @@ async def test_dashboard_shows_generate_form(client: AsyncClient) -> None:
 async def test_dashboard_empty_state(client: AsyncClient) -> None:
     response = await client.get("/")
     assert response.status_code == 200
-    assert response.status_code == 200
-    # Should show something about no projects
     assert "docsfy" in response.text
+    # No project cards should be present
+    assert "project-card" not in response.text or "No projects" in response.text

@@ -1155,7 +1155,11 @@
                         {% if project.repo_url %}
                         <span class="meta-item">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                            {% if project.repo_url.startswith('http') or project.repo_url.startswith('git@') %}
                             <a href="{{ project.repo_url }}" target="_blank" rel="noopener noreferrer">{{ project.repo_url | replace('https://', '') | replace('http://', '') }}</a>
+                            {% else %}
+                            <span>{{ project.repo_url | replace('https://', '') | replace('http://', '') }}</span>
+                            {% endif %}
                         </span>
                         {% endif %}
                         {% if project.last_generated %}
@@ -1585,14 +1589,22 @@
             }
 
             var progressText = card.querySelector('[data-field="progress-text"]');
-            if (progressText && totalPages > 0) {
-                progressText.textContent = pageCount + ' / ' + totalPages + ' pages';
+            if (progressText) {
+                if (totalPages > 0) {
+                    progressText.textContent = pageCount + ' / ' + totalPages + ' pages';
+                } else {
+                    progressText.textContent = pageCount + ' pages';
+                }
             }
 
             var progressBar = card.querySelector('[data-field="progress-bar"]');
-            if (progressBar && totalPages > 0) {
-                var pct = Math.min(Math.round((pageCount / totalPages) * 100), 100);
-                progressBar.style.width = pct + '%';
+            if (progressBar) {
+                if (totalPages > 0) {
+                    var pct = Math.min(Math.round((pageCount / totalPages) * 100), 100);
+                    progressBar.style.width = pct + '%';
+                } else {
+                    progressBar.style.width = '0%';
+                }
             }
 
             // Update page count in header
@@ -1698,7 +1710,7 @@
                     href: '/status/' + encodeURIComponent(name),
                     text: 'View progress \u2192'
                 });
-                startPolling();
+                startProgressPolling();
                 setTimeout(function() { location.reload(); }, 1000);
             })
             .catch(function(err) {
@@ -1733,7 +1745,7 @@
                     href: '/status/' + encodeURIComponent(name),
                     text: 'View progress \u2192'
                 });
-                startPolling();
+                startProgressPolling();
                 setTimeout(function() { location.reload(); }, 1000);
             })
             .catch(function(err) {
@@ -1751,12 +1763,16 @@
             abortBtn.disabled = true;
             abortBtn.textContent = 'Aborting...';
             fetch('/api/projects/' + encodeURIComponent(name) + '/abort', { method: 'POST' })
-                .then(function(r) { return r.json(); })
+                .then(function(r) {
+                    if (!r.ok) return r.json().then(function(data) { throw data; });
+                    return r.json();
+                })
                 .then(function() { location.reload(); })
                 .catch(function(err) {
                     abortBtn.disabled = false;
                     abortBtn.textContent = 'Abort';
-                    showToast('Failed to abort: ' + err.message, 'error');
+                    var msg = (err && err.detail) || (err && err.message) || 'Abort failed';
+                    showToast(msg, 'error');
                 });
         });
 

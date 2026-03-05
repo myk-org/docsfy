@@ -185,6 +185,12 @@ async def abort_generation(name: str) -> dict[str, str]:
     except (asyncio.CancelledError, asyncio.TimeoutError, Exception):
         pass
 
+    # Verify the task was actually cancelled
+    if not task.done():
+        logger.warning(
+            f"[{name}] Task did not finish within timeout, forcing status update"
+        )
+
     # Ensure status is updated
     await update_project_status(
         name,
@@ -252,7 +258,10 @@ async def _run_generation(
     except asyncio.CancelledError:
         logger.warning(f"[{project_name}] Generation cancelled")
         await update_project_status(
-            project_name, status="aborted", error_message="Generation was cancelled"
+            project_name,
+            status="aborted",
+            error_message="Generation was cancelled",
+            current_stage=None,
         )
         raise
     except Exception as exc:
