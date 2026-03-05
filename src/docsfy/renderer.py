@@ -49,10 +49,12 @@ def _get_prev_next(
     all_pages: list[dict[str, str]] = []
     for group in plan.get("navigation", []):
         for page in group.get("pages", []):
-            all_pages.append({"slug": page["slug"], "title": page["title"]})
+            all_pages.append(
+                {"slug": page.get("slug", ""), "title": page.get("title", "")}
+            )
 
     for i, page in enumerate(all_pages):
-        if page["slug"] == current_slug:
+        if page.get("slug") == current_slug:
             prev_page = all_pages[i - 1] if i > 0 else None
             next_page = all_pages[i + 1] if i < len(all_pages) - 1 else None
             return prev_page, next_page
@@ -111,7 +113,7 @@ def _build_search_index(
     title_map: dict[str, str] = {}
     for group in plan.get("navigation", []):
         for page in group.get("pages", []):
-            title_map[page["slug"]] = page["title"]
+            title_map[page.get("slug", "")] = page.get("title", "")
     for slug, content in pages.items():
         index.append(
             {
@@ -131,13 +133,15 @@ def _build_llms_txt(plan: dict[str, Any]) -> str:
     if tagline:
         lines.extend([f"> {tagline}", ""])
     for group in plan.get("navigation", []):
-        lines.extend([f"## {group['group']}", ""])
+        lines.extend([f"## {group.get('group', '')}", ""])
         for page in group.get("pages", []):
             desc = page.get("description", "")
+            page_title = page.get("title", "")
+            page_slug = page.get("slug", "")
             if desc:
-                lines.append(f"- [{page['title']}]({page['slug']}.md): {desc}")
+                lines.append(f"- [{page_title}]({page_slug}.md): {desc}")
             else:
-                lines.append(f"- [{page['title']}]({page['slug']}.md)")
+                lines.append(f"- [{page_title}]({page_slug}.md)")
         lines.append("")
     return "\n".join(lines)
 
@@ -152,7 +156,7 @@ def _build_llms_full_txt(plan: dict[str, Any], pages: dict[str, str]) -> str:
     lines.extend(["---", ""])
     for group in plan.get("navigation", []):
         for page in group.get("pages", []):
-            slug = page["slug"]
+            slug = page.get("slug", "")
             content = pages.get(slug, "")
             lines.extend(
                 [
@@ -199,8 +203,8 @@ def render_site(plan: dict[str, Any], pages: dict[str, str], output_dir: Path) -
         title = slug
         for group in navigation:
             for page in group.get("pages", []):
-                if page["slug"] == slug:
-                    title = page["title"]
+                if page.get("slug") == slug:
+                    title = page.get("title", slug)
                     break
         page_html = render_page(
             markdown_content=md_content,

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import re
 from pathlib import Path
 
 import aiosqlite
@@ -108,13 +109,21 @@ async def delete_project(name: str) -> bool:
         return cursor.rowcount > 0
 
 
+def _validate_name(name: str) -> str:
+    """Validate project name to prevent path traversal."""
+    if not re.match(r"^[a-zA-Z0-9][a-zA-Z0-9._-]*$", name):
+        msg = f"Invalid project name: '{name}'"
+        raise ValueError(msg)
+    return name
+
+
 def get_project_dir(name: str) -> Path:
-    return PROJECTS_DIR / name
+    return PROJECTS_DIR / _validate_name(name)
 
 
 def get_project_site_dir(name: str) -> Path:
-    return PROJECTS_DIR / name / "site"
+    return PROJECTS_DIR / _validate_name(name) / "site"
 
 
 def get_project_cache_dir(name: str) -> Path:
-    return PROJECTS_DIR / name / "cache" / "pages"
+    return PROJECTS_DIR / _validate_name(name) / "cache" / "pages"
