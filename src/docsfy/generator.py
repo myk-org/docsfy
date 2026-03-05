@@ -34,12 +34,15 @@ async def run_planner(
 ) -> dict[str, Any]:
     logger.info(f"[{project_name}] Calling AI planner")
     prompt = build_planner_prompt(project_name)
+    # Build CLI flags based on provider
+    cli_flags = ["--trust"] if ai_provider == "cursor" else None
     success, output = await call_ai_cli(
         prompt=prompt,
         cwd=repo_path,
         ai_provider=ai_provider,
         ai_model=ai_model,
         ai_cli_timeout=ai_cli_timeout,
+        cli_flags=cli_flags,
     )
     if not success:
         msg = f"Planner failed: {output}"
@@ -83,12 +86,15 @@ async def generate_page(
     prompt = build_page_prompt(
         project_name=repo_path.name, page_title=title, page_description=description
     )
+    # Build CLI flags based on provider
+    cli_flags = ["--trust"] if ai_provider == "cursor" else None
     success, output = await call_ai_cli(
         prompt=prompt,
         cwd=repo_path,
         ai_provider=ai_provider,
         ai_model=ai_model,
         ai_cli_timeout=ai_cli_timeout,
+        cli_flags=cli_flags,
     )
     if not success:
         logger.warning(f"[{_label}] Failed to generate page '{slug}': {output}")
