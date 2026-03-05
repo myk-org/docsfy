@@ -972,7 +972,12 @@
                     </div>
                     <div class="form-group form-group-grow">
                         <label for="gen-model">Model</label>
-                        <input type="text" id="gen-model" class="form-input" value="{{ default_model }}">
+                        <input type="text" id="gen-model" class="form-input" list="model-suggestions" value="{{ default_model }}" placeholder="Model name">
+                        <datalist id="model-suggestions">
+                            {% for model in known_models.get(default_provider, []) %}
+                            <option value="{{ model }}">
+                            {% endfor %}
+                        </datalist>
                     </div>
                     <div class="form-checkbox-group">
                         <input type="checkbox" id="gen-force">
@@ -1110,7 +1115,12 @@
                             <option value="gemini"{% if project.ai_provider == 'gemini' %} selected{% endif %}>gemini</option>
                             <option value="cursor"{% if project.ai_provider == 'cursor' %} selected{% endif %}>cursor</option>
                         </select>
-                        <input type="text" class="form-input" data-regen="model" value="{{ project.ai_model or default_model }}" aria-label="Model for regeneration">
+                        <input type="text" class="form-input" data-regen="model" list="model-suggestions-{{ project.name }}" value="{{ project.ai_model or default_model }}" aria-label="Model for regeneration">
+                        <datalist id="model-suggestions-{{ project.name }}">
+                            {% for model in known_models.get(project.ai_provider or default_provider, []) %}
+                            <option value="{{ model }}">
+                            {% endfor %}
+                        </datalist>
                         <div class="form-checkbox-group">
                             <input type="checkbox" data-regen="force" id="regen-force-{{ loop.index }}">
                             <label for="regen-force-{{ loop.index }}">Force</label>
@@ -1165,6 +1175,47 @@
        ========================================================================= */
     (function() {
         'use strict';
+
+        /* ----- Model Suggestions (combobox) ----- */
+        var knownModels = {{ known_models | tojson }};
+
+        // Update model suggestions when provider changes (Generate form)
+        var providerSelect = document.getElementById('gen-provider');
+        var datalist = document.getElementById('model-suggestions');
+
+        if (providerSelect && datalist) {
+            providerSelect.addEventListener('change', function() {
+                var provider = this.value;
+                datalist.innerHTML = '';
+                var models = knownModels[provider] || [];
+                models.forEach(function(model) {
+                    var option = document.createElement('option');
+                    option.value = model;
+                    datalist.appendChild(option);
+                });
+            });
+        }
+
+        // Update model suggestions when provider changes (per-project Regenerate)
+        document.addEventListener('change', function(e) {
+            var sel = e.target.closest('[data-regen="provider"]');
+            if (!sel) return;
+            var row = sel.closest('.regenerate-inline');
+            if (!row) return;
+            var modelInput = row.querySelector('[data-regen="model"]');
+            if (!modelInput) return;
+            var dlId = modelInput.getAttribute('list');
+            var dl = document.getElementById(dlId);
+            if (!dl) return;
+            var provider = sel.value;
+            dl.innerHTML = '';
+            var models = knownModels[provider] || [];
+            models.forEach(function(model) {
+                var option = document.createElement('option');
+                option.value = model;
+                dl.appendChild(option);
+            });
+        });
 
         /* ----- Theme Toggle (same pattern as theme.js) ----- */
         function getTheme() {

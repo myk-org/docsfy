@@ -25,6 +25,7 @@ from docsfy.repository import clone_repo, get_local_repo_info
 from docsfy.renderer import render_site
 from docsfy.storage import (
     delete_project,
+    get_known_models,
     get_project,
     get_project_cache_dir,
     get_project_dir,
@@ -65,6 +66,7 @@ app = FastAPI(
 async def dashboard() -> HTMLResponse:
     settings = get_settings()
     projects = await list_projects()
+    known_models = await get_known_models()
     env = Environment(
         loader=FileSystemLoader(str(Path(__file__).parent / "templates")),
         autoescape=select_autoescape(["html"]),
@@ -74,6 +76,7 @@ async def dashboard() -> HTMLResponse:
         projects=projects,
         default_provider=settings.ai_provider,
         default_model=settings.ai_model,
+        known_models=known_models,
     )
     return HTMLResponse(content=html)
 

@@ -93,6 +93,36 @@ async def test_get_nonexistent_project(db_path: Path) -> None:
     assert project is None
 
 
+async def test_get_known_models(db_path: Path) -> None:
+    from docsfy.storage import get_known_models, save_project, update_project_status
+
+    await save_project(
+        name="repo-a", repo_url="https://github.com/org/a.git", status="generating"
+    )
+    await update_project_status(
+        "repo-a", status="ready", ai_provider="claude", ai_model="opus-4-6"
+    )
+    await save_project(
+        name="repo-b", repo_url="https://github.com/org/b.git", status="generating"
+    )
+    await update_project_status(
+        "repo-b", status="ready", ai_provider="claude", ai_model="sonnet-4-6"
+    )
+    await save_project(
+        name="repo-c", repo_url="https://github.com/org/c.git", status="generating"
+    )
+    await update_project_status(
+        "repo-c", status="ready", ai_provider="gemini", ai_model="gemini-2.5-pro"
+    )
+
+    models = await get_known_models()
+    assert "claude" in models
+    assert "opus-4-6" in models["claude"]
+    assert "sonnet-4-6" in models["claude"]
+    assert "gemini" in models
+    assert "gemini-2.5-pro" in models["gemini"]
+
+
 async def test_update_project_with_ai_info(db_path: Path) -> None:
     from docsfy.storage import get_project, save_project, update_project_status
 

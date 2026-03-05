@@ -153,3 +153,19 @@ def get_project_site_dir(name: str) -> Path:
 
 def get_project_cache_dir(name: str) -> Path:
     return PROJECTS_DIR / _validate_name(name) / "cache" / "pages"
+
+
+async def get_known_models() -> dict[str, list[str]]:
+    """Get distinct ai_model values per ai_provider from completed projects."""
+    async with aiosqlite.connect(DB_PATH) as db:
+        cursor = await db.execute(
+            "SELECT DISTINCT ai_provider, ai_model FROM projects WHERE ai_provider IS NOT NULL AND ai_model IS NOT NULL AND status = 'ready' ORDER BY ai_provider, ai_model"
+        )
+        rows = await cursor.fetchall()
+        models: dict[str, list[str]] = {}
+        for provider, model in rows:
+            if provider not in models:
+                models[provider] = []
+            if model not in models[provider]:
+                models[provider].append(model)
+        return models
