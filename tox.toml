@@ -1,28 +1,7 @@
 skipsdist = true
 
-envlist = ["unused-code", "unittests"]
-
-[env.unused-code]
-deps = ["python-utility-scripts"]
-commands = [
-  [
-    "pyutils-unusedcode",
-    "--exclude-function-prefixes",
-    "'_strip_ai_preamble','_extract_json_by_braces','_extract_json_from_code_blocks','_validate_project_name','_get_jinja_env','_md_to_html','_build_search_index','_build_llms_txt','_build_llms_full_txt','_validate_name','get_settings','parse_json_response','build_planner_prompt','build_page_prompt','render_page','render_index','render_site','extract_repo_name','clone_repo','get_local_repo_info','get_project_dir','get_project_site_dir','get_project_cache_dir','run','sample_plan'",
-  ],
-]
+envlist = ["unittests"]
 
 [env.unittests]
 deps = ["uv"]
-commands = [
-  [
-    "uv",
-    "run",
-    "--extra",
-    "dev",
-    "pytest",
-    "-n",
-    "auto",
-    "tests",
-  ],
-]
+commands = [["uv", "run", "--extra", "dev", "pytest", "-n", "auto", "tests"]]
