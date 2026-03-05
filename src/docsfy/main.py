@@ -81,6 +81,35 @@ async def dashboard() -> HTMLResponse:
     return HTMLResponse(content=html)
 
 
+@app.get("/status/{name}", response_class=HTMLResponse)
+async def project_status_page(name: str) -> HTMLResponse:
+    name = _validate_project_name(name)
+    project = await get_project(name)
+    if not project:
+        raise HTTPException(status_code=404, detail=f"Project '{name}' not found")
+
+    # Parse plan_json string into a dict for template consumption
+    plan_json = None
+    total_pages = 0
+    if project.get("plan_json"):
+        try:
+            plan_json = json.loads(str(project["plan_json"]))
+            for group in plan_json.get("navigation", []):
+                total_pages += len(group.get("pages", []))
+        except (json.JSONDecodeError, TypeError):
+            plan_json = None
+
+    env = Environment(
+        loader=FileSystemLoader(str(Path(__file__).parent / "templates")),
+        autoescape=select_autoescape(["html"]),
+    )
+    template = env.get_template("status.html")
+    html = template.render(
+        project=project, plan_json=plan_json, total_pages=total_pages
+    )
+    return HTMLResponse(content=html)
+
+
 @app.get("/health")
 async def health() -> dict[str, str]:
     return {"status": "ok"}

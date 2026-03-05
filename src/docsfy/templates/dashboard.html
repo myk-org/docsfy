@@ -1315,12 +1315,22 @@
         /* ----- Toast Notifications ----- */
         var toastContainer = document.getElementById('toast-container');
 
-        function showToast(message, type, duration) {
+        function showToast(message, type, duration, link) {
             type = type || 'info';
             duration = duration || 4000;
             var toast = document.createElement('div');
             toast.className = 'toast toast-' + type;
             toast.textContent = message;
+            if (link) {
+                toast.appendChild(document.createTextNode(' '));
+                var a = document.createElement('a');
+                a.href = link.href;
+                a.textContent = link.text;
+                a.target = '_blank';
+                a.style.color = 'inherit';
+                a.style.textDecoration = 'underline';
+                toast.appendChild(a);
+            }
             toastContainer.appendChild(toast);
             setTimeout(function() {
                 toast.classList.add('toast-exit');
@@ -1472,7 +1482,11 @@
                     return res.json();
                 })
                 .then(function(data) {
-                    showToast('Generation started for ' + (data.project || repoUrl), 'success');
+                    var projectName = data.project || repoUrl;
+                    showToast('Generation started for ' + projectName + '.', 'success', 6000, {
+                        href: '/status/' + encodeURIComponent(projectName),
+                        text: 'View progress \u2192'
+                    });
                     document.getElementById('gen-repo-url').value = '';
                     document.getElementById('gen-force').checked = false;
                     startPolling();
@@ -1524,7 +1538,10 @@
                 return res.json();
             })
             .then(function() {
-                showToast('Regeneration started for ' + name, 'success');
+                showToast('Regeneration started for ' + name + '.', 'success', 6000, {
+                    href: '/status/' + encodeURIComponent(name),
+                    text: 'View progress \u2192'
+                });
                 startPolling();
                 setTimeout(function() { location.reload(); }, 1000);
             })
@@ -1556,7 +1573,10 @@
                 return res.json();
             })
             .then(function() {
-                showToast('Retry started for ' + name, 'success');
+                showToast('Retry started for ' + name + '.', 'success', 6000, {
+                    href: '/status/' + encodeURIComponent(name),
+                    text: 'View progress \u2192'
+                });
                 startPolling();
                 setTimeout(function() { location.reload(); }, 1000);
             })

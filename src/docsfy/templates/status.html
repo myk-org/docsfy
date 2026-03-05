@@ -1,0 +1,1330 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>docsfy - {{ project.name }} Status</title>
+    <meta name="description" content="Generation status for {{ project.name }}">
+    <style>
+    /* ==========================================================================
+       docsfy Status Page - Inline CSS
+       ========================================================================== */
+
+    /* --------------------------------------------------------------------------
+       CSS Custom Properties (Light Theme - Default)
+       -------------------------------------------------------------------------- */
+    :root {
+        /* Backgrounds */
+        --bg-primary: #ffffff;
+        --bg-secondary: #f9fafb;
+        --bg-tertiary: #f3f4f6;
+        --bg-sidebar: #f9fafb;
+        --bg-code: #f5f5f5;
+        --bg-code-block: #1e1e2e;
+        --bg-card: #ffffff;
+        --bg-hero: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --bg-search-result: #ffffff;
+
+        /* Text */
+        --text-primary: #111827;
+        --text-secondary: #4b5563;
+        --text-tertiary: #6b7280;
+        --text-inverse: #ffffff;
+        --text-link: #4f46e5;
+        --text-link-hover: #4338ca;
+        --text-code: #e11d48;
+        --text-code-block: #d4d4d8;
+
+        /* Borders */
+        --border-primary: #e5e7eb;
+        --border-secondary: #f3f4f6;
+        --border-focus: #4f46e5;
+
+        /* Accent */
+        --accent: #4f46e5;
+        --accent-light: #eef2ff;
+        --accent-hover: #4338ca;
+
+        /* Shadows */
+        --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+
+        /* Layout */
+        --content-max-width: 700px;
+        --header-height: 56px;
+
+        /* Typography */
+        --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+        --font-mono: "SF Mono", SFMono-Regular, ui-monospace, "DejaVu Sans Mono", Menlo, Consolas, monospace;
+
+        /* Transitions */
+        --transition-fast: 150ms ease;
+        --transition-normal: 250ms ease;
+
+        /* Status colors */
+        --status-ready: #10b981;
+        --status-generating: #3b82f6;
+        --status-error: #ef4444;
+        --status-ready-bg: #ecfdf5;
+        --status-generating-bg: #eff6ff;
+        --status-error-bg: #fef2f2;
+    }
+
+    /* --------------------------------------------------------------------------
+       Dark Theme
+       -------------------------------------------------------------------------- */
+    [data-theme="dark"] {
+        --bg-primary: #0f1117;
+        --bg-secondary: #161822;
+        --bg-tertiary: #1e2030;
+        --bg-sidebar: #161822;
+        --bg-code: #1e2030;
+        --bg-code-block: #1e2030;
+        --bg-card: #161822;
+        --bg-hero: linear-gradient(135deg, #3730a3 0%, #6d28d9 100%);
+        --bg-search-result: #1e2030;
+
+        --text-primary: #e5e7eb;
+        --text-secondary: #9ca3af;
+        --text-tertiary: #6b7280;
+        --text-inverse: #ffffff;
+        --text-link: #818cf8;
+        --text-link-hover: #a5b4fc;
+        --text-code: #fb7185;
+        --text-code-block: #d4d4d8;
+
+        --border-primary: #2e3248;
+        --border-secondary: #252838;
+        --border-focus: #818cf8;
+
+        --accent: #818cf8;
+        --accent-light: #1e1b4b;
+        --accent-hover: #a5b4fc;
+
+        --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -4px rgba(0, 0, 0, 0.3);
+
+        --status-ready-bg: #052e16;
+        --status-generating-bg: #172554;
+        --status-error-bg: #450a0a;
+    }
+
+    /* --------------------------------------------------------------------------
+       Reset & Base
+       -------------------------------------------------------------------------- */
+    *, *::before, *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
+
+    html {
+        font-size: 16px;
+        -webkit-text-size-adjust: 100%;
+    }
+
+    body {
+        font-family: var(--font-sans);
+        background: var(--bg-primary);
+        color: var(--text-primary);
+        line-height: 1.6;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* --------------------------------------------------------------------------
+       Header
+       -------------------------------------------------------------------------- */
+    .dashboard-header {
+        height: var(--header-height);
+        background: var(--bg-secondary);
+        border-bottom: 1px solid var(--border-primary);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 1.5rem;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+    }
+
+    .header-left {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .dashboard-logo {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        text-decoration: none;
+        letter-spacing: -0.02em;
+    }
+
+    .dashboard-logo span {
+        color: var(--accent);
+    }
+
+    .header-separator {
+        color: var(--text-tertiary);
+        font-size: 1.25rem;
+        font-weight: 300;
+    }
+
+    .header-project-name {
+        font-size: 1rem;
+        font-weight: 500;
+        color: var(--text-secondary);
+    }
+
+    .header-actions {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .theme-toggle {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        border: 1px solid var(--border-primary);
+        border-radius: 8px;
+        background: var(--bg-primary);
+        color: var(--text-secondary);
+        cursor: pointer;
+        transition: color var(--transition-fast), border-color var(--transition-fast);
+    }
+
+    .theme-toggle:hover {
+        color: var(--text-primary);
+        border-color: var(--border-focus);
+    }
+
+    [data-theme="dark"] .icon-sun { display: none; }
+    [data-theme="light"] .icon-moon { display: none; }
+
+    /* --------------------------------------------------------------------------
+       Main Content
+       -------------------------------------------------------------------------- */
+    .status-main {
+        flex: 1;
+        max-width: var(--content-max-width);
+        width: 100%;
+        margin: 0 auto;
+        padding: 2rem 1.5rem;
+    }
+
+    /* --------------------------------------------------------------------------
+       Status Card
+       -------------------------------------------------------------------------- */
+    .status-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border-primary);
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: var(--shadow-md);
+        margin-bottom: 1.5rem;
+    }
+
+    .status-card-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+    }
+
+    .project-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--text-primary);
+    }
+
+    .status-indicator {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.875rem;
+        font-weight: 600;
+        padding: 0.375rem 0.875rem;
+        border-radius: 9999px;
+        text-transform: uppercase;
+        letter-spacing: 0.025em;
+    }
+
+    .status-indicator-ready {
+        background: var(--status-ready-bg);
+        color: var(--status-ready);
+    }
+
+    .status-indicator-generating {
+        background: var(--status-generating-bg);
+        color: var(--status-generating);
+    }
+
+    .status-indicator-error {
+        background: var(--status-error-bg);
+        color: var(--status-error);
+    }
+
+    .status-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        flex-shrink: 0;
+    }
+
+    .status-dot-ready {
+        background: var(--status-ready);
+    }
+
+    .status-dot-generating {
+        background: var(--status-generating);
+        animation: pulse 2s ease-in-out infinite;
+    }
+
+    .status-dot-error {
+        background: var(--status-error);
+    }
+
+    @keyframes pulse {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0.5; transform: scale(1.2); }
+    }
+
+    /* --------------------------------------------------------------------------
+       Info Grid
+       -------------------------------------------------------------------------- */
+    .info-grid {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 0.5rem 1rem;
+        font-size: 0.875rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .info-label {
+        color: var(--text-tertiary);
+        font-weight: 500;
+        white-space: nowrap;
+    }
+
+    .info-value {
+        color: var(--text-primary);
+        word-break: break-all;
+    }
+
+    .info-value a {
+        color: var(--text-link);
+        text-decoration: none;
+    }
+
+    .info-value a:hover {
+        color: var(--text-link-hover);
+        text-decoration: underline;
+    }
+
+    /* --------------------------------------------------------------------------
+       Progress Bar
+       -------------------------------------------------------------------------- */
+    .progress-section {
+        margin-bottom: 1.5rem;
+    }
+
+    .progress-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 0.5rem;
+        font-size: 0.875rem;
+    }
+
+    .progress-label {
+        color: var(--text-secondary);
+        font-weight: 500;
+    }
+
+    .progress-count {
+        color: var(--text-tertiary);
+        font-family: var(--font-mono);
+        font-size: 0.8125rem;
+    }
+
+    .progress-bar-wrapper {
+        width: 100%;
+        height: 8px;
+        background: var(--bg-tertiary);
+        border-radius: 4px;
+        overflow: hidden;
+    }
+
+    .progress-bar-fill {
+        height: 100%;
+        background: var(--status-generating);
+        border-radius: 4px;
+        transition: width 0.5s ease;
+        position: relative;
+    }
+
+    .progress-bar-fill::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.2) 50%, transparent 100%);
+        animation: shimmer 1.5s infinite;
+    }
+
+    .progress-bar-fill-ready {
+        background: var(--status-ready);
+    }
+
+    .progress-bar-fill-ready::after {
+        animation: none;
+    }
+
+    @keyframes shimmer {
+        from { transform: translateX(-100%); }
+        to { transform: translateX(100%); }
+    }
+
+    /* --------------------------------------------------------------------------
+       Error Message
+       -------------------------------------------------------------------------- */
+    .error-message {
+        background: var(--status-error-bg);
+        color: var(--status-error);
+        padding: 0.875rem 1rem;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        margin-bottom: 1.5rem;
+        word-break: break-word;
+        border: 1px solid var(--status-error);
+        border-left-width: 3px;
+    }
+
+    .error-message-label {
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+    }
+
+    /* --------------------------------------------------------------------------
+       Success Message
+       -------------------------------------------------------------------------- */
+    .success-message {
+        background: var(--status-ready-bg);
+        color: var(--status-ready);
+        padding: 0.875rem 1rem;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        margin-bottom: 1.5rem;
+        font-weight: 500;
+        border: 1px solid var(--status-ready);
+        border-left-width: 3px;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    /* --------------------------------------------------------------------------
+       Action Links
+       -------------------------------------------------------------------------- */
+    .action-links {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+        padding-top: 1rem;
+        border-top: 1px solid var(--border-secondary);
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.375rem;
+        height: 38px;
+        padding: 0 1.25rem;
+        border: none;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        font-weight: 500;
+        font-family: var(--font-sans);
+        cursor: pointer;
+        transition: background var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast);
+        white-space: nowrap;
+        text-decoration: none;
+    }
+
+    .btn:active {
+        transform: scale(0.98);
+    }
+
+    .btn-primary {
+        background: var(--accent);
+        color: var(--text-inverse);
+    }
+
+    .btn-primary:hover {
+        background: var(--accent-hover);
+    }
+
+    .btn-secondary {
+        background: var(--bg-tertiary);
+        color: var(--text-primary);
+        border: 1px solid var(--border-primary);
+    }
+
+    .btn-secondary:hover {
+        background: var(--border-primary);
+    }
+
+    .btn-danger {
+        background: transparent;
+        color: var(--status-error);
+        border: 1px solid var(--status-error);
+    }
+
+    .btn-danger:hover {
+        background: var(--status-error-bg);
+    }
+
+    .action-spacer {
+        flex: 1;
+    }
+
+    /* --------------------------------------------------------------------------
+       Log Section
+       -------------------------------------------------------------------------- */
+    .log-section {
+        background: var(--bg-card);
+        border: 1px solid var(--border-primary);
+        border-radius: 12px;
+        box-shadow: var(--shadow-sm);
+        overflow: hidden;
+    }
+
+    .log-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid var(--border-primary);
+        background: var(--bg-secondary);
+    }
+
+    .log-title {
+        font-size: 0.9375rem;
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+
+    .log-status {
+        font-size: 0.75rem;
+        font-weight: 500;
+        color: var(--text-tertiary);
+    }
+
+    .log-body {
+        padding: 1rem 1.5rem;
+        max-height: 360px;
+        overflow-y: auto;
+        font-family: var(--font-mono);
+        font-size: 0.8125rem;
+        line-height: 1.8;
+    }
+
+    .log-entry {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.625rem;
+        padding: 0.25rem 0;
+        color: var(--text-secondary);
+        animation: logFadeIn 0.3s ease;
+    }
+
+    .log-entry-icon {
+        flex-shrink: 0;
+        margin-top: 3px;
+    }
+
+    .log-entry-icon-done {
+        color: var(--status-ready);
+    }
+
+    .log-entry-icon-active {
+        color: var(--status-generating);
+    }
+
+    .log-entry-icon-error {
+        color: var(--status-error);
+    }
+
+    .log-entry-icon-pending {
+        color: var(--text-tertiary);
+    }
+
+    .log-entry-text {
+        flex: 1;
+    }
+
+    .log-empty {
+        color: var(--text-tertiary);
+        font-style: italic;
+    }
+
+    @keyframes logFadeIn {
+        from { opacity: 0; transform: translateY(-4px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* --------------------------------------------------------------------------
+       Spinner
+       -------------------------------------------------------------------------- */
+    .spinner-large {
+        width: 20px;
+        height: 20px;
+        border: 2.5px solid var(--border-primary);
+        border-top-color: var(--status-generating);
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+        flex-shrink: 0;
+        display: inline-block;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    /* --------------------------------------------------------------------------
+       Footer
+       -------------------------------------------------------------------------- */
+    .dashboard-footer {
+        text-align: center;
+        padding: 1.5rem;
+        font-size: 0.8125rem;
+        color: var(--text-tertiary);
+        border-top: 1px solid var(--border-secondary);
+    }
+
+    .dashboard-footer a {
+        color: var(--text-link);
+        text-decoration: none;
+    }
+
+    .dashboard-footer a:hover {
+        text-decoration: underline;
+    }
+
+    /* --------------------------------------------------------------------------
+       Hidden utility
+       -------------------------------------------------------------------------- */
+    .hidden {
+        display: none !important;
+    }
+
+    /* --------------------------------------------------------------------------
+       Responsive
+       -------------------------------------------------------------------------- */
+    @media (max-width: 640px) {
+        .status-main {
+            padding: 1rem;
+        }
+
+        .status-card {
+            padding: 1.25rem;
+        }
+
+        .status-card-header {
+            flex-direction: column;
+        }
+
+        .project-title {
+            font-size: 1.25rem;
+        }
+
+        .info-grid {
+            grid-template-columns: 1fr;
+            gap: 0.25rem;
+        }
+
+        .info-label {
+            margin-top: 0.5rem;
+        }
+
+        .action-links {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .action-links .btn {
+            justify-content: center;
+        }
+
+        .action-spacer {
+            display: none;
+        }
+
+        .header-project-name {
+            display: none;
+        }
+
+        .log-body {
+            max-height: 260px;
+            padding: 0.75rem 1rem;
+        }
+    }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="dashboard-header">
+        <div class="header-left">
+            <a href="/" class="dashboard-logo">docs<span>fy</span></a>
+            <span class="header-separator">/</span>
+            <span class="header-project-name">{{ project.name }}</span>
+        </div>
+        <div class="header-actions">
+            <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+                <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                </svg>
+                <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+                </svg>
+            </button>
+        </div>
+    </header>
+
+    <!-- SVG icon templates (hidden, cloned by JS) -->
+    <div style="display:none" aria-hidden="true">
+        <svg id="icon-check" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"/>
+        </svg>
+        <svg id="icon-spinner-sm" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <circle cx="12" cy="12" r="10" opacity="0.25"/>
+            <path d="M12 2a10 10 0 0 1 10 10" stroke-dasharray="31.4" stroke-dashoffset="0">
+                <animateTransform attributeName="transform" type="rotate" values="0 12 12;360 12 12" dur="0.8s" repeatCount="indefinite"/>
+            </path>
+        </svg>
+        <svg id="icon-x-circle" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+            <circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>
+        </svg>
+        <svg id="icon-circle" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <circle cx="12" cy="12" r="10"/>
+        </svg>
+        <svg id="icon-check-success" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"/>
+        </svg>
+    </div>
+
+    <!-- Main Content -->
+    <main class="status-main">
+        <!-- Status Card -->
+        <div class="status-card" id="status-card">
+            <div class="status-card-header">
+                <h1 class="project-title" id="project-title">{{ project.name }}</h1>
+                <div class="status-indicator status-indicator-{{ project.status }}" id="status-indicator">
+                    <span class="status-dot status-dot-{{ project.status }}" id="status-dot"></span>
+                    <span id="status-text">{{ project.status }}</span>
+                </div>
+            </div>
+
+            <!-- Info Grid -->
+            <div class="info-grid" id="info-grid">
+                {% if project.repo_url %}
+                <span class="info-label">Repository</span>
+                <span class="info-value" id="info-repo">
+                    <a href="{{ project.repo_url }}" target="_blank" rel="noopener noreferrer">{{ project.repo_url | replace('https://', '') | replace('http://', '') }}</a>
+                </span>
+                {% endif %}
+
+                {% if project.ai_provider %}
+                <span class="info-label">AI Provider</span>
+                <span class="info-value" id="info-ai">{{ project.ai_provider }}{% if project.ai_model %} / {{ project.ai_model }}{% endif %}</span>
+                {% endif %}
+
+                <span class="info-label">Pages</span>
+                <span class="info-value" id="info-pages">{{ project.page_count or 0 }}</span>
+
+                {% if project.last_commit_sha %}
+                <span class="info-label">Commit</span>
+                <span class="info-value" id="info-commit">
+                    {% if project.repo_url and 'github.com' in project.repo_url %}
+                    <a href="{{ project.repo_url }}/commit/{{ project.last_commit_sha }}" target="_blank" rel="noopener noreferrer">{{ project.last_commit_sha[:7] }}</a>
+                    {% else %}
+                    {{ project.last_commit_sha[:7] }}
+                    {% endif %}
+                </span>
+                {% endif %}
+
+                {% if project.last_generated %}
+                <span class="info-label">Last Generated</span>
+                <span class="info-value" id="info-generated">{{ project.last_generated }}</span>
+                {% endif %}
+            </div>
+
+            <!-- Progress Bar (visible when generating) -->
+            <div class="progress-section" id="progress-section"{% if project.status != 'generating' %} style="display:none"{% endif %}>
+                <div class="progress-header">
+                    <span class="progress-label" id="progress-label">Generating documentation...</span>
+                    <span class="progress-count" id="progress-count">
+                        {%- if plan_json and plan_json.navigation -%}
+                            {{ project.page_count or 0 }} / {{ total_pages }} pages
+                        {%- else -%}
+                            {{ project.page_count or 0 }} pages
+                        {%- endif -%}
+                    </span>
+                </div>
+                <div class="progress-bar-wrapper">
+                    <div class="progress-bar-fill" id="progress-bar"
+                         style="width: {% if total_pages > 0 %}{{ (((project.page_count or 0) / total_pages) * 100) | int }}{% else %}0{% endif %}%">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Success Message (visible when ready) -->
+            <div class="success-message" id="success-message"{% if project.status != 'ready' %} style="display:none"{% endif %}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                Documentation generated successfully!
+            </div>
+
+            <!-- Error Message (visible when error) -->
+            <div class="error-message" id="error-message"{% if project.status != 'error' %} style="display:none"{% endif %}>
+                <div class="error-message-label">Error</div>
+                <div id="error-text">{{ project.error_message or '' }}</div>
+            </div>
+
+            <!-- Action Links -->
+            <div class="action-links" id="action-links">
+                {% if project.status == 'ready' %}
+                <a href="/docs/{{ project.name }}/" target="_blank" class="btn btn-primary" id="btn-view-docs">View Documentation</a>
+                <a href="/api/projects/{{ project.name }}/download" class="btn btn-secondary" id="btn-download">Download</a>
+                {% endif %}
+                {% if project.status == 'error' %}
+                <button class="btn btn-primary" id="btn-retry">Retry</button>
+                {% endif %}
+                <span class="action-spacer"></span>
+                <a href="/" class="btn btn-secondary" id="btn-back">Back to Dashboard</a>
+            </div>
+        </div>
+
+        <!-- Log Section -->
+        <div class="log-section">
+            <div class="log-header">
+                <span class="log-title">Activity Log</span>
+                <span class="log-status" id="log-status">
+                    {% if project.status == 'generating' %}
+                    <span class="spinner-large"></span>
+                    {% elif project.status == 'ready' %}
+                    Complete
+                    {% elif project.status == 'error' %}
+                    Failed
+                    {% endif %}
+                </span>
+            </div>
+            <div class="log-body" id="log-body">
+                <!-- Log entries are populated by JavaScript -->
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="dashboard-footer">
+        <p>Powered by <a href="https://github.com/myk-org/docsfy" target="_blank" rel="noopener noreferrer">docsfy</a></p>
+    </footer>
+
+    <script>
+    /* =========================================================================
+       docsfy Status Page - Inline JavaScript
+       ========================================================================= */
+    (function() {
+        'use strict';
+
+        /* ----- Config ----- */
+        var PROJECT_NAME = {{ project.name | tojson }};
+        var POLL_INTERVAL_MS = 3000;
+
+        /* ----- Theme Toggle ----- */
+        function getTheme() {
+            try { return localStorage.getItem('theme'); } catch(e) { return null; }
+        }
+        function setTheme(theme) {
+            try { localStorage.setItem('theme', theme); } catch(e) {}
+        }
+
+        var toggle = document.getElementById('theme-toggle');
+        var stored = getTheme();
+        if (stored) document.documentElement.setAttribute('data-theme', stored);
+        else if (window.matchMedia('(prefers-color-scheme: dark)').matches)
+            document.documentElement.setAttribute('data-theme', 'dark');
+        if (toggle) toggle.addEventListener('click', function() {
+            var current = document.documentElement.getAttribute('data-theme');
+            var next = current === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', next);
+            setTheme(next);
+        });
+
+        /* ----- DOM Elements ----- */
+        var statusIndicator = document.getElementById('status-indicator');
+        var statusDot = document.getElementById('status-dot');
+        var statusText = document.getElementById('status-text');
+        var infoPages = document.getElementById('info-pages');
+        var progressSection = document.getElementById('progress-section');
+        var progressLabel = document.getElementById('progress-label');
+        var progressCount = document.getElementById('progress-count');
+        var progressBar = document.getElementById('progress-bar');
+        var successMessage = document.getElementById('success-message');
+        var errorMessage = document.getElementById('error-message');
+        var errorText = document.getElementById('error-text');
+        var actionLinks = document.getElementById('action-links');
+        var logBody = document.getElementById('log-body');
+        var logStatus = document.getElementById('log-status');
+
+        /* ----- SVG Icon Cloning (safe DOM method, no innerHTML) ----- */
+        function cloneIcon(iconId) {
+            var source = document.getElementById(iconId);
+            if (!source) return document.createTextNode('');
+            return source.cloneNode(true);
+        }
+
+        var ICON_MAP = {
+            done: 'icon-check',
+            active: 'icon-spinner-sm',
+            error: 'icon-x-circle',
+            pending: 'icon-circle'
+        };
+
+        /* ----- State ----- */
+        var previousPageCount = {{ (project.page_count or 0) | tojson }};
+        var currentStatus = {{ project.status | tojson }};
+        var pollTimer = null;
+        var planPages = null; /* Array of page titles from the plan */
+        var totalPagesFromPlan = 0;
+
+        /* Parse the plan_json from the initial render if available */
+        {% if plan_json and plan_json.navigation %}
+        planPages = [];
+        {% for group in plan_json.navigation %}
+        {% for page in group.get('pages', []) %}
+        planPages.push({{ page.get('title', 'Page') | tojson }});
+        {% endfor %}
+        {% endfor %}
+        totalPagesFromPlan = planPages.length;
+        {% endif %}
+
+        /* ----- Log Helpers ----- */
+        function addLogEntry(text, iconType) {
+            var entry = document.createElement('div');
+            entry.className = 'log-entry';
+
+            var iconDiv = document.createElement('span');
+            iconDiv.className = 'log-entry-icon log-entry-icon-' + iconType;
+            var iconNode = cloneIcon(ICON_MAP[iconType] || ICON_MAP.pending);
+            iconNode.removeAttribute('id');
+            iconDiv.appendChild(iconNode);
+
+            var textSpan = document.createElement('span');
+            textSpan.className = 'log-entry-text';
+            textSpan.textContent = text;
+
+            entry.appendChild(iconDiv);
+            entry.appendChild(textSpan);
+            logBody.appendChild(entry);
+
+            /* Auto-scroll to bottom */
+            logBody.scrollTop = logBody.scrollHeight;
+            return entry;
+        }
+
+        function updateLastLogEntry(text, iconType) {
+            var entries = logBody.querySelectorAll('.log-entry');
+            if (entries.length === 0) return;
+            var last = entries[entries.length - 1];
+            var iconDiv = last.querySelector('.log-entry-icon');
+            var textSpan = last.querySelector('.log-entry-text');
+            if (text) textSpan.textContent = text;
+            iconDiv.className = 'log-entry-icon log-entry-icon-' + iconType;
+            /* Clear existing icon children and replace with new icon */
+            while (iconDiv.firstChild) iconDiv.removeChild(iconDiv.firstChild);
+            var newIcon = cloneIcon(ICON_MAP[iconType] || ICON_MAP.pending);
+            newIcon.removeAttribute('id');
+            iconDiv.appendChild(newIcon);
+        }
+
+        /* ----- Build Initial Log ----- */
+        function buildInitialLog() {
+            while (logBody.firstChild) logBody.removeChild(logBody.firstChild);
+
+            if (currentStatus === 'generating') {
+                var pageCount = previousPageCount;
+                if (pageCount === 0 && !planPages) {
+                    /* Very early stage: cloning / planning */
+                    addLogEntry('Cloning repository...', 'active');
+                } else if (pageCount === 0 && planPages) {
+                    addLogEntry('Cloned repository', 'done');
+                    addLogEntry('Planned documentation structure (' + totalPagesFromPlan + ' pages)', 'done');
+                    addLogEntry('Generating page 1 of ' + totalPagesFromPlan + ': ' + (planPages[0] || 'Page'), 'active');
+                } else {
+                    /* Already generating pages */
+                    addLogEntry('Cloned repository', 'done');
+                    if (planPages) {
+                        addLogEntry('Planned documentation structure (' + totalPagesFromPlan + ' pages)', 'done');
+                        for (var i = 0; i < pageCount; i++) {
+                            var title = (planPages && planPages[i]) ? planPages[i] : 'Page ' + (i + 1);
+                            addLogEntry('Generated page ' + (i + 1) + ' of ' + totalPagesFromPlan + ': ' + title, 'done');
+                        }
+                        if (pageCount < totalPagesFromPlan) {
+                            var nextTitle = (planPages && planPages[pageCount]) ? planPages[pageCount] : 'Page ' + (pageCount + 1);
+                            addLogEntry('Generating page ' + (pageCount + 1) + ' of ' + totalPagesFromPlan + ': ' + nextTitle, 'active');
+                        }
+                    } else {
+                        addLogEntry('Planning documentation structure...', 'active');
+                    }
+                }
+            } else if (currentStatus === 'ready') {
+                addLogEntry('Cloned repository', 'done');
+                if (planPages) {
+                    addLogEntry('Planned documentation structure (' + totalPagesFromPlan + ' pages)', 'done');
+                    for (var j = 0; j < totalPagesFromPlan; j++) {
+                        var readyTitle = planPages[j] || 'Page ' + (j + 1);
+                        addLogEntry('Generated page ' + (j + 1) + ' of ' + totalPagesFromPlan + ': ' + readyTitle, 'done');
+                    }
+                } else {
+                    addLogEntry('Generated ' + previousPageCount + ' pages', 'done');
+                }
+                addLogEntry('Rendered documentation site', 'done');
+                addLogEntry('Documentation ready!', 'done');
+            } else if (currentStatus === 'error') {
+                addLogEntry('Cloned repository', 'done');
+                if (planPages && previousPageCount > 0) {
+                    addLogEntry('Planned documentation structure (' + totalPagesFromPlan + ' pages)', 'done');
+                    for (var k = 0; k < previousPageCount; k++) {
+                        var errTitle = (planPages && planPages[k]) ? planPages[k] : 'Page ' + (k + 1);
+                        addLogEntry('Generated page ' + (k + 1) + ' of ' + totalPagesFromPlan + ': ' + errTitle, 'done');
+                    }
+                }
+                addLogEntry('Generation failed', 'error');
+            }
+        }
+
+        buildInitialLog();
+
+        /* ----- Update Status Indicator ----- */
+        function setStatusUI(status) {
+            /* Status indicator */
+            statusIndicator.className = 'status-indicator status-indicator-' + status;
+            statusDot.className = 'status-dot status-dot-' + status;
+            statusText.textContent = status;
+
+            /* Show/hide sections */
+            progressSection.style.display = (status === 'generating') ? '' : 'none';
+            successMessage.style.display = (status === 'ready') ? '' : 'none';
+            errorMessage.style.display = (status === 'error') ? '' : 'none';
+        }
+
+        /* ----- Update Action Links ----- */
+        function rebuildActionLinks(status) {
+            while (actionLinks.firstChild) actionLinks.removeChild(actionLinks.firstChild);
+
+            if (status === 'ready') {
+                var viewBtn = document.createElement('a');
+                viewBtn.href = '/docs/' + PROJECT_NAME + '/';
+                viewBtn.target = '_blank';
+                viewBtn.className = 'btn btn-primary';
+                viewBtn.id = 'btn-view-docs';
+                viewBtn.textContent = 'View Documentation';
+                actionLinks.appendChild(viewBtn);
+
+                var downloadBtn = document.createElement('a');
+                downloadBtn.href = '/api/projects/' + PROJECT_NAME + '/download';
+                downloadBtn.className = 'btn btn-secondary';
+                downloadBtn.id = 'btn-download';
+                downloadBtn.textContent = 'Download';
+                actionLinks.appendChild(downloadBtn);
+            }
+
+            if (status === 'error') {
+                var retryBtn = document.createElement('button');
+                retryBtn.className = 'btn btn-primary';
+                retryBtn.id = 'btn-retry';
+                retryBtn.textContent = 'Retry';
+                retryBtn.addEventListener('click', handleRetry);
+                actionLinks.appendChild(retryBtn);
+            }
+
+            var spacer = document.createElement('span');
+            spacer.className = 'action-spacer';
+            actionLinks.appendChild(spacer);
+
+            var backBtn = document.createElement('a');
+            backBtn.href = '/';
+            backBtn.className = 'btn btn-secondary';
+            backBtn.id = 'btn-back';
+            backBtn.textContent = 'Back to Dashboard';
+            actionLinks.appendChild(backBtn);
+        }
+
+        /* ----- Update Log Status ----- */
+        function setLogStatus(status) {
+            while (logStatus.firstChild) logStatus.removeChild(logStatus.firstChild);
+            if (status === 'generating') {
+                var sp = document.createElement('span');
+                sp.className = 'spinner-large';
+                logStatus.appendChild(sp);
+            } else if (status === 'ready') {
+                logStatus.textContent = 'Complete';
+            } else if (status === 'error') {
+                logStatus.textContent = 'Failed';
+            }
+        }
+
+        /* ----- Retry Handler ----- */
+        function handleRetry() {
+            var repoUrl = {{ (project.repo_url or '') | tojson }};
+            if (!repoUrl) return;
+
+            var retryBtn = document.getElementById('btn-retry');
+            if (retryBtn) {
+                retryBtn.disabled = true;
+                retryBtn.textContent = 'Starting...';
+            }
+
+            fetch('/api/generate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ repo_url: repoUrl })
+            })
+            .then(function(res) {
+                if (!res.ok) return res.json().then(function(data) { throw data; });
+                return res.json();
+            })
+            .then(function() {
+                /* Reset state and start polling */
+                currentStatus = 'generating';
+                previousPageCount = 0;
+                setStatusUI('generating');
+                rebuildActionLinks('generating');
+                setLogStatus('generating');
+                progressSection.style.display = '';
+                progressCount.textContent = '0 pages';
+                progressBar.style.width = '0%';
+                progressBar.className = 'progress-bar-fill';
+                while (logBody.firstChild) logBody.removeChild(logBody.firstChild);
+                addLogEntry('Cloning repository...', 'active');
+                startPolling();
+            })
+            .catch(function(err) {
+                var msg = (err && err.detail) || (err && err.message) || 'Retry request failed';
+                errorText.textContent = msg;
+                errorMessage.style.display = '';
+                if (retryBtn) {
+                    retryBtn.disabled = false;
+                    retryBtn.textContent = 'Retry';
+                }
+            });
+        }
+
+        /* Wire up initial retry button if present */
+        var initialRetryBtn = document.getElementById('btn-retry');
+        if (initialRetryBtn) {
+            initialRetryBtn.addEventListener('click', handleRetry);
+        }
+
+        /* ----- Polling ----- */
+        function startPolling() {
+            if (pollTimer) return;
+            pollTimer = setInterval(pollProject, POLL_INTERVAL_MS);
+        }
+
+        function stopPolling() {
+            if (pollTimer) {
+                clearInterval(pollTimer);
+                pollTimer = null;
+            }
+        }
+
+        function pollProject() {
+            fetch('/api/projects/' + encodeURIComponent(PROJECT_NAME))
+                .then(function(res) {
+                    if (!res.ok) throw new Error('Not found');
+                    return res.json();
+                })
+                .then(function(proj) {
+                    updateFromProject(proj);
+                })
+                .catch(function() {
+                    /* Silently fail; retry on next interval */
+                });
+        }
+
+        function updateFromProject(proj) {
+            var newPageCount = proj.page_count || 0;
+            var newStatus = proj.status;
+
+            /* Parse plan_json if it is a string */
+            var newPlan = null;
+            if (proj.plan_json) {
+                if (typeof proj.plan_json === 'string') {
+                    try { newPlan = JSON.parse(proj.plan_json); } catch(e) { newPlan = null; }
+                } else {
+                    newPlan = proj.plan_json;
+                }
+            }
+
+            /* Update plan pages if we get new plan data */
+            if (newPlan && newPlan.navigation && !planPages) {
+                planPages = [];
+                totalPagesFromPlan = 0;
+                newPlan.navigation.forEach(function(group) {
+                    (group.pages || []).forEach(function(page) {
+                        planPages.push(page.title || 'Page');
+                        totalPagesFromPlan++;
+                    });
+                });
+
+                /* We just got the plan -- rebuild the log */
+                while (logBody.firstChild) logBody.removeChild(logBody.firstChild);
+                addLogEntry('Cloned repository', 'done');
+                addLogEntry('Planned documentation structure (' + totalPagesFromPlan + ' pages)', 'done');
+                if (newPageCount > 0) {
+                    for (var p = 0; p < newPageCount; p++) {
+                        var t = (planPages[p]) ? planPages[p] : 'Page ' + (p + 1);
+                        addLogEntry('Generated page ' + (p + 1) + ' of ' + totalPagesFromPlan + ': ' + t, 'done');
+                    }
+                }
+                if (newPageCount < totalPagesFromPlan && newStatus === 'generating') {
+                    var nt = (planPages[newPageCount]) ? planPages[newPageCount] : 'Page ' + (newPageCount + 1);
+                    addLogEntry('Generating page ' + (newPageCount + 1) + ' of ' + totalPagesFromPlan + ': ' + nt, 'active');
+                }
+                previousPageCount = newPageCount;
+            }
+
+            /* Handle page count increments */
+            if (newPageCount > previousPageCount && planPages) {
+                /* Mark the last active entry as done */
+                updateLastLogEntry(null, 'done');
+                var allEntries = logBody.querySelectorAll('.log-entry');
+                if (allEntries.length > 0) {
+                    var lastEntry = allEntries[allEntries.length - 1];
+                    var lastText = lastEntry.querySelector('.log-entry-text');
+                    if (lastText && lastText.textContent.indexOf('Generating') === 0) {
+                        lastText.textContent = lastText.textContent.replace('Generating', 'Generated');
+                    }
+                }
+
+                /* Add new completed entries for any skipped pages */
+                for (var i = previousPageCount + 1; i < newPageCount; i++) {
+                    var skipTitle = (planPages[i]) ? planPages[i] : 'Page ' + (i + 1);
+                    addLogEntry('Generated page ' + (i + 1) + ' of ' + totalPagesFromPlan + ': ' + skipTitle, 'done');
+                }
+
+                /* Add next active entry if still generating */
+                if (newStatus === 'generating' && newPageCount < totalPagesFromPlan) {
+                    var nextTitle = (planPages[newPageCount]) ? planPages[newPageCount] : 'Page ' + (newPageCount + 1);
+                    addLogEntry('Generating page ' + (newPageCount + 1) + ' of ' + totalPagesFromPlan + ': ' + nextTitle, 'active');
+                }
+
+                previousPageCount = newPageCount;
+            } else if (newPageCount > previousPageCount && !planPages) {
+                /* No plan available, just show generic progress */
+                addLogEntry('Generated ' + newPageCount + ' pages...', 'active');
+                previousPageCount = newPageCount;
+            }
+
+            /* Update progress bar */
+            if (totalPagesFromPlan > 0) {
+                var pct = Math.min(Math.round((newPageCount / totalPagesFromPlan) * 100), 100);
+                progressBar.style.width = pct + '%';
+                progressCount.textContent = newPageCount + ' / ' + totalPagesFromPlan + ' pages';
+            } else {
+                progressCount.textContent = newPageCount + ' pages';
+            }
+
+            /* Update page count in info grid */
+            if (infoPages) infoPages.textContent = newPageCount;
+
+            /* Handle status transitions */
+            if (newStatus !== currentStatus) {
+                currentStatus = newStatus;
+                setStatusUI(newStatus);
+                rebuildActionLinks(newStatus);
+                setLogStatus(newStatus);
+
+                if (newStatus === 'ready') {
+                    stopPolling();
+                    /* Mark the last active log entry as done */
+                    updateLastLogEntry(null, 'done');
+                    var readyEntries = logBody.querySelectorAll('.log-entry');
+                    if (readyEntries.length > 0) {
+                        var finalEntry = readyEntries[readyEntries.length - 1];
+                        var finalText = finalEntry.querySelector('.log-entry-text');
+                        if (finalText && finalText.textContent.indexOf('Generating') === 0) {
+                            finalText.textContent = finalText.textContent.replace('Generating', 'Generated');
+                        }
+                    }
+                    addLogEntry('Rendered documentation site', 'done');
+                    addLogEntry('Documentation ready!', 'done');
+                    progressBar.className = 'progress-bar-fill progress-bar-fill-ready';
+                    progressBar.style.width = '100%';
+                    progressLabel.textContent = 'Complete';
+
+                    /* Update info grid with new data */
+                    if (proj.last_generated) {
+                        var genEl = document.getElementById('info-generated');
+                        if (genEl) genEl.textContent = proj.last_generated;
+                    }
+                    if (proj.last_commit_sha) {
+                        var commitEl = document.getElementById('info-commit');
+                        if (commitEl) {
+                            var repoUrl = {{ (project.repo_url or '') | tojson }};
+                            if (repoUrl && repoUrl.indexOf('github.com') !== -1) {
+                                while (commitEl.firstChild) commitEl.removeChild(commitEl.firstChild);
+                                var commitLink = document.createElement('a');
+                                commitLink.href = repoUrl + '/commit/' + proj.last_commit_sha;
+                                commitLink.target = '_blank';
+                                commitLink.rel = 'noopener noreferrer';
+                                commitLink.textContent = proj.last_commit_sha.substring(0, 7);
+                                commitEl.appendChild(commitLink);
+                            } else {
+                                commitEl.textContent = proj.last_commit_sha.substring(0, 7);
+                            }
+                        }
+                    }
+                } else if (newStatus === 'error') {
+                    stopPolling();
+                    updateLastLogEntry(null, 'error');
+                    var errorEntries = logBody.querySelectorAll('.log-entry');
+                    if (errorEntries.length > 0) {
+                        var errEntry = errorEntries[errorEntries.length - 1];
+                        var errText = errEntry.querySelector('.log-entry-text');
+                        if (errText && errText.textContent.indexOf('Generating') === 0) {
+                            errText.textContent = errText.textContent.replace('Generating', 'Failed generating');
+                        }
+                    }
+                    addLogEntry('Generation failed', 'error');
+                    errorText.textContent = proj.error_message || 'An unknown error occurred';
+                }
+            }
+        }
+
+        /* ----- Start polling if generating ----- */
+        if (currentStatus === 'generating') {
+            startPolling();
+        }
+
+    })();
+    </script>
+</body>
+</html>
