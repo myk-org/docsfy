@@ -176,6 +176,10 @@ async def _run_generation(
             await update_project_status(project_name, status="error", error_message=msg)
             return
 
+        await update_project_status(
+            project_name, status="generating", current_stage="cloning"
+        )
+
         if repo_path:
             # Local repository - use directly, no cloning needed
             local_path, commit_sha = get_local_repo_info(Path(repo_path))
@@ -252,6 +256,10 @@ async def _generate_from_path(
             await update_project_status(project_name, status="ready")
             return
 
+    await update_project_status(
+        project_name, status="generating", current_stage="planning"
+    )
+
     plan = await run_planner(
         repo_path=repo_dir,
         project_name=project_name,
@@ -266,6 +274,7 @@ async def _generate_from_path(
     await update_project_status(
         project_name,
         status="generating",
+        current_stage="generating_pages",
         plan_json=json.dumps(plan),
     )
 
@@ -281,6 +290,13 @@ async def _generate_from_path(
         project_name=project_name,
     )
 
+    await update_project_status(
+        project_name,
+        status="generating",
+        current_stage="rendering",
+        page_count=len(pages),
+    )
+
     site_dir = get_project_site_dir(project_name)
     render_site(plan=plan, pages=pages, output_dir=site_dir)
 
@@ -291,6 +307,7 @@ async def _generate_from_path(
     await update_project_status(
         project_name,
         status="ready",
+        current_stage=None,
         last_commit_sha=commit_sha,
         page_count=page_count,
         plan_json=json.dumps(plan),

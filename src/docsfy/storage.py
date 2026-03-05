@@ -24,6 +24,7 @@ async def init_db() -> None:
                 name TEXT PRIMARY KEY,
                 repo_url TEXT NOT NULL,
                 status TEXT NOT NULL DEFAULT 'generating',
+                current_stage TEXT,
                 last_commit_sha TEXT,
                 last_generated TEXT,
                 page_count INTEGER DEFAULT 0,
@@ -37,7 +38,7 @@ async def init_db() -> None:
         """)
 
         # Migrate old databases: add columns if they don't exist
-        for column in ["ai_provider TEXT", "ai_model TEXT"]:
+        for column in ["ai_provider TEXT", "ai_model TEXT", "current_stage TEXT"]:
             try:
                 await db.execute(f"ALTER TABLE projects ADD COLUMN {column}")
             except Exception:
@@ -57,6 +58,7 @@ async def save_project(name: str, repo_url: str, status: str = "generating") -> 
                ON CONFLICT(name) DO UPDATE SET
                repo_url = excluded.repo_url,
                status = excluded.status,
+               current_stage = NULL,
                error_message = NULL,
                updated_at = CURRENT_TIMESTAMP""",
             (name, repo_url, status),
@@ -67,6 +69,7 @@ async def save_project(name: str, repo_url: str, status: str = "generating") -> 
 async def update_project_status(
     name: str,
     status: str,
+    current_stage: str | None = None,
     last_commit_sha: str | None = None,
     page_count: int | None = None,
     error_message: str | None = None,
@@ -78,8 +81,8 @@ async def update_project_status(
         msg = f"Invalid project status: '{status}'. Valid: {', '.join(sorted(VALID_STATUSES))}"
         raise ValueError(msg)
     async with aiosqlite.connect(DB_PATH) as db:
-        fields = ["status = ?", "updated_at = CURRENT_TIMESTAMP"]
-        values: list[str | int | None] = [status]
+        fields = ["status = ?", "current_stage = ?", "updated_at = CURRENT_TIMESTAMP"]
+        values: list[str | int | None] = [status, current_stage]
         if last_commit_sha is not None:
             fields.append("last_commit_sha = ?")
             values.append(last_commit_sha)
@@ -122,7 +125,7 @@ async def list_projects() -> list[dict[str, str | int | None]]:
     async with aiosqlite.connect(DB_PATH) as db:
         db.row_factory = aiosqlite.Row
         cursor = await db.execute(
-            "SELECT name, repo_url, status, last_commit_sha, last_generated, page_count, ai_provider, ai_model FROM projects ORDER BY updated_at DESC"
+            "SELECT name, repo_url, status, current_stage, last_commit_sha, last_generated, page_count, ai_provider, ai_model FROM projects ORDER BY updated_at DESC"
         )
         rows = await cursor.fetchall()
         return [dict(row) for row in rows]
