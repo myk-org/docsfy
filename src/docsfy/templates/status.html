@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>docsfy - {{ project.name }} Status</title>
+    <title>docsfy - {{ project.name }} ({{ project.ai_provider }}/{{ project.ai_model }}) Status</title>
     <meta name="description" content="Generation status for {{ project.name }}">
     <style>
     /* ==========================================================================
@@ -743,7 +743,7 @@
         <div class="header-left">
             <a href="/" class="dashboard-logo">docs<span>fy</span></a>
             <span class="header-separator">/</span>
-            <span class="header-project-name">{{ project.name }}</span>
+            <span class="header-project-name">{{ project.name }} / {{ project.ai_provider }}/{{ project.ai_model }}</span>
         </div>
         <div class="header-actions">
             <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
@@ -861,8 +861,8 @@
             <!-- Action Links -->
             <div class="action-links" id="action-links">
                 {% if project.status == 'ready' %}
-                <a href="/docs/{{ project.name }}/" target="_blank" class="btn btn-primary" id="btn-view-docs">View Documentation</a>
-                <a href="/api/projects/{{ project.name }}/download" class="btn btn-secondary" id="btn-download">Download</a>
+                <a href="/docs/{{ project.name }}/{{ project.ai_provider }}/{{ project.ai_model }}/" target="_blank" class="btn btn-primary" id="btn-view-docs">View Documentation</a>
+                <a href="/api/projects/{{ project.name }}/{{ project.ai_provider }}/{{ project.ai_model }}/download" class="btn btn-secondary" id="btn-download">Download</a>
                 {% endif %}
                 {% if project.status == 'generating' %}
                 <button class="btn btn-danger" id="btn-abort">Abort</button>
@@ -926,6 +926,8 @@
 
         /* ----- Config ----- */
         var PROJECT_NAME = {{ project.name | tojson }};
+        var PROJECT_PROVIDER = {{ project.ai_provider | tojson }};
+        var PROJECT_MODEL = {{ project.ai_model | tojson }};
         var POLL_INTERVAL_MS = 3000;
 
         /* ----- Theme Toggle ----- */
@@ -1179,7 +1181,7 @@
 
             if (status === 'ready') {
                 var viewBtn = document.createElement('a');
-                viewBtn.href = '/docs/' + PROJECT_NAME + '/';
+                viewBtn.href = '/docs/' + encodeURIComponent(PROJECT_NAME) + '/' + encodeURIComponent(PROJECT_PROVIDER) + '/' + encodeURIComponent(PROJECT_MODEL) + '/';
                 viewBtn.target = '_blank';
                 viewBtn.className = 'btn btn-primary';
                 viewBtn.id = 'btn-view-docs';
@@ -1187,7 +1189,7 @@
                 actionLinks.appendChild(viewBtn);
 
                 var downloadBtn = document.createElement('a');
-                downloadBtn.href = '/api/projects/' + PROJECT_NAME + '/download';
+                downloadBtn.href = '/api/projects/' + encodeURIComponent(PROJECT_NAME) + '/' + encodeURIComponent(PROJECT_PROVIDER) + '/' + encodeURIComponent(PROJECT_MODEL) + '/download';
                 downloadBtn.className = 'btn btn-secondary';
                 downloadBtn.id = 'btn-download';
                 downloadBtn.textContent = 'Download';
@@ -1295,7 +1297,7 @@
                 abortBtn.disabled = true;
                 abortBtn.textContent = 'Aborting...';
             }
-            fetch('/api/projects/' + encodeURIComponent(PROJECT_NAME) + '/abort', { method: 'POST' })
+            fetch('/api/projects/' + encodeURIComponent(PROJECT_NAME) + '/' + encodeURIComponent(PROJECT_PROVIDER) + '/' + encodeURIComponent(PROJECT_MODEL) + '/abort', { method: 'POST' })
                 .then(function(r) {
                     if (!r.ok) return r.json().then(function(data) { throw data; });
                     return r.json();
@@ -1395,7 +1397,7 @@
         }
 
         function pollProject() {
-            fetch('/api/projects/' + encodeURIComponent(PROJECT_NAME))
+            fetch('/api/projects/' + encodeURIComponent(PROJECT_NAME) + '/' + encodeURIComponent(PROJECT_PROVIDER) + '/' + encodeURIComponent(PROJECT_MODEL))
                 .then(function(res) {
                     if (!res.ok) throw new Error('Not found');
                     return res.json();

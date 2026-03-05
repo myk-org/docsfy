@@ -106,7 +106,11 @@ async def generate_page(
         # Count cached pages to get current total
         existing_pages = len(list(cache_dir.glob("*.md")))
         await update_project_status(
-            project_name, status="generating", page_count=existing_pages
+            project_name,
+            ai_provider,
+            ai_model,
+            status="generating",
+            page_count=existing_pages,
         )
 
     return output

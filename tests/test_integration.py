@@ -73,6 +73,8 @@ async def test_full_flow_mock(client: AsyncClient, tmp_path: Path) -> None:
             name="test-repo",
             repo_url="https://github.com/org/test-repo.git",
             status="generating",
+            ai_provider="claude",
+            ai_model="opus",
         )
 
         await _run_generation(
@@ -92,27 +94,45 @@ async def test_full_flow_mock(client: AsyncClient, tmp_path: Path) -> None:
     assert projects[0]["name"] == "test-repo"
     assert projects[0]["status"] == "ready"
 
-    # Check project details
+    # Check project details (now returns variants)
     response = await client.get("/api/projects/test-repo")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["name"] == "test-repo"
+    assert len(data["variants"]) == 1
+    assert data["variants"][0]["last_commit_sha"] == "abc123"
+
+    # Check variant-specific details
+    response = await client.get("/api/projects/test-repo/claude/opus")
     assert response.status_code == 200
     assert response.json()["last_commit_sha"] == "abc123"
 
-    # Check docs are served
+    # Check docs are served via variant-specific route
+    response = await client.get("/docs/test-repo/claude/opus/index.html")
+    assert response.status_code == 200
+    assert "test-repo" in response.text
+
+    response = await client.get("/docs/test-repo/claude/opus/introduction.html")
+    assert response.status_code == 200
+    assert "Welcome!" in response.text
+
+    # Check docs are served via latest-variant route
     response = await client.get("/docs/test-repo/index.html")
     assert response.status_code == 200
     assert "test-repo" in response.text
 
-    response = await client.get("/docs/test-repo/introduction.html")
+    # Download via variant-specific route
+    response = await client.get("/api/projects/test-repo/claude/opus/download")
     assert response.status_code == 200
-    assert "Welcome!" in response.text
+    assert response.headers["content-type"] == "application/gzip"
 
-    # Download
+    # Download via latest-variant route
     response = await client.get("/api/projects/test-repo/download")
     assert response.status_code == 200
     assert response.headers["content-type"] == "application/gzip"
 
-    # Delete
-    response = await client.delete("/api/projects/test-repo")
+    # Delete variant
+    response = await client.delete("/api/projects/test-repo/claude/opus")
     assert response.status_code == 200
 
     response = await client.get("/api/projects/test-repo")
