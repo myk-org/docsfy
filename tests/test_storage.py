@@ -91,3 +91,73 @@ async def test_get_nonexistent_project(db_path: Path) -> None:
 
     project = await get_project("no-such-repo")
     assert project is None
+
+
+async def test_get_known_models(db_path: Path) -> None:
+    from docsfy.storage import get_known_models, save_project, update_project_status
+
+    await save_project(
+        name="repo-a", repo_url="https://github.com/org/a.git", status="generating"
+    )
+    await update_project_status(
+        "repo-a", status="ready", ai_provider="claude", ai_model="opus-4-6"
+    )
+    await save_project(
+        name="repo-b", repo_url="https://github.com/org/b.git", status="generating"
+    )
+    await update_project_status(
+        "repo-b", status="ready", ai_provider="claude", ai_model="sonnet-4-6"
+    )
+    await save_project(
+        name="repo-c", repo_url="https://github.com/org/c.git", status="generating"
+    )
+    await update_project_status(
+        "repo-c", status="ready", ai_provider="gemini", ai_model="gemini-2.5-pro"
+    )
+
+    models = await get_known_models()
+    assert "claude" in models
+    assert "opus-4-6" in models["claude"]
+    assert "sonnet-4-6" in models["claude"]
+    assert "gemini" in models
+    assert "gemini-2.5-pro" in models["gemini"]
+
+
+async def test_init_db_resets_orphaned_generating(db_path: Path) -> None:
+    from docsfy.storage import get_project, init_db, save_project
+
+    await save_project(
+        name="stuck-repo",
+        repo_url="https://github.com/org/stuck.git",
+        status="generating",
+    )
+
+    # Simulate server restart by re-running init_db
+    await init_db()
+
+    project = await get_project("stuck-repo")
+    assert project is not None
+    assert project["status"] == "error"
+    assert "Server restarted" in project["error_message"]
+
+
+async def test_update_project_with_ai_info(db_path: Path) -> None:
+    from docsfy.storage import get_project, save_project, update_project_status
+
+    await save_project(
+        name="my-repo",
+        repo_url="https://github.com/org/my-repo.git",
+        status="generating",
+    )
+    await update_project_status(
+        "my-repo",
+        status="ready",
+        last_commit_sha="abc123",
+        page_count=5,
+        ai_provider="claude",
+        ai_model="opus-4-6",
+    )
+    project = await get_project("my-repo")
+    assert project is not None
+    assert project["ai_provider"] == "claude"
+    assert project["ai_model"] == "opus-4-6"

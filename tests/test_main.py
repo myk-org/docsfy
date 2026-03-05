@@ -24,16 +24,17 @@ async def client(tmp_path: Path):
 
     from docsfy.main import app
 
-    await storage.init_db()
-    transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://test") as ac:
-        yield ac
-
-    # Restore originals
-    storage.DB_PATH = orig_db
-    storage.DATA_DIR = orig_data
-    storage.PROJECTS_DIR = orig_projects
-    _generating.clear()
+    try:
+        await storage.init_db()
+        transport = ASGITransport(app=app)
+        async with AsyncClient(transport=transport, base_url="http://test") as ac:
+            yield ac
+    finally:
+        # Restore originals
+        storage.DB_PATH = orig_db
+        storage.DATA_DIR = orig_data
+        storage.PROJECTS_DIR = orig_projects
+        _generating.clear()
 
 
 async def test_health_endpoint(client: AsyncClient) -> None:
@@ -97,6 +98,11 @@ async def test_generate_endpoint_local_path(
     assert response.status_code == 202
     body = response.json()
     assert body["project"] == "myrepo"
+
+
+async def test_abort_no_active_generation(client: AsyncClient) -> None:
+    response = await client.post("/api/projects/nonexistent/abort")
+    assert response.status_code == 404
 
 
 async def test_delete_project_not_found(client: AsyncClient) -> None:

@@ -1342,3 +1342,124 @@ pre:hover .copy-btn {
     letter-spacing: 0.05em;
     opacity: 0.6;
 }
+
+/* --------------------------------------------------------------------------
+   docsfy Branding Badge
+   -------------------------------------------------------------------------- */
+.docsfy-badge {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--accent);
+    text-decoration: none;
+    border: 1px solid var(--border-primary);
+    border-radius: 4px;
+    transition: all 0.15s ease;
+    white-space: nowrap;
+}
+
+.docsfy-badge:hover {
+    border-color: var(--accent);
+    background: var(--accent-light);
+}
+
+.brand-accent {
+    color: var(--accent);
+}
+
+/* --------------------------------------------------------------------------
+   Page Footer
+   -------------------------------------------------------------------------- */
+.page-footer {
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-primary);
+    text-align: center;
+    font-size: 0.8rem;
+    color: var(--text-tertiary);
+}
+
+.page-footer a {
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.page-footer a:hover {
+    text-decoration: underline;
+}
+
+/* --------------------------------------------------------------------------
+   LLM Docs Banner
+   -------------------------------------------------------------------------- */
+.llm-docs-banner {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1.25rem 1.5rem;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-primary);
+    border-radius: 8px;
+    margin-bottom: 2rem;
+}
+
+.llm-docs-icon {
+    font-size: 1.5rem;
+    line-height: 1;
+}
+
+.llm-docs-content {
+    flex: 1;
+}
+
+.llm-docs-content strong {
+    display: block;
+    margin-bottom: 0.25rem;
+    color: var(--text-primary);
+}
+
+.llm-docs-content p {
+    margin: 0 0 0.5rem;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.llm-docs-links {
+    font-size: 0.85rem;
+}
+
+.llm-docs-links a {
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.llm-docs-links a:hover {
+    text-decoration: underline;
+}
+
+.llm-docs-sep {
+    margin: 0 0.5rem;
+    color: var(--text-tertiary);
+}
+
+.footer-sep {
+    margin: 0 0.5rem;
+    color: var(--text-tertiary);
+}
+
+.footer-llm {
+    font-size: 0.8rem;
+}
+
+.footer-llm a {
+    color: var(--accent);
+    text-decoration: none;
+}
+
+.footer-llm a:hover {
+    text-decoration: underline;
+}

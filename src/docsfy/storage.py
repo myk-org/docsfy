@@ -5,8 +5,13 @@ import re
 from pathlib import Path
 
 import aiosqlite
+from simple_logger.logger import get_logger
 
-VALID_STATUSES = frozenset({"generating", "ready", "error"})
+logger = get_logger(name=__name__)
+
+VALID_STATUSES = frozenset({"generating", "ready", "error", "aborted"})
+
+_UNSET: object = object()
 
 # Module-level paths are set at import time from env vars.
 # Tests override these globals directly for isolation.
@@ -24,15 +29,40 @@ async def init_db() -> None:
                 name TEXT PRIMARY KEY,
                 repo_url TEXT NOT NULL,
                 status TEXT NOT NULL DEFAULT 'generating',
+                current_stage TEXT,
                 last_commit_sha TEXT,
                 last_generated TEXT,
                 page_count INTEGER DEFAULT 0,
                 error_message TEXT,
                 plan_json TEXT,
+                ai_provider TEXT,
+                ai_model TEXT,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         """)
+
+        # Migrate old databases: add columns if they don't exist
+        import sqlite3
+
+        for column in ["ai_provider TEXT", "ai_model TEXT", "current_stage TEXT"]:
+            try:
+                await db.execute(f"ALTER TABLE projects ADD COLUMN {column}")
+            except sqlite3.OperationalError as exc:
+                if "duplicate column name" in str(exc).lower():
+                    continue
+                logger.error(f"Migration failed while adding '{column}': {exc}")
+                raise
+
+        # Reset orphaned "generating" projects from previous server run
+        cursor = await db.execute(
+            "UPDATE projects SET status = 'error', error_message = 'Server restarted during generation', current_stage = NULL WHERE status = 'generating'"
+        )
+        if cursor.rowcount > 0:
+            logger.info(
+                f"Reset {cursor.rowcount} orphaned generating project(s) to error status"
+            )
+
         await db.commit()
 
 
@@ -47,6 +77,7 @@ async def save_project(name: str, repo_url: str, status: str = "generating") -> 
                ON CONFLICT(name) DO UPDATE SET
                repo_url = excluded.repo_url,
                status = excluded.status,
+               current_stage = NULL,
                error_message = NULL,
                updated_at = CURRENT_TIMESTAMP""",
             (name, repo_url, status),
@@ -61,6 +92,9 @@ async def update_project_status(
     page_count: int | None = None,
     error_message: str | None = None,
     plan_json: str | None = None,
+    ai_provider: str | None = None,
+    ai_model: str | None = None,
+    current_stage: str | None | object = _UNSET,
 ) -> None:
     if status not in VALID_STATUSES:
         msg = f"Invalid project status: '{status}'. Valid: {', '.join(sorted(VALID_STATUSES))}"
@@ -68,6 +102,9 @@ async def update_project_status(
     async with aiosqlite.connect(DB_PATH) as db:
         fields = ["status = ?", "updated_at = CURRENT_TIMESTAMP"]
         values: list[str | int | None] = [status]
+        if current_stage is not _UNSET:
+            fields.append("current_stage = ?")
+            values.append(current_stage)  # type: ignore[arg-type]
         if last_commit_sha is not None:
             fields.append("last_commit_sha = ?")
             values.append(last_commit_sha)
@@ -80,6 +117,12 @@ async def update_project_status(
         if plan_json is not None:
             fields.append("plan_json = ?")
             values.append(plan_json)
+        if ai_provider is not None:
+            fields.append("ai_provider = ?")
+            values.append(ai_provider)
+        if ai_model is not None:
+            fields.append("ai_model = ?")
+            values.append(ai_model)
         if status == "ready":
             fields.append("last_generated = CURRENT_TIMESTAMP")
         values.append(name)
@@ -104,7 +147,7 @@ async def list_projects() -> list[dict[str, str | int | None]]:
     async with aiosqlite.connect(DB_PATH) as db:
         db.row_factory = aiosqlite.Row
         cursor = await db.execute(
-            "SELECT name, repo_url, status, last_commit_sha, last_generated, page_count FROM projects ORDER BY updated_at DESC"
+            "SELECT name, repo_url, status, current_stage, last_commit_sha, last_generated, page_count, error_message, plan_json, ai_provider, ai_model FROM projects ORDER BY updated_at DESC"
         )
         rows = await cursor.fetchall()
         return [dict(row) for row in rows]
@@ -135,3 +178,19 @@ def get_project_site_dir(name: str) -> Path:
 
 def get_project_cache_dir(name: str) -> Path:
     return PROJECTS_DIR / _validate_name(name) / "cache" / "pages"
+
+
+async def get_known_models() -> dict[str, list[str]]:
+    """Get distinct ai_model values per ai_provider from completed projects."""
+    async with aiosqlite.connect(DB_PATH) as db:
+        cursor = await db.execute(
+            "SELECT DISTINCT ai_provider, ai_model FROM projects WHERE ai_provider IS NOT NULL AND ai_model IS NOT NULL AND status = 'ready' ORDER BY ai_provider, ai_model"
+        )
+        rows = await cursor.fetchall()
+        models: dict[str, list[str]] = {}
+        for provider, model in rows:
+            if provider not in models:
+                models[provider] = []
+            if model not in models[provider]:
+                models[provider].append(model)
+        return models

@@ -13,7 +13,8 @@ from pathlib import Path
 from typing import Any
 
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import FileResponse, StreamingResponse
+from fastapi.responses import FileResponse, HTMLResponse, StreamingResponse
+from jinja2 import Environment, FileSystemLoader, select_autoescape
 from simple_logger.logger import get_logger
 
 from docsfy.ai_client import check_ai_cli_available
@@ -24,6 +25,7 @@ from docsfy.repository import clone_repo, get_local_repo_info
 from docsfy.renderer import render_site
 from docsfy.storage import (
     delete_project,
+    get_known_models,
     get_project,
     get_project_cache_dir,
     get_project_dir,
@@ -36,7 +38,7 @@ from docsfy.storage import (
 
 logger = get_logger(name=__name__)
 
-_generating: set[str] = set()
+_generating: dict[str, asyncio.Task[None]] = {}
 
 
 def _validate_project_name(name: str) -> str:
@@ -48,6 +50,7 @@ def _validate_project_name(name: str) -> str:
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+    _generating.clear()
     await init_db()
     yield
 
@@ -58,6 +61,62 @@ app = FastAPI(
     version="0.1.0",
     lifespan=lifespan,
 )
+
+
+@app.get("/", response_class=HTMLResponse)
+async def dashboard() -> HTMLResponse:
+    settings = get_settings()
+    projects = await list_projects()
+    known_models = await get_known_models()
+    env = Environment(
+        loader=FileSystemLoader(str(Path(__file__).parent / "templates")),
+        autoescape=select_autoescape(["html"]),
+    )
+    template = env.get_template("dashboard.html")
+    html = template.render(
+        projects=projects,
+        default_provider=settings.ai_provider,
+        default_model=settings.ai_model,
+        known_models=known_models,
+    )
+    return HTMLResponse(content=html)
+
+
+@app.get("/status/{name}", response_class=HTMLResponse)
+async def project_status_page(name: str) -> HTMLResponse:
+    name = _validate_project_name(name)
+    project = await get_project(name)
+    if not project:
+        raise HTTPException(status_code=404, detail=f"Project '{name}' not found")
+
+    # Parse plan_json string into a dict for template consumption
+    plan_json = None
+    total_pages = 0
+    if project.get("plan_json"):
+        try:
+            plan_json = json.loads(str(project["plan_json"]))
+            for group in plan_json.get("navigation", []):
+                total_pages += len(group.get("pages", []))
+        except (json.JSONDecodeError, TypeError):
+            plan_json = None
+
+    settings = get_settings()
+    known_models = await get_known_models()
+
+    env = Environment(
+        loader=FileSystemLoader(str(Path(__file__).parent / "templates")),
+        autoescape=select_autoescape(["html"]),
+    )
+    template = env.get_template("status.html")
+    html = template.render(
+        project=project,
+        plan_json=plan_json,
+        total_pages=total_pages,
+        known_models=known_models,
+        default_provider=settings.ai_provider,
+        default_model=settings.ai_model,
+    )
+    return HTMLResponse(content=html)
 
 
 @app.get("/health")
@@ -84,8 +143,6 @@ async def generate(request: GenerateRequest) -> dict[str, str]:
             detail=f"Project '{project_name}' is already being generated",
         )
 
-    _generating.add(project_name)
-
     await save_project(
         name=project_name,
         repo_url=request.repo_url or request.repo_path or "",
@@ -93,7 +150,7 @@ async def generate(request: GenerateRequest) -> dict[str, str]:
     )
 
     try:
-        asyncio.create_task(
+        task = asyncio.create_task(
             _run_generation(
                 repo_url=request.repo_url,
                 repo_path=request.repo_path,
@@ -104,11 +161,47 @@ async def generate(request: GenerateRequest) -> dict[str, str]:
                 force=request.force,
             )
         )
+        _generating[project_name] = task
     except Exception:
-        _generating.discard(project_name)
+        _generating.pop(project_name, None)
         raise
 
     return {"project": project_name, "status": "generating"}
+
+
+@app.post("/api/projects/{name}/abort")
+async def abort_generation(name: str) -> dict[str, str]:
+    name = _validate_project_name(name)
+    task = _generating.get(name)
+    if not task:
+        raise HTTPException(
+            status_code=404, detail=f"No active generation for '{name}'"
+        )
+
+    task.cancel()
+    try:
+        await asyncio.wait_for(task, timeout=5.0)
+    except asyncio.CancelledError:
+        pass  # expected cancellation acknowledgment
+    except asyncio.TimeoutError:
+        logger.warning(f"[{name}] Abort requested but cancellation still in progress")
+        raise HTTPException(
+            status_code=409,
+            detail=f"Abort still in progress for '{name}'. Please retry shortly.",
+        )
+    except Exception as exc:
+        logger.exception(f"[{name}] Abort failed: {exc}")
+        raise HTTPException(status_code=500, detail=f"Failed to abort '{name}'")
+
+    await update_project_status(
+        name,
+        status="aborted",
+        error_message="Generation aborted by user",
+        current_stage=None,
+    )
+    _generating.pop(name, None)
+
+    return {"aborted": name}
 
 
 async def _run_generation(
@@ -125,6 +218,10 @@ async def _run_generation(
         if not available:
             await update_project_status(project_name, status="error", error_message=msg)
             return
+
+        await update_project_status(
+            project_name, status="generating", current_stage="cloning"
+        )
 
         if repo_path:
             # Local repository - use directly, no cloning needed
@@ -160,9 +257,12 @@ async def _run_generation(
                 )
 
     except asyncio.CancelledError:
-        logger.warning(f"Generation cancelled for {project_name}")
+        logger.warning(f"[{project_name}] Generation cancelled")
         await update_project_status(
-            project_name, status="error", error_message="Generation was cancelled"
+            project_name,
+            status="aborted",
+            error_message="Generation was cancelled",
+            current_stage=None,
         )
         raise
     except Exception as exc:
@@ -171,7 +271,7 @@ async def _run_generation(
             project_name, status="error", error_message=str(exc)
         )
     finally:
-        _generating.discard(project_name)
+        _generating.pop(project_name, None)
 
 
 async def _generate_from_path(
@@ -202,6 +302,10 @@ async def _generate_from_path(
             await update_project_status(project_name, status="ready")
             return
 
+    await update_project_status(
+        project_name, status="generating", current_stage="planning"
+    )
+
     plan = await run_planner(
         repo_path=repo_dir,
         project_name=project_name,
@@ -216,6 +320,7 @@ async def _generate_from_path(
     await update_project_status(
         project_name,
         status="generating",
+        current_stage="generating_pages",
         plan_json=json.dumps(plan),
     )
 
@@ -231,6 +336,13 @@ async def _generate_from_path(
         project_name=project_name,
     )
 
+    await update_project_status(
+        project_name,
+        status="generating",
+        current_stage="rendering",
+        page_count=len(pages),
+    )
+
     site_dir = get_project_site_dir(project_name)
     render_site(plan=plan, pages=pages, output_dir=site_dir)
 
@@ -241,9 +353,12 @@ async def _generate_from_path(
     await update_project_status(
         project_name,
         status="ready",
+        current_stage=None,
         last_commit_sha=commit_sha,
         page_count=page_count,
         plan_json=json.dumps(plan),
+        ai_provider=ai_provider,
+        ai_model=ai_model,
     )
     logger.info(f"[{project_name}] Documentation ready ({page_count} pages)")
 
