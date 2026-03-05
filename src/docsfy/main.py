@@ -100,13 +100,21 @@ async def project_status_page(name: str) -> HTMLResponse:
         except (json.JSONDecodeError, TypeError):
             plan_json = None
 
+    settings = get_settings()
+    known_models = await get_known_models()
+
     env = Environment(
         loader=FileSystemLoader(str(Path(__file__).parent / "templates")),
         autoescape=select_autoescape(["html"]),
     )
     template = env.get_template("status.html")
     html = template.render(
-        project=project, plan_json=plan_json, total_pages=total_pages
+        project=project,
+        plan_json=plan_json,
+        total_pages=total_pages,
+        known_models=known_models,
+        default_provider=settings.ai_provider,
+        default_model=settings.ai_model,
     )
     return HTMLResponse(content=html)
 
