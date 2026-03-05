@@ -289,7 +289,10 @@ async def _run_generation(
 ) -> None:
     gen_key = f"{project_name}/{ai_provider}/{ai_model}"
     try:
-        available, msg = await check_ai_cli_available(ai_provider, ai_model)
+        cli_flags = ["--trust"] if ai_provider == "cursor" else None
+        available, msg = await check_ai_cli_available(
+            ai_provider, ai_model, cli_flags=cli_flags
+        )
         if not available:
             await update_project_status(
                 project_name,
