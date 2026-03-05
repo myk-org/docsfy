@@ -1133,6 +1133,73 @@
         cursor: pointer;
     }
 
+    /* Model Combobox */
+    .model-combobox {
+        position: relative;
+        flex: 1;
+    }
+
+    .model-dropdown {
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: var(--bg-card);
+        border: 1px solid var(--border-primary);
+        border-top: none;
+        border-radius: 0 0 6px 6px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        max-height: 200px;
+        overflow-y: auto;
+        z-index: 100;
+    }
+
+    .model-dropdown.active {
+        display: block;
+    }
+
+    .model-option {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 12px;
+        cursor: pointer;
+        font-size: 0.85rem;
+    }
+
+    .model-option:hover {
+        background: var(--bg-secondary);
+    }
+
+    .model-option-name {
+        color: var(--text-primary);
+    }
+
+    .model-option-provider {
+        color: var(--text-secondary);
+        font-size: 0.75rem;
+    }
+
+    .model-combobox-sm {
+        position: relative;
+        flex: 1;
+        min-width: 120px;
+    }
+
+    .model-combobox-sm .model-dropdown {
+        max-height: 160px;
+    }
+
+    .model-combobox-sm .model-option {
+        padding: 6px 8px;
+        font-size: 0.8rem;
+    }
+
+    .model-combobox-sm .model-option-provider {
+        font-size: 0.7rem;
+    }
+
     /* --------------------------------------------------------------------------
        Responsive
        -------------------------------------------------------------------------- */
@@ -1265,12 +1332,19 @@
                     </div>
                     <div class="form-group form-group-grow">
                         <label for="gen-model">Model</label>
-                        <input type="text" id="gen-model" class="form-input" list="model-suggestions" value="{{ default_model }}" placeholder="Model name">
-                        <datalist id="model-suggestions">
-                            {% for model in known_models.get(default_provider, []) %}
-                            <option value="{{ model }}">
-                            {% endfor %}
-                        </datalist>
+                        <div class="model-combobox">
+                            <input type="text" class="form-input" id="gen-model" value="{{ default_model }}" placeholder="Model name" autocomplete="off">
+                            <div class="model-dropdown" id="model-dropdown">
+                                {% for provider, models in known_models.items() %}
+                                {% for model in models %}
+                                <div class="model-option" data-provider="{{ provider }}" data-value="{{ model }}">
+                                    <span class="model-option-name">{{ model }}</span>
+                                    <span class="model-option-provider">{{ provider }}</span>
+                                </div>
+                                {% endfor %}
+                                {% endfor %}
+                            </div>
+                        </div>
                     </div>
                     <div class="form-checkbox-group">
                         <input type="checkbox" id="gen-force">
@@ -1374,12 +1448,19 @@
                                 <option value="gemini" {{ 'selected' if variant.ai_provider == 'gemini' }}>gemini</option>
                                 <option value="cursor" {{ 'selected' if variant.ai_provider == 'cursor' }}>cursor</option>
                             </select>
-                            <input type="text" class="form-input form-input-sm" value="{{ variant.ai_model }}" data-regen-model="{{ repo_name }}" list="model-suggestions-{{ repo_name }}-{{ loop.index }}">
-                            <datalist id="model-suggestions-{{ repo_name }}-{{ loop.index }}">
-                                {% for m in known_models.get(variant.ai_provider or default_provider, []) %}
-                                <option value="{{ m }}">
-                                {% endfor %}
-                            </datalist>
+                            <div class="model-combobox-sm">
+                                <input type="text" class="form-input form-input-sm" value="{{ variant.ai_model }}" data-regen-model="{{ repo_name }}" autocomplete="off">
+                                <div class="model-dropdown" data-regen-dropdown>
+                                    {% for provider, models in known_models.items() %}
+                                    {% for model in models %}
+                                    <div class="model-option" data-provider="{{ provider }}" data-value="{{ model }}">
+                                        <span class="model-option-name">{{ model }}</span>
+                                        <span class="model-option-provider">{{ provider }}</span>
+                                    </div>
+                                    {% endfor %}
+                                    {% endfor %}
+                                </div>
+                            </div>
                             <label class="form-checkbox-sm"><input type="checkbox" data-regen-force="{{ repo_name }}"> Force</label>
                             <button class="btn btn-primary btn-sm" data-regenerate-variant="{{ repo_name }}" data-repo-url="{{ variant.repo_url }}">Regenerate</button>
                         </div>
@@ -1408,7 +1489,19 @@
                                     <option value="gemini" {{ 'selected' if variant.ai_provider == 'gemini' }}>gemini</option>
                                     <option value="cursor" {{ 'selected' if variant.ai_provider == 'cursor' }}>cursor</option>
                                 </select>
-                                <input type="text" class="form-input form-input-sm" value="{{ variant.ai_model }}" data-regen-model="{{ repo_name }}">
+                                <div class="model-combobox-sm">
+                                    <input type="text" class="form-input form-input-sm" value="{{ variant.ai_model }}" data-regen-model="{{ repo_name }}" autocomplete="off">
+                                    <div class="model-dropdown" data-regen-dropdown>
+                                        {% for provider, models in known_models.items() %}
+                                        {% for model in models %}
+                                        <div class="model-option" data-provider="{{ provider }}" data-value="{{ model }}">
+                                            <span class="model-option-name">{{ model }}</span>
+                                            <span class="model-option-provider">{{ provider }}</span>
+                                        </div>
+                                        {% endfor %}
+                                        {% endfor %}
+                                    </div>
+                                </div>
                                 <label class="form-checkbox-sm"><input type="checkbox" data-regen-force="{{ repo_name }}"> Force</label>
                                 <button class="btn btn-primary btn-sm" data-regenerate-variant="{{ repo_name }}" data-repo-url="{{ variant.repo_url }}">Regenerate</button>
                             </div>
@@ -1455,46 +1548,117 @@
     (function() {
         'use strict';
 
-        /* ----- Model Suggestions (combobox) ----- */
+        /* ----- Model Combobox (custom dropdown) ----- */
         var knownModels = {{ known_models | tojson }};
 
-        // Update model suggestions when provider changes (Generate form)
+        // --- Generate form combobox ---
+        var modelInput = document.getElementById('gen-model');
+        var modelDropdown = document.getElementById('model-dropdown');
         var providerSelect = document.getElementById('gen-provider');
-        var datalist = document.getElementById('model-suggestions');
 
-        if (providerSelect && datalist) {
-            providerSelect.addEventListener('change', function() {
-                var provider = this.value;
-                datalist.innerHTML = '';
-                var models = knownModels[provider] || [];
-                models.forEach(function(model) {
-                    var option = document.createElement('option');
-                    option.value = model;
-                    datalist.appendChild(option);
-                });
+        function filterModelOptions(dropdown, query, providerValue) {
+            var q = (query || '').toLowerCase();
+            var hasVisible = false;
+            dropdown.querySelectorAll('.model-option').forEach(function(opt) {
+                var matchesQuery = !q || opt.getAttribute('data-value').toLowerCase().indexOf(q) !== -1;
+                var matchesProvider = !providerValue || opt.getAttribute('data-provider') === providerValue;
+                var visible = matchesQuery && matchesProvider;
+                opt.style.display = visible ? '' : 'none';
+                if (visible) hasVisible = true;
+            });
+            return hasVisible;
+        }
+
+        if (modelInput && modelDropdown) {
+            modelInput.addEventListener('focus', function() {
+                var provider = providerSelect ? providerSelect.value : '';
+                filterModelOptions(modelDropdown, '', provider);
+                modelDropdown.classList.add('active');
+            });
+
+            modelInput.addEventListener('input', function() {
+                var provider = providerSelect ? providerSelect.value : '';
+                filterModelOptions(modelDropdown, this.value, provider);
+                modelDropdown.classList.add('active');
+            });
+
+            document.addEventListener('click', function(e) {
+                if (!modelInput.contains(e.target) && !modelDropdown.contains(e.target)) {
+                    modelDropdown.classList.remove('active');
+                }
+            });
+
+            modelDropdown.addEventListener('click', function(e) {
+                var option = e.target.closest('.model-option');
+                if (option) {
+                    modelInput.value = option.getAttribute('data-value');
+                    modelDropdown.classList.remove('active');
+                }
             });
         }
 
-        // Update model suggestions when provider changes (per-variant Regenerate)
+        if (providerSelect && modelDropdown) {
+            providerSelect.addEventListener('change', function() {
+                filterModelOptions(modelDropdown, modelInput ? modelInput.value : '', this.value);
+            });
+        }
+
+        // --- Per-variant regen comboboxes ---
+        function setupRegenCombobox(input) {
+            var combobox = input.closest('.model-combobox-sm');
+            if (!combobox) return;
+            var dropdown = combobox.querySelector('[data-regen-dropdown]');
+            if (!dropdown) return;
+
+            input.addEventListener('focus', function() {
+                var row = input.closest('.variant-regen');
+                var provSel = row ? row.querySelector('[data-regen-provider]') : null;
+                var prov = provSel ? provSel.value : '';
+                filterModelOptions(dropdown, '', prov);
+                dropdown.classList.add('active');
+            });
+
+            input.addEventListener('input', function() {
+                var row = input.closest('.variant-regen');
+                var provSel = row ? row.querySelector('[data-regen-provider]') : null;
+                var prov = provSel ? provSel.value : '';
+                filterModelOptions(dropdown, this.value, prov);
+                dropdown.classList.add('active');
+            });
+
+            document.addEventListener('click', function(e) {
+                if (!input.contains(e.target) && !dropdown.contains(e.target)) {
+                    dropdown.classList.remove('active');
+                }
+            });
+
+            dropdown.addEventListener('click', function(e) {
+                var option = e.target.closest('.model-option');
+                if (option) {
+                    input.value = option.getAttribute('data-value');
+                    dropdown.classList.remove('active');
+                }
+            });
+        }
+
+        document.querySelectorAll('[data-regen-model]').forEach(function(input) {
+            setupRegenCombobox(input);
+        });
+
+        // Re-filter regen dropdowns when provider changes
         document.addEventListener('change', function(e) {
             var sel = e.target.closest('[data-regen-provider]');
             if (!sel) return;
             var row = sel.closest('.variant-regen');
             if (!row) return;
             var repoName = sel.getAttribute('data-regen-provider');
-            var modelInput = row.querySelector('[data-regen-model="' + repoName + '"]');
-            if (!modelInput) return;
-            var dlId = modelInput.getAttribute('list');
-            var dl = dlId ? document.getElementById(dlId) : null;
-            if (!dl) return;
-            var provider = sel.value;
-            dl.innerHTML = '';
-            var models = knownModels[provider] || [];
-            models.forEach(function(model) {
-                var option = document.createElement('option');
-                option.value = model;
-                dl.appendChild(option);
-            });
+            var input = row.querySelector('[data-regen-model="' + repoName + '"]');
+            if (!input) return;
+            var combobox = input.closest('.model-combobox-sm');
+            if (!combobox) return;
+            var dropdown = combobox.querySelector('[data-regen-dropdown]');
+            if (!dropdown) return;
+            filterModelOptions(dropdown, input.value, sel.value);
         });
 
         /* ----- Theme Toggle (same pattern as theme.js) ----- */
