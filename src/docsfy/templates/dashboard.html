@@ -1228,11 +1228,28 @@
 
                     {% if project.status == 'error' %}
                     <div class="card-actions">
-                        <button class="btn btn-primary btn-sm" data-retry="{{ project.name }}" data-repo="{{ project.repo_url }}">Retry</button>
                         <span class="card-actions-spacer"></span>
                         <button class="btn btn-danger btn-sm btn-icon" data-delete="{{ project.name }}" aria-label="Delete project" title="Delete project">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
                         </button>
+                    </div>
+                    <div class="regenerate-inline">
+                        <select class="form-select" data-regen="provider" aria-label="Provider for regeneration">
+                            <option value="claude"{% if project.ai_provider == 'claude' %} selected{% endif %}>claude</option>
+                            <option value="gemini"{% if project.ai_provider == 'gemini' %} selected{% endif %}>gemini</option>
+                            <option value="cursor"{% if project.ai_provider == 'cursor' %} selected{% endif %}>cursor</option>
+                        </select>
+                        <input type="text" class="form-input" data-regen="model" list="model-suggestions-{{ project.name }}" value="{{ project.ai_model or default_model }}" aria-label="Model for regeneration">
+                        <datalist id="model-suggestions-{{ project.name }}">
+                            {% for model in known_models.get(project.ai_provider or default_provider, []) %}
+                            <option value="{{ model }}">
+                            {% endfor %}
+                        </datalist>
+                        <div class="form-checkbox-group">
+                            <input type="checkbox" data-regen="force" id="regen-force-{{ loop.index }}">
+                            <label for="regen-force-{{ loop.index }}">Force</label>
+                        </div>
+                        <button class="btn btn-secondary btn-sm" data-regenerate="{{ project.name }}" data-repo="{{ project.repo_url }}">Regenerate</button>
                     </div>
                     <div style="margin-top: 8px;">
                         <a href="/status/{{ project.name }}" target="_blank" class="status-link">View details →</a>

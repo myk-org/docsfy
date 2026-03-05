@@ -447,6 +447,42 @@
         border-top: 1px solid var(--border-secondary);
     }
 
+    .regenerate-inline {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        padding-top: 1rem;
+        border-top: 1px solid var(--border-secondary);
+    }
+
+    .regenerate-inline .form-select,
+    .regenerate-inline .form-input {
+        height: 32px;
+        font-size: 0.8125rem;
+    }
+
+    .regenerate-inline .form-select {
+        width: 110px;
+    }
+
+    .regenerate-inline .form-input {
+        width: 180px;
+    }
+
+    .regenerate-inline .form-checkbox-group {
+        height: 32px;
+    }
+
+    .regenerate-inline .form-checkbox-group input[type="checkbox"] {
+        width: 14px;
+        height: 14px;
+    }
+
+    .regenerate-inline .form-checkbox-group label {
+        font-size: 0.8125rem;
+    }
+
     .btn {
         display: inline-flex;
         align-items: center;
@@ -813,7 +849,24 @@
                 <a href="/api/projects/{{ project.name }}/download" class="btn btn-secondary" id="btn-download">Download</a>
                 {% endif %}
                 {% if project.status == 'error' %}
-                <button class="btn btn-primary" id="btn-retry">Retry</button>
+                <div class="regenerate-inline">
+                    <select class="form-select" id="retry-provider" aria-label="Provider for regeneration">
+                        <option value="claude"{% if project.ai_provider == 'claude' %} selected{% endif %}>claude</option>
+                        <option value="gemini"{% if project.ai_provider == 'gemini' %} selected{% endif %}>gemini</option>
+                        <option value="cursor"{% if project.ai_provider == 'cursor' %} selected{% endif %}>cursor</option>
+                    </select>
+                    <input type="text" class="form-input" id="retry-model" list="retry-model-suggestions" value="{{ project.ai_model or default_model }}" aria-label="Model for regeneration">
+                    <datalist id="retry-model-suggestions">
+                        {% for model in known_models.get(project.ai_provider or default_provider, []) %}
+                        <option value="{{ model }}">
+                        {% endfor %}
+                    </datalist>
+                    <div class="form-checkbox-group">
+                        <input type="checkbox" id="retry-force">
+                        <label for="retry-force">Force</label>
+                    </div>
+                    <button class="btn btn-primary" id="btn-retry">Regenerate</button>
+                </div>
                 {% endif %}
             </div>
         </div>
@@ -873,6 +926,26 @@
             document.documentElement.setAttribute('data-theme', next);
             setTheme(next);
         });
+
+        /* ----- Model Suggestions (combobox) ----- */
+        var knownModels = {{ known_models | tojson }};
+
+        // Update model suggestions when provider changes (Retry form)
+        var retryProviderSelect = document.getElementById('retry-provider');
+        var retryModelDatalist = document.getElementById('retry-model-suggestions');
+
+        if (retryProviderSelect && retryModelDatalist) {
+            retryProviderSelect.addEventListener('change', function() {
+                var provider = this.value;
+                retryModelDatalist.innerHTML = '';
+                var models = knownModels[provider] || [];
+                models.forEach(function(model) {
+                    var option = document.createElement('option');
+                    option.value = model;
+                    retryModelDatalist.appendChild(option);
+                });
+            });
+        }
 
         /* ----- DOM Elements ----- */
         var statusIndicator = document.getElementById('status-indicator');
@@ -1088,12 +1161,65 @@
             }
 
             if (status === 'error') {
+                var retryDiv = document.createElement('div');
+                retryDiv.className = 'regenerate-inline';
+
+                var providerSelect = document.createElement('select');
+                providerSelect.className = 'form-select';
+                providerSelect.id = 'retry-provider';
+                providerSelect.setAttribute('aria-label', 'Provider for regeneration');
+                ['claude', 'gemini', 'cursor'].forEach(function(p) {
+                    var opt = document.createElement('option');
+                    opt.value = p;
+                    opt.textContent = p;
+                    providerSelect.appendChild(opt);
+                });
+                retryDiv.appendChild(providerSelect);
+
+                var modelInput = document.createElement('input');
+                modelInput.type = 'text';
+                modelInput.className = 'form-input';
+                modelInput.id = 'retry-model';
+                modelInput.setAttribute('list', 'retry-model-suggestions');
+                modelInput.setAttribute('aria-label', 'Model for regeneration');
+                retryDiv.appendChild(modelInput);
+
+                var datalist = document.createElement('datalist');
+                datalist.id = 'retry-model-suggestions';
+                retryDiv.appendChild(datalist);
+
+                var checkboxGroup = document.createElement('div');
+                checkboxGroup.className = 'form-checkbox-group';
+                var forceCheckbox = document.createElement('input');
+                forceCheckbox.type = 'checkbox';
+                forceCheckbox.id = 'retry-force';
+                var forceLabel = document.createElement('label');
+                forceLabel.setAttribute('for', 'retry-force');
+                forceLabel.textContent = 'Force';
+                checkboxGroup.appendChild(forceCheckbox);
+                checkboxGroup.appendChild(forceLabel);
+                retryDiv.appendChild(checkboxGroup);
+
                 var retryBtn = document.createElement('button');
                 retryBtn.className = 'btn btn-primary';
                 retryBtn.id = 'btn-retry';
-                retryBtn.textContent = 'Retry';
+                retryBtn.textContent = 'Regenerate';
                 retryBtn.addEventListener('click', handleRetry);
-                actionLinks.appendChild(retryBtn);
+                retryDiv.appendChild(retryBtn);
+
+                actionLinks.appendChild(retryDiv);
+
+                // Wire up provider change handler
+                providerSelect.addEventListener('change', function() {
+                    var provider = this.value;
+                    datalist.innerHTML = '';
+                    var models = knownModels[provider] || [];
+                    models.forEach(function(model) {
+                        var option = document.createElement('option');
+                        option.value = model;
+                        datalist.appendChild(option);
+                    });
+                });
             }
 
             var spacer = document.createElement('span');
@@ -1122,15 +1248,24 @@
             if (!repoUrl) return;
 
             var retryBtn = document.getElementById('btn-retry');
+            var providerSelect = document.getElementById('retry-provider');
+            var modelInput = document.getElementById('retry-model');
+            var forceCheckbox = document.getElementById('retry-force');
+
             if (retryBtn) {
                 retryBtn.disabled = true;
                 retryBtn.textContent = 'Starting...';
             }
 
+            var payload = { repo_url: repoUrl };
+            if (providerSelect) payload.ai_provider = providerSelect.value;
+            if (modelInput) payload.ai_model = modelInput.value;
+            if (forceCheckbox && forceCheckbox.checked) payload.force = true;
+
             fetch('/api/generate', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ repo_url: repoUrl })
+                body: JSON.stringify(payload)
             })
             .then(function(res) {
                 if (!res.ok) return res.json().then(function(data) { throw data; });
