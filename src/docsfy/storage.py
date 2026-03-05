@@ -216,14 +216,23 @@ def _validate_name(name: str) -> str:
 
 
 def get_project_dir(name: str, ai_provider: str = "", ai_model: str = "") -> Path:
+    if not ai_provider or not ai_model:
+        msg = "ai_provider and ai_model are required for project directory paths"
+        raise ValueError(msg)
     return PROJECTS_DIR / _validate_name(name) / ai_provider / ai_model
 
 
 def get_project_site_dir(name: str, ai_provider: str = "", ai_model: str = "") -> Path:
+    if not ai_provider or not ai_model:
+        msg = "ai_provider and ai_model are required for project directory paths"
+        raise ValueError(msg)
     return get_project_dir(name, ai_provider, ai_model) / "site"
 
 
 def get_project_cache_dir(name: str, ai_provider: str = "", ai_model: str = "") -> Path:
+    if not ai_provider or not ai_model:
+        msg = "ai_provider and ai_model are required for project directory paths"
+        raise ValueError(msg)
     return get_project_dir(name, ai_provider, ai_model) / "cache" / "pages"
 
 

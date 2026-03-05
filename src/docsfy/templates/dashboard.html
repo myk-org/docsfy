@@ -1,3 +1,27 @@
+{% macro regen_controls(variant, repo_name, default_provider, default_model, known_models, loop_index) %}
+<div class="variant-regen">
+    <select class="form-select form-select-sm" data-regen-provider="{{ repo_name }}">
+        <option value="claude" {{ 'selected' if variant.ai_provider == 'claude' }}>claude</option>
+        <option value="gemini" {{ 'selected' if variant.ai_provider == 'gemini' }}>gemini</option>
+        <option value="cursor" {{ 'selected' if variant.ai_provider == 'cursor' }}>cursor</option>
+    </select>
+    <div class="model-combobox-sm">
+        <input type="text" class="form-input form-input-sm" value="{{ variant.ai_model or default_model }}" data-regen-model="{{ repo_name }}" autocomplete="off">
+        <div class="model-dropdown" data-regen-dropdown>
+            {% for provider, models in known_models.items() %}
+            {% for model in models %}
+            <div class="model-option" data-provider="{{ provider }}" data-value="{{ model }}">
+                <span class="model-option-name">{{ model }}</span>
+                <span class="model-option-provider">{{ provider }}</span>
+            </div>
+            {% endfor %}
+            {% endfor %}
+        </div>
+    </div>
+    <label class="form-checkbox-sm"><input type="checkbox" data-regen-force="{{ repo_name }}"> Force</label>
+    <button class="btn btn-primary btn-sm" data-regenerate-variant="{{ repo_name }}" data-repo-url="{{ variant.repo_url }}">Regenerate</button>
+</div>
+{% endmacro %}
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
 <head>
@@ -1437,33 +1461,12 @@
 
                         {% if variant.status == 'ready' %}
                         <div class="variant-actions">
-                            <a href="/docs/{{ repo_name }}/{{ variant.ai_provider }}/{{ variant.ai_model }}/" target="_blank" class="btn btn-primary btn-sm">View Docs</a>
-                            <a href="/api/projects/{{ repo_name }}/{{ variant.ai_provider }}/{{ variant.ai_model }}/download" class="btn btn-secondary btn-sm">Download</a>
+                            <a href="/docs/{{ repo_name }}/{{ variant.ai_provider | urlencode }}/{{ variant.ai_model | urlencode }}/" target="_blank" class="btn btn-primary btn-sm">View Docs</a>
+                            <a href="/api/projects/{{ repo_name }}/{{ variant.ai_provider | urlencode }}/{{ variant.ai_model | urlencode }}/download" class="btn btn-secondary btn-sm">Download</a>
                             <button class="btn btn-danger btn-sm" data-delete-variant="{{ repo_name }}/{{ variant.ai_provider }}/{{ variant.ai_model }}">Delete</button>
                         </div>
                         <!-- Regenerate controls -->
-                        <div class="variant-regen">
-                            <select class="form-select form-select-sm" data-regen-provider="{{ repo_name }}">
-                                <option value="claude" {{ 'selected' if variant.ai_provider == 'claude' }}>claude</option>
-                                <option value="gemini" {{ 'selected' if variant.ai_provider == 'gemini' }}>gemini</option>
-                                <option value="cursor" {{ 'selected' if variant.ai_provider == 'cursor' }}>cursor</option>
-                            </select>
-                            <div class="model-combobox-sm">
-                                <input type="text" class="form-input form-input-sm" value="{{ variant.ai_model }}" data-regen-model="{{ repo_name }}" autocomplete="off">
-                                <div class="model-dropdown" data-regen-dropdown>
-                                    {% for provider, models in known_models.items() %}
-                                    {% for model in models %}
-                                    <div class="model-option" data-provider="{{ provider }}" data-value="{{ model }}">
-                                        <span class="model-option-name">{{ model }}</span>
-                                        <span class="model-option-provider">{{ provider }}</span>
-                                    </div>
-                                    {% endfor %}
-                                    {% endfor %}
-                                </div>
-                            </div>
-                            <label class="form-checkbox-sm"><input type="checkbox" data-regen-force="{{ repo_name }}"> Force</label>
-                            <button class="btn btn-primary btn-sm" data-regenerate-variant="{{ repo_name }}" data-repo-url="{{ variant.repo_url }}">Regenerate</button>
-                        </div>
+                        {{ regen_controls(variant, repo_name, default_provider, default_model, known_models, loop.index) }}
 
                         {% elif variant.status == 'generating' %}
                         <div class="variant-progress">
@@ -1473,7 +1476,7 @@
                                 </div>
                             </div>
                             <span class="progress-text">Generating...</span>
-                            <a href="/status/{{ repo_name }}/{{ variant.ai_provider }}/{{ variant.ai_model }}" target="_blank" class="status-link">View progress &rarr;</a>
+                            <a href="/status/{{ repo_name }}/{{ variant.ai_provider | urlencode }}/{{ variant.ai_model | urlencode }}" target="_blank" class="status-link">View progress &rarr;</a>
                             <button class="btn btn-danger btn-sm" data-abort-variant="{{ repo_name }}/{{ variant.ai_provider }}/{{ variant.ai_model }}">Abort</button>
                         </div>
 
@@ -1482,29 +1485,7 @@
                             <span class="error-text">{{ variant.error_message }}</span>
                         </div>
                         <div class="variant-actions">
-                            <!-- Same regen controls as ready -->
-                            <div class="variant-regen">
-                                <select class="form-select form-select-sm" data-regen-provider="{{ repo_name }}">
-                                    <option value="claude" {{ 'selected' if variant.ai_provider == 'claude' }}>claude</option>
-                                    <option value="gemini" {{ 'selected' if variant.ai_provider == 'gemini' }}>gemini</option>
-                                    <option value="cursor" {{ 'selected' if variant.ai_provider == 'cursor' }}>cursor</option>
-                                </select>
-                                <div class="model-combobox-sm">
-                                    <input type="text" class="form-input form-input-sm" value="{{ variant.ai_model }}" data-regen-model="{{ repo_name }}" autocomplete="off">
-                                    <div class="model-dropdown" data-regen-dropdown>
-                                        {% for provider, models in known_models.items() %}
-                                        {% for model in models %}
-                                        <div class="model-option" data-provider="{{ provider }}" data-value="{{ model }}">
-                                            <span class="model-option-name">{{ model }}</span>
-                                            <span class="model-option-provider">{{ provider }}</span>
-                                        </div>
-                                        {% endfor %}
-                                        {% endfor %}
-                                    </div>
-                                </div>
-                                <label class="form-checkbox-sm"><input type="checkbox" data-regen-force="{{ repo_name }}"> Force</label>
-                                <button class="btn btn-primary btn-sm" data-regenerate-variant="{{ repo_name }}" data-repo-url="{{ variant.repo_url }}">Regenerate</button>
-                            </div>
+                            {{ regen_controls(variant, repo_name, default_provider, default_model, known_models, loop.index) }}
                             <button class="btn btn-danger btn-sm" data-delete-variant="{{ repo_name }}/{{ variant.ai_provider }}/{{ variant.ai_model }}">Delete</button>
                         </div>
                         {% endif %}
@@ -1661,12 +1642,6 @@
                 modelDropdown.classList.add('active');
             });
 
-            document.addEventListener('click', function(e) {
-                if (!modelInput.contains(e.target) && !modelDropdown.contains(e.target)) {
-                    modelDropdown.classList.remove('active');
-                }
-            });
-
             modelDropdown.addEventListener('click', function(e) {
                 var option = e.target.closest('.model-option');
                 if (option) {
@@ -1722,12 +1697,6 @@
                 dropdown.classList.add('active');
             });
 
-            document.addEventListener('click', function(e) {
-                if (!input.contains(e.target) && !dropdown.contains(e.target)) {
-                    dropdown.classList.remove('active');
-                }
-            });
-
             dropdown.addEventListener('click', function(e) {
                 var option = e.target.closest('.model-option');
                 if (option) {
@@ -1768,6 +1737,16 @@
             }
 
             filterModelOptions(dropdown, input.value, newProvider);
+        });
+
+        // Single document-level listener for closing all combobox dropdowns
+        document.addEventListener('click', function(e) {
+            document.querySelectorAll('.model-dropdown.active').forEach(function(dropdown) {
+                var combobox = dropdown.closest('.model-combobox, .model-combobox-sm');
+                if (combobox && !combobox.contains(e.target)) {
+                    dropdown.classList.remove('active');
+                }
+            });
         });
 
         /* ----- Theme Toggle (same pattern as theme.js) ----- */
@@ -2409,8 +2388,6 @@
 
         /* ----- Attach Event Listeners to Save Form State on Every Change ----- */
         var repoInput = document.getElementById('gen-repo-url');
-        var providerSelect = document.getElementById('gen-provider');
-        var modelInput = document.getElementById('gen-model');
         var forceCheck = document.getElementById('gen-force');
 
         if (repoInput) repoInput.addEventListener('input', saveFormState);

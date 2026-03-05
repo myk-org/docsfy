@@ -215,15 +215,17 @@ async def abort_generation(name: str) -> dict[str, str]:
         await asyncio.wait_for(task, timeout=5.0)
     except asyncio.CancelledError:
         pass  # expected cancellation acknowledgment
-    except asyncio.TimeoutError:
+    except asyncio.TimeoutError as exc:
         logger.warning(f"[{name}] Abort requested but cancellation still in progress")
         raise HTTPException(
             status_code=409,
             detail=f"Abort still in progress for '{name}'. Please retry shortly.",
-        )
+        ) from exc
     except Exception as exc:
         logger.exception(f"[{name}] Abort failed: {exc}")
-        raise HTTPException(status_code=500, detail=f"Failed to abort '{name}'")
+        raise HTTPException(
+            status_code=500, detail=f"Failed to abort '{name}'"
+        ) from exc
 
     await update_project_status(
         name,
@@ -254,17 +256,19 @@ async def abort_variant(name: str, provider: str, model: str) -> dict[str, str]:
         await asyncio.wait_for(task, timeout=5.0)
     except asyncio.CancelledError:
         pass
-    except asyncio.TimeoutError:
+    except asyncio.TimeoutError as exc:
         logger.warning(
             f"[{gen_key}] Abort requested but cancellation still in progress"
         )
         raise HTTPException(
             status_code=409,
             detail=f"Abort still in progress for '{gen_key}'. Please retry shortly.",
-        )
+        ) from exc
     except Exception as exc:
         logger.exception(f"[{gen_key}] Abort failed: {exc}")
-        raise HTTPException(status_code=500, detail=f"Failed to abort '{gen_key}'")
+        raise HTTPException(
+            status_code=500, detail=f"Failed to abort '{gen_key}'"
+        ) from exc
 
     await update_project_status(
         name,
@@ -621,8 +625,8 @@ async def serve_variant_docs(
     file_path = site_dir / path
     try:
         file_path.resolve().relative_to(site_dir.resolve())
-    except ValueError:
-        raise HTTPException(status_code=403, detail="Access denied")
+    except ValueError as exc:
+        raise HTTPException(status_code=403, detail="Access denied") from exc
     if not file_path.exists() or not file_path.is_file():
         raise HTTPException(status_code=404, detail="File not found")
     return FileResponse(file_path)
@@ -645,8 +649,8 @@ async def serve_docs(project: str, path: str = "index.html") -> FileResponse:
     file_path = site_dir / path
     try:
         file_path.resolve().relative_to(site_dir.resolve())
-    except ValueError:
-        raise HTTPException(status_code=403, detail="Access denied")
+    except ValueError as exc:
+        raise HTTPException(status_code=403, detail="Access denied") from exc
     if not file_path.exists() or not file_path.is_file():
         raise HTTPException(status_code=404, detail="File not found")
     return FileResponse(file_path)
