@@ -13,7 +13,8 @@ from pathlib import Path
 from typing import Any
 
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import FileResponse, StreamingResponse
+from fastapi.responses import FileResponse, HTMLResponse, StreamingResponse
+from jinja2 import Environment, FileSystemLoader, select_autoescape
 from simple_logger.logger import get_logger
 
 from docsfy.ai_client import check_ai_cli_available
@@ -58,6 +59,23 @@ app = FastAPI(
     version="0.1.0",
     lifespan=lifespan,
 )
+
+
+@app.get("/", response_class=HTMLResponse)
+async def dashboard() -> HTMLResponse:
+    settings = get_settings()
+    projects = await list_projects()
+    env = Environment(
+        loader=FileSystemLoader(str(Path(__file__).parent / "templates")),
+        autoescape=select_autoescape(["html"]),
+    )
+    template = env.get_template("dashboard.html")
+    html = template.render(
+        projects=projects,
+        default_provider=settings.ai_provider,
+        default_model=settings.ai_model,
+    )
+    return HTMLResponse(content=html)
 
 
 @app.get("/health")
@@ -244,6 +262,8 @@ async def _generate_from_path(
         last_commit_sha=commit_sha,
         page_count=page_count,
         plan_json=json.dumps(plan),
+        ai_provider=ai_provider,
+        ai_model=ai_model,
     )
     logger.info(f"[{project_name}] Documentation ready ({page_count} pages)")
 

@@ -29,6 +29,8 @@ async def init_db() -> None:
                 page_count INTEGER DEFAULT 0,
                 error_message TEXT,
                 plan_json TEXT,
+                ai_provider TEXT,
+                ai_model TEXT,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
@@ -61,6 +63,8 @@ async def update_project_status(
     page_count: int | None = None,
     error_message: str | None = None,
     plan_json: str | None = None,
+    ai_provider: str | None = None,
+    ai_model: str | None = None,
 ) -> None:
     if status not in VALID_STATUSES:
         msg = f"Invalid project status: '{status}'. Valid: {', '.join(sorted(VALID_STATUSES))}"
@@ -80,6 +84,12 @@ async def update_project_status(
         if plan_json is not None:
             fields.append("plan_json = ?")
             values.append(plan_json)
+        if ai_provider is not None:
+            fields.append("ai_provider = ?")
+            values.append(ai_provider)
+        if ai_model is not None:
+            fields.append("ai_model = ?")
+            values.append(ai_model)
         if status == "ready":
             fields.append("last_generated = CURRENT_TIMESTAMP")
         values.append(name)
@@ -104,7 +114,7 @@ async def list_projects() -> list[dict[str, str | int | None]]:
     async with aiosqlite.connect(DB_PATH) as db:
         db.row_factory = aiosqlite.Row
         cursor = await db.execute(
-            "SELECT name, repo_url, status, last_commit_sha, last_generated, page_count FROM projects ORDER BY updated_at DESC"
+            "SELECT name, repo_url, status, last_commit_sha, last_generated, page_count, ai_provider, ai_model FROM projects ORDER BY updated_at DESC"
         )
         rows = await cursor.fetchall()
         return [dict(row) for row in rows]

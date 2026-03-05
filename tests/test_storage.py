@@ -91,3 +91,25 @@ async def test_get_nonexistent_project(db_path: Path) -> None:
 
     project = await get_project("no-such-repo")
     assert project is None
+
+
+async def test_update_project_with_ai_info(db_path: Path) -> None:
+    from docsfy.storage import get_project, save_project, update_project_status
+
+    await save_project(
+        name="my-repo",
+        repo_url="https://github.com/org/my-repo.git",
+        status="generating",
+    )
+    await update_project_status(
+        "my-repo",
+        status="ready",
+        last_commit_sha="abc123",
+        page_count=5,
+        ai_provider="claude",
+        ai_model="opus-4-6",
+    )
+    project = await get_project("my-repo")
+    assert project is not None
+    assert project["ai_provider"] == "claude"
+    assert project["ai_model"] == "opus-4-6"
