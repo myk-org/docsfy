@@ -1444,30 +1444,46 @@
         }
 
         /* ----- Polling State ----- */
-        var pollInterval = null;
-        var isPolling = false;
+        var statusPollInterval = null;      // Slow poll for status changes (10s)
+        var progressPollInterval = null;    // Fast poll for progress updates (5s)
+        var isStatusPolling = false;
+        var isProgressPolling = false;
 
         function hasGeneratingProjects() {
             var cards = document.querySelectorAll('.project-card[data-status="generating"]');
             return cards.length > 0;
         }
 
-        function startPolling() {
-            if (isPolling) return;
-            isPolling = true;
-            pollInterval = setInterval(pollStatus, 5000);
+        function startStatusPolling() {
+            if (isStatusPolling) return;
+            isStatusPolling = true;
+            statusPollInterval = setInterval(pollStatusChanges, 10000);
         }
 
-        function stopPolling() {
-            if (pollInterval) {
-                clearInterval(pollInterval);
-                pollInterval = null;
+        function stopStatusPolling() {
+            if (statusPollInterval) {
+                clearInterval(statusPollInterval);
+                statusPollInterval = null;
             }
-            isPolling = false;
+            isStatusPolling = false;
         }
 
-        /* ----- Poll /api/status ----- */
-        function pollStatus() {
+        function startProgressPolling() {
+            if (isProgressPolling) return;
+            isProgressPolling = true;
+            progressPollInterval = setInterval(pollProgressUpdates, 5000);
+        }
+
+        function stopProgressPolling() {
+            if (progressPollInterval) {
+                clearInterval(progressPollInterval);
+                progressPollInterval = null;
+            }
+            isProgressPolling = false;
+        }
+
+        /* ----- Poll /api/status for status changes (10s interval) ----- */
+        function pollStatusChanges() {
             fetch('/api/status')
                 .then(function(res) { return res.json(); })
                 .then(function(data) {
@@ -1475,6 +1491,7 @@
                     if (!Array.isArray(projectsList)) return;
 
                     var anyGenerating = false;
+                    var needsReload = false;
                     var existingCards = {};
                     document.querySelectorAll('.project-card').forEach(function(card) {
                         existingCards[card.getAttribute('data-project')] = card;
@@ -1483,11 +1500,16 @@
                     projectsList.forEach(function(proj) {
                         if (proj.status === 'generating') anyGenerating = true;
                         var card = existingCards[proj.name];
-                        if (card) {
-                            updateCardDOM(card, proj);
-                        } else {
+                        if (!card) {
                             // New project appeared: reload to get server-rendered card
-                            location.reload();
+                            needsReload = true;
+                            return;
+                        }
+                        var currentStatus = card.getAttribute('data-status');
+                        if (currentStatus !== proj.status) {
+                            // Status changed: reload to get correct action buttons
+                            needsReload = true;
+                            return;
                         }
                     });
 
@@ -1501,51 +1523,78 @@
                         if (empty) empty.remove();
                     }
 
-                    if (!anyGenerating) stopPolling();
+                    if (needsReload) {
+                        location.reload();
+                        return;
+                    }
+
+                    // Start/stop progress polling based on generating projects
+                    if (anyGenerating && !isProgressPolling) {
+                        startProgressPolling();
+                    } else if (!anyGenerating && isProgressPolling) {
+                        stopProgressPolling();
+                    }
                 })
                 .catch(function() {
                     // Silently fail; retry on next interval
                 });
         }
 
-        /* ----- Update a single card's DOM without recreating ----- */
-        function updateCardDOM(card, proj) {
-            var prevStatus = card.getAttribute('data-status');
-            if (prevStatus === proj.status && proj.status !== 'generating') return;
+        /* ----- Poll /api/status for progress updates (5s interval) ----- */
+        function pollProgressUpdates() {
+            fetch('/api/status')
+                .then(function(res) { return res.json(); })
+                .then(function(data) {
+                    var projectsList = data.projects || data;
+                    if (!Array.isArray(projectsList)) return;
 
-            // If the status changed (e.g., generating -> ready or generating -> error),
-            // reload to get the full server-rendered card with correct action buttons
-            if (prevStatus !== proj.status) {
-                location.reload();
-                return;
+                    var existingCards = {};
+                    document.querySelectorAll('.project-card').forEach(function(card) {
+                        existingCards[card.getAttribute('data-project')] = card;
+                    });
+
+                    projectsList.forEach(function(proj) {
+                        var card = existingCards[proj.name];
+                        if (card) {
+                            updateCardProgressDOM(card, proj);
+                        }
+                    });
+                })
+                .catch(function() {
+                    // Silently fail; retry on next interval
+                });
+        }
+
+        /* ----- Update a single card's progress (no-flicker DOM updates) ----- */
+        function updateCardProgressDOM(card, proj) {
+            var prevStatus = card.getAttribute('data-status');
+            // Only update if status is still 'generating'
+            if (prevStatus !== 'generating' || proj.status !== 'generating') return;
+
+            // Update progress in place (no reload)
+            var pageCount = proj.page_count || 0;
+            var totalPages = 0;
+            if (proj.plan_json && proj.plan_json.navigation) {
+                proj.plan_json.navigation.forEach(function(group) {
+                    totalPages += (group.pages || []).length;
+                });
             }
 
-            // Status is still 'generating' - update progress in place
-            if (proj.status === 'generating') {
-                var pageCount = proj.page_count || 0;
-                var totalPages = 0;
-                if (proj.plan_json && proj.plan_json.navigation) {
-                    proj.plan_json.navigation.forEach(function(group) {
-                        totalPages += (group.pages || []).length;
-                    });
-                }
+            var progressText = card.querySelector('[data-field="progress-text"]');
+            if (progressText && totalPages > 0) {
+                progressText.textContent = pageCount + ' / ' + totalPages + ' pages';
+            }
 
-                var progressText = card.querySelector('[data-field="progress-text"]');
-                if (progressText && totalPages > 0) {
-                    progressText.textContent = pageCount + ' / ' + totalPages + ' pages';
-                }
+            var progressBar = card.querySelector('[data-field="progress-bar"]');
+            if (progressBar && totalPages > 0) {
+                var pct = Math.min(Math.round((pageCount / totalPages) * 100), 100);
+                progressBar.style.width = pct + '%';
+            }
 
-                var progressBar = card.querySelector('[data-field="progress-bar"]');
-                if (progressBar && totalPages > 0) {
-                    var pct = Math.min(Math.round((pageCount / totalPages) * 100), 100);
-                    progressBar.style.width = pct + '%';
-                }
-
-                // Update page count in header
-                var pageCountEl = card.querySelector('.card-page-count');
-                if (pageCountEl) {
-                    pageCountEl.textContent = pageCount + ' pages';
-                }
+            // Update page count in header
+            var pageCountEl = card.querySelector('.card-page-count');
+            if (pageCountEl) {
+                pageCountEl.textContent = pageCount + ' pages';
             }
         }
 
@@ -1592,7 +1641,7 @@
                     });
                     document.getElementById('gen-repo-url').value = '';
                     document.getElementById('gen-force').checked = false;
-                    startPolling();
+                    startProgressPolling();
                     // Reload to show the new card
                     setTimeout(function() { location.reload(); }, 1000);
                 })
@@ -1916,9 +1965,13 @@
             if (e.key === 'Escape') closeConfirm();
         });
 
-        /* ----- Auto-start polling if generating projects exist ----- */
+        /* ----- Auto-start polling ----- */
+        // Always poll for status changes (10s interval)
+        startStatusPolling();
+
+        // Start progress polling if there are generating projects (5s interval)
         if (hasGeneratingProjects()) {
-            startPolling();
+            startProgressPolling();
         }
 
     })();
