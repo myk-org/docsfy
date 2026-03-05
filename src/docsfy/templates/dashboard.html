@@ -70,9 +70,11 @@
         --status-ready: #10b981;
         --status-generating: #3b82f6;
         --status-error: #ef4444;
+        --status-aborted: #f59e0b;
         --status-ready-bg: #ecfdf5;
         --status-generating-bg: #eff6ff;
         --status-error-bg: #fef2f2;
+        --status-aborted-bg: #fffbeb;
     }
 
     /* --------------------------------------------------------------------------
@@ -116,6 +118,7 @@
         --status-ready-bg: #052e16;
         --status-generating-bg: #172554;
         --status-error-bg: #450a0a;
+        --status-aborted-bg: #451a03;
     }
 
     /* --------------------------------------------------------------------------
@@ -606,6 +609,10 @@
         border-left: 3px solid var(--status-error);
     }
 
+    .project-card[data-status="aborted"] {
+        border-left: 3px solid var(--status-aborted);
+    }
+
     .project-card[data-status="generating"] {
         border-left: 3px solid var(--status-generating);
     }
@@ -649,6 +656,10 @@
         background: var(--status-error);
     }
 
+    .status-dot-aborted {
+        background: var(--status-aborted);
+    }
+
     @keyframes pulse {
         0%, 100% { opacity: 1; transform: scale(1); }
         50% { opacity: 0.5; transform: scale(1.2); }
@@ -682,6 +693,11 @@
     .badge-error {
         background: var(--status-error-bg);
         color: var(--status-error);
+    }
+
+    .badge-aborted {
+        background: var(--status-aborted-bg);
+        color: var(--status-aborted);
     }
 
     .card-page-count {
@@ -721,6 +737,16 @@
     .card-error {
         background: var(--status-error-bg);
         color: var(--status-error);
+        padding: 0.625rem 0.875rem;
+        border-radius: 8px;
+        font-size: 0.8125rem;
+        margin-bottom: 0.75rem;
+        word-break: break-word;
+    }
+
+    .card-aborted {
+        background: var(--status-aborted-bg);
+        color: var(--status-aborted);
         padding: 0.625rem 0.875rem;
         border-radius: 8px;
         font-size: 0.8125rem;
@@ -1159,6 +1185,10 @@
                     <div class="card-error" data-field="error">{{ project.error_message }}</div>
                     {% endif %}
 
+                    {% if project.status == 'aborted' and project.error_message %}
+                    <div class="card-aborted" data-field="error">{{ project.error_message }}</div>
+                    {% endif %}
+
                     {% if project.status == 'generating' %}
                     <div class="progress-container" data-field="progress">
                         {% set total_pages = 0 %}
@@ -1221,8 +1251,9 @@
                         <span class="spinner"></span>
                         <span>Generation in progress...</span>
                     </div>
-                    <div style="margin-top: 12px;">
+                    <div style="margin-top: 12px; display: flex; align-items: center; gap: 12px;">
                         <a href="/status/{{ project.name }}" target="_blank" class="status-link">View progress →</a>
+                        <button class="btn btn-danger btn-sm" data-abort="{{ project.name }}">Abort</button>
                     </div>
                     {% endif %}
 
@@ -1252,7 +1283,37 @@
                         <button class="btn btn-secondary btn-sm" data-regenerate="{{ project.name }}" data-repo="{{ project.repo_url }}">Regenerate</button>
                     </div>
                     <div style="margin-top: 8px;">
-                        <a href="/status/{{ project.name }}" target="_blank" class="status-link">View details →</a>
+                        <a href="/status/{{ project.name }}" target="_blank" class="status-link">View details &rarr;</a>
+                    </div>
+                    {% endif %}
+
+                    {% if project.status == 'aborted' %}
+                    <div class="card-actions">
+                        <span class="card-actions-spacer"></span>
+                        <button class="btn btn-danger btn-sm btn-icon" data-delete="{{ project.name }}" aria-label="Delete project" title="Delete project">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                        </button>
+                    </div>
+                    <div class="regenerate-inline">
+                        <select class="form-select" data-regen="provider" aria-label="Provider for regeneration">
+                            <option value="claude"{% if project.ai_provider == 'claude' %} selected{% endif %}>claude</option>
+                            <option value="gemini"{% if project.ai_provider == 'gemini' %} selected{% endif %}>gemini</option>
+                            <option value="cursor"{% if project.ai_provider == 'cursor' %} selected{% endif %}>cursor</option>
+                        </select>
+                        <input type="text" class="form-input" data-regen="model" list="model-suggestions-{{ project.name }}" value="{{ project.ai_model or default_model }}" aria-label="Model for regeneration">
+                        <datalist id="model-suggestions-{{ project.name }}">
+                            {% for model in known_models.get(project.ai_provider or default_provider, []) %}
+                            <option value="{{ model }}">
+                            {% endfor %}
+                        </datalist>
+                        <div class="form-checkbox-group">
+                            <input type="checkbox" data-regen="force" id="regen-force-{{ loop.index }}">
+                            <label for="regen-force-{{ loop.index }}">Force</label>
+                        </div>
+                        <button class="btn btn-secondary btn-sm" data-regenerate="{{ project.name }}" data-repo="{{ project.repo_url }}">Regenerate</button>
+                    </div>
+                    <div style="margin-top: 8px;">
+                        <a href="/status/{{ project.name }}" target="_blank" class="status-link">View details &rarr;</a>
                     </div>
                     {% endif %}
                 </article>
@@ -1626,6 +1687,24 @@
                 var msg = (err && err.detail) || (err && err.message) || 'Retry request failed';
                 showToast(msg, 'error', 6000);
             });
+        });
+
+        /* ----- Abort Generation ----- */
+        document.addEventListener('click', function(e) {
+            var abortBtn = e.target.closest('[data-abort]');
+            if (!abortBtn) return;
+            var name = abortBtn.getAttribute('data-abort');
+            if (!confirm('Abort generation for ' + name + '?')) return;
+            abortBtn.disabled = true;
+            abortBtn.textContent = 'Aborting...';
+            fetch('/api/projects/' + encodeURIComponent(name) + '/abort', { method: 'POST' })
+                .then(function(r) { return r.json(); })
+                .then(function() { location.reload(); })
+                .catch(function(err) {
+                    abortBtn.disabled = false;
+                    abortBtn.textContent = 'Abort';
+                    showToast('Failed to abort: ' + err.message, 'error');
+                });
         });
 
         /* ----- Delete with Confirmation ----- */

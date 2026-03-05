@@ -9,7 +9,7 @@ from simple_logger.logger import get_logger
 
 logger = get_logger(name=__name__)
 
-VALID_STATUSES = frozenset({"generating", "ready", "error"})
+VALID_STATUSES = frozenset({"generating", "ready", "error", "aborted"})
 
 # Module-level paths are set at import time from env vars.
 # Tests override these globals directly for isolation.

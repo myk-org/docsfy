@@ -66,9 +66,11 @@
         --status-ready: #10b981;
         --status-generating: #3b82f6;
         --status-error: #ef4444;
+        --status-aborted: #f59e0b;
         --status-ready-bg: #ecfdf5;
         --status-generating-bg: #eff6ff;
         --status-error-bg: #fef2f2;
+        --status-aborted-bg: #fffbeb;
     }
 
     /* --------------------------------------------------------------------------
@@ -109,6 +111,7 @@
         --status-ready-bg: #052e16;
         --status-generating-bg: #172554;
         --status-error-bg: #450a0a;
+        --status-aborted-bg: #451a03;
     }
 
     /* --------------------------------------------------------------------------
@@ -274,6 +277,11 @@
         color: var(--status-error);
     }
 
+    .status-indicator-aborted {
+        background: var(--status-aborted-bg);
+        color: var(--status-aborted);
+    }
+
     .status-dot {
         width: 10px;
         height: 10px;
@@ -292,6 +300,10 @@
 
     .status-dot-error {
         background: var(--status-error);
+    }
+
+    .status-dot-aborted {
+        background: var(--status-aborted);
     }
 
     @keyframes pulse {
@@ -836,9 +848,9 @@
                 Documentation generated successfully!
             </div>
 
-            <!-- Error Message (visible when error) -->
-            <div class="error-message" id="error-message"{% if project.status != 'error' %} style="display:none"{% endif %}>
-                <div class="error-message-label">Error</div>
+            <!-- Error Message (visible when error or aborted) -->
+            <div class="error-message" id="error-message"{% if project.status not in ('error', 'aborted') %} style="display:none"{% endif %}{% if project.status == 'aborted' %} style="background:var(--status-aborted-bg);color:var(--status-aborted);border-color:var(--status-aborted)"{% endif %}>
+                <div class="error-message-label">{% if project.status == 'aborted' %}Aborted{% else %}Error{% endif %}</div>
                 <div id="error-text">{{ project.error_message or '' }}</div>
             </div>
 
@@ -848,7 +860,10 @@
                 <a href="/docs/{{ project.name }}/" target="_blank" class="btn btn-primary" id="btn-view-docs">View Documentation</a>
                 <a href="/api/projects/{{ project.name }}/download" class="btn btn-secondary" id="btn-download">Download</a>
                 {% endif %}
-                {% if project.status == 'error' %}
+                {% if project.status == 'generating' %}
+                <button class="btn btn-danger" id="btn-abort">Abort</button>
+                {% endif %}
+                {% if project.status == 'error' or project.status == 'aborted' %}
                 <div class="regenerate-inline">
                     <select class="form-select" id="retry-provider" aria-label="Provider for regeneration">
                         <option value="claude"{% if project.ai_provider == 'claude' %} selected{% endif %}>claude</option>
@@ -882,6 +897,8 @@
                     Complete
                     {% elif project.status == 'error' %}
                     Failed
+                    {% elif project.status == 'aborted' %}
+                    Aborted
                     {% endif %}
                 </span>
             </div>
@@ -1108,7 +1125,7 @@
                 }
                 addLogEntry('Rendered documentation site', 'done');
                 addLogEntry('Documentation ready!', 'done');
-            } else if (currentStatus === 'error') {
+            } else if (currentStatus === 'error' || currentStatus === 'aborted') {
                 addLogEntry('Cloned repository', 'done');
                 if (totalPagesFromPlan > 0) {
                     addLogEntry('Planned documentation structure (' + totalPagesFromPlan + ' pages)', 'done');
@@ -1120,7 +1137,7 @@
                         addLogEntry('Generated page ' + (k + 1) + ' of ' + errTotalLabel + ': ' + errTitle, 'done');
                     }
                 }
-                addLogEntry('Generation failed', 'error');
+                addLogEntry(currentStatus === 'aborted' ? 'Generation aborted' : 'Generation failed', 'error');
             }
         }
 
@@ -1136,7 +1153,20 @@
             /* Show/hide sections */
             progressSection.style.display = (status === 'generating') ? '' : 'none';
             successMessage.style.display = (status === 'ready') ? '' : 'none';
-            errorMessage.style.display = (status === 'error') ? '' : 'none';
+            errorMessage.style.display = (status === 'error' || status === 'aborted') ? '' : 'none';
+            if (status === 'aborted') {
+                errorMessage.style.background = 'var(--status-aborted-bg)';
+                errorMessage.style.color = 'var(--status-aborted)';
+                errorMessage.style.borderColor = 'var(--status-aborted)';
+                var label = errorMessage.querySelector('.error-message-label');
+                if (label) label.textContent = 'Aborted';
+            } else if (status === 'error') {
+                errorMessage.style.background = '';
+                errorMessage.style.color = '';
+                errorMessage.style.borderColor = '';
+                var label = errorMessage.querySelector('.error-message-label');
+                if (label) label.textContent = 'Error';
+            }
         }
 
         /* ----- Update Action Links ----- */
@@ -1160,7 +1190,16 @@
                 actionLinks.appendChild(downloadBtn);
             }
 
-            if (status === 'error') {
+            if (status === 'generating') {
+                var abortBtn = document.createElement('button');
+                abortBtn.className = 'btn btn-danger';
+                abortBtn.id = 'btn-abort';
+                abortBtn.textContent = 'Abort';
+                abortBtn.addEventListener('click', handleAbort);
+                actionLinks.appendChild(abortBtn);
+            }
+
+            if (status === 'error' || status === 'aborted') {
                 var retryDiv = document.createElement('div');
                 retryDiv.className = 'regenerate-inline';
 
@@ -1239,7 +1278,40 @@
                 logStatus.textContent = 'Complete';
             } else if (status === 'error') {
                 logStatus.textContent = 'Failed';
+            } else if (status === 'aborted') {
+                logStatus.textContent = 'Aborted';
             }
+        }
+
+        /* ----- Abort Handler ----- */
+        function handleAbort() {
+            if (!confirm('Abort generation for ' + PROJECT_NAME + '?')) return;
+            var abortBtn = document.getElementById('btn-abort');
+            if (abortBtn) {
+                abortBtn.disabled = true;
+                abortBtn.textContent = 'Aborting...';
+            }
+            fetch('/api/projects/' + encodeURIComponent(PROJECT_NAME) + '/abort', { method: 'POST' })
+                .then(function(r) {
+                    if (!r.ok) return r.json().then(function(data) { throw data; });
+                    return r.json();
+                })
+                .then(function() { location.reload(); })
+                .catch(function(err) {
+                    var msg = (err && err.detail) || (err && err.message) || 'Abort request failed';
+                    errorText.textContent = msg;
+                    errorMessage.style.display = '';
+                    if (abortBtn) {
+                        abortBtn.disabled = false;
+                        abortBtn.textContent = 'Abort';
+                    }
+                });
+        }
+
+        /* Wire up initial abort button if present */
+        var initialAbortBtn = document.getElementById('btn-abort');
+        if (initialAbortBtn) {
+            initialAbortBtn.addEventListener('click', handleAbort);
         }
 
         /* ----- Retry Handler ----- */
@@ -1457,7 +1529,7 @@
                             }
                         }
                     }
-                } else if (newStatus === 'error') {
+                } else if (newStatus === 'error' || newStatus === 'aborted') {
                     stopPolling();
                     updateLastLogEntry(null, 'error');
                     var errorEntries = logBody.querySelectorAll('.log-entry');
@@ -1465,11 +1537,11 @@
                         var errEntry = errorEntries[errorEntries.length - 1];
                         var errText = errEntry.querySelector('.log-entry-text');
                         if (errText && errText.textContent.indexOf('Generating') === 0) {
-                            errText.textContent = errText.textContent.replace('Generating', 'Failed generating');
+                            errText.textContent = errText.textContent.replace('Generating', newStatus === 'aborted' ? 'Aborted generating' : 'Failed generating');
                         }
                     }
-                    addLogEntry('Generation failed', 'error');
-                    errorText.textContent = proj.error_message || 'An unknown error occurred';
+                    addLogEntry(newStatus === 'aborted' ? 'Generation aborted' : 'Generation failed', 'error');
+                    errorText.textContent = proj.error_message || (newStatus === 'aborted' ? 'Generation was aborted' : 'An unknown error occurred');
                 }
             }
         }

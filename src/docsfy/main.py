@@ -38,7 +38,7 @@ from docsfy.storage import (
 
 logger = get_logger(name=__name__)
 
-_generating: set[str] = set()
+_generating: dict[str, asyncio.Task[None]] = {}
 
 
 def _validate_project_name(name: str) -> str:
@@ -143,8 +143,6 @@ async def generate(request: GenerateRequest) -> dict[str, str]:
             detail=f"Project '{project_name}' is already being generated",
         )
 
-    _generating.add(project_name)
-
     await save_project(
         name=project_name,
         repo_url=request.repo_url or request.repo_path or "",
@@ -152,7 +150,7 @@ async def generate(request: GenerateRequest) -> dict[str, str]:
     )
 
     try:
-        asyncio.create_task(
+        task = asyncio.create_task(
             _run_generation(
                 repo_url=request.repo_url,
                 repo_path=request.repo_path,
@@ -163,11 +161,40 @@ async def generate(request: GenerateRequest) -> dict[str, str]:
                 force=request.force,
             )
         )
+        _generating[project_name] = task
     except Exception:
-        _generating.discard(project_name)
+        _generating.pop(project_name, None)
         raise
 
     return {"project": project_name, "status": "generating"}
+
+
+@app.post("/api/projects/{name}/abort")
+async def abort_generation(name: str) -> dict[str, str]:
+    name = _validate_project_name(name)
+    task = _generating.get(name)
+    if not task:
+        raise HTTPException(
+            status_code=404, detail=f"No active generation for '{name}'"
+        )
+
+    task.cancel()
+    # Wait briefly for the task to handle cancellation
+    try:
+        await asyncio.wait_for(asyncio.shield(task), timeout=5.0)
+    except (asyncio.CancelledError, asyncio.TimeoutError, Exception):
+        pass
+
+    # Ensure status is updated
+    await update_project_status(
+        name,
+        status="aborted",
+        error_message="Generation aborted by user",
+        current_stage=None,
+    )
+    _generating.pop(name, None)
+
+    return {"aborted": name}
 
 
 async def _run_generation(
@@ -223,9 +250,9 @@ async def _run_generation(
                 )
 
     except asyncio.CancelledError:
-        logger.warning(f"Generation cancelled for {project_name}")
+        logger.warning(f"[{project_name}] Generation cancelled")
         await update_project_status(
-            project_name, status="error", error_message="Generation was cancelled"
+            project_name, status="aborted", error_message="Generation was cancelled"
         )
         raise
     except Exception as exc:
@@ -234,7 +261,7 @@ async def _run_generation(
             project_name, status="error", error_message=str(exc)
         )
     finally:
-        _generating.discard(project_name)
+        _generating.pop(project_name, None)
 
 
 async def _generate_from_path(

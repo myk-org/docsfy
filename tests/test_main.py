@@ -99,6 +99,11 @@ async def test_generate_endpoint_local_path(
     assert body["project"] == "myrepo"
 
 
+async def test_abort_no_active_generation(client: AsyncClient) -> None:
+    response = await client.post("/api/projects/nonexistent/abort")
+    assert response.status_code == 404
+
+
 async def test_delete_project_not_found(client: AsyncClient) -> None:
     response = await client.delete("/api/projects/nonexistent")
     assert response.status_code == 404
