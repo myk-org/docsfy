@@ -1342,3 +1342,48 @@ pre:hover .copy-btn {
     letter-spacing: 0.05em;
     opacity: 0.6;
 }
+
+/* --------------------------------------------------------------------------
+   docsfy Branding Badge
+   -------------------------------------------------------------------------- */
+.docsfy-badge {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--accent);
+    text-decoration: none;
+    border: 1px solid var(--border-primary);
+    border-radius: 4px;
+    transition: all 0.15s ease;
+    white-space: nowrap;
+}
+
+.docsfy-badge:hover {
+    border-color: var(--accent);
+    background: var(--accent-light);
+}
+
+/* --------------------------------------------------------------------------
+   Page Footer
+   -------------------------------------------------------------------------- */
+.page-footer {
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-primary);
+    text-align: center;
+    font-size: 0.8rem;
+    color: var(--text-tertiary);
+}
+
+.page-footer a {
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.page-footer a:hover {
+    text-decoration: underline;
+}

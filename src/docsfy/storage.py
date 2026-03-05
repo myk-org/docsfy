@@ -35,6 +35,14 @@ async def init_db() -> None:
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         """)
+
+        # Migrate old databases: add columns if they don't exist
+        for column in ["ai_provider TEXT", "ai_model TEXT"]:
+            try:
+                await db.execute(f"ALTER TABLE projects ADD COLUMN {column}")
+            except Exception:
+                pass  # Column already exists
+
         await db.commit()
 
 
