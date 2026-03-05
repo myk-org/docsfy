@@ -11,6 +11,8 @@ logger = get_logger(name=__name__)
 
 VALID_STATUSES = frozenset({"generating", "ready", "error", "aborted"})
 
+_UNSET: object = object()
+
 # Module-level paths are set at import time from env vars.
 # Tests override these globals directly for isolation.
 DB_PATH = Path(os.getenv("DATA_DIR", "/data")) / "docsfy.db"
@@ -81,20 +83,23 @@ async def save_project(name: str, repo_url: str, status: str = "generating") -> 
 async def update_project_status(
     name: str,
     status: str,
-    current_stage: str | None = None,
     last_commit_sha: str | None = None,
     page_count: int | None = None,
     error_message: str | None = None,
     plan_json: str | None = None,
     ai_provider: str | None = None,
     ai_model: str | None = None,
+    current_stage: str | None | object = _UNSET,
 ) -> None:
     if status not in VALID_STATUSES:
         msg = f"Invalid project status: '{status}'. Valid: {', '.join(sorted(VALID_STATUSES))}"
         raise ValueError(msg)
     async with aiosqlite.connect(DB_PATH) as db:
-        fields = ["status = ?", "current_stage = ?", "updated_at = CURRENT_TIMESTAMP"]
-        values: list[str | int | None] = [status, current_stage]
+        fields = ["status = ?", "updated_at = CURRENT_TIMESTAMP"]
+        values: list[str | int | None] = [status]
+        if current_stage is not _UNSET:
+            fields.append("current_stage = ?")
+            values.append(current_stage)  # type: ignore[arg-type]
         if last_commit_sha is not None:
             fields.append("last_commit_sha = ?")
             values.append(last_commit_sha)
