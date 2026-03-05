@@ -159,6 +159,9 @@ def render_site(plan: dict[str, Any], pages: dict[str, str], output_dir: Path) -
     assets_dir = output_dir / "assets"
     assets_dir.mkdir(exist_ok=True)
 
+    # Prevent GitHub Pages from running Jekyll
+    (output_dir / ".nojekyll").touch()
+
     project_name: str = plan.get("project_name", "Documentation")
     tagline: str = plan.get("tagline", "")
     navigation: list[dict[str, Any]] = plan.get("navigation", [])
