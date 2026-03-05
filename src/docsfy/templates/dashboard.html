@@ -1672,6 +1672,7 @@
                 if (option) {
                     modelInput.value = option.getAttribute('data-value');
                     modelDropdown.classList.remove('active');
+                    saveFormState();
                 }
             });
         }
@@ -1686,9 +1687,11 @@
                     var currentModel = modelInput.value;
                     if (modelsForProvider.length > 0 && modelsForProvider.indexOf(currentModel) === -1) {
                         modelInput.value = modelsForProvider[0];
+                        saveFormState();
                     } else if (modelsForProvider.length === 0) {
                         modelInput.value = '';
                         modelInput.placeholder = 'Enter model name';
+                        saveFormState();
                     }
                 }
 
