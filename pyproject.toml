@@ -1,0 +1,51 @@
+[project]
+name = "docsfy"
+version = "0.1.0"
+description = "AI-powered documentation generator - generates polished static HTML docs from GitHub repos"
+requires-python = ">=3.12"
+dependencies = [
+    "ai-cli-runner",
+    "fastapi",
+    "uvicorn",
+    "pydantic-settings",
+    "python-simple-logger",
+    "aiosqlite",
+    "jinja2",
+    "markdown",
+    "pygments",
+]
+
+[project.urls]
+Documentation = "https://myk-org.github.io/docsfy/"
+Repository = "https://github.com/myk-org/docsfy"
+
+[project.scripts]
+docsfy = "docsfy.main:run"
+
+[project.optional-dependencies]
+dev = ["pytest", "pytest-asyncio", "pytest-xdist", "httpx"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+pythonpath = ["src"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/docsfy"]
+
+[tool.mypy]
+check_untyped_defs = true
+disallow_any_generics = true
+disallow_incomplete_defs = true
+disallow_untyped_defs = true
+no_implicit_optional = true
+show_error_codes = true
+warn_unused_ignores = true
+strict_equality = true
+extra_checks = true
+warn_unused_configs = true
+warn_redundant_casts = true

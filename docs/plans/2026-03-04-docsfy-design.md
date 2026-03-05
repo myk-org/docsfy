@@ -5,7 +5,7 @@
 
 ## Overview
 
-docsfy is an open-source FastAPI service that generates polished, Mintlify-quality static HTML documentation sites from GitHub repositories using AI CLI tools. It supports multiple AI providers (Claude Code, Cursor Agent, Gemini CLI), incremental updates on repository changes, and flexible hosting -- serve docs directly from the API or download the static HTML to host anywhere.
+docsfy is an open-source FastAPI service that generates polished, production-quality static HTML documentation sites from GitHub repositories using AI CLI tools. It supports multiple AI providers (Claude Code, Cursor Agent, Gemini CLI), incremental updates on repository changes, and flexible hosting -- serve docs directly from the API or download the static HTML to host anywhere.
 
 ## Architecture
 
