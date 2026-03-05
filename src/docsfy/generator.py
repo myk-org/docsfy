@@ -64,6 +64,11 @@ async def generate_page(
     ai_cli_timeout: int | None = None,
     use_cache: bool = False,
 ) -> str:
+    # Validate slug to prevent path traversal
+    if "/" in slug or "\\" in slug or slug.startswith(".") or ".." in slug:
+        msg = f"Invalid page slug: '{slug}'"
+        raise ValueError(msg)
+
     cache_file = cache_dir / f"{slug}.md"
     if use_cache and cache_file.exists():
         logger.debug(f"Using cached page: {slug}")

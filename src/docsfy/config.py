@@ -14,7 +14,7 @@ class Settings(BaseSettings):
     )
 
     ai_provider: str = "claude"
-    ai_model: str = "claude-opus-4-6[1m]"
+    ai_model: str = "claude-opus-4-6[1m]"  # [1m] = 1 million token context window
     ai_cli_timeout: int = Field(default=60, gt=0)
     log_level: str = "INFO"
     data_dir: str = "/data"

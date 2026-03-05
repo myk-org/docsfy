@@ -31,6 +31,7 @@ repos:
       - id: flake8
         args: [--config=.flake8]
         additional_dependencies:
+          # Tracks main branch intentionally for latest RedHatQE flake8 plugins
           [git+https://github.com/RedHatQE/flake8-plugins.git, flake8-mutable]
 
   - repo: https://github.com/Yelp/detect-secrets

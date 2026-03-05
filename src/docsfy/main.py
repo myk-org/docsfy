@@ -9,7 +9,6 @@ import tarfile
 import tempfile
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
-from io import BytesIO
 from pathlib import Path
 from typing import Any
 
@@ -93,17 +92,21 @@ async def generate(request: GenerateRequest) -> dict[str, str]:
         status="generating",
     )
 
-    asyncio.create_task(
-        _run_generation(
-            repo_url=request.repo_url,
-            repo_path=request.repo_path,
-            project_name=project_name,
-            ai_provider=ai_provider,
-            ai_model=ai_model,
-            ai_cli_timeout=request.ai_cli_timeout or settings.ai_cli_timeout,
-            force=request.force,
+    try:
+        asyncio.create_task(
+            _run_generation(
+                repo_url=request.repo_url,
+                repo_path=request.repo_path,
+                project_name=project_name,
+                ai_provider=ai_provider,
+                ai_model=ai_model,
+                ai_cli_timeout=request.ai_cli_timeout or settings.ai_cli_timeout,
+                force=request.force,
+            )
         )
-    )
+    except Exception:
+        _generating.discard(project_name)
+        raise
 
     return {"project": project_name, "status": "generating"}
 
@@ -272,12 +275,22 @@ async def download_project(name: str) -> StreamingResponse:
         raise HTTPException(
             status_code=404, detail=f"Site directory not found for '{name}'"
         )
-    buffer = BytesIO()
-    with tarfile.open(fileobj=buffer, mode="w:gz") as tar:
+    tmp = tempfile.NamedTemporaryFile(suffix=".tar.gz", delete=False)
+    tar_path = Path(tmp.name)
+    tmp.close()
+    with tarfile.open(tar_path, mode="w:gz") as tar:
         tar.add(str(site_dir), arcname=name)
-    buffer.seek(0)
+
+    async def _stream_and_cleanup() -> AsyncIterator[bytes]:
+        try:
+            with open(tar_path, "rb") as f:
+                while chunk := f.read(8192):
+                    yield chunk
+        finally:
+            tar_path.unlink(missing_ok=True)
+
     return StreamingResponse(
-        buffer,
+        _stream_and_cleanup(),
         media_type="application/gzip",
         headers={"Content-Disposition": f"attachment; filename={name}-docs.tar.gz"},
     )

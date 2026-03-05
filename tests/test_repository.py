@@ -29,6 +29,11 @@ def test_clone_repo_success(tmp_path: Path) -> None:
 
     assert repo_path == tmp_path / "repo"
     assert sha == "abc123def"  # pragma: allowlist secret
+    assert mock_run.call_count == 2
+    # Verify clone command
+    clone_call = mock_run.call_args_list[0]
+    assert "clone" in clone_call.args[0]
+    assert "--depth" in clone_call.args[0]
 
 
 def test_clone_repo_failure(tmp_path: Path) -> None:

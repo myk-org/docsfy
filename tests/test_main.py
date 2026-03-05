@@ -45,7 +45,8 @@ async def test_generate_endpoint_invalid_url(client: AsyncClient) -> None:
 
 
 async def test_generate_endpoint_starts_generation(client: AsyncClient) -> None:
-    with patch("docsfy.main.asyncio.create_task"):
+    with patch("docsfy.main.asyncio.create_task") as mock_task:
+        mock_task.side_effect = lambda coro: coro.close()
         response = await client.post(
             "/api/generate",
             json={"repo_url": "https://github.com/org/repo.git"},
@@ -62,7 +63,8 @@ async def test_get_project_not_found(client: AsyncClient) -> None:
 
 
 async def test_generate_endpoint_with_force(client: AsyncClient) -> None:
-    with patch("docsfy.main.asyncio.create_task"):
+    with patch("docsfy.main.asyncio.create_task") as mock_task:
+        mock_task.side_effect = lambda coro: coro.close()
         response = await client.post(
             "/api/generate",
             json={"repo_url": "https://github.com/org/repo.git", "force": True},
@@ -77,7 +79,8 @@ async def test_generate_endpoint_local_path(
 ) -> None:
     # Create a fake git repo
     (tmp_path / "myrepo" / ".git").mkdir(parents=True)
-    with patch("docsfy.main.asyncio.create_task"):
+    with patch("docsfy.main.asyncio.create_task") as mock_task:
+        mock_task.side_effect = lambda coro: coro.close()
         response = await client.post(
             "/api/generate",
             json={"repo_path": str(tmp_path / "myrepo")},

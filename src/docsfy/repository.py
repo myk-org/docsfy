@@ -20,11 +20,12 @@ def extract_repo_name(repo_url: str) -> str:
 def clone_repo(repo_url: str, base_dir: Path) -> tuple[Path, str]:
     repo_name = extract_repo_name(repo_url)
     repo_path = base_dir / repo_name
-    logger.info(f"Cloning {repo_url} to {repo_path}")
+    logger.info(f"Cloning {repo_name} to {repo_path}")
     result = subprocess.run(
-        ["git", "clone", "--depth", "1", repo_url, str(repo_path)],
+        ["git", "clone", "--depth", "1", "--", repo_url, str(repo_path)],
         capture_output=True,
         text=True,
+        timeout=300,
     )
     if result.returncode != 0:
         msg = f"Clone failed: {result.stderr or result.stdout}"

@@ -72,6 +72,7 @@ async def update_project_status(
         if status == "ready":
             fields.append("last_generated = CURRENT_TIMESTAMP")
         values.append(name)
+        # Fields list is built from hardcoded column names only (no user input)
         await db.execute(
             f"UPDATE projects SET {', '.join(fields)} WHERE name = ?", values
         )

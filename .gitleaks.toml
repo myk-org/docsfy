@@ -3,5 +3,5 @@ useDefault = true
 
 [allowlist]
 paths = [
-    '''tests/.*\.py''',
+    '''tests/test_repository\.py''',
 ]

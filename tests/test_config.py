@@ -10,7 +10,7 @@ def test_default_settings() -> None:
     from docsfy.config import Settings
 
     with patch.dict(os.environ, {}, clear=True):
-        settings = Settings()
+        settings = Settings(_env_file=None)
     assert settings.ai_provider == "claude"
     assert settings.ai_model == "claude-opus-4-6[1m]"
     assert settings.ai_cli_timeout == 60
@@ -28,7 +28,7 @@ def test_custom_settings() -> None:
         "LOG_LEVEL": "DEBUG",
     }
     with patch.dict(os.environ, env, clear=True):
-        settings = Settings()
+        settings = Settings(_env_file=None)
     assert settings.ai_provider == "gemini"
     assert settings.ai_model == "gemini-2.5-pro"
     assert settings.ai_cli_timeout == 120
@@ -40,4 +40,4 @@ def test_invalid_timeout_rejected() -> None:
 
     with patch.dict(os.environ, {"AI_CLI_TIMEOUT": "0"}, clear=True):
         with pytest.raises(Exception):
-            Settings()
+            Settings(_env_file=None)

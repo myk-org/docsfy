@@ -71,3 +71,11 @@ def test_search_index_generated(tmp_path: Path) -> None:
 
     render_site(plan=plan, pages=pages, output_dir=output_dir)
     assert (output_dir / "search-index.json").exists()
+
+    import json
+
+    index = json.loads((output_dir / "search-index.json").read_text())
+    assert len(index) == 1
+    assert index[0]["slug"] == "intro"
+    assert index[0]["title"] == "Intro"
+    assert "searchable content" in index[0]["content"]

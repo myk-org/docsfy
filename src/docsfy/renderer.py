@@ -168,6 +168,8 @@ def _build_llms_full_txt(plan: dict[str, Any], pages: dict[str, str]) -> str:
 
 
 def render_site(plan: dict[str, Any], pages: dict[str, str], output_dir: Path) -> None:
+    if output_dir.exists():
+        shutil.rmtree(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
     assets_dir = output_dir / "assets"
     assets_dir.mkdir(exist_ok=True)
@@ -186,6 +188,9 @@ def render_site(plan: dict[str, Any], pages: dict[str, str], output_dir: Path) -
     (output_dir / "index.html").write_text(index_html)
 
     for slug, md_content in pages.items():
+        if "/" in slug or "\\" in slug or slug.startswith(".") or ".." in slug:
+            logger.warning(f"Skipping invalid slug: {slug}")
+            continue
         title = slug
         for group in navigation:
             for page in group.get("pages", []):
