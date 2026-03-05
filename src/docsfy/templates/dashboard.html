@@ -1548,6 +1548,54 @@
     (function() {
         'use strict';
 
+        /* ----- Form State Persistence ----- */
+        function saveFormState() {
+            var repoInput = document.getElementById('gen-repo-url');
+            var providerSelect = document.getElementById('gen-provider');
+            var modelInput = document.getElementById('gen-model');
+            var forceCheck = document.getElementById('gen-force');
+
+            if (repoInput) sessionStorage.setItem('docsfy-repo', repoInput.value);
+            if (providerSelect) sessionStorage.setItem('docsfy-provider', providerSelect.value);
+            if (modelInput) sessionStorage.setItem('docsfy-model', modelInput.value);
+            if (forceCheck) sessionStorage.setItem('docsfy-force', forceCheck.checked ? '1' : '0');
+        }
+
+        function restoreFormState() {
+            var repo = sessionStorage.getItem('docsfy-repo');
+            var provider = sessionStorage.getItem('docsfy-provider');
+            var model = sessionStorage.getItem('docsfy-model');
+            var force = sessionStorage.getItem('docsfy-force');
+
+            if (repo) {
+                var repoInput = document.getElementById('gen-repo-url');
+                if (repoInput) repoInput.value = repo;
+            }
+            if (provider) {
+                var sel = document.getElementById('gen-provider');
+                if (sel) {
+                    sel.value = provider;
+                    // Trigger the change handler so the model dropdown filter updates
+                    sel.dispatchEvent(new Event('change'));
+                }
+            }
+            if (model) {
+                var inp = document.getElementById('gen-model');
+                if (inp) inp.value = model;
+            }
+            if (force === '1') {
+                var forceCheck = document.getElementById('gen-force');
+                if (forceCheck) forceCheck.checked = true;
+            }
+        }
+
+        function clearFormState() {
+            sessionStorage.removeItem('docsfy-repo');
+            sessionStorage.removeItem('docsfy-provider');
+            sessionStorage.removeItem('docsfy-model');
+            sessionStorage.removeItem('docsfy-force');
+        }
+
         /* ----- Model Combobox (custom dropdown) ----- */
         var knownModels = {{ known_models | tojson }};
 
@@ -1873,6 +1921,7 @@
                     }
 
                     if (needsReload) {
+                        saveFormState();
                         location.reload();
                         return;
                     }
@@ -2005,6 +2054,7 @@
                     });
                     document.getElementById('gen-repo-url').value = '';
                     document.getElementById('gen-force').checked = false;
+                    clearFormState(); // Clear saved state after successful generation
                     startProgressPolling();
                     // Reload to show the new card
                     setTimeout(function() { location.reload(); }, 1000);
@@ -2064,6 +2114,7 @@
                     text: 'View progress \u2192'
                 });
                 startProgressPolling();
+                saveFormState();
                 setTimeout(function() { location.reload(); }, 1000);
             })
             .catch(function(err) {
@@ -2094,7 +2145,7 @@
                     if (!r.ok) return r.json().then(function(data) { throw data; });
                     return r.json();
                 })
-                .then(function() { location.reload(); })
+                .then(function() { saveFormState(); location.reload(); })
                 .catch(function(err) {
                     abortBtn.disabled = false;
                     abortBtn.textContent = 'Abort';
@@ -2349,6 +2400,9 @@
         if (hasGeneratingVariants()) {
             startProgressPolling();
         }
+
+        /* ----- Restore Form State ----- */
+        restoreFormState();
 
     })();
     </script>
