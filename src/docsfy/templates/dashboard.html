@@ -1173,8 +1173,11 @@
                         <span class="meta-item">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><line x1="1.05" y1="12" x2="7" y2="12"/><line x1="17.01" y1="12" x2="22.96" y2="12"/></svg>
                             <span class="meta-label">Commit:</span>
-                            {% if project.repo_url and 'github.com' in project.repo_url %}
-                            <a href="{{ project.repo_url }}/commit/{{ project.last_commit_sha }}" target="_blank" rel="noopener noreferrer">{{ project.last_commit_sha[:7] }}</a>
+                            {% set gh_repo_url = project.repo_url
+                                | replace('git@github.com:', 'https://github.com/')
+                                | replace('.git', '') %}
+                            {% if gh_repo_url.startswith('https://github.com/') %}
+                            <a href="{{ gh_repo_url }}/commit/{{ project.last_commit_sha }}" target="_blank" rel="noopener noreferrer">{{ project.last_commit_sha[:7] }}</a>
                             {% else %}
                             <span>{{ project.last_commit_sha[:7] }}</span>
                             {% endif %}
@@ -1582,8 +1585,16 @@
             // Update progress in place (no reload)
             var pageCount = proj.page_count || 0;
             var totalPages = 0;
-            if (proj.plan_json && proj.plan_json.navigation) {
-                proj.plan_json.navigation.forEach(function(group) {
+            var parsedPlan = null;
+            if (proj.plan_json) {
+                if (typeof proj.plan_json === 'string') {
+                    try { parsedPlan = JSON.parse(proj.plan_json); } catch(e) { parsedPlan = null; }
+                } else {
+                    parsedPlan = proj.plan_json;
+                }
+            }
+            if (parsedPlan && parsedPlan.navigation) {
+                parsedPlan.navigation.forEach(function(group) {
                     totalPages += (group.pages || []).length;
                 });
             }

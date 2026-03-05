@@ -48,8 +48,11 @@ async def init_db() -> None:
         for column in ["ai_provider TEXT", "ai_model TEXT", "current_stage TEXT"]:
             try:
                 await db.execute(f"ALTER TABLE projects ADD COLUMN {column}")
-            except sqlite3.OperationalError:
-                pass  # Column already exists
+            except sqlite3.OperationalError as exc:
+                if "duplicate column name" in str(exc).lower():
+                    continue
+                logger.error(f"Migration failed while adding '{column}': {exc}")
+                raise
 
         # Reset orphaned "generating" projects from previous server run
         cursor = await db.execute(
@@ -144,7 +147,7 @@ async def list_projects() -> list[dict[str, str | int | None]]:
     async with aiosqlite.connect(DB_PATH) as db:
         db.row_factory = aiosqlite.Row
         cursor = await db.execute(
-            "SELECT name, repo_url, status, current_stage, last_commit_sha, last_generated, page_count, ai_provider, ai_model FROM projects ORDER BY updated_at DESC"
+            "SELECT name, repo_url, status, current_stage, last_commit_sha, last_generated, page_count, error_message, plan_json, ai_provider, ai_model FROM projects ORDER BY updated_at DESC"
         )
         rows = await cursor.fetchall()
         return [dict(row) for row in rows]

@@ -22,15 +22,16 @@ async def client(tmp_path: Path):
 
     from docsfy.main import app
 
-    await storage.init_db()
-    transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://test") as ac:
-        yield ac
-
-    storage.DB_PATH = orig_db
-    storage.DATA_DIR = orig_data
-    storage.PROJECTS_DIR = orig_projects
-    _generating.clear()
+    try:
+        await storage.init_db()
+        transport = ASGITransport(app=app)
+        async with AsyncClient(transport=transport, base_url="http://test") as ac:
+            yield ac
+    finally:
+        storage.DB_PATH = orig_db
+        storage.DATA_DIR = orig_data
+        storage.PROJECTS_DIR = orig_projects
+        _generating.clear()
 
 
 async def test_dashboard_returns_html(client: AsyncClient) -> None:

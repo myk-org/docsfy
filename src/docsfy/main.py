@@ -179,19 +179,20 @@ async def abort_generation(name: str) -> dict[str, str]:
         )
 
     task.cancel()
-    # Wait briefly for the task to handle cancellation
     try:
-        await asyncio.wait_for(asyncio.shield(task), timeout=5.0)
-    except (asyncio.CancelledError, asyncio.TimeoutError, Exception):
-        pass
-
-    # Verify the task was actually cancelled
-    if not task.done():
-        logger.warning(
-            f"[{name}] Task did not finish within timeout, forcing status update"
+        await asyncio.wait_for(task, timeout=5.0)
+    except asyncio.CancelledError:
+        pass  # expected cancellation acknowledgment
+    except asyncio.TimeoutError:
+        logger.warning(f"[{name}] Abort requested but cancellation still in progress")
+        raise HTTPException(
+            status_code=409,
+            detail=f"Abort still in progress for '{name}'. Please retry shortly.",
         )
+    except Exception as exc:
+        logger.exception(f"[{name}] Abort failed: {exc}")
+        raise HTTPException(status_code=500, detail=f"Failed to abort '{name}'")
 
-    # Ensure status is updated
     await update_project_status(
         name,
         status="aborted",
