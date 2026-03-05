@@ -857,6 +857,25 @@
     }
 
     /* --------------------------------------------------------------------------
+       Status Link (View Progress/Details)
+       -------------------------------------------------------------------------- */
+    .status-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: var(--accent);
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+
+    .status-link:hover {
+        text-decoration: underline;
+        color: var(--accent-hover);
+    }
+
+    /* --------------------------------------------------------------------------
        Confirm Dialog
        -------------------------------------------------------------------------- */
     .confirm-overlay {
@@ -1202,6 +1221,9 @@
                         <span class="spinner"></span>
                         <span>Generation in progress...</span>
                     </div>
+                    <div style="margin-top: 12px;">
+                        <a href="/status/{{ project.name }}" target="_blank" class="status-link">View progress →</a>
+                    </div>
                     {% endif %}
 
                     {% if project.status == 'error' %}
@@ -1211,6 +1233,9 @@
                         <button class="btn btn-danger btn-sm btn-icon" data-delete="{{ project.name }}" aria-label="Delete project" title="Delete project">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
                         </button>
+                    </div>
+                    <div style="margin-top: 8px;">
+                        <a href="/status/{{ project.name }}" target="_blank" class="status-link">View details →</a>
                     </div>
                     {% endif %}
                 </article>
