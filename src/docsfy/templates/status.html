@@ -815,8 +815,6 @@
                 {% if project.status == 'error' %}
                 <button class="btn btn-primary" id="btn-retry">Retry</button>
                 {% endif %}
-                <span class="action-spacer"></span>
-                <a href="/" class="btn btn-secondary" id="btn-back">Back to Dashboard</a>
             </div>
         </div>
 
@@ -1068,12 +1066,6 @@
             spacer.className = 'action-spacer';
             actionLinks.appendChild(spacer);
 
-            var backBtn = document.createElement('a');
-            backBtn.href = '/';
-            backBtn.className = 'btn btn-secondary';
-            backBtn.id = 'btn-back';
-            backBtn.textContent = 'Back to Dashboard';
-            actionLinks.appendChild(backBtn);
         }
 
         /* ----- Update Log Status ----- */
