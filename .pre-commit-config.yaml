@@ -25,6 +25,7 @@ repos:
       - id: check-builtin-literals
       - id: check-toml
 
+  # flake8 retained for RedHatQE M511 plugin; ruff handles standard linting
   - repo: https://github.com/PyCQA/flake8
     rev: 7.3.0
     hooks:

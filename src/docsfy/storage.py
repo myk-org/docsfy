@@ -5,6 +5,8 @@ from pathlib import Path
 
 import aiosqlite
 
+# Module-level paths are set at import time from env vars.
+# Tests override these globals directly for isolation.
 DB_PATH = Path(os.getenv("DATA_DIR", "/data")) / "docsfy.db"
 DATA_DIR = Path(os.getenv("DATA_DIR", "/data"))
 PROJECTS_DIR = DATA_DIR / "projects"

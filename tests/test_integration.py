@@ -10,10 +10,17 @@ from httpx import ASGITransport, AsyncClient
 @pytest.fixture
 async def client(tmp_path: Path):
     import docsfy.storage as storage
+    from docsfy.main import _generating
+
+    # Save originals
+    orig_db = storage.DB_PATH
+    orig_data = storage.DATA_DIR
+    orig_projects = storage.PROJECTS_DIR
 
     storage.DB_PATH = tmp_path / "test.db"
     storage.DATA_DIR = tmp_path
     storage.PROJECTS_DIR = tmp_path / "projects"
+    _generating.clear()
 
     from docsfy.main import app
 
@@ -21,6 +28,12 @@ async def client(tmp_path: Path):
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
         yield ac
+
+    # Restore originals
+    storage.DB_PATH = orig_db
+    storage.DATA_DIR = orig_data
+    storage.PROJECTS_DIR = orig_projects
+    _generating.clear()
 
 
 async def test_full_flow_mock(client: AsyncClient, tmp_path: Path) -> None:

@@ -107,10 +107,17 @@ async def generate_all_pages(
     all_pages: list[dict[str, str]] = []
     for group in plan.get("navigation", []):
         for page in group.get("pages", []):
+            slug = page.get("slug", "")
+            title = page.get("title", slug)
+            if not slug:
+                logger.warning(
+                    f"Skipping page with no slug in group '{group.get('group', 'unknown')}'"
+                )
+                continue
             all_pages.append(
                 {
-                    "slug": page["slug"],
-                    "title": page["title"],
+                    "slug": slug,
+                    "title": title,
                     "description": page.get("description", ""),
                 }
             )

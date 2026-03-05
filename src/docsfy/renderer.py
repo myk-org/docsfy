@@ -184,13 +184,18 @@ def render_site(plan: dict[str, Any], pages: dict[str, str], output_dir: Path) -
             if static_file.is_file():
                 shutil.copy2(static_file, assets_dir / static_file.name)
 
+    # Filter out invalid slugs
+    valid_pages: dict[str, str] = {}
+    for slug, content in pages.items():
+        if "/" in slug or "\\" in slug or slug.startswith(".") or ".." in slug:
+            logger.warning(f"Skipping invalid slug: {slug}")
+        else:
+            valid_pages[slug] = content
+
     index_html = render_index(project_name, tagline, navigation, repo_url=repo_url)
     (output_dir / "index.html").write_text(index_html)
 
-    for slug, md_content in pages.items():
-        if "/" in slug or "\\" in slug or slug.startswith(".") or ".." in slug:
-            logger.warning(f"Skipping invalid slug: {slug}")
-            continue
+    for slug, md_content in valid_pages.items():
         title = slug
         for group in navigation:
             for page in group.get("pages", []):
@@ -212,14 +217,14 @@ def render_site(plan: dict[str, Any], pages: dict[str, str], output_dir: Path) -
         # Also write raw markdown for LLM consumption
         (output_dir / f"{slug}.md").write_text(md_content)
 
-    search_index = _build_search_index(pages, plan)
+    search_index = _build_search_index(valid_pages, plan)
     (output_dir / "search-index.json").write_text(json.dumps(search_index))
 
     # Generate llms.txt files
     llms_txt = _build_llms_txt(plan)
     (output_dir / "llms.txt").write_text(llms_txt)
 
-    llms_full_txt = _build_llms_full_txt(plan, pages)
+    llms_full_txt = _build_llms_full_txt(plan, valid_pages)
     (output_dir / "llms-full.txt").write_text(llms_full_txt)
 
-    logger.info(f"Rendered site: {len(pages)} pages to {output_dir}")
+    logger.info(f"Rendered site: {len(valid_pages)} pages to {output_dir}")

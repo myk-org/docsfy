@@ -1064,6 +1064,13 @@ pre:hover .copy-btn {
     opacity: 1;
 }
 
+/* Make copy button always visible on touch devices */
+@media (hover: none) {
+    .copy-btn {
+        opacity: 0.7;
+    }
+}
+
 .copy-btn:hover {
     background: var(--accent);
     color: white;
