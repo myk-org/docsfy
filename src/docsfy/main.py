@@ -139,7 +139,8 @@ async def health() -> dict[str, str]:
 @app.get("/api/status")
 async def status() -> dict[str, Any]:
     projects = await list_projects()
-    return {"projects": projects}
+    known_models = await get_known_models()
+    return {"projects": projects, "known_models": known_models}
 
 
 @app.post("/api/generate", status_code=202)

@@ -1569,6 +1569,37 @@
             return hasVisible;
         }
 
+        /* Rebuild all model dropdown option elements from the knownModels object.
+           Called when the status poll returns an updated known_models map so that
+           newly-discovered models appear without a full page reload. */
+        function rebuildModelDropdownOptions() {
+            var allDropdowns = document.querySelectorAll('#model-dropdown, [data-regen-dropdown]');
+            allDropdowns.forEach(function(dropdown) {
+                dropdown.innerHTML = '';
+                Object.keys(knownModels).forEach(function(provider) {
+                    var models = knownModels[provider] || [];
+                    models.forEach(function(model) {
+                        var div = document.createElement('div');
+                        div.className = 'model-option';
+                        div.setAttribute('data-provider', provider);
+                        div.setAttribute('data-value', model);
+
+                        var nameSpan = document.createElement('span');
+                        nameSpan.className = 'model-option-name';
+                        nameSpan.textContent = model;
+                        div.appendChild(nameSpan);
+
+                        var provSpan = document.createElement('span');
+                        provSpan.className = 'model-option-provider';
+                        provSpan.textContent = provider;
+                        div.appendChild(provSpan);
+
+                        dropdown.appendChild(div);
+                    });
+                });
+            });
+        }
+
         if (modelInput && modelDropdown) {
             modelInput.addEventListener('focus', function() {
                 var provider = providerSelect ? providerSelect.value : '';
@@ -1599,7 +1630,21 @@
 
         if (providerSelect && modelDropdown) {
             providerSelect.addEventListener('change', function() {
-                filterModelOptions(modelDropdown, modelInput ? modelInput.value : '', this.value);
+                var newProvider = this.value;
+                var modelsForProvider = knownModels[newProvider] || [];
+
+                // If current model is not valid for the new provider, auto-fill
+                if (modelInput) {
+                    var currentModel = modelInput.value;
+                    if (modelsForProvider.length > 0 && modelsForProvider.indexOf(currentModel) === -1) {
+                        modelInput.value = modelsForProvider[0];
+                    } else if (modelsForProvider.length === 0) {
+                        modelInput.value = '';
+                        modelInput.placeholder = 'Enter model name';
+                    }
+                }
+
+                filterModelOptions(modelDropdown, modelInput ? modelInput.value : '', newProvider);
             });
         }
 
@@ -1645,7 +1690,7 @@
             setupRegenCombobox(input);
         });
 
-        // Re-filter regen dropdowns when provider changes
+        // Re-filter regen dropdowns when provider changes and auto-switch model
         document.addEventListener('change', function(e) {
             var sel = e.target.closest('[data-regen-provider]');
             if (!sel) return;
@@ -1658,7 +1703,20 @@
             if (!combobox) return;
             var dropdown = combobox.querySelector('[data-regen-dropdown]');
             if (!dropdown) return;
-            filterModelOptions(dropdown, input.value, sel.value);
+
+            var newProvider = sel.value;
+            var modelsForProvider = knownModels[newProvider] || [];
+            var currentModel = input.value;
+
+            // If current model is not valid for the new provider, auto-fill
+            if (modelsForProvider.length > 0 && modelsForProvider.indexOf(currentModel) === -1) {
+                input.value = modelsForProvider[0];
+            } else if (modelsForProvider.length === 0) {
+                input.value = '';
+                input.placeholder = 'Enter model name';
+            }
+
+            filterModelOptions(dropdown, input.value, newProvider);
         });
 
         /* ----- Theme Toggle (same pattern as theme.js) ----- */
@@ -1773,6 +1831,13 @@
                 .then(function(data) {
                     var projectsList = data.projects || data;
                     if (!Array.isArray(projectsList)) return;
+
+                    // Update known models from the API so new models
+                    // appear in dropdowns without a full page reload.
+                    if (data.known_models) {
+                        knownModels = data.known_models;
+                        rebuildModelDropdownOptions();
+                    }
 
                     var anyGenerating = false;
                     var needsReload = false;
