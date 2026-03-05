@@ -197,7 +197,7 @@ def render_site(plan: dict[str, Any], pages: dict[str, str], output_dir: Path) -
             valid_pages[slug] = content
 
     index_html = render_index(project_name, tagline, navigation, repo_url=repo_url)
-    (output_dir / "index.html").write_text(index_html)
+    (output_dir / "index.html").write_text(index_html, encoding="utf-8")
 
     for slug, md_content in valid_pages.items():
         title = slug
@@ -216,19 +216,21 @@ def render_site(plan: dict[str, Any], pages: dict[str, str], output_dir: Path) -
             plan=plan,
             repo_url=repo_url,
         )
-        (output_dir / f"{slug}.html").write_text(page_html)
+        (output_dir / f"{slug}.html").write_text(page_html, encoding="utf-8")
 
         # Also write raw markdown for LLM consumption
-        (output_dir / f"{slug}.md").write_text(md_content)
+        (output_dir / f"{slug}.md").write_text(md_content, encoding="utf-8")
 
     search_index = _build_search_index(valid_pages, plan)
-    (output_dir / "search-index.json").write_text(json.dumps(search_index))
+    (output_dir / "search-index.json").write_text(
+        json.dumps(search_index), encoding="utf-8"
+    )
 
     # Generate llms.txt files
     llms_txt = _build_llms_txt(plan)
-    (output_dir / "llms.txt").write_text(llms_txt)
+    (output_dir / "llms.txt").write_text(llms_txt, encoding="utf-8")
 
     llms_full_txt = _build_llms_full_txt(plan, valid_pages)
-    (output_dir / "llms-full.txt").write_text(llms_full_txt)
+    (output_dir / "llms-full.txt").write_text(llms_full_txt, encoding="utf-8")
 
     logger.info(f"Rendered site: {len(valid_pages)} pages to {output_dir}")

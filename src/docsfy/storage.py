@@ -6,6 +6,8 @@ from pathlib import Path
 
 import aiosqlite
 
+VALID_STATUSES = frozenset({"generating", "ready", "error"})
+
 # Module-level paths are set at import time from env vars.
 # Tests override these globals directly for isolation.
 DB_PATH = Path(os.getenv("DATA_DIR", "/data")) / "docsfy.db"
@@ -35,6 +37,9 @@ async def init_db() -> None:
 
 
 async def save_project(name: str, repo_url: str, status: str = "generating") -> None:
+    if status not in VALID_STATUSES:
+        msg = f"Invalid project status: '{status}'. Valid: {', '.join(sorted(VALID_STATUSES))}"
+        raise ValueError(msg)
     async with aiosqlite.connect(DB_PATH) as db:
         await db.execute(
             """INSERT INTO projects (name, repo_url, status, updated_at)
@@ -57,6 +62,9 @@ async def update_project_status(
     error_message: str | None = None,
     plan_json: str | None = None,
 ) -> None:
+    if status not in VALID_STATUSES:
+        msg = f"Invalid project status: '{status}'. Valid: {', '.join(sorted(VALID_STATUSES))}"
+        raise ValueError(msg)
     async with aiosqlite.connect(DB_PATH) as db:
         fields = ["status = ?", "updated_at = CURRENT_TIMESTAMP"]
         values: list[str | int | None] = [status]

@@ -225,7 +225,7 @@ async def _generate_from_path(
     render_site(plan=plan, pages=pages, output_dir=site_dir)
 
     project_dir = get_project_dir(project_name)
-    (project_dir / "plan.json").write_text(json.dumps(plan, indent=2))
+    (project_dir / "plan.json").write_text(json.dumps(plan, indent=2), encoding="utf-8")
 
     page_count = len(pages)
     await update_project_status(

@@ -90,7 +90,7 @@ async def generate_page(
 
     output = _strip_ai_preamble(output)
     cache_dir.mkdir(parents=True, exist_ok=True)
-    cache_file.write_text(output)
+    cache_file.write_text(output, encoding="utf-8")
     logger.info(f"Generated page: {slug} ({len(output)} chars)")
     return output
 

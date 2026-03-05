@@ -30,10 +30,14 @@ def test_clone_repo_success(tmp_path: Path) -> None:
     assert repo_path == tmp_path / "repo"
     assert sha == "abc123def"  # pragma: allowlist secret
     assert mock_run.call_count == 2
-    # Verify clone command
-    clone_call = mock_run.call_args_list[0]
-    assert "clone" in clone_call.args[0]
-    assert "--depth" in clone_call.args[0]
+    # Verify clone command args
+    clone_args = mock_run.call_args_list[0]
+    cmd = clone_args.args[0] if clone_args.args else clone_args[0][0]
+    assert "clone" in cmd
+    assert "--depth" in cmd
+    assert "1" in cmd
+    assert "--" in cmd
+    assert "https://github.com/org/repo.git" in cmd
 
 
 def test_clone_repo_failure(tmp_path: Path) -> None:
