@@ -185,6 +185,12 @@
         z-index: 100;
     }
 
+    .header-left {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
     .dashboard-logo {
         font-size: 1.25rem;
         font-weight: 700;
@@ -195,6 +201,22 @@
 
     .dashboard-logo span {
         color: var(--accent);
+    }
+
+    .docs-badge {
+        font-size: 0.7rem;
+        font-weight: 600;
+        padding: 2px 8px;
+        background: var(--accent);
+        color: white;
+        border-radius: 4px;
+        text-decoration: none;
+        margin-left: 8px;
+        transition: opacity 0.15s ease;
+    }
+
+    .docs-badge:hover {
+        opacity: 0.8;
     }
 
     .brand-accent {
@@ -1049,6 +1071,14 @@
         color: var(--text-tertiary);
     }
 
+    .variant-owner {
+        font-size: 0.75rem;
+        color: var(--text-secondary);
+        background: var(--bg-tertiary);
+        padding: 2px 6px;
+        border-radius: 4px;
+    }
+
     .variant-meta {
         display: flex;
         gap: 1rem;
@@ -1292,7 +1322,10 @@
 <body>
     <!-- Header -->
     <header class="dashboard-header">
-        <a href="/" class="dashboard-logo">docs<span>fy</span></a>
+        <div class="header-left">
+            <a href="/" class="dashboard-logo">docs<span>fy</span></a>
+            <a href="https://myk-org.github.io/docsfy/" target="_blank" rel="noopener noreferrer" class="docs-badge" title="Documentation">Docs</a>
+        </div>
         <div class="header-actions">
             {% if role == 'admin' %}
             <a href="/admin" class="top-bar-admin-link">Admin</a>
@@ -1427,6 +1460,9 @@
                         <div class="variant-header">
                             <span class="status-dot status-dot-{{ variant.status }}"></span>
                             <span class="variant-provider-model">{{ variant.ai_provider }}/{{ variant.ai_model }}</span>
+                            {% if role == 'admin' and variant.owner %}
+                            <span class="variant-owner">{{ variant.owner }}</span>
+                            {% endif %}
                             <span class="variant-status badge-{{ variant.status }}">{{ variant.status | upper }}</span>
                             {% if variant.page_count > 0 %}
                             <span class="variant-pages">{{ variant.page_count }} pages</span>

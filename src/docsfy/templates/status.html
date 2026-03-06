@@ -172,6 +172,22 @@
         color: var(--accent);
     }
 
+    .docs-badge {
+        font-size: 0.7rem;
+        font-weight: 600;
+        padding: 2px 8px;
+        background: var(--accent);
+        color: white;
+        border-radius: 4px;
+        text-decoration: none;
+        margin-left: 8px;
+        transition: opacity 0.15s ease;
+    }
+
+    .docs-badge:hover {
+        opacity: 0.8;
+    }
+
     .brand-accent {
         color: var(--accent);
     }
@@ -744,6 +760,7 @@
     <header class="dashboard-header">
         <div class="header-left">
             <a href="/" class="dashboard-logo">docs<span>fy</span></a>
+            <a href="https://myk-org.github.io/docsfy/" target="_blank" rel="noopener noreferrer" class="docs-badge" title="Documentation">Docs</a>
             <span class="header-separator">/</span>
             <span class="header-project-name">{{ project.name }} / {{ project.ai_provider }}/{{ project.ai_model }}</span>
         </div>
