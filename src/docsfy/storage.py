@@ -357,6 +357,7 @@ async def get_project(
         if owner:
             query += " AND owner = ?"
             params.append(owner)
+        query += " ORDER BY CASE WHEN owner = '' THEN 1 ELSE 0 END"
         cursor = await db.execute(query, params)
         row = await cursor.fetchone()
         return dict(row) if row else None
