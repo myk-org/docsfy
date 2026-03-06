@@ -245,7 +245,7 @@ async def test_abort_variant_endpoint(client: AsyncClient) -> None:
     assert response.status_code == 404
 
 
-def test_reject_private_url_dns(monkeypatch: pytest.MonkeyPatch) -> None:
+async def test_reject_private_url_dns(monkeypatch: pytest.MonkeyPatch) -> None:
     """Test that SSRF protection rejects DNS names resolving to private IPs."""
     import socket
 
@@ -261,7 +261,7 @@ def test_reject_private_url_dns(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(socket, "getaddrinfo", mock_getaddrinfo)
 
     with pytest.raises(HTTPException) as exc_info:
-        _reject_private_url("https://evil.com/org/repo")
+        await _reject_private_url("https://evil.com/org/repo")
     assert exc_info.value.status_code == 400
 
 

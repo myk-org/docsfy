@@ -514,11 +514,11 @@ agent-browser close-context
 
 ---
 
-### 2.8 Cannot create user with reserved username "admin"
+### 2.8 Cannot create user with reserved username "admin" (case-insensitive)
 
 **Precondition:** Logged in as `admin` on the admin panel.
 
-**Commands:**
+**Attempt with lowercase "admin":**
 ```
 agent-browser navigate http://localhost:8800/admin
 agent-browser type "#new-username" "admin"
@@ -533,6 +533,38 @@ agent-browser screenshot
 **Expected result:**
 - An error message appears indicating that the username "admin" is reserved
 - No new user row for "admin" appears in the users table
+- The `#new-key-display` section does NOT become visible
+
+**Attempt with mixed case "Admin":**
+```
+agent-browser navigate http://localhost:8800/admin
+agent-browser clear "#new-username"
+agent-browser type "#new-username" "Admin"
+agent-browser select "#new-role" "user"
+agent-browser click "#create-user-form button[type='submit']"
+agent-browser wait 2000
+agent-browser screenshot
+```
+
+**Expected result:**
+- An error message appears indicating that the username is reserved
+- No new user row for "Admin" appears in the users table
+- The `#new-key-display` section does NOT become visible
+
+**Attempt with uppercase "ADMIN":**
+```
+agent-browser navigate http://localhost:8800/admin
+agent-browser clear "#new-username"
+agent-browser type "#new-username" "ADMIN"
+agent-browser select "#new-role" "user"
+agent-browser click "#create-user-form button[type='submit']"
+agent-browser wait 2000
+agent-browser screenshot
+```
+
+**Expected result:**
+- An error message appears indicating that the username is reserved
+- No new user row for "ADMIN" appears in the users table
 - The `#new-key-display` section does NOT become visible
 
 ---
@@ -1380,6 +1412,63 @@ agent-browser javascript "document.getElementById('gen-force').checked"
 
 ---
 
+### 7.9 Self-service password rotation full flow
+
+**Precondition:** Logged in as `testuser-e2e`.
+
+**Commands:**
+```
+agent-browser navigate http://localhost:8800/
+agent-browser click ".btn-change-password"
+agent-browser wait 1000
+agent-browser type "#modal-input" "my-new-secure-password-123"
+agent-browser click "#modal-ok"
+agent-browser wait 2000
+agent-browser screenshot
+```
+
+**Check:** The success modal shows the new password and the session is invalidated.
+
+**Expected result:**
+- Success modal displays the new password `my-new-secure-password-123`
+- After dismissing the modal, the user is redirected to the login page (session invalidated)
+
+**Try logging in with the OLD password:**
+```
+agent-browser type "#username" "testuser-e2e"
+agent-browser type "#api_key" "<TEST_USER_PASSWORD>"
+agent-browser click ".btn-login"
+agent-browser wait 2000
+agent-browser screenshot
+```
+
+**Expected result:**
+- Login fails with "Invalid username or password" error
+- The user remains on the login page
+
+**Login with the NEW password:**
+```
+agent-browser clear "#username"
+agent-browser type "#username" "testuser-e2e"
+agent-browser clear "#api_key"
+agent-browser type "#api_key" "my-new-secure-password-123"
+agent-browser click ".btn-login"
+agent-browser wait-for-navigation
+agent-browser screenshot
+```
+
+**Check:** Login succeeds with the new password.
+
+**Expected result:**
+- Login succeeds and redirects to the dashboard
+- The page title is "docsfy - Dashboard"
+- The header shows the username "testuser-e2e"
+
+**Update stored password variable:**
+Set `TEST_USER_PASSWORD` = `my-new-secure-password-123` for subsequent tests.
+
+---
+
 ## Test 8: Generated Docs Quality
 
 **Precondition:** Generate docs first as `testuser-e2e` if not already done. Log in as `testuser-e2e` and ensure docs are in `ready` state.
@@ -2205,7 +2294,44 @@ agent-browser eval "fetch('/api/projects/for-testing-only/gemini/gemini-2.5-flas
 
 ---
 
-### 13.5 Granted user CAN access
+### 13.5 Non-owner cannot access via owner-agnostic download route
+
+**Precondition:** Logged in as `userb-e2e` (who has NOT been granted access yet).
+
+```
+agent-browser navigate http://localhost:8800/logout
+agent-browser wait-for-navigation
+agent-browser type "#username" "userb-e2e"
+agent-browser type "#api_key" "<USERB_PASSWORD>"
+agent-browser click ".btn-login"
+agent-browser wait-for-navigation
+```
+
+**Commands:**
+```
+agent-browser eval "fetch('/api/projects/for-testing-only/download', {credentials:'same-origin'}).then(r => r.status)"
+```
+
+**Check:** The owner-agnostic download route returns 404 for non-owners.
+
+**Expected result:** Returns `404`.
+
+---
+
+### 13.6 Non-owner cannot access via owner-agnostic docs route
+
+**Commands:**
+```
+agent-browser eval "fetch('/docs/for-testing-only/index.html', {credentials:'same-origin'}).then(r => r.status)"
+```
+
+**Check:** The owner-agnostic docs route returns 404 for non-owners.
+
+**Expected result:** Returns `404`.
+
+---
+
+### 13.7 Granted user CAN access
 
 **Precondition:** Admin grants `userb-e2e` access to `testuser-e2e`'s project.
 
@@ -2243,43 +2369,6 @@ agent-browser screenshot
 - The page returns 200
 - Documentation content is visible
 - A sidebar with navigation is present
-
----
-
-### 13.6 Non-owner cannot access via owner-agnostic download route
-
-**Precondition:** Logged in as `userb-e2e` (after revocation in Test 13.5, or fresh user with no access).
-
-```
-agent-browser navigate http://localhost:8800/logout
-agent-browser wait-for-navigation
-agent-browser type "#username" "userb-e2e"
-agent-browser type "#api_key" "<USERB_PASSWORD>"
-agent-browser click ".btn-login"
-agent-browser wait-for-navigation
-```
-
-**Commands:**
-```
-agent-browser eval "fetch('/api/projects/for-testing-only/download', {credentials:'same-origin'}).then(r => r.status)"
-```
-
-**Check:** The owner-agnostic download route returns 404 for non-owners.
-
-**Expected result:** Returns `404`.
-
----
-
-### 13.7 Non-owner cannot access via owner-agnostic docs route
-
-**Commands:**
-```
-agent-browser eval "fetch('/docs/for-testing-only/index.html', {credentials:'same-origin'}).then(r => r.status)"
-```
-
-**Check:** The owner-agnostic docs route returns 404 for non-owners.
-
-**Expected result:** Returns `404`.
 
 ---
 
@@ -2396,11 +2485,11 @@ agent-browser close
 | Test 4: Viewer Role | 7 | Viewer login, restricted UI, password change, API enforcement |
 | Test 5: Admin DB User | 4 | DB admin login, access, project visibility |
 | Test 6: Doc Generation | 7 | Full generation lifecycle |
-| Test 7: Dashboard Features | 8 | Search, pagination, regen, abort, delete, combobox, form state |
+| Test 7: Dashboard Features | 9 | Search, pagination, regen, abort, delete, combobox, form state, password rotation |
 | Test 8: Generated Docs | 8 | Docs quality, theme, TOC, copy, footer, llms.txt |
 | Test 9: Status Page | 3 | Activity log, abort, regenerate controls |
 | Test 10: Custom Modals | 4 | Themed modals for delete, password, abort, escape key |
 | Test 11: Cross-User Isolation | 10 | User isolation, admin visibility, access grants, revoke, collision test, direct URL after revoke |
 | Test 12: Logout | 2 | Logout redirect, session invalidation |
 | Test 13: Direct URL Authorization | 7 | Non-owner URL access blocked, granted user access, owner-agnostic routes |
-| **Total** | **82** | |
+| **Total** | **83** | |

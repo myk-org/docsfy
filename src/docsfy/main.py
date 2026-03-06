@@ -396,7 +396,7 @@ async def generate(request: Request, gen_request: GenerateRequest) -> dict[str, 
     # Advanced SSRF protection (DNS rebinding, etc.) should be handled at
     # the network/firewall level.
     if gen_request.repo_url:
-        _reject_private_url(gen_request.repo_url)
+        await _reject_private_url(gen_request.repo_url)
 
     settings = get_settings()
     ai_provider = gen_request.ai_provider or settings.ai_provider
@@ -452,7 +452,7 @@ async def generate(request: Request, gen_request: GenerateRequest) -> dict[str, 
     return {"project": project_name, "status": "generating"}
 
 
-def _reject_private_url(url: str) -> None:
+async def _reject_private_url(url: str) -> None:
     """Reject URLs targeting private/internal IP ranges (SSRF mitigation).
 
     This provides basic protection against SSRF. More comprehensive protection
@@ -488,8 +488,14 @@ def _reject_private_url(url: str) -> None:
         except ValueError:
             # hostname is a DNS name - resolve and check
             try:
-                resolved = socket.getaddrinfo(
-                    hostname, None, socket.AF_UNSPEC, socket.SOCK_STREAM
+                loop = asyncio.get_event_loop()
+                resolved = await loop.run_in_executor(
+                    None,
+                    socket.getaddrinfo,
+                    hostname,
+                    None,
+                    socket.AF_UNSPEC,
+                    socket.SOCK_STREAM,
                 )
                 for _family, _socktype, _proto, _canonname, sockaddr in resolved:
                     ip_str = sockaddr[0]
