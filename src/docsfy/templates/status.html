@@ -1303,7 +1303,7 @@
                 abortBtn.disabled = true;
                 abortBtn.textContent = 'Aborting...';
             }
-            fetch('/api/projects/' + encodeURIComponent(PROJECT_NAME) + '/' + encodeURIComponent(PROJECT_PROVIDER) + '/' + encodeURIComponent(PROJECT_MODEL) + '/abort', { method: 'POST' })
+            fetch('/api/projects/' + encodeURIComponent(PROJECT_NAME) + '/' + encodeURIComponent(PROJECT_PROVIDER) + '/' + encodeURIComponent(PROJECT_MODEL) + '/abort', { method: 'POST', credentials: 'same-origin' })
                 .then(function(r) {
                     if (!r.ok) return r.json().then(function(data) { throw data; });
                     return r.json();
@@ -1349,6 +1349,7 @@
             fetch('/api/generate', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
+                credentials: 'same-origin',
                 body: JSON.stringify(payload)
             })
             .then(function(res) {
@@ -1403,7 +1404,7 @@
         }
 
         function pollProject() {
-            fetch('/api/projects/' + encodeURIComponent(PROJECT_NAME) + '/' + encodeURIComponent(PROJECT_PROVIDER) + '/' + encodeURIComponent(PROJECT_MODEL))
+            fetch('/api/projects/' + encodeURIComponent(PROJECT_NAME) + '/' + encodeURIComponent(PROJECT_PROVIDER) + '/' + encodeURIComponent(PROJECT_MODEL), { credentials: 'same-origin' })
                 .then(function(res) {
                     if (!res.ok) throw new Error('Not found');
                     return res.json();

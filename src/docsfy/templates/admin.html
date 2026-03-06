@@ -440,6 +440,7 @@
             const resp = await fetch("/api/admin/users", {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
+                credentials: "same-origin",
                 body: JSON.stringify({username: username, role: role})
             });
             const data = await resp.json();
@@ -504,7 +505,8 @@
 
         try {
             const resp = await fetch("/api/admin/users/" + encodeURIComponent(username), {
-                method: "DELETE"
+                method: "DELETE",
+                credentials: "same-origin"
             });
             const data = await resp.json();
             if (!resp.ok) {

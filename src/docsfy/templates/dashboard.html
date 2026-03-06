@@ -1911,7 +1911,7 @@
 
         /* ----- Poll /api/status for status changes (10s interval) ----- */
         function pollStatusChanges() {
-            fetch('/api/status')
+            fetch('/api/status', { credentials: 'same-origin' })
                 .then(function(res) { return res.json(); })
                 .then(function(data) {
                     var projectsList = data.projects || data;
@@ -1977,7 +1977,7 @@
 
         /* ----- Poll /api/status for progress updates (5s interval) ----- */
         function pollProgressUpdates() {
-            fetch('/api/status')
+            fetch('/api/status', { credentials: 'same-origin' })
                 .then(function(res) { return res.json(); })
                 .then(function(data) {
                     var projectsList = data.projects || data;
@@ -2076,6 +2076,7 @@
                 fetch('/api/generate', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
+                    credentials: 'same-origin',
                     body: JSON.stringify(body)
                 })
                 .then(function(res) {
@@ -2138,6 +2139,7 @@
             fetch('/api/generate', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
+                credentials: 'same-origin',
                 body: JSON.stringify(body)
             })
             .then(function(res) {
@@ -2177,7 +2179,7 @@
             if (!confirm('Abort generation for ' + name + ' (' + provider + '/' + model + ')?')) return;
             abortBtn.disabled = true;
             abortBtn.textContent = 'Aborting...';
-            fetch('/api/projects/' + encodeURIComponent(name) + '/' + encodeURIComponent(provider) + '/' + encodeURIComponent(model) + '/abort', { method: 'POST' })
+            fetch('/api/projects/' + encodeURIComponent(name) + '/' + encodeURIComponent(provider) + '/' + encodeURIComponent(model) + '/abort', { method: 'POST', credentials: 'same-origin' })
                 .then(function(r) {
                     if (!r.ok) return r.json().then(function(data) { throw data; });
                     return r.json();
@@ -2221,7 +2223,8 @@
             var model = parts.slice(2).join('/');
 
             fetch('/api/projects/' + encodeURIComponent(name) + '/' + encodeURIComponent(provider) + '/' + encodeURIComponent(model), {
-                method: 'DELETE'
+                method: 'DELETE',
+                credentials: 'same-origin'
             })
             .then(function(res) {
                 if (!res.ok) return res.json().then(function(data) { throw data; });
