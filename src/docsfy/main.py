@@ -13,6 +13,7 @@ from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Any
+from uuid import uuid4
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse, HTMLResponse, StreamingResponse
@@ -248,6 +249,7 @@ async def _resolve_project(
 
     # 3. For non-admin, check granted access — find which owner granted access
     accessible = await get_user_accessible_projects(request.state.username)
+    matched_projects: list[dict[str, Any]] = []
     for proj_name, proj_owner in accessible:
         if proj_name == name and proj_owner:
             # Found a grant — look up this specific owner's variant
@@ -255,7 +257,16 @@ async def _resolve_project(
                 name, ai_provider=ai_provider, ai_model=ai_model, owner=proj_owner
             )
             if proj:
-                return proj
+                matched_projects.append(proj)
+
+    if matched_projects:
+        distinct_owners = {str(p.get("owner", "")) for p in matched_projects}
+        if len(distinct_owners) > 1:
+            raise HTTPException(
+                status_code=409,
+                detail="Multiple owners found for this variant, please specify owner",
+            )
+        return matched_projects[0]
 
     # 4. Not found
     raise HTTPException(status_code=404, detail="Not found")
@@ -576,20 +587,35 @@ async def abort_generation(request: Request, name: str) -> dict[str, str]:
     _require_write_access(request)
     name = _validate_project_name(name)
     # Find active generation keys matching this project name
-    matching_keys = [
-        key
-        for key in _generating
-        if len(key.split("/", 3)) == 4 and key.split("/", 3)[1] == name
-    ]
-    if request.state.is_admin and len(matching_keys) > 1:
-        distinct_owners = {key.split("/", 3)[0] for key in matching_keys}
-        if len(distinct_owners) > 1:
-            raise HTTPException(
-                status_code=409,
-                detail="Multiple owners found for this variant, please specify owner",
-            )
-    matching_key = matching_keys[0] if matching_keys else None
-    task = _generating.get(matching_key) if matching_key else None
+    async with _gen_lock:
+        matching_keys = [
+            key
+            for key in _generating
+            if len(key.split("/", 3)) == 4 and key.split("/", 3)[1] == name
+        ]
+
+        if not request.state.is_admin:
+            # Non-admin users can only abort their own generation tasks
+            matching_keys = [
+                key
+                for key in matching_keys
+                if key.split("/", 3)[0] == request.state.username
+            ]
+            if not matching_keys:
+                raise HTTPException(
+                    status_code=404, detail=f"No active generation for '{name}'"
+                )
+        else:
+            if len(matching_keys) > 1:
+                distinct_owners = {key.split("/", 3)[0] for key in matching_keys}
+                if len(distinct_owners) > 1:
+                    raise HTTPException(
+                        status_code=409,
+                        detail="Multiple owners found for this variant, please specify owner",
+                    )
+
+        matching_key = matching_keys[0] if matching_keys else None
+        task = _generating.get(matching_key) if matching_key else None
     if not task or not matching_key:
         raise HTTPException(
             status_code=404, detail=f"No active generation for '{name}'"
@@ -608,7 +634,11 @@ async def abort_generation(request: Request, name: str) -> dict[str, str]:
     if project:
         await _check_ownership(request, name, project)
 
-    task.cancel()
+    if not task.cancel():
+        raise HTTPException(
+            status_code=409,
+            detail=f"Generation for '{name}' already finished. Refresh status and retry only if needed.",
+        )
     try:
         await asyncio.wait_for(task, timeout=5.0)
     except asyncio.CancelledError:
@@ -811,7 +841,8 @@ async def _run_generation(
             error_message=str(exc),
         )
     finally:
-        _generating.pop(gen_key, None)
+        async with _gen_lock:
+            _generating.pop(gen_key, None)
 
 
 async def _generate_from_path(
@@ -867,26 +898,8 @@ async def _generate_from_path(
                 )
                 return
 
-    await update_project_status(
-        project_name,
-        ai_provider,
-        ai_model,
-        status="generating",
-        owner=owner,
-        current_stage="planning",
-    )
-
-    plan = await run_planner(
-        repo_path=repo_dir,
-        project_name=project_name,
-        ai_provider=ai_provider,
-        ai_model=ai_model,
-        ai_cli_timeout=ai_cli_timeout,
-    )
-
-    plan["repo_url"] = source_url
-
-    # Check if we can do incremental update
+    # Check if we can do incremental update BEFORE planning to avoid
+    # paying the full planning cost for up-to-date or metadata-only commits
     cache_dir = get_project_cache_dir(project_name, ai_provider, ai_model, owner)
     if old_sha and old_sha != commit_sha and not force and existing:
         changed_files = get_changed_files(repo_dir, old_sha, commit_sha)
@@ -962,6 +975,25 @@ async def _generate_from_path(
                         f"[{project_name}] Failed to parse existing plan, doing full regeneration"
                     )
 
+    await update_project_status(
+        project_name,
+        ai_provider,
+        ai_model,
+        status="generating",
+        owner=owner,
+        current_stage="planning",
+    )
+
+    plan = await run_planner(
+        repo_path=repo_dir,
+        project_name=project_name,
+        ai_provider=ai_provider,
+        ai_model=ai_model,
+        ai_cli_timeout=ai_cli_timeout,
+    )
+
+    plan["repo_url"] = source_url
+
     # Store plan so API consumers can see doc structure while pages generate
     await update_project_status(
         project_name,
@@ -980,7 +1012,7 @@ async def _generate_from_path(
         ai_provider=ai_provider,
         ai_model=ai_model,
         ai_cli_timeout=ai_cli_timeout,
-        use_cache=use_cache if use_cache else not force,
+        use_cache=use_cache,
         project_name=project_name,
         owner=owner,
     )
@@ -1041,33 +1073,53 @@ async def delete_variant(
     _require_write_access(request)
     name = _validate_project_name(name)
 
-    # Check for active generation (scan all keys)
-    for key in _generating:
-        parts = key.split("/", 3)
-        if (
-            len(parts) == 4
-            and parts[1] == name
-            and parts[2] == provider
-            and parts[3] == model
-        ):
-            raise HTTPException(
-                status_code=409,
-                detail=f"Cannot delete '{name}/{provider}/{model}' while generation is in progress. Abort first.",
-            )
-
     project = await _resolve_project(
         request, name, ai_provider=provider, ai_model=model
     )
 
     project_owner = str(project.get("owner", ""))
-    deleted = await delete_project(
-        name, ai_provider=provider, ai_model=model, owner=project_owner
-    )
-    if not deleted:
+
+    # Non-admins can only delete variants they own
+    if not request.state.is_admin and project_owner != request.state.username:
         raise HTTPException(status_code=404, detail="Variant not found")
-    project_dir = get_project_dir(name, provider, model, project_owner)
-    if project_dir.exists():
-        shutil.rmtree(project_dir)
+
+    # Hold _gen_lock for the entire check+delete to prevent TOCTOU race
+    dir_to_delete: Path | None = None
+    async with _gen_lock:
+        # Check for active generation scoped to the target owner
+        for key in _generating:
+            parts = key.split("/", 3)
+            if (
+                len(parts) == 4
+                and parts[0] == project_owner
+                and parts[1] == name
+                and parts[2] == provider
+                and parts[3] == model
+            ):
+                raise HTTPException(
+                    status_code=409,
+                    detail=f"Cannot delete '{name}/{provider}/{model}' while generation is in progress. Abort first.",
+                )
+
+        deleted = await delete_project(
+            name, ai_provider=provider, ai_model=model, owner=project_owner
+        )
+        if not deleted:
+            raise HTTPException(status_code=404, detail="Variant not found")
+
+        # Rename to tombstone while still holding the lock so a new
+        # generation cannot recreate the directory before we delete it.
+        project_dir = get_project_dir(name, provider, model, project_owner)
+        if project_dir.exists():
+            tombstone = project_dir.with_name(
+                f"{project_dir.name}.deleting-{uuid4().hex}"
+            )
+            project_dir.replace(tombstone)
+            dir_to_delete = tombstone
+
+    # Filesystem cleanup outside lock to reduce contention
+    if dir_to_delete is not None:
+        await asyncio.to_thread(shutil.rmtree, dir_to_delete)
     return {"deleted": f"{name}/{provider}/{model}"}
 
 
@@ -1119,6 +1171,28 @@ async def get_project_details(request: Request, name: str) -> dict[str, Any]:
         variants = await list_variants(name)
     else:
         variants = await list_variants(name, owner=request.state.username)
+        # Always merge shared variants so they appear alongside owned ones
+        seen: set[tuple[str, str, str]] = {
+            (
+                str(v.get("owner", "")),
+                str(v.get("ai_provider", "")),
+                str(v.get("ai_model", "")),
+            )
+            for v in variants
+        }
+        accessible = await get_user_accessible_projects(request.state.username)
+        for proj_name, proj_owner in accessible:
+            if proj_name == name and proj_owner:
+                shared_variants = await list_variants(name, owner=proj_owner)
+                for sv in shared_variants:
+                    key = (
+                        str(sv.get("owner", "")),
+                        str(sv.get("ai_provider", "")),
+                        str(sv.get("ai_model", "")),
+                    )
+                    if key not in seen:
+                        seen.add(key)
+                        variants.append(sv)
     if not variants:
         raise HTTPException(status_code=404, detail=f"Project '{name}' not found")
     return {"name": name, "variants": variants}
@@ -1128,31 +1202,94 @@ async def get_project_details(request: Request, name: str) -> dict[str, Any]:
 async def delete_project_endpoint(request: Request, name: str) -> dict[str, str]:
     _require_write_access(request)
     name = _validate_project_name(name)
-    # Check if any variant is generating
-    for gen_key in _generating:
-        parts = gen_key.split("/", 3)
-        if len(parts) == 4 and parts[1] == name:
-            raise HTTPException(
-                status_code=409,
-                detail=f"Cannot delete '{name}' while generation is in progress. Abort running variants first.",
-            )
     if request.state.is_admin:
         variants = await list_variants(name)
     else:
         variants = await list_variants(name, owner=request.state.username)
     if not variants:
         raise HTTPException(status_code=404, detail=f"Project '{name}' not found")
-    for v in variants:
-        v_provider = str(v.get("ai_provider", ""))
-        v_model = str(v.get("ai_model", ""))
-        v_owner = str(v.get("owner", ""))
-        await delete_project(
-            name, ai_provider=v_provider, ai_model=v_model, owner=v_owner
-        )
-        project_dir = get_project_dir(name, v_provider, v_model, v_owner)
-        if project_dir.exists():
-            shutil.rmtree(project_dir)
+
+    # Hold _gen_lock for the entire check+delete to prevent TOCTOU race
+    dirs_to_delete: list[Path] = []
+    async with _gen_lock:
+        # Check if any variant owned by the target owner(s) is generating
+        target_owners = {str(v.get("owner", "")) for v in variants}
+        for gen_key in _generating:
+            parts = gen_key.split("/", 3)
+            if len(parts) == 4 and parts[0] in target_owners and parts[1] == name:
+                raise HTTPException(
+                    status_code=409,
+                    detail=f"Cannot delete '{name}' while generation is in progress. Abort running variants first.",
+                )
+        for v in variants:
+            v_provider = str(v.get("ai_provider", ""))
+            v_model = str(v.get("ai_model", ""))
+            v_owner = str(v.get("owner", ""))
+            await delete_project(
+                name, ai_provider=v_provider, ai_model=v_model, owner=v_owner
+            )
+            # Rename to tombstone while still holding the lock so a new
+            # generation cannot recreate the directory before we delete it.
+            project_dir = get_project_dir(name, v_provider, v_model, v_owner)
+            if project_dir.exists():
+                tombstone = project_dir.with_name(
+                    f"{project_dir.name}.deleting-{uuid4().hex}"
+                )
+                project_dir.replace(tombstone)
+                dirs_to_delete.append(tombstone)
+
+    # Filesystem cleanup outside lock to reduce contention
+    for d in dirs_to_delete:
+        await asyncio.to_thread(shutil.rmtree, d)
     return {"deleted": name}
+
+
+async def _resolve_latest_accessible_variant(
+    username: str, name: str
+) -> dict[str, Any] | None:
+    """Find the newest variant across owned and shared projects.
+
+    Collects the caller's own latest variant **and** all shared variants
+    from owners that have granted access to *username*, then returns the
+    one with the newest ``last_generated`` timestamp.  If multiple
+    variants tie on the newest timestamp (ambiguous), raises HTTP 409.
+
+    Returns ``None`` when no variants are found at all.
+    """
+    candidates: list[dict[str, Any]] = []
+
+    # 1. Caller's owned variant
+    owned = await get_latest_variant(name, owner=username)
+    if owned:
+        candidates.append(owned)
+
+    # 2. Shared variants from other owners
+    accessible = await get_user_accessible_projects(username)
+    for proj_name, proj_owner in accessible:
+        if proj_name == name and proj_owner:
+            variant = await get_latest_variant(name, owner=proj_owner)
+            if variant:
+                candidates.append(variant)
+
+    if not candidates:
+        return None
+
+    if len(candidates) == 1:
+        return candidates[0]
+
+    # Pick the variant with the newest last_generated timestamp
+    def _sort_key(v: dict[str, Any]) -> str:
+        return str(v.get("last_generated") or "")
+
+    candidates.sort(key=_sort_key, reverse=True)
+    newest = _sort_key(candidates[0])
+    tied = [c for c in candidates if _sort_key(c) == newest]
+    if len(tied) > 1:
+        raise HTTPException(
+            status_code=409,
+            detail="Multiple owners have variants with the same timestamp, please specify owner",
+        )
+    return candidates[0]
 
 
 @app.get("/api/projects/{name}/download")
@@ -1161,7 +1298,7 @@ async def download_project(request: Request, name: str) -> StreamingResponse:
     if request.state.is_admin:
         latest = await get_latest_variant(name)
     else:
-        latest = await get_latest_variant(name, owner=request.state.username)
+        latest = await _resolve_latest_accessible_variant(request.state.username, name)
     if not latest:
         raise HTTPException(status_code=404, detail=f"No ready variant for '{name}'")
     await _check_ownership(request, name, latest)
@@ -1245,7 +1382,16 @@ async def delete_user_endpoint(request: Request, username: str) -> dict[str, str
     # Fix 13: Prevent admin self-delete
     if username == request.state.username:
         raise HTTPException(status_code=400, detail="Cannot delete your own account")
-    deleted = await delete_user(username)
+    # Block deletion while any generation is in progress for this user
+    async with _gen_lock:
+        for gen_key in _generating:
+            parts = gen_key.split("/", 3)
+            if len(parts) >= 1 and parts[0] == username:
+                raise HTTPException(
+                    status_code=409,
+                    detail="Cannot delete user while generation is in progress",
+                )
+        deleted = await delete_user(username)
     if not deleted:
         raise HTTPException(status_code=404, detail=f"User '{username}' not found")
     # Fix 18: Audit logging
@@ -1295,6 +1441,8 @@ async def grant_access(request: Request, name: str) -> dict[str, str]:
 async def revoke_access(request: Request, name: str, username: str) -> dict[str, str]:
     _require_admin(request)
     project_owner = request.query_params.get("owner", "")
+    if not project_owner:
+        raise HTTPException(status_code=400, detail="Project owner is required")
     await revoke_project_access(name, username, project_owner=project_owner)
     logger.info(
         f"[AUDIT] Admin '{request.state.username}' revoked '{username}' access to '{name}' (owner: '{project_owner}')"
@@ -1306,6 +1454,8 @@ async def revoke_access(request: Request, name: str, username: str) -> dict[str,
 async def list_access(request: Request, name: str) -> dict[str, Any]:
     _require_admin(request)
     project_owner = request.query_params.get("owner", "")
+    if not project_owner:
+        raise HTTPException(status_code=400, detail="Project owner is required")
     users = await get_project_access(name, project_owner=project_owner)
     return {"project": name, "owner": project_owner, "users": users}
 
@@ -1414,7 +1564,9 @@ async def serve_docs(
     if request.state.is_admin:
         latest = await get_latest_variant(project)
     else:
-        latest = await get_latest_variant(project, owner=request.state.username)
+        latest = await _resolve_latest_accessible_variant(
+            request.state.username, project
+        )
     if not latest:
         raise HTTPException(status_code=404, detail="No docs available")
     await _check_ownership(request, project, latest)

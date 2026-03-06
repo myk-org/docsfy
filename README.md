@@ -2,7 +2,11 @@
 
 AI-powered documentation generator that creates polished static HTML docs from GitHub repositories using Claude, Gemini, or Cursor CLI.
 
-[**Documentation**](https://myk-org.github.io/docsfy/) | [**GitHub**](https://github.com/myk-org/docsfy)
+[**Documentation**](https://myk-org.github.io/docsfy-docs/) | [**GitHub**](https://github.com/myk-org/docsfy)
+
+## Documentation
+
+Full documentation is available at [https://myk-org.github.io/docsfy-docs/](https://myk-org.github.io/docsfy-docs/)
 
 ## Quick Start
 

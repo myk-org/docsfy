@@ -1,4 +1,3 @@
-# syntax=docker/dockerfile:1
 FROM python:3.12-slim AS builder
 
 WORKDIR /app
@@ -8,8 +7,8 @@ COPY --from=ghcr.io/astral-sh/uv:0.5.14 /uv /usr/local/bin/uv
 
 # Install git (needed for gitpython dependency)
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    git \
-    && rm -rf /var/lib/apt/lists/*
+  git \
+  && rm -rf /var/lib/apt/lists/*
 
 # Copy project files
 COPY pyproject.toml uv.lock ./
@@ -25,25 +24,27 @@ WORKDIR /app
 
 # Install bash (needed for CLI install scripts), git (required at runtime for gitpython), curl (for Claude CLI), and nodejs/npm (for Gemini CLI)
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    bash \
-    git \
-    curl \
-    nodejs \
-    npm \
-    && rm -rf /var/lib/apt/lists/*
+  bash \
+  git \
+  curl \
+  nodejs \
+  npm \
+  && rm -rf /var/lib/apt/lists/*
 
 # Create non-root user, data directory, and set permissions
 # OpenShift runs containers as a random UID in the root group (GID 0)
 RUN useradd --create-home --shell /bin/bash -g 0 appuser \
-    && mkdir -p /data \
-    && chown appuser:0 /data \
-    && chmod -R g+w /data
+  && mkdir -p /data \
+  && chown appuser:0 /data \
+  && chmod -R g+w /data
 
 # Copy uv for runtime
 COPY --from=ghcr.io/astral-sh/uv:0.5.14 /uv /usr/local/bin/uv
 
 # Switch to non-root user for CLI installs
 USER appuser
+
+# Always fetch the latest versions of these CLI tools at build time.
 
 # Install Claude Code CLI (installs to ~/.local/bin)
 RUN /bin/bash -o pipefail -c "curl -fsSL https://claude.ai/install.sh | bash"
@@ -53,8 +54,8 @@ RUN /bin/bash -o pipefail -c "curl -fsSL https://cursor.com/install | bash"
 
 # Configure npm for non-root global installs and install Gemini CLI
 RUN mkdir -p /home/appuser/.npm-global \
-    && npm config set prefix '/home/appuser/.npm-global' \
-    && npm install -g @google/gemini-cli
+  && npm config set prefix '/home/appuser/.npm-global' \
+  && npm install -g @google/gemini-cli
 
 # Switch to root for file copies and permission fixes
 USER root
@@ -76,8 +77,8 @@ RUN chmod -R g+w /app
 # Directories need group write+execute for OpenShift's arbitrary UID (in GID 0)
 # to create config/cache files at runtime.
 RUN find /home/appuser -type d -exec chmod g=u {} + \
-    && npm cache clean --force 2>/dev/null; \
-    rm -rf /home/appuser/.npm/_cacache
+  && npm cache clean --force 2>/dev/null; \
+  rm -rf /home/appuser/.npm/_cacache
 
 # Switch back to non-root user for runtime
 USER appuser
@@ -90,7 +91,7 @@ ENV HOME="/home/appuser"
 EXPOSE 8000
 
 HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
-    CMD curl -f http://localhost:8000/health || exit 1
+  CMD curl -f http://localhost:8000/health || exit 1
 
 # Use uv run for uvicorn
 # --no-sync prevents uv from attempting to modify the venv at runtime.
