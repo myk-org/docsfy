@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 import subprocess
 from pathlib import Path
 
@@ -46,6 +47,11 @@ def clone_repo(repo_url: str, base_dir: Path) -> tuple[Path, str]:
 
 def get_changed_files(repo_path: Path, old_sha: str, new_sha: str) -> list[str]:
     """Get list of files changed between two commits."""
+    if not re.match(r"^[0-9a-fA-F]{4,40}$", old_sha) or not re.match(
+        r"^[0-9a-fA-F]{4,40}$", new_sha
+    ):
+        logger.warning("Invalid SHA format")
+        return []
     result = subprocess.run(
         ["git", "diff", "--name-only", old_sha, new_sha],
         cwd=repo_path,

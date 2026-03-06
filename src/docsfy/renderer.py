@@ -45,8 +45,12 @@ def _sanitize_html(html: str) -> str:
     html = re.sub(r'\s+on\w+\s*=\s*["\'][^"\']*["\']', "", html, flags=re.IGNORECASE)
     html = re.sub(r"\s+on\w+\s*=\s*\S+", "", html, flags=re.IGNORECASE)
 
-    # Sanitize href/src: only allow http:, https:, #, /, and relative paths
-    # Replace any href/src that doesn't start with a safe scheme
+    # Sanitize href/src: allowlist-based URL validation.
+    # Safe schemes that pass through unchanged: http://, https://, #, /, mailto:
+    # This preserves valid markdown-generated HTML like <a href="https://...">,
+    # anchor links (#section), relative paths (/page), and mailto: links.
+    # All other schemes (javascript:, data:, vbscript:, etc.) are blocked
+    # by replacing the URL with "#".
     def _sanitize_url_attr(match: re.Match) -> str:  # type: ignore[type-arg]
         attr = match.group(1)  # href or src
         quote = match.group(2)  # " or '

@@ -38,7 +38,7 @@ def parse_json_list_response(raw_text: str) -> list[str] | None:
         try:
             result = json.loads(text)
             if isinstance(result, list):
-                return result
+                return [item for item in result if isinstance(item, str)]
         except (json.JSONDecodeError, ValueError):
             pass
     # Extract from brackets
@@ -52,7 +52,7 @@ def parse_json_list_response(raw_text: str) -> list[str] | None:
     try:
         result = json.loads(json_str)
         if isinstance(result, list):
-            return result
+            return [item for item in result if isinstance(item, str)]
     except (json.JSONDecodeError, ValueError):
         pass
     # Try extracting from code blocks
@@ -64,7 +64,7 @@ def parse_json_list_response(raw_text: str) -> list[str] | None:
         try:
             result = json.loads(block_content)
             if isinstance(result, list):
-                return result
+                return [item for item in result if isinstance(item, str)]
         except (json.JSONDecodeError, ValueError):
             pass
     logger.warning("Failed to parse AI response as JSON list")

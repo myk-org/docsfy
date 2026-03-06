@@ -205,7 +205,7 @@ async def init_db(data_dir: str = "") -> None:
             )
         except sqlite3.OperationalError as exc:
             if "duplicate column name" not in str(exc).lower():
-                logger.error(f"Migration failed: {exc}")
+                logger.exception("Migration failed while adding column")
                 raise
 
         # Migration: add UNIQUE constraint on api_key_hash (Fix 7)
@@ -231,7 +231,7 @@ async def init_db(data_dir: str = "") -> None:
                 )
             except sqlite3.OperationalError as exc:
                 if "unique" not in str(exc).lower():
-                    logger.error(f"Migration failed: {exc}")
+                    logger.exception("Migration failed while adding unique index")
                     raise
 
         await db.execute("""
@@ -250,7 +250,7 @@ async def init_db(data_dir: str = "") -> None:
             )
         except sqlite3.OperationalError as exc:
             if "duplicate column name" not in str(exc).lower():
-                logger.error(f"Migration failed: {exc}")
+                logger.exception("Migration failed while adding column")
                 raise
 
         await db.execute("""
@@ -734,7 +734,14 @@ async def rotate_user_key(username: str, custom_key: str | None = None) -> str:
 
 
 async def cleanup_expired_sessions() -> None:
-    """Remove expired sessions."""
+    """Remove expired sessions.
+
+    NOTE: This is called during application startup (lifespan) only.
+    Expired sessions accumulate between restarts but are harmless since
+    get_session() filters by expires_at. For long-running deployments,
+    consider calling this periodically (e.g., via a background task).
+    TODO: Add periodic cleanup for long-running instances.
+    """
     async with aiosqlite.connect(DB_PATH) as db:
         await db.execute("DELETE FROM sessions WHERE expires_at <= datetime('now')")
         await db.commit()

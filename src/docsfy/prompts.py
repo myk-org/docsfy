@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from typing import Any
 
 PLAN_SCHEMA = """{
@@ -44,8 +45,6 @@ Output format:
 def build_incremental_planner_prompt(
     project_name: str, changed_files: list[str], existing_plan: dict[str, Any]
 ) -> str:
-    import json
-
     return f"""You are a technical documentation planner. The repository "{project_name}" has been updated.
 
 Changed files:

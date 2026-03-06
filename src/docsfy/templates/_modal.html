@@ -160,7 +160,11 @@ function showModal(options) {
     // Use requestAnimationFrame to ensure previous modal cleanup has taken effect
     requestAnimationFrame(function() {
         overlay.style.display = 'flex';
-        if (options.input) inputEl.focus();
+        if (options.input) {
+            inputEl.focus();
+        } else {
+            okBtn.focus();
+        }
     });
 
     function cleanup() {
@@ -179,12 +183,14 @@ function showModal(options) {
     cancelBtn.onclick = function() {
         cleanup();
         if (options.onCancel) options.onCancel();
+        else if (options.onConfirm) options.onConfirm(false);  // Settle the promise
     };
 
     function escHandler(e) {
         if (e.key === 'Escape') {
             cleanup();
             if (options.onCancel) options.onCancel();
+            else if (options.onConfirm) options.onConfirm(false);  // Settle the promise
         }
     }
     document.addEventListener('keydown', escHandler);

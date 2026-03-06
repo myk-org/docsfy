@@ -13,6 +13,11 @@ TEST_ADMIN_KEY = "test-admin-secret-key"
 async def db_path(tmp_path: Path) -> Path:
     import docsfy.storage as storage
 
+    # Save original globals to restore after test
+    orig_db_path = storage.DB_PATH
+    orig_data_dir = storage.DATA_DIR
+    orig_projects_dir = storage.PROJECTS_DIR
+
     db = tmp_path / "test.db"
     storage.DB_PATH = db
     storage.DATA_DIR = tmp_path
@@ -20,6 +25,11 @@ async def db_path(tmp_path: Path) -> Path:
     with patch.dict(os.environ, {"ADMIN_KEY": TEST_ADMIN_KEY}):
         await storage.init_db()
         yield db
+
+    # Restore original globals
+    storage.DB_PATH = orig_db_path
+    storage.DATA_DIR = orig_data_dir
+    storage.PROJECTS_DIR = orig_projects_dir
 
 
 async def test_init_db_creates_table(db_path: Path) -> None:
@@ -531,14 +541,16 @@ async def test_delete_session(db_path: Path) -> None:
 async def test_expired_session_not_returned(db_path: Path) -> None:
     import aiosqlite
 
-    from docsfy.storage import DB_PATH, get_session
+    from docsfy.storage import DB_PATH, _hash_session_token, get_session
 
     # Directly insert a session with a past expiration
+    # Tokens are stored as hashes, so hash the token before inserting
     token = "expired-test-token"
+    token_hash = _hash_session_token(token)
     async with aiosqlite.connect(DB_PATH) as db:
         await db.execute(
             "INSERT INTO sessions (token, username, is_admin, expires_at) VALUES (?, ?, ?, ?)",
-            (token, "testuser", 0, "2020-01-01T00:00:00"),
+            (token_hash, "testuser", 0, "2020-01-01T00:00:00"),
         )
         await db.commit()
 

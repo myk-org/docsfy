@@ -597,9 +597,19 @@
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             credentials: 'same-origin',
+            redirect: 'error',
             body: JSON.stringify(body),
         })
         .then(function(resp) {
+            if (resp.redirected || resp.status === 302) {
+                showAlert("error", "Session expired. Please login again.");
+                setTimeout(function() { window.location.href = "/login"; }, 2000);
+                return null;
+            }
+            if (resp.status === 401 || resp.status === 403) {
+                window.location.href = '/login';
+                return null;
+            }
             if (!resp.ok) return resp.json().then(function(d) { throw d; });
             return resp.json();
         })

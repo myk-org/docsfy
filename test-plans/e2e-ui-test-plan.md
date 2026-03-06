@@ -3,7 +3,7 @@
 ## Prerequisites
 
 - Server running at `http://localhost:8800`
-- ADMIN_KEY configured in `.dev/.env` (default: `12345678901234567890`)
+- ADMIN_KEY configured in `.dev/.env` (read from `.dev/.env` at runtime; do not hardcode)
 - `agent-browser` available and operational
 - Test repo: `https://github.com/myk-org/for-testing-only`
 - AI provider for generation tests: `gemini` with model `gemini-2.5-flash`
@@ -575,7 +575,7 @@ agent-browser screenshot
 
 **Commands (attempt via API):**
 ```
-agent-browser javascript "fetch('/api/admin/users/admin', {method:'DELETE', credentials:'same-origin'}).then(r => r.json())"
+agent-browser javascript "fetch('/api/admin/users/admin', {method:'DELETE', credentials:'same-origin'}).then(r => r.json().then(body => ({status: r.status, body: body})))"
 agent-browser wait 2000
 ```
 

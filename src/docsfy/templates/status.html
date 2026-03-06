@@ -1259,6 +1259,10 @@
 
                 actionLinks.appendChild(retryDiv);
 
+                // Prepopulate with current variant's provider/model
+                providerSelect.value = PROJECT_PROVIDER;
+                modelInput.value = PROJECT_MODEL;
+
                 // Wire up provider change handler
                 providerSelect.addEventListener('change', function() {
                     var provider = this.value;
@@ -1269,6 +1273,14 @@
                         option.value = model;
                         datalist.appendChild(option);
                     });
+                });
+
+                // Populate initial datalist for prepopulated provider
+                var initialModels = knownModels[PROJECT_PROVIDER] || [];
+                initialModels.forEach(function(model) {
+                    var option = document.createElement('option');
+                    option.value = model;
+                    datalist.appendChild(option);
                 });
             }
 
@@ -1296,7 +1308,7 @@
 
         /* ----- Auth redirect detection ----- */
         function isAuthRedirect(res) {
-            return res.redirected || res.status === 302 || res.type === 'opaqueredirect';
+            return res.redirected || res.status === 302 || res.type === 'opaqueredirect' || res.status === 401 || res.status === 403;
         }
         function handleAuthRedirect() {
             errorText.textContent = 'Session expired. Please login again.';
@@ -1424,7 +1436,10 @@
             }
         }
 
+        var _polling = false;
         function pollProject() {
+            if (_polling) return;
+            _polling = true;
             fetch('/api/projects/' + encodeURIComponent(PROJECT_NAME) + '/' + encodeURIComponent(PROJECT_PROVIDER) + '/' + encodeURIComponent(PROJECT_MODEL), { credentials: 'same-origin', redirect: 'manual' })
                 .then(function(res) {
                     if (isAuthRedirect(res)) { handleAuthRedirect(); stopPolling(); return null; }
@@ -1437,7 +1452,8 @@
                 })
                 .catch(function() {
                     /* Silently fail; retry on next interval */
-                });
+                })
+                .finally(function() { _polling = false; });
         }
 
         function updateFromProject(proj) {

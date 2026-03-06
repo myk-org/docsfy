@@ -78,6 +78,9 @@ async def generate_page(
 ) -> str:
     _label = project_name or repo_path.name
 
+    if project_name and not owner:
+        logger.warning(f"[{_label}] owner missing for page count update, skipping")
+
     # Validate slug to prevent path traversal
     if "/" in slug or "\\" in slug or slug.startswith(".") or ".." in slug:
         msg = f"Invalid page slug: '{slug}'"
@@ -229,6 +232,10 @@ async def run_incremental_planner(
 
     result = parse_json_list_response(output)
     if result is None or not isinstance(result, list):
+        return ["all"]
+    # Validate all items are strings
+    result = [item for item in result if isinstance(item, str)]
+    if not result:
         return ["all"]
     logger.info(
         f"[{project_name}] Incremental planner identified {len(result)} pages to regenerate"

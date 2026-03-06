@@ -115,3 +115,12 @@ def test_parse_json_list_returns_none_for_empty() -> None:
 
     result = parse_json_list_response("")
     assert result is None
+
+
+def test_parse_json_list_non_string_items() -> None:
+    from docsfy.json_parser import parse_json_list_response
+
+    result = parse_json_list_response('[1, "valid", null, true]')
+    # Should handle gracefully - only strings are returned
+    assert result is not None
+    assert result == ["valid"]
