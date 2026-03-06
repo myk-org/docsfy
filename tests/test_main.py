@@ -129,7 +129,8 @@ async def test_generate_duplicate_variant(client: AsyncClient) -> None:
     """Test that generating the same variant twice returns 409."""
     from docsfy.main import _generating
 
-    _generating["repo/claude/opus"] = asyncio.create_task(asyncio.sleep(100))
+    # gen_key format now includes owner: "owner/name/provider/model"
+    _generating["admin/repo/claude/opus"] = asyncio.create_task(asyncio.sleep(100))
     try:
         response = await client.post(
             "/api/generate",
@@ -141,7 +142,7 @@ async def test_generate_duplicate_variant(client: AsyncClient) -> None:
         )
         assert response.status_code == 409
     finally:
-        task = _generating.pop("repo/claude/opus", None)
+        task = _generating.pop("admin/repo/claude/opus", None)
         if task:
             task.cancel()
             try:
@@ -160,12 +161,14 @@ async def test_variant_specific_endpoints(client: AsyncClient) -> None:
         status="generating",
         ai_provider="claude",
         ai_model="opus",
+        owner="admin",
     )
     await update_project_status(
         "test-repo",
         "claude",
         "opus",
         status="ready",
+        owner="admin",
         page_count=5,
     )
 
@@ -201,12 +204,14 @@ async def test_get_project_returns_variants(client: AsyncClient) -> None:
         status="generating",
         ai_provider="claude",
         ai_model="opus",
+        owner="admin",
     )
     await update_project_status(
         "multi-repo",
         "claude",
         "opus",
         status="ready",
+        owner="admin",
         page_count=5,
     )
     await save_project(
@@ -215,12 +220,14 @@ async def test_get_project_returns_variants(client: AsyncClient) -> None:
         status="generating",
         ai_provider="gemini",
         ai_model="pro",
+        owner="admin",
     )
     await update_project_status(
         "multi-repo",
         "gemini",
         "pro",
         status="ready",
+        owner="admin",
         page_count=3,
     )
 
@@ -235,3 +242,13 @@ async def test_abort_variant_endpoint(client: AsyncClient) -> None:
     """Test variant-specific abort endpoint returns 404 when no active gen."""
     response = await client.post("/api/projects/repo/claude/opus/abort")
     assert response.status_code == 404
+
+
+async def test_generate_rejects_private_url(client: AsyncClient) -> None:
+    """Test that SSRF protection rejects private/localhost URLs."""
+    response = await client.post(
+        "/api/generate",
+        json={"repo_url": "https://localhost/org/repo.git"},
+    )
+    # Should be rejected by URL validation (either Pydantic or SSRF check)
+    assert response.status_code in (400, 422)

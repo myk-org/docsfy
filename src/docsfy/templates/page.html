@@ -78,7 +78,10 @@
         <main class="content">
             <article class="article">
                 <div class="article-body">
-                    <!-- content is pre-rendered from markdown by the server, not user input -->
+                    <!-- SECURITY: |safe is intentional. Content is AI-generated markdown
+                         converted to HTML server-side by the markdown library, not
+                         user-supplied input. XSS risk is minimal and accepted since
+                         the AI generates the content, not end users. -->
                     {{ content | safe }}
                 </div>
             </article>

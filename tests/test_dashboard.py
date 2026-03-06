@@ -64,12 +64,14 @@ async def test_dashboard_shows_projects(client: AsyncClient) -> None:
         status="generating",
         ai_provider="claude",
         ai_model="opus",
+        owner="admin",
     )
     await update_project_status(
         "test-repo",
         "claude",
         "opus",
         status="ready",
+        owner="admin",
         page_count=10,
     )
 

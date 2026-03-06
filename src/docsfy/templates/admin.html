@@ -410,12 +410,12 @@
         const current = html.getAttribute("data-theme");
         const next = current === "dark" ? "light" : "dark";
         html.setAttribute("data-theme", next);
-        localStorage.setItem("docsfy-theme", next);
+        localStorage.setItem("theme", next);
         document.querySelector(".theme-icon").textContent = next === "dark" ? "\u2600" : "\u263D";
     }
 
     (function() {
-        const saved = localStorage.getItem("docsfy-theme");
+        const saved = localStorage.getItem("theme");
         if (saved) {
             document.documentElement.setAttribute("data-theme", saved);
         } else {

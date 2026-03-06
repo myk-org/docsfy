@@ -58,6 +58,8 @@ from docsfy.storage import (
 logger = get_logger(name=__name__)
 
 _generating: dict[str, asyncio.Task[None]] = {}
+# Fix 6: asyncio.Lock to prevent race between checking and adding to _generating
+_gen_lock = asyncio.Lock()
 
 # Fix 10: Singleton Jinja2 environment to avoid repeated FileSystemLoader creation
 _jinja_env = Environment(
@@ -133,8 +135,16 @@ class AuthMiddleware(BaseHTTPMiddleware):
                 if session:
                     is_admin = bool(session["is_admin"])
                     username = str(session["username"])
-                    if not is_admin:
+                    # Fix 8: For DB users (not ADMIN_KEY admin), verify user still exists
+                    if username != "admin":
                         user = await get_user_by_username(username)
+                        if not user:
+                            # User was deleted since session was created
+                            if request.url.path.startswith("/api/"):
+                                return JSONResponse(
+                                    status_code=401, content={"detail": "Unauthorized"}
+                                )
+                            return RedirectResponse(url="/login", status_code=302)
 
         if not user and not is_admin:
             # Not authenticated
@@ -237,8 +247,9 @@ async def login(request: Request) -> RedirectResponse | HTMLResponse:
         )
         return response
 
-    # Fix 18: Audit log failed login attempts
-    logger.info(f"[AUDIT] Failed login attempt for username '{username}'")
+    # Fix 13: Sanitize username in audit log to prevent log injection
+    safe_username = username.replace("\n", "").replace("\r", "")[:100]
+    logger.info(f"[AUDIT] Failed login attempt for username '{safe_username}'")
 
     # Invalid credentials -- show login page with error
     template = _jinja_env.get_template("login.html")
@@ -361,10 +372,20 @@ async def generate(request: Request, gen_request: GenerateRequest) -> dict[str, 
             status_code=403,
             detail="Local repo path access requires admin privileges",
         )
+
+    # Fix 10 (SSRF): Reject internal/private network URLs.
+    # This is an admin-provisioned service so the risk is low, but we add
+    # basic validation to prevent accidental SSRF against internal hosts.
+    # Advanced SSRF protection (DNS rebinding, etc.) should be handled at
+    # the network/firewall level.
+    if gen_request.repo_url:
+        _reject_private_url(gen_request.repo_url)
+
     settings = get_settings()
     ai_provider = gen_request.ai_provider or settings.ai_provider
     ai_model = gen_request.ai_model or settings.ai_model
     project_name = gen_request.project_name
+    owner = request.state.username
 
     if ai_provider not in ("claude", "gemini", "cursor"):
         raise HTTPException(
@@ -374,40 +395,80 @@ async def generate(request: Request, gen_request: GenerateRequest) -> dict[str, 
     if not ai_model:
         raise HTTPException(status_code=400, detail="AI model must be specified.")
 
-    gen_key = f"{project_name}/{ai_provider}/{ai_model}"
-    if gen_key in _generating:
-        raise HTTPException(
-            status_code=409,
-            detail=f"Variant '{gen_key}' is already being generated",
-        )
-
-    await save_project(
-        name=project_name,
-        repo_url=gen_request.repo_url or gen_request.repo_path or "",
-        status="generating",
-        ai_provider=ai_provider,
-        ai_model=ai_model,
-        owner=request.state.username,
-    )
-
-    try:
-        task = asyncio.create_task(
-            _run_generation(
-                repo_url=gen_request.repo_url,
-                repo_path=gen_request.repo_path,
-                project_name=project_name,
-                ai_provider=ai_provider,
-                ai_model=ai_model,
-                ai_cli_timeout=gen_request.ai_cli_timeout or settings.ai_cli_timeout,
-                force=gen_request.force,
+    # Fix 6: Use lock to prevent race condition between check and add
+    gen_key = f"{owner}/{project_name}/{ai_provider}/{ai_model}"
+    async with _gen_lock:
+        if gen_key in _generating:
+            raise HTTPException(
+                status_code=409,
+                detail=f"Variant '{project_name}/{ai_provider}/{ai_model}' is already being generated",
             )
+
+        await save_project(
+            name=project_name,
+            repo_url=gen_request.repo_url or gen_request.repo_path or "",
+            status="generating",
+            ai_provider=ai_provider,
+            ai_model=ai_model,
+            owner=owner,
         )
-        _generating[gen_key] = task
-    except Exception:
-        _generating.pop(gen_key, None)
-        raise
+
+        try:
+            task = asyncio.create_task(
+                _run_generation(
+                    repo_url=gen_request.repo_url,
+                    repo_path=gen_request.repo_path,
+                    project_name=project_name,
+                    ai_provider=ai_provider,
+                    ai_model=ai_model,
+                    ai_cli_timeout=gen_request.ai_cli_timeout
+                    or settings.ai_cli_timeout,
+                    force=gen_request.force,
+                    owner=owner,
+                )
+            )
+            _generating[gen_key] = task
+        except Exception:
+            _generating.pop(gen_key, None)
+            raise
 
     return {"project": project_name, "status": "generating"}
+
+
+def _reject_private_url(url: str) -> None:
+    """Reject URLs targeting private/internal IP ranges (SSRF mitigation).
+
+    This provides basic protection against SSRF. More comprehensive protection
+    (DNS rebinding, etc.) should be handled at the network/firewall level.
+    """
+    import ipaddress
+    from urllib.parse import urlparse
+
+    try:
+        parsed = urlparse(url)
+        hostname = parsed.hostname
+        if not hostname:
+            return
+        # Check for localhost
+        if hostname in ("localhost", "127.0.0.1", "::1", "0.0.0.0"):
+            raise HTTPException(
+                status_code=400,
+                detail="Repository URL must not target localhost or private networks",
+            )
+        # Check if hostname is an IP address in private range
+        try:
+            addr = ipaddress.ip_address(hostname)
+            if addr.is_private or addr.is_loopback or addr.is_link_local:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Repository URL must not target localhost or private networks",
+                )
+        except ValueError:
+            pass  # hostname is a DNS name, not an IP - allowed
+    except HTTPException:
+        raise
+    except Exception:
+        pass  # URL parsing errors are handled by Pydantic validation
 
 
 @app.post("/api/projects/{name}/abort")
@@ -422,7 +483,9 @@ async def abort_generation(request: Request, name: str) -> dict[str, str]:
     # Find any active generation key that starts with this project name
     matching_key = None
     for key in _generating:
-        if key.startswith(f"{name}/"):
+        # gen_key format: "owner/name/provider/model"
+        parts = key.split("/", 3)
+        if len(parts) == 4 and parts[1] == name:
             matching_key = key
             break
     task = _generating.get(matching_key) if matching_key else None
@@ -431,14 +494,16 @@ async def abort_generation(request: Request, name: str) -> dict[str, str]:
             status_code=404, detail=f"No active generation for '{name}'"
         )
 
-    # Extract provider/model from the key (format: "name/provider/model")
-    parts = matching_key.split("/", 2)
-    if len(parts) != 3:
+    # Extract owner/provider/model from the key (format: "owner/name/provider/model")
+    parts = matching_key.split("/", 3)
+    if len(parts) != 4:
         raise HTTPException(status_code=500, detail="Invalid generation key format")
-    _, ai_provider, ai_model = parts
+    key_owner, _, ai_provider, ai_model = parts
 
     # Check ownership before allowing abort
-    project = await get_project(name, ai_provider=ai_provider, ai_model=ai_model)
+    project = await get_project(
+        name, ai_provider=ai_provider, ai_model=ai_model, owner=key_owner
+    )
     if project:
         await _check_ownership(request, name, project)
 
@@ -464,6 +529,7 @@ async def abort_generation(request: Request, name: str) -> dict[str, str]:
         ai_provider,
         ai_model,
         status="aborted",
+        owner=key_owner,
         error_message="Generation aborted by user",
         current_stage=None,
     )
@@ -478,16 +544,35 @@ async def abort_variant(
 ) -> dict[str, str]:
     _require_write_access(request)
     name = _validate_project_name(name)
-    gen_key = f"{name}/{provider}/{model}"
+    owner = request.state.username
+    gen_key = f"{owner}/{name}/{provider}/{model}"
     task = _generating.get(gen_key)
     if not task:
-        raise HTTPException(
-            status_code=404,
-            detail="No active generation for this variant",
-        )
+        # Also check if an admin is aborting someone else's generation
+        if request.state.is_admin:
+            for key in _generating:
+                parts = key.split("/", 3)
+                if (
+                    len(parts) == 4
+                    and parts[1] == name
+                    and parts[2] == provider
+                    and parts[3] == model
+                ):
+                    gen_key = key
+                    task = _generating[key]
+                    break
+        if not task:
+            raise HTTPException(
+                status_code=404,
+                detail="No active generation for this variant",
+            )
 
     # Check ownership before allowing abort
-    project = await get_project(name, ai_provider=provider, ai_model=model)
+    key_parts = gen_key.split("/", 3)
+    key_owner = key_parts[0] if len(key_parts) == 4 else owner
+    project = await get_project(
+        name, ai_provider=provider, ai_model=model, owner=key_owner
+    )
     if project:
         await _check_ownership(request, name, project)
 
@@ -515,12 +600,13 @@ async def abort_variant(
         provider,
         model,
         status="aborted",
+        owner=key_owner,
         error_message="Generation aborted by user",
         current_stage=None,
     )
     _generating.pop(gen_key, None)
 
-    return {"aborted": gen_key}
+    return {"aborted": f"{name}/{provider}/{model}"}
 
 
 async def _run_generation(
@@ -531,8 +617,9 @@ async def _run_generation(
     ai_model: str,
     ai_cli_timeout: int,
     force: bool = False,
+    owner: str = "",
 ) -> None:
-    gen_key = f"{project_name}/{ai_provider}/{ai_model}"
+    gen_key = f"{owner}/{project_name}/{ai_provider}/{ai_model}"
     try:
         cli_flags = ["--trust"] if ai_provider == "cursor" else None
         available, msg = await check_ai_cli_available(
@@ -544,6 +631,7 @@ async def _run_generation(
                 ai_provider,
                 ai_model,
                 status="error",
+                owner=owner,
                 error_message=msg,
             )
             return
@@ -553,6 +641,7 @@ async def _run_generation(
             ai_provider,
             ai_model,
             status="generating",
+            owner=owner,
             current_stage="cloning",
         )
 
@@ -568,6 +657,7 @@ async def _run_generation(
                 ai_model,
                 ai_cli_timeout,
                 force,
+                owner,
             )
         else:
             # Remote repository - clone to temp dir
@@ -587,6 +677,7 @@ async def _run_generation(
                     ai_model,
                     ai_cli_timeout,
                     force,
+                    owner,
                 )
 
     except asyncio.CancelledError:
@@ -596,6 +687,7 @@ async def _run_generation(
             ai_provider,
             ai_model,
             status="aborted",
+            owner=owner,
             error_message="Generation was cancelled",
             current_stage=None,
         )
@@ -607,6 +699,7 @@ async def _run_generation(
             ai_provider,
             ai_model,
             status="error",
+            owner=owner,
             error_message=str(exc),
         )
     finally:
@@ -622,9 +715,10 @@ async def _generate_from_path(
     ai_model: str,
     ai_cli_timeout: int,
     force: bool,
+    owner: str = "",
 ) -> None:
     if force:
-        cache_dir = get_project_cache_dir(project_name, ai_provider, ai_model)
+        cache_dir = get_project_cache_dir(project_name, ai_provider, ai_model, owner)
         if cache_dir.exists():
             shutil.rmtree(cache_dir)
             logger.info(f"[{project_name}] Cleared cache (force=True)")
@@ -634,11 +728,12 @@ async def _generate_from_path(
             ai_provider,
             ai_model,
             status="generating",
+            owner=owner,
             page_count=0,
         )
     else:
         existing = await get_project(
-            project_name, ai_provider=ai_provider, ai_model=ai_model
+            project_name, ai_provider=ai_provider, ai_model=ai_model, owner=owner
         )
         if (
             existing
@@ -651,6 +746,7 @@ async def _generate_from_path(
                 ai_provider,
                 ai_model,
                 status="ready",
+                owner=owner,
                 current_stage="up_to_date",
             )
             return
@@ -660,6 +756,7 @@ async def _generate_from_path(
         ai_provider,
         ai_model,
         status="generating",
+        owner=owner,
         current_stage="planning",
     )
 
@@ -679,11 +776,12 @@ async def _generate_from_path(
         ai_provider,
         ai_model,
         status="generating",
+        owner=owner,
         current_stage="generating_pages",
         plan_json=json.dumps(plan),
     )
 
-    cache_dir = get_project_cache_dir(project_name, ai_provider, ai_model)
+    cache_dir = get_project_cache_dir(project_name, ai_provider, ai_model, owner)
     pages = await generate_all_pages(
         repo_path=repo_dir,
         plan=plan,
@@ -700,14 +798,15 @@ async def _generate_from_path(
         ai_provider,
         ai_model,
         status="generating",
+        owner=owner,
         current_stage="rendering",
         page_count=len(pages),
     )
 
-    site_dir = get_project_site_dir(project_name, ai_provider, ai_model)
+    site_dir = get_project_site_dir(project_name, ai_provider, ai_model, owner)
     render_site(plan=plan, pages=pages, output_dir=site_dir)
 
-    project_dir = get_project_dir(project_name, ai_provider, ai_model)
+    project_dir = get_project_dir(project_name, ai_provider, ai_model, owner)
     (project_dir / "plan.json").write_text(json.dumps(plan, indent=2), encoding="utf-8")
 
     page_count = len(pages)
@@ -716,6 +815,7 @@ async def _generate_from_path(
         ai_provider,
         ai_model,
         status="ready",
+        owner=owner,
         current_stage=None,
         last_commit_sha=commit_sha,
         page_count=page_count,
@@ -748,20 +848,32 @@ async def delete_variant(
 ) -> dict[str, str]:
     _require_write_access(request)
     name = _validate_project_name(name)
-    gen_key = f"{name}/{provider}/{model}"
-    if gen_key in _generating:
-        raise HTTPException(
-            status_code=409,
-            detail=f"Cannot delete '{name}/{provider}/{model}' while generation is in progress. Abort first.",
-        )
+
+    # Check for active generation (scan all keys)
+    for key in _generating:
+        parts = key.split("/", 3)
+        if (
+            len(parts) == 4
+            and parts[1] == name
+            and parts[2] == provider
+            and parts[3] == model
+        ):
+            raise HTTPException(
+                status_code=409,
+                detail=f"Cannot delete '{name}/{provider}/{model}' while generation is in progress. Abort first.",
+            )
+
     project = await get_project(name, ai_provider=provider, ai_model=model)
     if not project:
         raise HTTPException(status_code=404, detail="Variant not found")
     await _check_ownership(request, name, project)
-    deleted = await delete_project(name, ai_provider=provider, ai_model=model)
+    project_owner = str(project.get("owner", ""))
+    deleted = await delete_project(
+        name, ai_provider=provider, ai_model=model, owner=project_owner
+    )
     if not deleted:
         raise HTTPException(status_code=404, detail="Variant not found")
-    project_dir = get_project_dir(name, provider, model)
+    project_dir = get_project_dir(name, provider, model, project_owner)
     if project_dir.exists():
         shutil.rmtree(project_dir)
     return {"deleted": f"{name}/{provider}/{model}"}
@@ -781,7 +893,8 @@ async def download_variant(
     await _check_ownership(request, name, project)
     if project["status"] != "ready":
         raise HTTPException(status_code=400, detail="Variant not ready")
-    site_dir = get_project_site_dir(name, provider, model)
+    project_owner = str(project.get("owner", ""))
+    site_dir = get_project_site_dir(name, provider, model, project_owner)
     if not site_dir.exists():
         raise HTTPException(status_code=404, detail="Site not found")
     tmp = tempfile.NamedTemporaryFile(suffix=".tar.gz", delete=False)
@@ -813,7 +926,7 @@ async def get_project_details(request: Request, name: str) -> dict[str, Any]:
     variants = await list_variants(name)
     if not variants:
         raise HTTPException(status_code=404, detail=f"Project '{name}' not found")
-    # All variants share the same owner (enforced by save_project ON CONFLICT)
+    # Check ownership against the first variant
     await _check_ownership(request, name, variants[0])
     return {"name": name, "variants": variants}
 
@@ -824,7 +937,8 @@ async def delete_project_endpoint(request: Request, name: str) -> dict[str, str]
     name = _validate_project_name(name)
     # Check if any variant is generating
     for gen_key in _generating:
-        if gen_key.startswith(f"{name}/"):
+        parts = gen_key.split("/", 3)
+        if len(parts) == 4 and parts[1] == name:
             raise HTTPException(
                 status_code=409,
                 detail=f"Cannot delete '{name}' while generation is in progress. Abort running variants first.",
@@ -832,13 +946,16 @@ async def delete_project_endpoint(request: Request, name: str) -> dict[str, str]
     variants = await list_variants(name)
     if not variants:
         raise HTTPException(status_code=404, detail=f"Project '{name}' not found")
-    # All variants share the same owner (enforced by save_project ON CONFLICT)
+    # Check ownership against the first variant
     await _check_ownership(request, name, variants[0])
     for v in variants:
-        provider = str(v.get("ai_provider", ""))
-        model = str(v.get("ai_model", ""))
-        await delete_project(name, ai_provider=provider, ai_model=model)
-        project_dir = get_project_dir(name, provider, model)
+        v_provider = str(v.get("ai_provider", ""))
+        v_model = str(v.get("ai_model", ""))
+        v_owner = str(v.get("owner", ""))
+        await delete_project(
+            name, ai_provider=v_provider, ai_model=v_model, owner=v_owner
+        )
+        project_dir = get_project_dir(name, v_provider, v_model, v_owner)
         if project_dir.exists():
             shutil.rmtree(project_dir)
     return {"deleted": name}
@@ -853,7 +970,8 @@ async def download_project(request: Request, name: str) -> StreamingResponse:
     await _check_ownership(request, name, latest)
     provider = str(latest.get("ai_provider", ""))
     model = str(latest.get("ai_model", ""))
-    site_dir = get_project_site_dir(name, provider, model)
+    latest_owner = str(latest.get("owner", ""))
+    site_dir = get_project_site_dir(name, provider, model, latest_owner)
     if not site_dir.exists():
         raise HTTPException(
             status_code=404, detail=f"Site directory not found for '{name}'"
@@ -880,7 +998,7 @@ async def download_project(request: Request, name: str) -> StreamingResponse:
 
 
 # ---------------------------------------------------------------------------
-# Admin endpoints — MUST be defined BEFORE /docs/{project}/{path:path}
+# Admin endpoints -- MUST be defined BEFORE /docs/{project}/{path:path}
 # catch-all to avoid FastAPI matching project="admin".
 # ---------------------------------------------------------------------------
 
@@ -963,7 +1081,8 @@ async def grant_access(request: Request, name: str) -> dict[str, str]:
     variants = await list_variants(name)
     if not variants:
         raise HTTPException(status_code=404, detail=f"Project '{name}' not found")
-    await grant_project_access(name, username)
+    project_owner = str(variants[0].get("owner", ""))
+    await grant_project_access(name, username, project_owner=project_owner)
     logger.info(
         f"[AUDIT] Admin '{request.state.username}' granted '{username}' access to '{name}'"
     )
@@ -1068,7 +1187,8 @@ async def serve_variant_docs(
     if not proj:
         raise HTTPException(status_code=404, detail="Not found")
     await _check_ownership(request, project, proj)
-    site_dir = get_project_site_dir(project, provider, model)
+    proj_owner = str(proj.get("owner", ""))
+    site_dir = get_project_site_dir(project, provider, model, proj_owner)
     file_path = site_dir / path
     try:
         file_path.resolve().relative_to(site_dir.resolve())
@@ -1091,10 +1211,12 @@ async def serve_docs(
     if not latest:
         raise HTTPException(status_code=404, detail="No docs available")
     await _check_ownership(request, project, latest)
+    latest_owner = str(latest.get("owner", ""))
     site_dir = get_project_site_dir(
         project,
         str(latest["ai_provider"]),
         str(latest["ai_model"]),
+        latest_owner,
     )
     file_path = site_dir / path
     try:

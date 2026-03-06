@@ -1374,6 +1374,13 @@
             })
             .then(function(data) {
                 if (!data) return;
+                /* Fix 9: If provider/model changed, redirect to the new status page */
+                var newProvider = providerSelect ? providerSelect.value : PROJECT_PROVIDER;
+                var newModel = modelInput ? modelInput.value : PROJECT_MODEL;
+                if (newProvider !== PROJECT_PROVIDER || newModel !== PROJECT_MODEL) {
+                    window.location.href = '/status/' + encodeURIComponent(PROJECT_NAME) + '/' + encodeURIComponent(newProvider) + '/' + encodeURIComponent(newModel);
+                    return;
+                }
                 /* Reset state and start polling */
                 currentStatus = 'generating';
                 currentStage = 'cloning';

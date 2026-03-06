@@ -160,6 +160,7 @@ function showModal(options) {
         overlay.style.display = 'none';
         okBtn.onclick = null;
         cancelBtn.onclick = null;
+        document.removeEventListener('keydown', escHandler);
     }
 
     okBtn.onclick = function() {

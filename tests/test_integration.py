@@ -16,7 +16,6 @@ async def client(tmp_path: Path):
     from docsfy.config import get_settings
     from docsfy.main import _generating
 
-    # Save originals
     orig_db = storage.DB_PATH
     orig_data = storage.DATA_DIR
     orig_projects = storage.PROJECTS_DIR
@@ -88,6 +87,7 @@ async def test_full_flow_mock(client: AsyncClient, tmp_path: Path) -> None:
             status="generating",
             ai_provider="claude",
             ai_model="opus",
+            owner="admin",
         )
 
         await _run_generation(
@@ -97,6 +97,7 @@ async def test_full_flow_mock(client: AsyncClient, tmp_path: Path) -> None:
             ai_provider="claude",
             ai_model="opus",
             ai_cli_timeout=60,
+            owner="admin",
         )
 
     # Check status

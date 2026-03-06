@@ -38,7 +38,18 @@ DATA_DIR = Path(os.getenv("DATA_DIR", "/data"))
 PROJECTS_DIR = DATA_DIR / "projects"
 
 
-async def init_db() -> None:
+async def init_db(data_dir: str = "") -> None:
+    """Initialize the database and run migrations.
+
+    Fix 11: Accept an optional data_dir to centralise storage path
+    configuration and avoid split-brain between config.py and module globals.
+    """
+    global DB_PATH, DATA_DIR, PROJECTS_DIR
+    if data_dir:
+        DB_PATH = Path(data_dir) / "docsfy.db"
+        DATA_DIR = Path(data_dir)
+        PROJECTS_DIR = DATA_DIR / "projects"
+
     DB_PATH.parent.mkdir(parents=True, exist_ok=True)
     PROJECTS_DIR.mkdir(parents=True, exist_ok=True)
     async with aiosqlite.connect(DB_PATH) as db:
@@ -47,6 +58,7 @@ async def init_db() -> None:
                 name TEXT NOT NULL,
                 ai_provider TEXT NOT NULL DEFAULT '',
                 ai_model TEXT NOT NULL DEFAULT '',
+                owner TEXT NOT NULL DEFAULT '',
                 repo_url TEXT NOT NULL,
                 status TEXT NOT NULL DEFAULT 'generating',
                 current_stage TEXT,
@@ -57,37 +69,57 @@ async def init_db() -> None:
                 plan_json TEXT,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                PRIMARY KEY (name, ai_provider, ai_model)
+                PRIMARY KEY (name, ai_provider, ai_model, owner)
             )
         """)
 
-        # Migration: convert old single-PK table to composite PK
+        # Migration: convert old 3-column PK table to 4-column PK (with owner)
         cursor = await db.execute("PRAGMA table_info(projects)")
         columns = await cursor.fetchall()
         col_names = [c[1] for c in columns]
 
-        # Check if ai_provider is already NOT NULL (new schema) or nullable (old schema)
-        # If 'ai_provider' column doesn't exist or is nullable, we need to migrate
-        needs_migration = "ai_provider" not in col_names
-        if not needs_migration:
-            # Check if it's the old schema where ai_provider was added as nullable
+        needs_pk_migration = False
+
+        # Detect old schema: owner not in columns, or owner is nullable
+        if "owner" not in col_names:
+            needs_pk_migration = True
+        elif "ai_provider" not in col_names:
+            needs_pk_migration = True
+        else:
+            # Check if ai_provider is nullable (old schema)
             for col in columns:
                 if col[1] == "ai_provider" and col[3] == 0:  # notnull=0 means nullable
-                    needs_migration = True
+                    needs_pk_migration = True
                     break
 
-        if needs_migration:
-            logger.info("Migrating database to composite PK schema")
+        # Also detect when owner exists but is NOT part of the PK
+        # by checking if a 3-column PK table was already created
+        if not needs_pk_migration and "owner" in col_names:
+            # Check the table_info for whether owner has pk index > 0
+            owner_is_pk = False
+            for col in columns:
+                if col[1] == "owner" and col[5] > 0:  # pk column index
+                    owner_is_pk = True
+                    break
+            if not owner_is_pk:
+                needs_pk_migration = True
+
+        if needs_pk_migration:
+            logger.info(
+                "Migrating database to 4-column PK schema (name, ai_provider, ai_model, owner)"
+            )
 
             # Check which columns exist in the old table
             cursor = await db.execute("PRAGMA table_info(projects)")
             old_columns = {row[1] for row in await cursor.fetchall()}
 
+            await db.execute("DROP TABLE IF EXISTS projects_new")
             await db.execute("""
-                CREATE TABLE IF NOT EXISTS projects_new (
+                CREATE TABLE projects_new (
                     name TEXT NOT NULL,
                     ai_provider TEXT NOT NULL DEFAULT '',
                     ai_model TEXT NOT NULL DEFAULT '',
+                    owner TEXT NOT NULL DEFAULT '',
                     repo_url TEXT NOT NULL,
                     status TEXT NOT NULL DEFAULT 'generating',
                     current_stage TEXT,
@@ -98,7 +130,7 @@ async def init_db() -> None:
                     plan_json TEXT,
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    PRIMARY KEY (name, ai_provider, ai_model)
+                    PRIMARY KEY (name, ai_provider, ai_model, owner)
                 )
             """)
 
@@ -114,6 +146,11 @@ async def init_db() -> None:
                 "COALESCE(ai_model, '') AS ai_model"
                 if "ai_model" in old_columns
                 else "'' AS ai_model"
+            )
+            select_cols.append(
+                "COALESCE(owner, '') AS owner"
+                if "owner" in old_columns
+                else "'' AS owner"
             )
             select_cols.append("repo_url")
             select_cols.append("status")
@@ -132,7 +169,7 @@ async def init_db() -> None:
 
             await db.execute(f"""
                 INSERT OR IGNORE INTO projects_new
-                    (name, ai_provider, ai_model, repo_url, status, current_stage,
+                    (name, ai_provider, ai_model, owner, repo_url, status, current_stage,
                      last_commit_sha, last_generated, page_count, error_message,
                      plan_json, created_at, updated_at)
                 SELECT {", ".join(select_cols)}
@@ -140,15 +177,7 @@ async def init_db() -> None:
             """)
             await db.execute("DROP TABLE projects")
             await db.execute("ALTER TABLE projects_new RENAME TO projects")
-            logger.info("Database migration complete")
-
-        # Migration: add owner column
-        try:
-            await db.execute("ALTER TABLE projects ADD COLUMN owner TEXT DEFAULT ''")
-        except sqlite3.OperationalError as exc:
-            if "duplicate column name" not in str(exc).lower():
-                logger.error(f"Migration failed: {exc}")
-                raise
+            logger.info("Database migration to 4-column PK complete")
 
         # Reset orphaned "generating" projects from previous server run
         cursor = await db.execute(
@@ -163,7 +192,7 @@ async def init_db() -> None:
             CREATE TABLE IF NOT EXISTS users (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 username TEXT UNIQUE NOT NULL,
-                api_key_hash TEXT NOT NULL,
+                api_key_hash TEXT NOT NULL UNIQUE,
                 role TEXT NOT NULL DEFAULT 'user',
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
@@ -179,13 +208,50 @@ async def init_db() -> None:
                 logger.error(f"Migration failed: {exc}")
                 raise
 
+        # Migration: add UNIQUE constraint on api_key_hash (Fix 7)
+        # Check if existing table lacks the UNIQUE constraint by inspecting index
+        cursor = await db.execute("PRAGMA index_list(users)")
+        indexes = await cursor.fetchall()
+        has_unique_key_index = False
+        for idx in indexes:
+            if idx[2]:  # unique=1
+                cursor2 = await db.execute(f"PRAGMA index_info({idx[1]})")
+                idx_cols = await cursor2.fetchall()
+                for ic in idx_cols:
+                    if ic[2] == "api_key_hash":
+                        has_unique_key_index = True
+                        break
+            if has_unique_key_index:
+                break
+
+        if not has_unique_key_index:
+            try:
+                await db.execute(
+                    "CREATE UNIQUE INDEX IF NOT EXISTS idx_users_api_key_hash ON users (api_key_hash)"
+                )
+            except sqlite3.OperationalError as exc:
+                if "unique" not in str(exc).lower():
+                    logger.error(f"Migration failed: {exc}")
+                    raise
+
         await db.execute("""
             CREATE TABLE IF NOT EXISTS project_access (
                 project_name TEXT NOT NULL,
+                project_owner TEXT NOT NULL DEFAULT '',
                 username TEXT NOT NULL,
-                PRIMARY KEY (project_name, username)
+                PRIMARY KEY (project_name, project_owner, username)
             )
         """)
+
+        # Migration: add project_owner column to project_access
+        try:
+            await db.execute(
+                "ALTER TABLE project_access ADD COLUMN project_owner TEXT NOT NULL DEFAULT ''"
+            )
+        except sqlite3.OperationalError as exc:
+            if "duplicate column name" not in str(exc).lower():
+                logger.error(f"Migration failed: {exc}")
+                raise
 
         await db.execute("""
             CREATE TABLE IF NOT EXISTS sessions (
@@ -213,16 +279,15 @@ async def save_project(
         raise ValueError(msg)
     async with aiosqlite.connect(DB_PATH) as db:
         await db.execute(
-            """INSERT INTO projects (name, ai_provider, ai_model, repo_url, status, owner, updated_at)
+            """INSERT INTO projects (name, ai_provider, ai_model, owner, repo_url, status, updated_at)
                VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
-               ON CONFLICT(name, ai_provider, ai_model) DO UPDATE SET
+               ON CONFLICT(name, ai_provider, ai_model, owner) DO UPDATE SET
                repo_url = excluded.repo_url,
                status = excluded.status,
-               owner = CASE WHEN projects.owner = '' THEN excluded.owner ELSE projects.owner END,
                error_message = NULL,
                current_stage = NULL,
                updated_at = CURRENT_TIMESTAMP""",
-            (name, ai_provider, ai_model, repo_url, status, owner),
+            (name, ai_provider, ai_model, owner, repo_url, status),
         )
         await db.commit()
 
@@ -232,6 +297,7 @@ async def update_project_status(
     ai_provider: str,
     ai_model: str,
     status: str,
+    owner: str = "",
     last_commit_sha: str | None = None,
     page_count: int | None = None,
     error_message: str | None = None,
@@ -264,9 +330,13 @@ async def update_project_status(
         values.append(name)
         values.append(ai_provider)
         values.append(ai_model)
+        where = "WHERE name = ? AND ai_provider = ? AND ai_model = ?"
+        if owner:
+            where += " AND owner = ?"
+            values.append(owner)
         # Fields list is built from hardcoded column names only (no user input)
         await db.execute(
-            f"UPDATE projects SET {', '.join(fields)} WHERE name = ? AND ai_provider = ? AND ai_model = ?",
+            f"UPDATE projects SET {', '.join(fields)} {where}",
             values,
         )
         await db.commit()
@@ -276,13 +346,18 @@ async def get_project(
     name: str,
     ai_provider: str = "",
     ai_model: str = "",
+    owner: str = "",
 ) -> dict[str, str | int | None] | None:
     async with aiosqlite.connect(DB_PATH) as db:
         db.row_factory = aiosqlite.Row
-        cursor = await db.execute(
-            "SELECT * FROM projects WHERE name = ? AND ai_provider = ? AND ai_model = ?",
-            (name, ai_provider, ai_model),
+        query = (
+            "SELECT * FROM projects WHERE name = ? AND ai_provider = ? AND ai_model = ?"
         )
+        params: list[str] = [name, ai_provider, ai_model]
+        if owner:
+            query += " AND owner = ?"
+            params.append(owner)
+        cursor = await db.execute(query, params)
         row = await cursor.fetchone()
         return dict(row) if row else None
 
@@ -311,33 +386,49 @@ async def list_projects(
         return [dict(row) for row in rows]
 
 
-async def grant_project_access(project_name: str, username: str) -> None:
+async def grant_project_access(
+    project_name: str, username: str, project_owner: str = ""
+) -> None:
     """Grant a user access to all variants of a project."""
     async with aiosqlite.connect(DB_PATH) as db:
         await db.execute(
-            "INSERT OR IGNORE INTO project_access (project_name, username) VALUES (?, ?)",
-            (project_name, username),
+            "INSERT OR IGNORE INTO project_access (project_name, project_owner, username) VALUES (?, ?, ?)",
+            (project_name, project_owner, username),
         )
         await db.commit()
 
 
-async def revoke_project_access(project_name: str, username: str) -> None:
+async def revoke_project_access(
+    project_name: str, username: str, project_owner: str = ""
+) -> None:
     """Revoke a user's access to a project."""
     async with aiosqlite.connect(DB_PATH) as db:
-        await db.execute(
-            "DELETE FROM project_access WHERE project_name = ? AND username = ?",
-            (project_name, username),
-        )
+        if project_owner:
+            await db.execute(
+                "DELETE FROM project_access WHERE project_name = ? AND project_owner = ? AND username = ?",
+                (project_name, project_owner, username),
+            )
+        else:
+            await db.execute(
+                "DELETE FROM project_access WHERE project_name = ? AND username = ?",
+                (project_name, username),
+            )
         await db.commit()
 
 
-async def get_project_access(project_name: str) -> list[str]:
+async def get_project_access(project_name: str, project_owner: str = "") -> list[str]:
     """Get list of usernames with access to a project."""
     async with aiosqlite.connect(DB_PATH) as db:
-        cursor = await db.execute(
-            "SELECT username FROM project_access WHERE project_name = ? ORDER BY username",
-            (project_name,),
-        )
+        if project_owner:
+            cursor = await db.execute(
+                "SELECT username FROM project_access WHERE project_name = ? AND project_owner = ? ORDER BY username",
+                (project_name, project_owner),
+            )
+        else:
+            cursor = await db.execute(
+                "SELECT username FROM project_access WHERE project_name = ? ORDER BY username",
+                (project_name,),
+            )
         return [row[0] for row in await cursor.fetchall()]
 
 
@@ -351,12 +442,32 @@ async def get_user_accessible_projects(username: str) -> list[str]:
         return [row[0] for row in await cursor.fetchall()]
 
 
-async def delete_project(name: str, ai_provider: str = "", ai_model: str = "") -> bool:
+async def delete_project(
+    name: str, ai_provider: str = "", ai_model: str = "", owner: str = ""
+) -> bool:
     async with aiosqlite.connect(DB_PATH) as db:
-        cursor = await db.execute(
-            "DELETE FROM projects WHERE name = ? AND ai_provider = ? AND ai_model = ?",
-            (name, ai_provider, ai_model),
+        query = (
+            "DELETE FROM projects WHERE name = ? AND ai_provider = ? AND ai_model = ?"
         )
+        params: list[str] = [name, ai_provider, ai_model]
+        if owner:
+            query += " AND owner = ?"
+            params.append(owner)
+        cursor = await db.execute(query, params)
+
+        # Clean up project_access if no more variants remain for this name+owner
+        if cursor.rowcount > 0 and owner:
+            remaining = await db.execute(
+                "SELECT COUNT(*) FROM projects WHERE name = ? AND owner = ?",
+                (name, owner),
+            )
+            row = await remaining.fetchone()
+            if row and row[0] == 0:
+                await db.execute(
+                    "DELETE FROM project_access WHERE project_name = ? AND project_owner = ?",
+                    (name, owner),
+                )
+
         await db.commit()
         return cursor.rowcount > 0
 
@@ -369,7 +480,19 @@ def _validate_name(name: str) -> str:
     return name
 
 
-def get_project_dir(name: str, ai_provider: str = "", ai_model: str = "") -> Path:
+def _validate_owner(owner: str) -> str:
+    """Validate owner segment to prevent path traversal."""
+    if not owner:
+        return "_default"
+    if "/" in owner or "\\" in owner or ".." in owner or owner.startswith("."):
+        msg = f"Invalid owner: '{owner}'"
+        raise ValueError(msg)
+    return owner
+
+
+def get_project_dir(
+    name: str, ai_provider: str = "", ai_model: str = "", owner: str = ""
+) -> Path:
     if not ai_provider or not ai_model:
         msg = "ai_provider and ai_model are required for project directory paths"
         raise ValueError(msg)
@@ -383,36 +506,57 @@ def get_project_dir(name: str, ai_provider: str = "", ai_model: str = "") -> Pat
         ):
             msg = f"Invalid {segment_name}: '{segment}'"
             raise ValueError(msg)
-    return PROJECTS_DIR / _validate_name(name) / ai_provider / ai_model
+    safe_owner = _validate_owner(owner)
+    return PROJECTS_DIR / safe_owner / _validate_name(name) / ai_provider / ai_model
 
 
-def get_project_site_dir(name: str, ai_provider: str = "", ai_model: str = "") -> Path:
-    return get_project_dir(name, ai_provider, ai_model) / "site"
+def get_project_site_dir(
+    name: str, ai_provider: str = "", ai_model: str = "", owner: str = ""
+) -> Path:
+    return get_project_dir(name, ai_provider, ai_model, owner) / "site"
 
 
-def get_project_cache_dir(name: str, ai_provider: str = "", ai_model: str = "") -> Path:
-    return get_project_dir(name, ai_provider, ai_model) / "cache" / "pages"
+def get_project_cache_dir(
+    name: str, ai_provider: str = "", ai_model: str = "", owner: str = ""
+) -> Path:
+    return get_project_dir(name, ai_provider, ai_model, owner) / "cache" / "pages"
 
 
-async def list_variants(name: str) -> list[dict[str, str | int | None]]:
+async def list_variants(
+    name: str, owner: str | None = None
+) -> list[dict[str, str | int | None]]:
     """List all variants for a repo."""
     async with aiosqlite.connect(DB_PATH) as db:
         db.row_factory = aiosqlite.Row
-        cursor = await db.execute(
-            "SELECT * FROM projects WHERE name = ? ORDER BY updated_at DESC",
-            (name,),
-        )
+        if owner:
+            cursor = await db.execute(
+                "SELECT * FROM projects WHERE name = ? AND owner = ? ORDER BY updated_at DESC",
+                (name, owner),
+            )
+        else:
+            cursor = await db.execute(
+                "SELECT * FROM projects WHERE name = ? ORDER BY updated_at DESC",
+                (name,),
+            )
         return [dict(row) for row in await cursor.fetchall()]
 
 
-async def get_latest_variant(name: str) -> dict[str, str | int | None] | None:
+async def get_latest_variant(
+    name: str, owner: str | None = None
+) -> dict[str, str | int | None] | None:
     """Get the most recently generated ready variant for a repo."""
     async with aiosqlite.connect(DB_PATH) as db:
         db.row_factory = aiosqlite.Row
-        cursor = await db.execute(
-            "SELECT * FROM projects WHERE name = ? AND status = 'ready' ORDER BY last_generated DESC LIMIT 1",
-            (name,),
-        )
+        if owner:
+            cursor = await db.execute(
+                "SELECT * FROM projects WHERE name = ? AND owner = ? AND status = 'ready' ORDER BY last_generated DESC LIMIT 1",
+                (name, owner),
+            )
+        else:
+            cursor = await db.execute(
+                "SELECT * FROM projects WHERE name = ? AND status = 'ready' ORDER BY last_generated DESC LIMIT 1",
+                (name,),
+            )
         row = await cursor.fetchone()
         return dict(row) if row else None
 
@@ -489,9 +633,11 @@ async def get_user_by_key(api_key: str) -> dict[str, str | int | None] | None:
 
 
 async def delete_user(username: str) -> bool:
-    """Delete a user by username, invalidating all their sessions."""
+    """Delete a user by username, invalidating all their sessions and cleaning up ACLs."""
     async with aiosqlite.connect(DB_PATH) as db:
         await db.execute("DELETE FROM sessions WHERE username = ?", (username,))
+        # Fix 4: Clean up ACL entries on user deletion
+        await db.execute("DELETE FROM project_access WHERE username = ?", (username,))
         cursor = await db.execute("DELETE FROM users WHERE username = ?", (username,))
         await db.commit()
         return cursor.rowcount > 0
