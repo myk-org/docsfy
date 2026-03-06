@@ -228,12 +228,23 @@ async def _resolve_project(
         if proj:
             return proj
 
-    # 2. For admin, just get any
+    # 2. For admin, disambiguate by owner
     if request.state.is_admin:
-        proj = await get_project(name, ai_provider=ai_provider, ai_model=ai_model)
-        if not proj:
+        all_variants = await list_variants(name)
+        matching = [
+            v
+            for v in all_variants
+            if v.get("ai_provider") == ai_provider and v.get("ai_model") == ai_model
+        ]
+        if not matching:
             raise HTTPException(status_code=404, detail="Not found")
-        return proj
+        distinct_owners = {str(v.get("owner", "")) for v in matching}
+        if len(distinct_owners) > 1:
+            raise HTTPException(
+                status_code=409,
+                detail="Multiple owners found for this variant, please specify owner",
+            )
+        return matching[0]
 
     # 3. For non-admin, check granted access — find which owner granted access
     accessible = await get_user_accessible_projects(request.state.username)
@@ -564,14 +575,20 @@ async def abort_generation(request: Request, name: str) -> dict[str, str]:
     """
     _require_write_access(request)
     name = _validate_project_name(name)
-    # Find any active generation key that starts with this project name
-    matching_key = None
-    for key in _generating:
-        # gen_key format: "owner/name/provider/model"
-        parts = key.split("/", 3)
-        if len(parts) == 4 and parts[1] == name:
-            matching_key = key
-            break
+    # Find active generation keys matching this project name
+    matching_keys = [
+        key
+        for key in _generating
+        if len(key.split("/", 3)) == 4 and key.split("/", 3)[1] == name
+    ]
+    if request.state.is_admin and len(matching_keys) > 1:
+        distinct_owners = {key.split("/", 3)[0] for key in matching_keys}
+        if len(distinct_owners) > 1:
+            raise HTTPException(
+                status_code=409,
+                detail="Multiple owners found for this variant, please specify owner",
+            )
+    matching_key = matching_keys[0] if matching_keys else None
     task = _generating.get(matching_key) if matching_key else None
     if not task or not matching_key:
         raise HTTPException(
@@ -634,17 +651,24 @@ async def abort_variant(
     if not task:
         # Also check if an admin is aborting someone else's generation
         if request.state.is_admin:
-            for key in _generating:
-                parts = key.split("/", 3)
-                if (
-                    len(parts) == 4
-                    and parts[1] == name
-                    and parts[2] == provider
-                    and parts[3] == model
-                ):
-                    gen_key = key
-                    task = _generating[key]
-                    break
+            admin_matches = [
+                key
+                for key in _generating
+                if len(key.split("/", 3)) == 4
+                and key.split("/", 3)[1] == name
+                and key.split("/", 3)[2] == provider
+                and key.split("/", 3)[3] == model
+            ]
+            if len(admin_matches) > 1:
+                distinct_owners = {k.split("/", 3)[0] for k in admin_matches}
+                if len(distinct_owners) > 1:
+                    raise HTTPException(
+                        status_code=409,
+                        detail="Multiple owners found for this variant, please specify owner",
+                    )
+            if admin_matches:
+                gen_key = admin_matches[0]
+                task = _generating[gen_key]
         if not task:
             raise HTTPException(
                 status_code=404,
@@ -869,6 +893,18 @@ async def _generate_from_path(
         if changed_files is None:
             # Error getting diff — fall back to full regeneration
             use_cache = False
+        elif not changed_files:
+            # Commits differ but tree is identical — nothing to regenerate
+            await update_project_status(
+                project_name,
+                ai_provider,
+                ai_model,
+                status="ready",
+                owner=owner,
+                current_stage="up_to_date",
+                last_commit_sha=commit_sha,
+            )
+            return
         elif changed_files:
             existing_plan_json = existing.get("plan_json")
             if existing_plan_json:

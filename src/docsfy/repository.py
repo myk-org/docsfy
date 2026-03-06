@@ -56,13 +56,17 @@ def get_changed_files(repo_path: Path, old_sha: str, new_sha: str) -> list[str] 
     ):
         logger.warning("Invalid SHA format")
         return None
-    result = subprocess.run(
-        ["git", "diff", "--name-only", old_sha, new_sha],
-        cwd=repo_path,
-        capture_output=True,
-        text=True,
-        timeout=30,
-    )
+    try:
+        result = subprocess.run(
+            ["git", "diff", "--name-only", old_sha, new_sha],
+            cwd=repo_path,
+            capture_output=True,
+            text=True,
+            timeout=30,
+        )
+    except (subprocess.TimeoutExpired, OSError) as exc:
+        logger.warning(f"Failed to get diff: {exc}")
+        return None
     if result.returncode != 0:
         logger.warning(f"Failed to get diff: {result.stderr}")
         return None

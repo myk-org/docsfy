@@ -297,7 +297,7 @@ async def update_project_status(
     ai_provider: str,
     ai_model: str,
     status: str,
-    owner: str = "",
+    owner: str | None = None,
     last_commit_sha: str | None = None,
     page_count: int | None = None,
     error_message: str | None = None,
@@ -331,7 +331,7 @@ async def update_project_status(
         values.append(ai_provider)
         values.append(ai_model)
         where = "WHERE name = ? AND ai_provider = ? AND ai_model = ?"
-        if owner:
+        if owner is not None:
             where += " AND owner = ?"
             values.append(owner)
         # Fields list is built from hardcoded column names only (no user input)
@@ -369,7 +369,7 @@ async def list_projects(
 ) -> list[dict[str, str | int | None]]:
     async with aiosqlite.connect(DB_PATH) as db:
         db.row_factory = aiosqlite.Row
-        if owner and accessible and len(accessible) > 0:
+        if owner is not None and accessible and len(accessible) > 0:
             # Build OR conditions for each (name, owner) pair
             conditions = ["(owner = ?)"]
             params: list[str] = [owner]
@@ -378,7 +378,7 @@ async def list_projects(
                 params.extend([proj_name, proj_owner])
             query = f"SELECT * FROM projects WHERE {' OR '.join(conditions)} ORDER BY updated_at DESC"
             cursor = await db.execute(query, params)
-        elif owner:
+        elif owner is not None:
             cursor = await db.execute(
                 "SELECT * FROM projects WHERE owner = ? ORDER BY updated_at DESC",
                 (owner,),
@@ -405,11 +405,11 @@ async def grant_project_access(
 
 
 async def revoke_project_access(
-    project_name: str, username: str, project_owner: str = ""
+    project_name: str, username: str, project_owner: str | None = None
 ) -> None:
     """Revoke a user's access to a project."""
     async with aiosqlite.connect(DB_PATH) as db:
-        if project_owner:
+        if project_owner is not None:
             await db.execute(
                 "DELETE FROM project_access WHERE project_name = ? AND project_owner = ? AND username = ?",
                 (project_name, project_owner, username),
@@ -422,10 +422,12 @@ async def revoke_project_access(
         await db.commit()
 
 
-async def get_project_access(project_name: str, project_owner: str = "") -> list[str]:
+async def get_project_access(
+    project_name: str, project_owner: str | None = None
+) -> list[str]:
     """Get list of usernames with access to a project."""
     async with aiosqlite.connect(DB_PATH) as db:
-        if project_owner:
+        if project_owner is not None:
             cursor = await db.execute(
                 "SELECT username FROM project_access WHERE project_name = ? AND project_owner = ? ORDER BY username",
                 (project_name, project_owner),
@@ -449,20 +451,20 @@ async def get_user_accessible_projects(username: str) -> list[tuple[str, str]]:
 
 
 async def delete_project(
-    name: str, ai_provider: str = "", ai_model: str = "", owner: str = ""
+    name: str, ai_provider: str = "", ai_model: str = "", owner: str | None = None
 ) -> bool:
     async with aiosqlite.connect(DB_PATH) as db:
         query = (
             "DELETE FROM projects WHERE name = ? AND ai_provider = ? AND ai_model = ?"
         )
         params: list[str] = [name, ai_provider, ai_model]
-        if owner:
+        if owner is not None:
             query += " AND owner = ?"
             params.append(owner)
         cursor = await db.execute(query, params)
 
         # Clean up project_access if no more variants remain for this name+owner
-        if cursor.rowcount > 0 and owner:
+        if cursor.rowcount > 0 and owner is not None:
             remaining = await db.execute(
                 "SELECT COUNT(*) FROM projects WHERE name = ? AND owner = ?",
                 (name, owner),
@@ -534,7 +536,7 @@ async def list_variants(
     """List all variants for a repo."""
     async with aiosqlite.connect(DB_PATH) as db:
         db.row_factory = aiosqlite.Row
-        if owner:
+        if owner is not None:
             cursor = await db.execute(
                 "SELECT * FROM projects WHERE name = ? AND owner = ? ORDER BY updated_at DESC",
                 (name, owner),
@@ -553,7 +555,7 @@ async def get_latest_variant(
     """Get the most recently generated ready variant for a repo."""
     async with aiosqlite.connect(DB_PATH) as db:
         db.row_factory = aiosqlite.Row
-        if owner:
+        if owner is not None:
             cursor = await db.execute(
                 "SELECT * FROM projects WHERE name = ? AND owner = ? AND status = 'ready' ORDER BY last_generated DESC LIMIT 1",
                 (name, owner),
@@ -642,7 +644,12 @@ async def delete_user(username: str) -> bool:
     """Delete a user by username, invalidating all their sessions and cleaning up ACLs."""
     async with aiosqlite.connect(DB_PATH) as db:
         await db.execute("DELETE FROM sessions WHERE username = ?", (username,))
-        # Fix 4: Clean up ACL entries on user deletion
+        # Clean up owned projects and their access entries
+        await db.execute("DELETE FROM projects WHERE owner = ?", (username,))
+        await db.execute(
+            "DELETE FROM project_access WHERE project_owner = ?", (username,)
+        )
+        # Clean up ACL entries where user was granted access
         await db.execute("DELETE FROM project_access WHERE username = ?", (username,))
         cursor = await db.execute("DELETE FROM users WHERE username = ?", (username,))
         await db.commit()
