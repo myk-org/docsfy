@@ -16,6 +16,16 @@ logger = get_logger(name=__name__)
 
 VALID_STATUSES = frozenset({"generating", "ready", "error", "aborted"})
 
+MIN_KEY_LENGTH = 16
+
+
+def validate_api_key(key: str) -> None:
+    """Validate API key meets minimum requirements."""
+    if len(key) < MIN_KEY_LENGTH:
+        msg = f"API key must be at least {MIN_KEY_LENGTH} characters long"
+        raise ValueError(msg)
+
+
 _UNSET: object = object()
 
 # Module-level paths are set at import time from env vars.
@@ -543,9 +553,13 @@ async def delete_session(token: str) -> None:
         await db.commit()
 
 
-async def rotate_user_key(username: str) -> str:
-    """Generate a new API key for a user. Returns the raw new key."""
-    raw_key = generate_api_key()
+async def rotate_user_key(username: str, custom_key: str | None = None) -> str:
+    """Generate or set a new API key for a user. Returns the raw new key."""
+    if custom_key:
+        validate_api_key(custom_key)
+        raw_key = custom_key
+    else:
+        raw_key = generate_api_key()
     key_hash = hash_api_key(raw_key)
     async with aiosqlite.connect(DB_PATH) as db:
         cursor = await db.execute(

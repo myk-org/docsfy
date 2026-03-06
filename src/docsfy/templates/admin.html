@@ -338,7 +338,7 @@
                 </form>
                 <div id="new-key-display" class="api-key-result">
                     <div class="api-key-result-warning">
-                        &#9888;&#65039; Save this API key — it won't be shown again!
+                        &#9888;&#65039; Save this password — it won't be shown again!
                     </div>
                     <div class="api-key-result-detail">
                         <span class="label">Username:</span>
@@ -349,7 +349,7 @@
                         <span class="value" id="new-key-role"></span>
                     </div>
                     <div class="api-key-result-detail">
-                        <span class="label">API Key:</span>
+                        <span class="label">Password:</span>
                         <span class="value" id="new-key-value"></span>
                     </div>
                     <div class="api-key-result-actions">
@@ -388,7 +388,7 @@
                             </td>
                             <td>{{ user.created_at }}</td>
                             <td>
-                                <button class="btn btn-warning btn-sm" data-rotate-user="{{ user.username }}">Rotate Key</button>
+                                <button class="btn btn-warning btn-sm" data-rotate-user="{{ user.username }}">Change Password</button>
                                 <button class="btn btn-danger btn-sm" data-delete-user="{{ user.username }}">Delete</button>
                             </td>
                         </tr>
@@ -566,11 +566,24 @@
         var btn = e.target.closest('[data-rotate-user]');
         if (!btn) return;
         var username = btn.getAttribute('data-rotate-user');
-        if (!confirm("Rotate API key for '" + username + "'? Their current key will stop working.")) return;
+
+        var newKey = prompt("Enter new password for '" + username + "' (min 16 chars), or leave empty to auto-generate:");
+        if (newKey === null) return;
+
+        var body = {};
+        if (newKey.trim()) {
+            if (newKey.trim().length < 16) {
+                showAlert('error', 'Password must be at least 16 characters long.');
+                return;
+            }
+            body.new_key = newKey.trim();
+        }
 
         fetch('/api/admin/users/' + encodeURIComponent(username) + '/rotate-key', {
             method: 'POST',
+            headers: {'Content-Type': 'application/json'},
             credentials: 'same-origin',
+            body: JSON.stringify(body),
         })
         .then(function(resp) {
             if (!resp.ok) return resp.json().then(function(d) { throw d; });
@@ -584,7 +597,7 @@
             display.style.display = 'block';
         })
         .catch(function(err) {
-            showAlert('error', (err && err.detail) || 'Failed to rotate key');
+            showAlert('error', (err && err.detail) || 'Failed to change password');
         });
     });
     </script>

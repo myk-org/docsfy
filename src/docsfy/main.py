@@ -241,7 +241,7 @@ async def login(request: Request) -> RedirectResponse | HTMLResponse:
 
     # Invalid credentials -- show login page with error
     template = _jinja_env.get_template("login.html")
-    html = template.render(error="Invalid username or API key")
+    html = template.render(error="Invalid username or password")
     return HTMLResponse(content=html, status_code=401)
 
 
@@ -996,8 +996,16 @@ async def rotate_own_key(request: Request) -> dict[str, str]:
             status_code=400,
             detail="ADMIN_KEY users cannot rotate keys. Change the ADMIN_KEY env var instead.",
         )
+
+    body = await request.json()
+    custom_key = body.get("new_key")  # Optional -- if provided, use it
+
     username = request.state.username
-    new_key = await rotate_user_key(username)
+    try:
+        new_key = await rotate_user_key(username, custom_key=custom_key)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
     logger.info(f"[AUDIT] User '{username}' rotated their own API key")
     # Clear current session -- user must re-login with new key
     session_token = request.cookies.get("docsfy_session")
@@ -1010,10 +1018,14 @@ async def rotate_own_key(request: Request) -> dict[str, str]:
 async def admin_rotate_key(request: Request, username: str) -> dict[str, str]:
     """Admin rotates a user's API key."""
     _require_admin(request)
+    body = await request.json()
+    custom_key = body.get("new_key")
     try:
-        new_key = await rotate_user_key(username)
+        new_key = await rotate_user_key(username, custom_key=custom_key)
     except ValueError as exc:
-        raise HTTPException(status_code=404, detail=str(exc)) from exc
+        detail = str(exc)
+        status = 404 if "not found" in detail else 400
+        raise HTTPException(status_code=status, detail=detail) from exc
     logger.info(
         f"[AUDIT] Admin '{request.state.username}' rotated API key for user '{username}'"
     )

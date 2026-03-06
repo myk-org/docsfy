@@ -146,7 +146,7 @@ async def test_login_with_invalid_key(unauthed_client: AsyncClient) -> None:
         },
     )
     assert response.status_code == 401
-    assert "Invalid username or API key" in response.text
+    assert "Invalid username or password" in response.text
 
 
 # ---------------------------------------------------------------------------
@@ -305,7 +305,7 @@ async def test_login_page_accessible(unauthed_client: AsyncClient) -> None:
     assert response.status_code == 200
     assert "docsfy" in response.text
     assert "Username" in response.text
-    assert "API Key" in response.text
+    assert "Password" in response.text
 
 
 # ---------------------------------------------------------------------------
@@ -723,7 +723,11 @@ async def test_user_rotates_own_key(_init_db: None) -> None:
         cookie = resp.cookies.get("docsfy_session")
 
         # Rotate
-        resp = await ac.post("/api/me/rotate-key", cookies={"docsfy_session": cookie})
+        resp = await ac.post(
+            "/api/me/rotate-key",
+            cookies={"docsfy_session": cookie},
+            json={},
+        )
         assert resp.status_code == 200
         data = resp.json()
         assert "new_api_key" in data
@@ -751,7 +755,7 @@ async def test_admin_rotates_user_key(admin_client: AsyncClient) -> None:
 
     await create_user("target", role="user")
 
-    resp = await admin_client.post("/api/admin/users/target/rotate-key")
+    resp = await admin_client.post("/api/admin/users/target/rotate-key", json={})
     assert resp.status_code == 200
     assert "new_api_key" in resp.json()
 
@@ -765,7 +769,7 @@ async def test_admin_rotates_nonexistent_user_key(
     admin_client: AsyncClient,
 ) -> None:
     """Admin rotating key for a non-existent user should return 404."""
-    resp = await admin_client.post("/api/admin/users/no-such-user/rotate-key")
+    resp = await admin_client.post("/api/admin/users/no-such-user/rotate-key", json={})
     assert resp.status_code == 404
 
 
@@ -788,7 +792,7 @@ async def test_viewer_cannot_rotate_key(_init_db: None) -> None:
         base_url="http://test",
         headers={"Authorization": f"Bearer {viewer_key}"},
     ) as ac:
-        resp = await ac.post("/api/me/rotate-key")
+        resp = await ac.post("/api/me/rotate-key", json={})
     assert resp.status_code == 403
     _generating.clear()
 
@@ -802,6 +806,127 @@ async def test_admin_key_user_cannot_rotate_own_key(
     admin_client: AsyncClient,
 ) -> None:
     """ADMIN_KEY users should get 400 when trying to rotate their own key."""
-    resp = await admin_client.post("/api/me/rotate-key")
+    resp = await admin_client.post("/api/me/rotate-key", json={})
     assert resp.status_code == 400
     assert "ADMIN_KEY" in resp.json()["detail"]
+
+
+# ---------------------------------------------------------------------------
+# Test: user rotates with custom key
+# ---------------------------------------------------------------------------
+
+
+async def test_user_rotates_with_custom_key(_init_db: None) -> None:
+    """A user can set a custom password when rotating their key."""
+    from docsfy.main import _generating, app
+    from docsfy.storage import create_user
+
+    _generating.clear()
+    _username, key = await create_user("customkey", role="user")
+
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        # Login
+        resp = await ac.post(
+            "/login",
+            data={"username": "customkey", "api_key": key},
+            follow_redirects=False,
+        )
+        cookie = resp.cookies.get("docsfy_session")
+
+        custom = "my-very-secure-custom-password-123"
+        resp = await ac.post(
+            "/api/me/rotate-key",
+            cookies={"docsfy_session": cookie},
+            json={"new_key": custom},
+        )
+        assert resp.status_code == 200
+        assert resp.json()["new_api_key"] == custom
+
+        # Can login with custom key
+        resp = await ac.post(
+            "/login",
+            data={"username": "customkey", "api_key": custom},
+            follow_redirects=False,
+        )
+        assert resp.status_code == 302
+
+    _generating.clear()
+
+
+# ---------------------------------------------------------------------------
+# Test: reject short custom key
+# ---------------------------------------------------------------------------
+
+
+async def test_reject_short_custom_key(_init_db: None) -> None:
+    """A custom key shorter than 16 characters should be rejected."""
+    from docsfy.main import _generating, app
+    from docsfy.storage import create_user
+
+    _generating.clear()
+    _username, key = await create_user("shortkey", role="user")
+
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        # Login
+        resp = await ac.post(
+            "/login",
+            data={"username": "shortkey", "api_key": key},
+            follow_redirects=False,
+        )
+        cookie = resp.cookies.get("docsfy_session")
+
+        resp = await ac.post(
+            "/api/me/rotate-key",
+            cookies={"docsfy_session": cookie},
+            json={"new_key": "short"},
+        )
+        assert resp.status_code == 400
+        assert "16 characters" in resp.json()["detail"]
+
+    _generating.clear()
+
+
+# ---------------------------------------------------------------------------
+# Test: admin sets custom key for user
+# ---------------------------------------------------------------------------
+
+
+async def test_admin_sets_custom_key_for_user(admin_client: AsyncClient) -> None:
+    """Admin can set a custom password for a user."""
+    from docsfy.storage import create_user, get_user_by_key
+
+    await create_user("admin-custom-target", role="user")
+
+    custom = "admin-chosen-password-long"
+    resp = await admin_client.post(
+        "/api/admin/users/admin-custom-target/rotate-key",
+        json={"new_key": custom},
+    )
+    assert resp.status_code == 200
+    assert resp.json()["new_api_key"] == custom
+
+    # Verify the custom key works
+    user = await get_user_by_key(custom)
+    assert user is not None
+    assert user["username"] == "admin-custom-target"
+
+
+# ---------------------------------------------------------------------------
+# Test: admin rejects short custom key for user
+# ---------------------------------------------------------------------------
+
+
+async def test_admin_rejects_short_custom_key(admin_client: AsyncClient) -> None:
+    """Admin setting a short custom key should be rejected."""
+    from docsfy.storage import create_user
+
+    await create_user("admin-short-target", role="user")
+
+    resp = await admin_client.post(
+        "/api/admin/users/admin-short-target/rotate-key",
+        json={"new_key": "tooshort"},
+    )
+    assert resp.status_code == 400
+    assert "16 characters" in resp.json()["detail"]

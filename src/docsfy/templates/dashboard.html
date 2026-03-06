@@ -1373,7 +1373,7 @@
             {% endif %}
             <span class="top-bar-user">{{ username }}</span>
             {% if role != 'viewer' %}
-            <button class="top-bar-btn" onclick="rotateOwnKey()">Change Key</button>
+            <button class="top-bar-btn" onclick="rotateOwnKey()">Change Password</button>
             {% endif %}
             <a href="/logout" class="top-bar-logout">Logout</a>
             <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
@@ -2527,19 +2527,35 @@
     })();
 
     async function rotateOwnKey() {
-        if (!confirm('Generate a new API key? Your current key will stop working and you will be logged out.')) return;
+        var newKey = prompt('Enter new password (min 16 characters), or leave empty to auto-generate:');
+        if (newKey === null) return;  // cancelled
+
+        var body = {};
+        if (newKey.trim()) {
+            if (newKey.trim().length < 16) {
+                alert('Password must be at least 16 characters long.');
+                return;
+            }
+            body.new_key = newKey.trim();
+        }
+
         try {
-            var resp = await fetch('/api/me/rotate-key', { method: 'POST', credentials: 'same-origin' });
+            var resp = await fetch('/api/me/rotate-key', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                credentials: 'same-origin',
+                body: JSON.stringify(body),
+            });
             if (!resp.ok) {
                 var data = await resp.json();
-                alert(data.detail || 'Failed to rotate key');
+                alert(data.detail || 'Failed to change password');
                 return;
             }
             var data = await resp.json();
-            alert('Your new API key (save it now!):\n\n' + data.new_api_key + '\n\nYou will be redirected to login.');
+            alert('Your new password (save it now!):\n\n' + data.new_api_key + '\n\nYou will be redirected to login.');
             window.location.href = '/login';
         } catch (err) {
-            alert('Failed to rotate key: ' + err.message);
+            alert('Failed: ' + err.message);
         }
     }
     </script>
