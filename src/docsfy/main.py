@@ -238,7 +238,7 @@ async def _resolve_project(
     # 3. For non-admin, check granted access — find which owner granted access
     accessible = await get_user_accessible_projects(request.state.username)
     for proj_name, proj_owner in accessible:
-        if proj_name == name:
+        if proj_name == name and proj_owner:
             # Found a grant — look up this specific owner's variant
             proj = await get_project(
                 name, ai_provider=ai_provider, ai_model=ai_model, owner=proj_owner

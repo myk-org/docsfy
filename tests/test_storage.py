@@ -482,11 +482,11 @@ async def test_delete_user_cleans_up_access(db_path: Path) -> None:
         ai_model="opus",
         owner="admin",
     )
-    await grant_project_access("some-proj", "cleanup-user")
+    await grant_project_access("some-proj", "cleanup-user", project_owner="admin")
 
     await delete_user("cleanup-user")
 
-    users = await get_project_access("some-proj")
+    users = await get_project_access("some-proj", project_owner="admin")
     assert "cleanup-user" not in users
 
 
@@ -655,10 +655,10 @@ async def test_get_user_by_username(db_path: Path) -> None:
 async def test_grant_and_get_project_access(db_path: Path) -> None:
     from docsfy.storage import get_project_access, grant_project_access
 
-    await grant_project_access("my-repo", "alice")
-    await grant_project_access("my-repo", "bob")
+    await grant_project_access("my-repo", "alice", project_owner="testowner")
+    await grant_project_access("my-repo", "bob", project_owner="testowner")
 
-    users = await get_project_access("my-repo")
+    users = await get_project_access("my-repo", project_owner="testowner")
     assert "alice" in users
     assert "bob" in users
 
@@ -670,10 +670,10 @@ async def test_revoke_project_access(db_path: Path) -> None:
         revoke_project_access,
     )
 
-    await grant_project_access("my-repo", "alice")
-    await revoke_project_access("my-repo", "alice")
+    await grant_project_access("my-repo", "alice", project_owner="testowner")
+    await revoke_project_access("my-repo", "alice", project_owner="testowner")
 
-    users = await get_project_access("my-repo")
+    users = await get_project_access("my-repo", project_owner="testowner")
     assert "alice" not in users
 
 

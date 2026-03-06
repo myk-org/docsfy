@@ -393,6 +393,9 @@ async def grant_project_access(
     project_name: str, username: str, project_owner: str = ""
 ) -> None:
     """Grant a user access to all variants of a project."""
+    if not project_owner:
+        msg = "project_owner is required for access grants"
+        raise ValueError(msg)
     async with aiosqlite.connect(DB_PATH) as db:
         await db.execute(
             "INSERT OR IGNORE INTO project_access (project_name, project_owner, username) VALUES (?, ?, ?)",
