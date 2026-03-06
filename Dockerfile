@@ -44,6 +44,8 @@ COPY --from=ghcr.io/astral-sh/uv:0.5.14 /uv /usr/local/bin/uv
 # Switch to non-root user for CLI installs
 USER appuser
 
+# Always fetch the latest versions of these CLI tools at build time.
+
 # Install Claude Code CLI (installs to ~/.local/bin)
 RUN /bin/bash -o pipefail -c "curl -fsSL https://claude.ai/install.sh | bash"
 

@@ -603,13 +603,6 @@ async def abort_generation(request: Request, name: str) -> dict[str, str]:
             raise HTTPException(
                 status_code=404, detail=f"No active generation for '{name}'"
             )
-        if len(matching_keys) > 1:
-            distinct_owners = {key.split("/", 3)[0] for key in matching_keys}
-            if len(distinct_owners) > 1:
-                raise HTTPException(
-                    status_code=409,
-                    detail="Multiple owners found for this variant, please specify owner",
-                )
     else:
         if len(matching_keys) > 1:
             distinct_owners = {key.split("/", 3)[0] for key in matching_keys}
@@ -1105,9 +1098,11 @@ async def delete_variant(
         )
         if not deleted:
             raise HTTPException(status_code=404, detail="Variant not found")
-        project_dir = get_project_dir(name, provider, model, project_owner)
-        if project_dir.exists():
-            await asyncio.to_thread(shutil.rmtree, project_dir)
+
+    # Filesystem cleanup outside lock to reduce contention
+    project_dir = get_project_dir(name, provider, model, project_owner)
+    if project_dir.exists():
+        await asyncio.to_thread(shutil.rmtree, project_dir)
     return {"deleted": f"{name}/{provider}/{model}"}
 
 
@@ -1208,6 +1203,7 @@ async def delete_project_endpoint(request: Request, name: str) -> dict[str, str]
                     status_code=409,
                     detail=f"Cannot delete '{name}' while generation is in progress. Abort running variants first.",
                 )
+        dirs_to_delete: list[Path] = []
         for v in variants:
             v_provider = str(v.get("ai_provider", ""))
             v_model = str(v.get("ai_model", ""))
@@ -1215,9 +1211,12 @@ async def delete_project_endpoint(request: Request, name: str) -> dict[str, str]
             await delete_project(
                 name, ai_provider=v_provider, ai_model=v_model, owner=v_owner
             )
-            project_dir = get_project_dir(name, v_provider, v_model, v_owner)
-            if project_dir.exists():
-                await asyncio.to_thread(shutil.rmtree, project_dir)
+            dirs_to_delete.append(get_project_dir(name, v_provider, v_model, v_owner))
+
+    # Filesystem cleanup outside lock to reduce contention
+    for project_dir in dirs_to_delete:
+        if project_dir.exists():
+            await asyncio.to_thread(shutil.rmtree, project_dir)
     return {"deleted": name}
 
 
