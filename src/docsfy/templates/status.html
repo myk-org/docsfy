@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>docsfy - {{ project.name }} Status</title>
+    <title>docsfy - {{ project.name }} ({{ project.ai_provider }}/{{ project.ai_model }}) Status</title>
     <meta name="description" content="Generation status for {{ project.name }}">
     <style>
     /* ==========================================================================
@@ -743,7 +743,7 @@
         <div class="header-left">
             <a href="/" class="dashboard-logo">docs<span>fy</span></a>
             <span class="header-separator">/</span>
-            <span class="header-project-name">{{ project.name }}</span>
+            <span class="header-project-name">{{ project.name }} / {{ project.ai_provider }}/{{ project.ai_model }}</span>
         </div>
         <div class="header-actions">
             <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
@@ -849,7 +849,7 @@
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                     <polyline points="20 6 9 17 4 12"/>
                 </svg>
-                Documentation generated successfully!
+                <span id="success-text">{% if project.current_stage == 'up_to_date' %}Documentation is already up to date — no changes since last generation.{% else %}Documentation generated successfully!{% endif %}</span>
             </div>
 
             <!-- Error Message (visible when error or aborted) -->
@@ -861,8 +861,8 @@
             <!-- Action Links -->
             <div class="action-links" id="action-links">
                 {% if project.status == 'ready' %}
-                <a href="/docs/{{ project.name }}/" target="_blank" class="btn btn-primary" id="btn-view-docs">View Documentation</a>
-                <a href="/api/projects/{{ project.name }}/download" class="btn btn-secondary" id="btn-download">Download</a>
+                <a href="/docs/{{ project.name }}/{{ project.ai_provider }}/{{ project.ai_model }}/" target="_blank" class="btn btn-primary" id="btn-view-docs">View Documentation</a>
+                <a href="/api/projects/{{ project.name }}/{{ project.ai_provider }}/{{ project.ai_model }}/download" class="btn btn-secondary" id="btn-download">Download</a>
                 {% endif %}
                 {% if project.status == 'generating' %}
                 <button class="btn btn-danger" id="btn-abort">Abort</button>
@@ -926,6 +926,8 @@
 
         /* ----- Config ----- */
         var PROJECT_NAME = {{ project.name | tojson }};
+        var PROJECT_PROVIDER = {{ project.ai_provider | tojson }};
+        var PROJECT_MODEL = {{ project.ai_model | tojson }};
         var POLL_INTERVAL_MS = 3000;
 
         /* ----- Theme Toggle ----- */
@@ -1117,18 +1119,22 @@
                 }
 
             } else if (currentStatus === 'ready') {
-                addLogEntry('Cloned repository', 'done');
-                if (totalPagesFromPlan > 0) {
-                    addLogEntry('Planned documentation structure (' + totalPagesFromPlan + ' pages)', 'done');
+                if (currentStage === 'up_to_date') {
+                    addLogEntry('Repository unchanged, docs already up to date', 'done');
+                } else {
+                    addLogEntry('Cloned repository', 'done');
+                    if (totalPagesFromPlan > 0) {
+                        addLogEntry('Planned documentation structure (' + totalPagesFromPlan + ' pages)', 'done');
+                    }
+                    var readyCount = totalPagesFromPlan > 0 ? totalPagesFromPlan : previousPageCount;
+                    var readyTotalLabel = totalPagesFromPlan > 0 ? totalPagesFromPlan : previousPageCount;
+                    for (var j = 0; j < readyCount; j++) {
+                        var readyTitle = (planPages && planPages[j]) ? planPages[j] : 'Page ' + (j + 1);
+                        addLogEntry('Generated page ' + (j + 1) + ' of ' + readyTotalLabel + ': ' + readyTitle, 'done');
+                    }
+                    addLogEntry('Rendered documentation site', 'done');
+                    addLogEntry('Documentation ready!', 'done');
                 }
-                var readyCount = totalPagesFromPlan > 0 ? totalPagesFromPlan : previousPageCount;
-                var readyTotalLabel = totalPagesFromPlan > 0 ? totalPagesFromPlan : previousPageCount;
-                for (var j = 0; j < readyCount; j++) {
-                    var readyTitle = (planPages && planPages[j]) ? planPages[j] : 'Page ' + (j + 1);
-                    addLogEntry('Generated page ' + (j + 1) + ' of ' + readyTotalLabel + ': ' + readyTitle, 'done');
-                }
-                addLogEntry('Rendered documentation site', 'done');
-                addLogEntry('Documentation ready!', 'done');
             } else if (currentStatus === 'error' || currentStatus === 'aborted') {
                 addLogEntry('Cloned repository', 'done');
                 if (totalPagesFromPlan > 0) {
@@ -1179,7 +1185,7 @@
 
             if (status === 'ready') {
                 var viewBtn = document.createElement('a');
-                viewBtn.href = '/docs/' + PROJECT_NAME + '/';
+                viewBtn.href = '/docs/' + encodeURIComponent(PROJECT_NAME) + '/' + encodeURIComponent(PROJECT_PROVIDER) + '/' + encodeURIComponent(PROJECT_MODEL) + '/';
                 viewBtn.target = '_blank';
                 viewBtn.className = 'btn btn-primary';
                 viewBtn.id = 'btn-view-docs';
@@ -1187,7 +1193,7 @@
                 actionLinks.appendChild(viewBtn);
 
                 var downloadBtn = document.createElement('a');
-                downloadBtn.href = '/api/projects/' + PROJECT_NAME + '/download';
+                downloadBtn.href = '/api/projects/' + encodeURIComponent(PROJECT_NAME) + '/' + encodeURIComponent(PROJECT_PROVIDER) + '/' + encodeURIComponent(PROJECT_MODEL) + '/download';
                 downloadBtn.className = 'btn btn-secondary';
                 downloadBtn.id = 'btn-download';
                 downloadBtn.textContent = 'Download';
@@ -1295,7 +1301,7 @@
                 abortBtn.disabled = true;
                 abortBtn.textContent = 'Aborting...';
             }
-            fetch('/api/projects/' + encodeURIComponent(PROJECT_NAME) + '/abort', { method: 'POST' })
+            fetch('/api/projects/' + encodeURIComponent(PROJECT_NAME) + '/' + encodeURIComponent(PROJECT_PROVIDER) + '/' + encodeURIComponent(PROJECT_MODEL) + '/abort', { method: 'POST' })
                 .then(function(r) {
                     if (!r.ok) return r.json().then(function(data) { throw data; });
                     return r.json();
@@ -1395,7 +1401,7 @@
         }
 
         function pollProject() {
-            fetch('/api/projects/' + encodeURIComponent(PROJECT_NAME))
+            fetch('/api/projects/' + encodeURIComponent(PROJECT_NAME) + '/' + encodeURIComponent(PROJECT_PROVIDER) + '/' + encodeURIComponent(PROJECT_MODEL))
                 .then(function(res) {
                     if (!res.ok) throw new Error('Not found');
                     return res.json();
@@ -1495,18 +1501,31 @@
 
                 if (newStatus === 'ready') {
                     stopPolling();
-                    /* Mark the last active log entry as done */
-                    updateLastLogEntry(null, 'done');
-                    var readyEntries = logBody.querySelectorAll('.log-entry');
-                    if (readyEntries.length > 0) {
-                        var finalEntry = readyEntries[readyEntries.length - 1];
-                        var finalText = finalEntry.querySelector('.log-entry-text');
-                        if (finalText && finalText.textContent.indexOf('Generating') === 0) {
-                            finalText.textContent = finalText.textContent.replace('Generating', 'Generated');
+
+                    /* Check if this is an "up to date" skip */
+                    if (newStage === 'up_to_date') {
+                        /* Clear any in-progress log entries */
+                        while (logBody.firstChild) logBody.removeChild(logBody.firstChild);
+                        addLogEntry('Repository unchanged, docs already up to date', 'done');
+                        /* Update the success message text */
+                        var successTextEl = document.getElementById('success-text');
+                        if (successTextEl) {
+                            successTextEl.textContent = 'Documentation is already up to date \u2014 no changes since last generation.';
                         }
+                    } else {
+                        /* Mark the last active log entry as done */
+                        updateLastLogEntry(null, 'done');
+                        var readyEntries = logBody.querySelectorAll('.log-entry');
+                        if (readyEntries.length > 0) {
+                            var finalEntry = readyEntries[readyEntries.length - 1];
+                            var finalText = finalEntry.querySelector('.log-entry-text');
+                            if (finalText && finalText.textContent.indexOf('Generating') === 0) {
+                                finalText.textContent = finalText.textContent.replace('Generating', 'Generated');
+                            }
+                        }
+                        addLogEntry('Rendered documentation site', 'done');
+                        addLogEntry('Documentation ready!', 'done');
                     }
-                    addLogEntry('Rendered documentation site', 'done');
-                    addLogEntry('Documentation ready!', 'done');
                     progressBar.className = 'progress-bar-fill progress-bar-fill-ready';
                     progressBar.style.width = '100%';
                     progressLabel.textContent = 'Complete';

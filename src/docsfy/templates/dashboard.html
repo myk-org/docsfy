@@ -1,3 +1,27 @@
+{% macro regen_controls(variant, repo_name, default_provider, default_model, known_models, loop_index) %}
+<div class="variant-regen">
+    <select class="form-select form-select-sm" data-regen-provider="{{ repo_name }}">
+        <option value="claude" {{ 'selected' if variant.ai_provider == 'claude' }}>claude</option>
+        <option value="gemini" {{ 'selected' if variant.ai_provider == 'gemini' }}>gemini</option>
+        <option value="cursor" {{ 'selected' if variant.ai_provider == 'cursor' }}>cursor</option>
+    </select>
+    <div class="model-combobox-sm">
+        <input type="text" class="form-input form-input-sm" value="{{ variant.ai_model or default_model }}" data-regen-model="{{ repo_name }}" autocomplete="off">
+        <div class="model-dropdown" data-regen-dropdown>
+            {% for provider, models in known_models.items() %}
+            {% for model in models %}
+            <div class="model-option" data-provider="{{ provider }}" data-value="{{ model }}">
+                <span class="model-option-name">{{ model }}</span>
+                <span class="model-option-provider">{{ provider }}</span>
+            </div>
+            {% endfor %}
+            {% endfor %}
+        </div>
+    </div>
+    <label class="form-checkbox-sm"><input type="checkbox" data-regen-force="{{ repo_name }}"> Force</label>
+    <button class="btn btn-primary btn-sm" data-regenerate-variant="{{ repo_name }}" data-repo-url="{{ variant.repo_url }}">Regenerate</button>
+</div>
+{% endmacro %}
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
 <head>
@@ -977,6 +1001,230 @@
     }
 
     /* --------------------------------------------------------------------------
+       Project Groups (multi-variant)
+       -------------------------------------------------------------------------- */
+    .project-group {
+        background: var(--bg-card);
+        border: 1px solid var(--border-primary);
+        border-radius: 8px;
+        margin-bottom: 1rem;
+        overflow: hidden;
+    }
+
+    .group-header {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 1rem 1.25rem;
+        border-bottom: 1px solid var(--border-primary);
+        background: var(--bg-secondary);
+    }
+
+    .group-name {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--text-primary);
+    }
+
+    .group-variant-count {
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+        background: var(--bg-tertiary);
+        padding: 2px 8px;
+        border-radius: 10px;
+    }
+
+    .group-repo-link {
+        font-size: 0.8rem;
+        color: var(--text-link);
+        text-decoration: none;
+        margin-left: auto;
+    }
+
+    .variant-card {
+        padding: 1rem 1.25rem;
+        border-bottom: 1px solid var(--border-secondary);
+    }
+
+    .variant-card:last-child {
+        border-bottom: none;
+    }
+
+    .variant-header {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .variant-provider-model {
+        font-weight: 600;
+        font-size: 0.9rem;
+        color: var(--text-primary);
+    }
+
+    .variant-status {
+        font-size: 0.75rem;
+        font-weight: 500;
+        padding: 0.125rem 0.5rem;
+        border-radius: 9999px;
+        letter-spacing: 0.025em;
+    }
+
+    .variant-pages {
+        font-size: 0.8125rem;
+        color: var(--text-tertiary);
+    }
+
+    .variant-meta {
+        display: flex;
+        gap: 1rem;
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+        margin-bottom: 0.5rem;
+    }
+
+    .variant-actions {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        margin-top: 0.5rem;
+    }
+
+    .variant-regen {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        margin-top: 0.5rem;
+    }
+
+    .variant-progress {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        margin-top: 0.5rem;
+    }
+
+    .variant-error {
+        padding: 0.5rem;
+        background: rgba(248, 81, 73, 0.1);
+        border-radius: 4px;
+        margin-top: 0.5rem;
+    }
+
+    .error-text {
+        color: var(--status-error);
+        font-size: 0.85rem;
+    }
+
+    .form-select-sm, .form-input-sm {
+        height: 32px;
+        padding: 4px 8px;
+        font-size: 0.8rem;
+        border: 1px solid var(--border-primary);
+        border-radius: 8px;
+        background: var(--bg-primary);
+        color: var(--text-primary);
+        font-family: var(--font-sans);
+    }
+
+    .form-select-sm {
+        cursor: pointer;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M3 5l3 3 3-3' stroke='%236b7280' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 0.5rem center;
+        padding-right: 1.5rem;
+    }
+
+    .form-checkbox-sm {
+        font-size: 0.8rem;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        color: var(--text-secondary);
+        cursor: pointer;
+        user-select: none;
+    }
+
+    .form-checkbox-sm input[type="checkbox"] {
+        width: 14px;
+        height: 14px;
+        accent-color: var(--accent);
+        cursor: pointer;
+    }
+
+    /* Model Combobox */
+    .model-combobox {
+        position: relative;
+        flex: 1;
+    }
+
+    .model-dropdown {
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: var(--bg-card);
+        border: 1px solid var(--border-primary);
+        border-top: none;
+        border-radius: 0 0 6px 6px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        max-height: 200px;
+        overflow-y: auto;
+        z-index: 100;
+    }
+
+    .model-dropdown.active {
+        display: block;
+    }
+
+    .model-option {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 12px;
+        cursor: pointer;
+        font-size: 0.85rem;
+    }
+
+    .model-option:hover {
+        background: var(--bg-secondary);
+    }
+
+    .model-option-name {
+        color: var(--text-primary);
+    }
+
+    .model-option-provider {
+        color: var(--text-secondary);
+        font-size: 0.75rem;
+    }
+
+    .model-combobox-sm {
+        position: relative;
+        flex: 1;
+        min-width: 120px;
+    }
+
+    .model-combobox-sm .model-dropdown {
+        max-height: 160px;
+    }
+
+    .model-combobox-sm .model-option {
+        padding: 6px 8px;
+        font-size: 0.8rem;
+    }
+
+    .model-combobox-sm .model-option-provider {
+        font-size: 0.7rem;
+    }
+
+    /* --------------------------------------------------------------------------
        Responsive
        -------------------------------------------------------------------------- */
     @media (max-width: 640px) {
@@ -1035,6 +1283,34 @@
         .regenerate-inline .form-input {
             width: 100%;
         }
+
+        .group-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .group-repo-link {
+            margin-left: 0;
+        }
+
+        .variant-header {
+            flex-wrap: wrap;
+        }
+
+        .variant-actions,
+        .variant-regen {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .variant-regen .btn {
+            justify-content: center;
+        }
+
+        .variant-progress {
+            flex-direction: column;
+            align-items: stretch;
+        }
     }
     </style>
 </head>
@@ -1080,12 +1356,19 @@
                     </div>
                     <div class="form-group form-group-grow">
                         <label for="gen-model">Model</label>
-                        <input type="text" id="gen-model" class="form-input" list="model-suggestions" value="{{ default_model }}" placeholder="Model name">
-                        <datalist id="model-suggestions">
-                            {% for model in known_models.get(default_provider, []) %}
-                            <option value="{{ model }}">
-                            {% endfor %}
-                        </datalist>
+                        <div class="model-combobox">
+                            <input type="text" class="form-input" id="gen-model" value="{{ default_model }}" placeholder="Model name" autocomplete="off">
+                            <div class="model-dropdown" id="model-dropdown">
+                                {% for provider, models in known_models.items() %}
+                                {% for model in models %}
+                                <div class="model-option" data-provider="{{ provider }}" data-value="{{ model }}">
+                                    <span class="model-option-name">{{ model }}</span>
+                                    <span class="model-option-provider">{{ provider }}</span>
+                                </div>
+                                {% endfor %}
+                                {% endfor %}
+                            </div>
+                        </div>
                     </div>
                     <div class="form-checkbox-group">
                         <input type="checkbox" id="gen-force">
@@ -1102,9 +1385,9 @@
         <section class="projects-section">
             <div class="projects-header">
                 <h2 class="projects-title">
-                    Projects <span class="projects-count" id="projects-count">({{ projects | length }})</span>
+                    Projects <span class="projects-count" id="projects-count">({{ grouped_projects | length }})</span>
                 </h2>
-                {% if projects | length > 0 %}
+                {% if grouped_projects | length > 0 %}
                 <div class="search-filter">
                     <svg class="search-filter-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
                         <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
@@ -1124,7 +1407,7 @@
             </div>
 
             <div class="project-list" id="project-list">
-                {% if projects | length == 0 %}
+                {% if grouped_projects | length == 0 %}
                 <div class="empty-state" id="empty-state">
                     <div class="empty-state-icon">
                         <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
@@ -1138,200 +1421,81 @@
                     <p>Enter a GitHub repository URL above to generate your first documentation site.</p>
                 </div>
                 {% else %}
-                {% for project in projects %}
-                <article class="project-card" data-project="{{ project.name }}" data-status="{{ project.status }}">
-                    <div class="card-header">
-                        <div class="card-title-row">
-                            <span class="status-dot status-dot-{{ project.status }}" title="{{ project.status }}"></span>
-                            <span class="card-name">{{ project.name }}</span>
-                            <span class="card-status-badge badge-{{ project.status }}">{{ project.status }}</span>
-                            {% if project.page_count is not none and project.page_count > 0 %}
-                            <span class="card-page-count">{{ project.page_count }} pages</span>
+                {% for repo_name, variants in grouped_projects.items() %}
+                <article class="project-group" data-repo="{{ repo_name }}">
+                    <div class="group-header">
+                        <span class="group-name">{{ repo_name }}</span>
+                        <span class="group-variant-count">{{ variants|length }} variant{{ 's' if variants|length > 1 else '' }}</span>
+                        {% if variants[0].repo_url %}
+                        {% if variants[0].repo_url.startswith('http') or variants[0].repo_url.startswith('git@') %}
+                        {% set gh_url = variants[0].repo_url | replace('git@github.com:', 'https://github.com/') | replace('.git', '') %}
+                        <a href="{{ gh_url }}" target="_blank" rel="noopener noreferrer" class="group-repo-link">{{ gh_url }}</a>
+                        {% endif %}
+                        {% endif %}
+                    </div>
+
+                    {% for variant in variants %}
+                    <div class="variant-card"
+                         data-project="{{ repo_name }}"
+                         data-provider="{{ variant.ai_provider }}"
+                         data-model="{{ variant.ai_model }}"
+                         data-status="{{ variant.status }}">
+
+                        <div class="variant-header">
+                            <span class="status-dot status-dot-{{ variant.status }}"></span>
+                            <span class="variant-provider-model">{{ variant.ai_provider }}/{{ variant.ai_model }}</span>
+                            <span class="variant-status badge-{{ variant.status }}">{{ variant.status | upper }}</span>
+                            {% if variant.page_count > 0 %}
+                            <span class="variant-pages">{{ variant.page_count }} pages</span>
                             {% endif %}
                         </div>
-                    </div>
 
-                    <div class="card-meta">
-                        {% if project.repo_url %}
-                        <span class="meta-item">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-                            {% if project.repo_url.startswith('http') or project.repo_url.startswith('git@') %}
-                            <a href="{{ project.repo_url }}" target="_blank" rel="noopener noreferrer">{{ project.repo_url | replace('https://', '') | replace('http://', '') }}</a>
-                            {% else %}
-                            <span>{{ project.repo_url | replace('https://', '') | replace('http://', '') }}</span>
+                        <div class="variant-meta">
+                            {% if variant.last_generated %}
+                            <span>{{ variant.last_generated }}</span>
                             {% endif %}
-                        </span>
-                        {% endif %}
-                        {% if project.last_generated %}
-                        <span class="meta-item">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                            <span class="meta-label">Generated:</span>
-                            <time class="card-timestamp" data-ts="{{ project.last_generated }}">{{ project.last_generated }}</time>
-                        </span>
-                        {% endif %}
-                        {% if project.last_commit_sha %}
-                        <span class="meta-item">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><line x1="1.05" y1="12" x2="7" y2="12"/><line x1="17.01" y1="12" x2="22.96" y2="12"/></svg>
-                            <span class="meta-label">Commit:</span>
-                            {% set gh_repo_url = project.repo_url
-                                | replace('git@github.com:', 'https://github.com/')
-                                | replace('.git', '') %}
-                            {% if gh_repo_url.startswith('https://github.com/') %}
-                            <a href="{{ gh_repo_url }}/commit/{{ project.last_commit_sha }}" target="_blank" rel="noopener noreferrer">{{ project.last_commit_sha[:7] }}</a>
-                            {% else %}
-                            <span>{{ project.last_commit_sha[:7] }}</span>
-                            {% endif %}
-                        </span>
-                        {% endif %}
-                        {% if project.ai_provider %}
-                        <span class="meta-item">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2a4 4 0 0 1 4 4v1a3 3 0 0 1 3 3v1a2 2 0 0 1-2 2h-1v5a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-5H7a2 2 0 0 1-2-2v-1a3 3 0 0 1 3-3V6a4 4 0 0 1 4-4z"/></svg>
-                            <span class="meta-label">AI:</span>
-                            <span>{{ project.ai_provider }}{% if project.ai_model %}/{{ project.ai_model }}{% endif %}</span>
-                        </span>
-                        {% endif %}
-                    </div>
-
-                    {% if project.status == 'error' and project.error_message %}
-                    <div class="card-error" data-field="error">{{ project.error_message }}</div>
-                    {% endif %}
-
-                    {% if project.status == 'aborted' and project.error_message %}
-                    <div class="card-aborted" data-field="error">{{ project.error_message }}</div>
-                    {% endif %}
-
-                    {% if project.status == 'generating' %}
-                    <div class="progress-container" data-field="progress">
-                        {% set total_pages = 0 %}
-                        {% if project.plan_json %}
-                            {% set ns = namespace(count=0) %}
-                            {% for group in project.plan_json.get('navigation', []) %}
-                                {% set ns.count = ns.count + group.get('pages', []) | length %}
-                            {% endfor %}
-                            {% set total_pages = ns.count %}
-                        {% endif %}
-                        <div class="progress-text">
-                            <span>Generating documentation...</span>
-                            {% if total_pages > 0 and project.page_count is not none %}
-                            <span data-field="progress-text">{{ project.page_count }} / {{ total_pages }} pages</span>
+                            {% if variant.last_commit_sha %}
+                            <span>{{ variant.last_commit_sha[:7] }}</span>
                             {% endif %}
                         </div>
-                        {% if total_pages > 0 and project.page_count is not none %}
-                        <div class="progress-bar-wrapper">
-                            <div class="progress-bar-fill" data-field="progress-bar" style="width: {{ ((project.page_count / total_pages) * 100) | int }}%"></div>
+
+                        {% if variant.status == 'ready' %}
+                        <div class="variant-actions">
+                            <a href="/docs/{{ repo_name }}/{{ variant.ai_provider | urlencode }}/{{ variant.ai_model | urlencode }}/" target="_blank" class="btn btn-primary btn-sm">View Docs</a>
+                            <a href="/api/projects/{{ repo_name }}/{{ variant.ai_provider | urlencode }}/{{ variant.ai_model | urlencode }}/download" class="btn btn-secondary btn-sm">Download</a>
+                            <button class="btn btn-danger btn-sm" data-delete-variant="{{ repo_name }}/{{ variant.ai_provider }}/{{ variant.ai_model }}">Delete</button>
                         </div>
-                        {% else %}
-                        <div class="progress-bar-wrapper">
-                            <div class="progress-bar-fill" data-field="progress-bar" style="width: 0%"></div>
+                        <!-- Regenerate controls -->
+                        {{ regen_controls(variant, repo_name, default_provider, default_model, known_models, loop.index) }}
+
+                        {% elif variant.status == 'generating' %}
+                        <div class="variant-progress">
+                            <div class="progress-bar-container">
+                                <div class="progress-bar-wrapper">
+                                    <div class="progress-bar-fill" data-field="progress-bar" style="width: 0%"></div>
+                                </div>
+                            </div>
+                            <span class="progress-text">Generating...</span>
+                            <a href="/status/{{ repo_name }}/{{ variant.ai_provider | urlencode }}/{{ variant.ai_model | urlencode }}" target="_blank" class="status-link">View progress &rarr;</a>
+                            <button class="btn btn-danger btn-sm" data-abort-variant="{{ repo_name }}/{{ variant.ai_provider }}/{{ variant.ai_model }}">Abort</button>
+                        </div>
+
+                        {% elif variant.status == 'error' or variant.status == 'aborted' %}
+                        <div class="variant-error">
+                            <span class="error-text">{{ variant.error_message }}</span>
+                        </div>
+                        <div class="variant-actions">
+                            {{ regen_controls(variant, repo_name, default_provider, default_model, known_models, loop.index) }}
+                            <button class="btn btn-danger btn-sm" data-delete-variant="{{ repo_name }}/{{ variant.ai_provider }}/{{ variant.ai_model }}">Delete</button>
                         </div>
                         {% endif %}
                     </div>
-                    {% endif %}
-
-                    {% if project.status == 'ready' %}
-                    <div class="card-actions">
-                        <a href="/docs/{{ project.name }}/" target="_blank" class="btn btn-primary btn-sm">View Docs</a>
-                        <a href="/api/projects/{{ project.name }}/download" class="btn btn-secondary btn-sm">Download</a>
-                        <span class="card-actions-spacer"></span>
-                        <button class="btn btn-danger btn-sm btn-icon" data-delete="{{ project.name }}" aria-label="Delete project" title="Delete project">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-                        </button>
-                    </div>
-                    <div class="regenerate-inline">
-                        <select class="form-select" data-regen="provider" aria-label="Provider for regeneration">
-                            <option value="claude"{% if project.ai_provider == 'claude' %} selected{% endif %}>claude</option>
-                            <option value="gemini"{% if project.ai_provider == 'gemini' %} selected{% endif %}>gemini</option>
-                            <option value="cursor"{% if project.ai_provider == 'cursor' %} selected{% endif %}>cursor</option>
-                        </select>
-                        <input type="text" class="form-input" data-regen="model" list="model-suggestions-{{ project.name }}" value="{{ project.ai_model or default_model }}" aria-label="Model for regeneration">
-                        <datalist id="model-suggestions-{{ project.name }}">
-                            {% for model in known_models.get(project.ai_provider or default_provider, []) %}
-                            <option value="{{ model }}">
-                            {% endfor %}
-                        </datalist>
-                        <div class="form-checkbox-group">
-                            <input type="checkbox" data-regen="force" id="regen-force-{{ loop.index }}">
-                            <label for="regen-force-{{ loop.index }}">Force</label>
-                        </div>
-                        <button class="btn btn-secondary btn-sm" data-regenerate="{{ project.name }}" data-repo="{{ project.repo_url }}">Regenerate</button>
-                    </div>
-                    {% endif %}
-
-                    {% if project.status == 'generating' %}
-                    <div class="generating-indicator">
-                        <span class="spinner"></span>
-                        <span>Generation in progress...</span>
-                    </div>
-                    <div style="margin-top: 12px; display: flex; align-items: center; gap: 12px;">
-                        <a href="/status/{{ project.name }}" target="_blank" class="status-link">View progress →</a>
-                        <button class="btn btn-danger btn-sm" data-abort="{{ project.name }}">Abort</button>
-                    </div>
-                    {% endif %}
-
-                    {% if project.status == 'error' %}
-                    <div class="card-actions">
-                        <span class="card-actions-spacer"></span>
-                        <button class="btn btn-danger btn-sm btn-icon" data-delete="{{ project.name }}" aria-label="Delete project" title="Delete project">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-                        </button>
-                    </div>
-                    <div class="regenerate-inline">
-                        <select class="form-select" data-regen="provider" aria-label="Provider for regeneration">
-                            <option value="claude"{% if project.ai_provider == 'claude' %} selected{% endif %}>claude</option>
-                            <option value="gemini"{% if project.ai_provider == 'gemini' %} selected{% endif %}>gemini</option>
-                            <option value="cursor"{% if project.ai_provider == 'cursor' %} selected{% endif %}>cursor</option>
-                        </select>
-                        <input type="text" class="form-input" data-regen="model" list="model-suggestions-{{ project.name }}" value="{{ project.ai_model or default_model }}" aria-label="Model for regeneration">
-                        <datalist id="model-suggestions-{{ project.name }}">
-                            {% for model in known_models.get(project.ai_provider or default_provider, []) %}
-                            <option value="{{ model }}">
-                            {% endfor %}
-                        </datalist>
-                        <div class="form-checkbox-group">
-                            <input type="checkbox" data-regen="force" id="regen-force-{{ loop.index }}">
-                            <label for="regen-force-{{ loop.index }}">Force</label>
-                        </div>
-                        <button class="btn btn-secondary btn-sm" data-regenerate="{{ project.name }}" data-repo="{{ project.repo_url }}">Regenerate</button>
-                    </div>
-                    <div style="margin-top: 8px;">
-                        <a href="/status/{{ project.name }}" target="_blank" class="status-link">View details &rarr;</a>
-                    </div>
-                    {% endif %}
-
-                    {% if project.status == 'aborted' %}
-                    <div class="card-actions">
-                        <span class="card-actions-spacer"></span>
-                        <button class="btn btn-danger btn-sm btn-icon" data-delete="{{ project.name }}" aria-label="Delete project" title="Delete project">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-                        </button>
-                    </div>
-                    <div class="regenerate-inline">
-                        <select class="form-select" data-regen="provider" aria-label="Provider for regeneration">
-                            <option value="claude"{% if project.ai_provider == 'claude' %} selected{% endif %}>claude</option>
-                            <option value="gemini"{% if project.ai_provider == 'gemini' %} selected{% endif %}>gemini</option>
-                            <option value="cursor"{% if project.ai_provider == 'cursor' %} selected{% endif %}>cursor</option>
-                        </select>
-                        <input type="text" class="form-input" data-regen="model" list="model-suggestions-{{ project.name }}" value="{{ project.ai_model or default_model }}" aria-label="Model for regeneration">
-                        <datalist id="model-suggestions-{{ project.name }}">
-                            {% for model in known_models.get(project.ai_provider or default_provider, []) %}
-                            <option value="{{ model }}">
-                            {% endfor %}
-                        </datalist>
-                        <div class="form-checkbox-group">
-                            <input type="checkbox" data-regen="force" id="regen-force-{{ loop.index }}">
-                            <label for="regen-force-{{ loop.index }}">Force</label>
-                        </div>
-                        <button class="btn btn-secondary btn-sm" data-regenerate="{{ project.name }}" data-repo="{{ project.repo_url }}">Regenerate</button>
-                    </div>
-                    <div style="margin-top: 8px;">
-                        <a href="/status/{{ project.name }}" target="_blank" class="status-link">View details &rarr;</a>
-                    </div>
-                    {% endif %}
+                    {% endfor %}
                 </article>
                 {% endfor %}
                 {% endif %}
             </div>
-            {% if projects | length > 0 %}
+            {% if grouped_projects | length > 0 %}
             <div class="pagination-controls-bottom">
                 <button id="prev-page" class="pagination-btn" disabled aria-label="Previous page">&larr; Previous</button>
                 <span id="page-info" class="page-info">Page 1 of 1</span>
@@ -1360,49 +1524,233 @@
 
     <script>
     /* =========================================================================
-       docsfy Dashboard - Inline JavaScript
+       docsfy Dashboard - Inline JavaScript (Multi-Variant)
        ========================================================================= */
     (function() {
         'use strict';
 
-        /* ----- Model Suggestions (combobox) ----- */
+        /* ----- Form State Persistence ----- */
+        function saveFormState() {
+            var repoInput = document.getElementById('gen-repo-url');
+            var providerSelect = document.getElementById('gen-provider');
+            var modelInput = document.getElementById('gen-model');
+            var forceCheck = document.getElementById('gen-force');
+
+            if (repoInput) sessionStorage.setItem('docsfy-repo', repoInput.value);
+            if (providerSelect) sessionStorage.setItem('docsfy-provider', providerSelect.value);
+            if (modelInput) sessionStorage.setItem('docsfy-model', modelInput.value);
+            if (forceCheck) sessionStorage.setItem('docsfy-force', forceCheck.checked ? '1' : '0');
+        }
+
+        var _restoring = false;
+
+        function restoreFormState() {
+            _restoring = true;
+            try {
+                var repo = sessionStorage.getItem('docsfy-repo');
+                var provider = sessionStorage.getItem('docsfy-provider');
+                var model = sessionStorage.getItem('docsfy-model');
+                var force = sessionStorage.getItem('docsfy-force');
+
+                if (repo) {
+                    var repoInput = document.getElementById('gen-repo-url');
+                    if (repoInput) repoInput.value = repo;
+                }
+                if (provider) {
+                    var sel = document.getElementById('gen-provider');
+                    if (sel) sel.value = provider;
+                    // Don't dispatch change event — we'll set the model explicitly next
+                }
+                if (model) {
+                    var inp = document.getElementById('gen-model');
+                    if (inp) inp.value = model;
+                }
+                if (force === '1') {
+                    var forceCheck = document.getElementById('gen-force');
+                    if (forceCheck) forceCheck.checked = true;
+                }
+            } finally {
+                _restoring = false;
+            }
+        }
+
+        function clearFormState() {
+            sessionStorage.removeItem('docsfy-repo');
+            sessionStorage.removeItem('docsfy-provider');
+            sessionStorage.removeItem('docsfy-model');
+            sessionStorage.removeItem('docsfy-force');
+        }
+
+        /* ----- Model Combobox (custom dropdown) ----- */
         var knownModels = {{ known_models | tojson }};
 
-        // Update model suggestions when provider changes (Generate form)
+        // --- Generate form combobox ---
+        var modelInput = document.getElementById('gen-model');
+        var modelDropdown = document.getElementById('model-dropdown');
         var providerSelect = document.getElementById('gen-provider');
-        var datalist = document.getElementById('model-suggestions');
 
-        if (providerSelect && datalist) {
-            providerSelect.addEventListener('change', function() {
-                var provider = this.value;
-                datalist.innerHTML = '';
-                var models = knownModels[provider] || [];
-                models.forEach(function(model) {
-                    var option = document.createElement('option');
-                    option.value = model;
-                    datalist.appendChild(option);
+        function filterModelOptions(dropdown, query, providerValue) {
+            var q = (query || '').toLowerCase();
+            var hasVisible = false;
+            dropdown.querySelectorAll('.model-option').forEach(function(opt) {
+                var matchesQuery = !q || opt.getAttribute('data-value').toLowerCase().indexOf(q) !== -1;
+                var matchesProvider = !providerValue || opt.getAttribute('data-provider') === providerValue;
+                var visible = matchesQuery && matchesProvider;
+                opt.style.display = visible ? '' : 'none';
+                if (visible) hasVisible = true;
+            });
+            return hasVisible;
+        }
+
+        /* Rebuild all model dropdown option elements from the knownModels object.
+           Called when the status poll returns an updated known_models map so that
+           newly-discovered models appear without a full page reload. */
+        function rebuildModelDropdownOptions() {
+            var allDropdowns = document.querySelectorAll('#model-dropdown, [data-regen-dropdown]');
+            allDropdowns.forEach(function(dropdown) {
+                dropdown.innerHTML = '';
+                Object.keys(knownModels).forEach(function(provider) {
+                    var models = knownModels[provider] || [];
+                    models.forEach(function(model) {
+                        var div = document.createElement('div');
+                        div.className = 'model-option';
+                        div.setAttribute('data-provider', provider);
+                        div.setAttribute('data-value', model);
+
+                        var nameSpan = document.createElement('span');
+                        nameSpan.className = 'model-option-name';
+                        nameSpan.textContent = model;
+                        div.appendChild(nameSpan);
+
+                        var provSpan = document.createElement('span');
+                        provSpan.className = 'model-option-provider';
+                        provSpan.textContent = provider;
+                        div.appendChild(provSpan);
+
+                        dropdown.appendChild(div);
+                    });
                 });
             });
         }
 
-        // Update model suggestions when provider changes (per-project Regenerate)
+        if (modelInput && modelDropdown) {
+            modelInput.addEventListener('focus', function() {
+                var provider = providerSelect ? providerSelect.value : '';
+                filterModelOptions(modelDropdown, '', provider);
+                modelDropdown.classList.add('active');
+            });
+
+            modelInput.addEventListener('input', function() {
+                var provider = providerSelect ? providerSelect.value : '';
+                filterModelOptions(modelDropdown, this.value, provider);
+                modelDropdown.classList.add('active');
+            });
+
+            modelDropdown.addEventListener('click', function(e) {
+                var option = e.target.closest('.model-option');
+                if (option) {
+                    modelInput.value = option.getAttribute('data-value');
+                    modelDropdown.classList.remove('active');
+                    saveFormState();
+                }
+            });
+        }
+
+        if (providerSelect && modelDropdown) {
+            providerSelect.addEventListener('change', function() {
+                if (_restoring) return;
+                var newProvider = this.value;
+                var modelsForProvider = knownModels[newProvider] || [];
+
+                // If current model is not valid for the new provider, auto-fill
+                if (modelInput) {
+                    var currentModel = modelInput.value;
+                    if (modelsForProvider.length > 0 && modelsForProvider.indexOf(currentModel) === -1) {
+                        modelInput.value = modelsForProvider[0];
+                        saveFormState();
+                    } else if (modelsForProvider.length === 0) {
+                        modelInput.value = '';
+                        modelInput.placeholder = 'Enter model name';
+                        saveFormState();
+                    }
+                }
+
+                filterModelOptions(modelDropdown, modelInput ? modelInput.value : '', newProvider);
+            });
+        }
+
+        // --- Per-variant regen comboboxes ---
+        function setupRegenCombobox(input) {
+            var combobox = input.closest('.model-combobox-sm');
+            if (!combobox) return;
+            var dropdown = combobox.querySelector('[data-regen-dropdown]');
+            if (!dropdown) return;
+
+            input.addEventListener('focus', function() {
+                var row = input.closest('.variant-regen');
+                var provSel = row ? row.querySelector('[data-regen-provider]') : null;
+                var prov = provSel ? provSel.value : '';
+                filterModelOptions(dropdown, '', prov);
+                dropdown.classList.add('active');
+            });
+
+            input.addEventListener('input', function() {
+                var row = input.closest('.variant-regen');
+                var provSel = row ? row.querySelector('[data-regen-provider]') : null;
+                var prov = provSel ? provSel.value : '';
+                filterModelOptions(dropdown, this.value, prov);
+                dropdown.classList.add('active');
+            });
+
+            dropdown.addEventListener('click', function(e) {
+                var option = e.target.closest('.model-option');
+                if (option) {
+                    input.value = option.getAttribute('data-value');
+                    dropdown.classList.remove('active');
+                }
+            });
+        }
+
+        document.querySelectorAll('[data-regen-model]').forEach(function(input) {
+            setupRegenCombobox(input);
+        });
+
+        // Re-filter regen dropdowns when provider changes and auto-switch model
         document.addEventListener('change', function(e) {
-            var sel = e.target.closest('[data-regen="provider"]');
+            var sel = e.target.closest('[data-regen-provider]');
             if (!sel) return;
-            var row = sel.closest('.regenerate-inline');
+            var row = sel.closest('.variant-regen');
             if (!row) return;
-            var modelInput = row.querySelector('[data-regen="model"]');
-            if (!modelInput) return;
-            var dlId = modelInput.getAttribute('list');
-            var dl = document.getElementById(dlId);
-            if (!dl) return;
-            var provider = sel.value;
-            dl.innerHTML = '';
-            var models = knownModels[provider] || [];
-            models.forEach(function(model) {
-                var option = document.createElement('option');
-                option.value = model;
-                dl.appendChild(option);
+            var repoName = sel.getAttribute('data-regen-provider');
+            var input = row.querySelector('[data-regen-model="' + repoName + '"]');
+            if (!input) return;
+            var combobox = input.closest('.model-combobox-sm');
+            if (!combobox) return;
+            var dropdown = combobox.querySelector('[data-regen-dropdown]');
+            if (!dropdown) return;
+
+            var newProvider = sel.value;
+            var modelsForProvider = knownModels[newProvider] || [];
+            var currentModel = input.value;
+
+            // If current model is not valid for the new provider, auto-fill
+            if (modelsForProvider.length > 0 && modelsForProvider.indexOf(currentModel) === -1) {
+                input.value = modelsForProvider[0];
+            } else if (modelsForProvider.length === 0) {
+                input.value = '';
+                input.placeholder = 'Enter model name';
+            }
+
+            filterModelOptions(dropdown, input.value, newProvider);
+        });
+
+        // Single document-level listener for closing all combobox dropdowns
+        document.addEventListener('click', function(e) {
+            document.querySelectorAll('.model-dropdown.active').forEach(function(dropdown) {
+                var combobox = dropdown.closest('.model-combobox, .model-combobox-sm');
+                if (combobox && !combobox.contains(e.target)) {
+                    dropdown.classList.remove('active');
+                }
             });
         });
 
@@ -1454,14 +1802,19 @@
             }, duration);
         }
 
+        /* ----- Helper: build composite key for a variant ----- */
+        function variantKey(name, provider, model) {
+            return name + '/' + provider + '/' + model;
+        }
+
         /* ----- Polling State ----- */
         var statusPollInterval = null;      // Slow poll for status changes (10s)
         var progressPollInterval = null;    // Fast poll for progress updates (5s)
         var isStatusPolling = false;
         var isProgressPolling = false;
 
-        function hasGeneratingProjects() {
-            var cards = document.querySelectorAll('.project-card[data-status="generating"]');
+        function hasGeneratingVariants() {
+            var cards = document.querySelectorAll('.variant-card[data-status="generating"]');
             return cards.length > 0;
         }
 
@@ -1493,6 +1846,19 @@
             isProgressPolling = false;
         }
 
+        /* ----- Build a map of existing variant cards by composite key ----- */
+        function getExistingVariantCards() {
+            var map = {};
+            document.querySelectorAll('.variant-card').forEach(function(card) {
+                var name = card.getAttribute('data-project');
+                var provider = card.getAttribute('data-provider');
+                var model = card.getAttribute('data-model');
+                var key = variantKey(name, provider, model);
+                map[key] = card;
+            });
+            return map;
+        }
+
         /* ----- Poll /api/status for status changes (10s interval) ----- */
         function pollStatusChanges() {
             fetch('/api/status')
@@ -1501,18 +1867,23 @@
                     var projectsList = data.projects || data;
                     if (!Array.isArray(projectsList)) return;
 
+                    // Update known models from the API so new models
+                    // appear in dropdowns without a full page reload.
+                    if (data.known_models) {
+                        knownModels = data.known_models;
+                        rebuildModelDropdownOptions();
+                    }
+
                     var anyGenerating = false;
                     var needsReload = false;
-                    var existingCards = {};
-                    document.querySelectorAll('.project-card').forEach(function(card) {
-                        existingCards[card.getAttribute('data-project')] = card;
-                    });
+                    var existingCards = getExistingVariantCards();
 
                     projectsList.forEach(function(proj) {
                         if (proj.status === 'generating') anyGenerating = true;
-                        var card = existingCards[proj.name];
+                        var key = variantKey(proj.name, proj.ai_provider || '', proj.ai_model || '');
+                        var card = existingCards[key];
                         if (!card) {
-                            // New project appeared: reload to get server-rendered card
+                            // New variant appeared: reload to get server-rendered card
                             needsReload = true;
                             return;
                         }
@@ -1524,9 +1895,11 @@
                         }
                     });
 
-                    // Update project count
+                    // Update project count (count unique repo names)
+                    var repoNames = {};
+                    projectsList.forEach(function(proj) { repoNames[proj.name] = true; });
                     var countEl = document.getElementById('projects-count');
-                    if (countEl) countEl.textContent = '(' + projectsList.length + ')';
+                    if (countEl) countEl.textContent = '(' + Object.keys(repoNames).length + ')';
 
                     // Remove empty state if projects exist
                     if (projectsList.length > 0) {
@@ -1535,11 +1908,12 @@
                     }
 
                     if (needsReload) {
+                        saveFormState();
                         location.reload();
                         return;
                     }
 
-                    // Start/stop progress polling based on generating projects
+                    // Start/stop progress polling based on generating variants
                     if (anyGenerating && !isProgressPolling) {
                         startProgressPolling();
                     } else if (!anyGenerating && isProgressPolling) {
@@ -1559,15 +1933,13 @@
                     var projectsList = data.projects || data;
                     if (!Array.isArray(projectsList)) return;
 
-                    var existingCards = {};
-                    document.querySelectorAll('.project-card').forEach(function(card) {
-                        existingCards[card.getAttribute('data-project')] = card;
-                    });
+                    var existingCards = getExistingVariantCards();
 
                     projectsList.forEach(function(proj) {
-                        var card = existingCards[proj.name];
+                        var key = variantKey(proj.name, proj.ai_provider || '', proj.ai_model || '');
+                        var card = existingCards[key];
                         if (card) {
-                            updateCardProgressDOM(card, proj);
+                            updateVariantProgressDOM(card, proj);
                         }
                     });
                 })
@@ -1576,8 +1948,8 @@
                 });
         }
 
-        /* ----- Update a single card's progress (no-flicker DOM updates) ----- */
-        function updateCardProgressDOM(card, proj) {
+        /* ----- Update a single variant card's progress (no-flicker DOM updates) ----- */
+        function updateVariantProgressDOM(card, proj) {
             var prevStatus = card.getAttribute('data-status');
             // Only update if status is still 'generating'
             if (prevStatus !== 'generating' || proj.status !== 'generating') return;
@@ -1599,12 +1971,12 @@
                 });
             }
 
-            var progressText = card.querySelector('[data-field="progress-text"]');
+            var progressText = card.querySelector('.progress-text');
             if (progressText) {
                 if (totalPages > 0) {
                     progressText.textContent = pageCount + ' / ' + totalPages + ' pages';
                 } else {
-                    progressText.textContent = pageCount + ' pages';
+                    progressText.textContent = 'Generating... ' + pageCount + ' pages';
                 }
             }
 
@@ -1619,9 +1991,9 @@
             }
 
             // Update page count in header
-            var pageCountEl = card.querySelector('.card-page-count');
-            if (pageCountEl) {
-                pageCountEl.textContent = pageCount + ' pages';
+            var pagesEl = card.querySelector('.variant-pages');
+            if (pagesEl) {
+                pagesEl.textContent = pageCount + ' pages';
             }
         }
 
@@ -1662,12 +2034,14 @@
                 })
                 .then(function(data) {
                     var projectName = data.project || repoUrl;
+                    var statusUrl = '/status/' + encodeURIComponent(projectName) + '/' + encodeURIComponent(provider) + '/' + encodeURIComponent(model);
                     showToast('Generation started for ' + projectName + '.', 'success', 6000, {
-                        href: '/status/' + encodeURIComponent(projectName),
+                        href: statusUrl,
                         text: 'View progress \u2192'
                     });
                     document.getElementById('gen-repo-url').value = '';
                     document.getElementById('gen-force').checked = false;
+                    clearFormState(); // Clear saved state after successful generation
                     startProgressPolling();
                     // Reload to show the new card
                     setTimeout(function() { location.reload(); }, 1000);
@@ -1683,19 +2057,23 @@
             });
         }
 
-        /* ----- Regenerate (delegated event) ----- */
+        /* ----- Regenerate Variant (delegated event) ----- */
         document.addEventListener('click', function(e) {
-            var regenBtn = e.target.closest('[data-regenerate]');
+            var regenBtn = e.target.closest('[data-regenerate-variant]');
             if (!regenBtn) return;
 
-            var name = regenBtn.getAttribute('data-regenerate');
-            var repoUrl = regenBtn.getAttribute('data-repo');
-            var row = regenBtn.closest('.regenerate-inline');
+            var name = regenBtn.getAttribute('data-regenerate-variant');
+            var repoUrl = regenBtn.getAttribute('data-repo-url');
+            var row = regenBtn.closest('.variant-regen');
             if (!row) return;
 
-            var provider = row.querySelector('[data-regen="provider"]').value;
-            var model = row.querySelector('[data-regen="model"]').value.trim();
-            var force = row.querySelector('[data-regen="force"]').checked;
+            var providerSel = row.querySelector('[data-regen-provider="' + name + '"]');
+            var modelInput = row.querySelector('[data-regen-model="' + name + '"]');
+            var forceCheckbox = row.querySelector('[data-regen-force="' + name + '"]');
+
+            var provider = providerSel ? providerSel.value : '';
+            var model = modelInput ? modelInput.value.trim() : '';
+            var force = forceCheckbox ? forceCheckbox.checked : false;
 
             regenBtn.disabled = true;
             regenBtn.textContent = 'Starting...';
@@ -1717,11 +2095,13 @@
                 return res.json();
             })
             .then(function() {
+                var statusUrl = '/status/' + encodeURIComponent(name) + '/' + encodeURIComponent(provider) + '/' + encodeURIComponent(model);
                 showToast('Regeneration started for ' + name + '.', 'success', 6000, {
-                    href: '/status/' + encodeURIComponent(name),
+                    href: statusUrl,
                     text: 'View progress \u2192'
                 });
                 startProgressPolling();
+                saveFormState();
                 setTimeout(function() { location.reload(); }, 1000);
             })
             .catch(function(err) {
@@ -1734,51 +2114,25 @@
             });
         });
 
-        /* ----- Retry (delegated event) ----- */
+        /* ----- Abort Variant Generation ----- */
         document.addEventListener('click', function(e) {
-            var retryBtn = e.target.closest('[data-retry]');
-            if (!retryBtn) return;
-
-            var name = retryBtn.getAttribute('data-retry');
-            var repoUrl = retryBtn.getAttribute('data-repo');
-
-            fetch('/api/generate', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ repo_url: repoUrl })
-            })
-            .then(function(res) {
-                if (!res.ok) return res.json().then(function(data) { throw data; });
-                return res.json();
-            })
-            .then(function() {
-                showToast('Retry started for ' + name + '.', 'success', 6000, {
-                    href: '/status/' + encodeURIComponent(name),
-                    text: 'View progress \u2192'
-                });
-                startProgressPolling();
-                setTimeout(function() { location.reload(); }, 1000);
-            })
-            .catch(function(err) {
-                var msg = (err && err.detail) || (err && err.message) || 'Retry request failed';
-                showToast(msg, 'error', 6000);
-            });
-        });
-
-        /* ----- Abort Generation ----- */
-        document.addEventListener('click', function(e) {
-            var abortBtn = e.target.closest('[data-abort]');
+            var abortBtn = e.target.closest('[data-abort-variant]');
             if (!abortBtn) return;
-            var name = abortBtn.getAttribute('data-abort');
-            if (!confirm('Abort generation for ' + name + '?')) return;
+            var composite = abortBtn.getAttribute('data-abort-variant');
+            // composite is "name/provider/model"
+            var parts = composite.split('/');
+            var name = parts[0];
+            var provider = parts[1];
+            var model = parts.slice(2).join('/');
+            if (!confirm('Abort generation for ' + name + ' (' + provider + '/' + model + ')?')) return;
             abortBtn.disabled = true;
             abortBtn.textContent = 'Aborting...';
-            fetch('/api/projects/' + encodeURIComponent(name) + '/abort', { method: 'POST' })
+            fetch('/api/projects/' + encodeURIComponent(name) + '/' + encodeURIComponent(provider) + '/' + encodeURIComponent(model) + '/abort', { method: 'POST' })
                 .then(function(r) {
                     if (!r.ok) return r.json().then(function(data) { throw data; });
                     return r.json();
                 })
-                .then(function() { location.reload(); })
+                .then(function() { saveFormState(); location.reload(); })
                 .catch(function(err) {
                     abortBtn.disabled = false;
                     abortBtn.textContent = 'Abort';
@@ -1787,30 +2141,36 @@
                 });
         });
 
-        /* ----- Delete with Confirmation ----- */
+        /* ----- Delete Variant with Confirmation ----- */
         var confirmOverlay = document.getElementById('confirm-overlay');
         var confirmMessage = document.getElementById('confirm-message');
         var confirmCancelBtn = document.getElementById('confirm-cancel');
         var confirmDeleteBtn = document.getElementById('confirm-delete');
-        var pendingDeleteName = null;
+        var pendingDeleteVariant = null;
 
-        function openConfirm(name) {
-            pendingDeleteName = name;
-            confirmMessage.textContent = 'Are you sure you want to delete "' + name + '"? This will remove all generated documentation and cannot be undone.';
+        function openConfirm(variantPath) {
+            pendingDeleteVariant = variantPath;
+            confirmMessage.textContent = 'Are you sure you want to delete "' + variantPath + '"? This will remove the generated documentation for this variant and cannot be undone.';
             confirmOverlay.classList.remove('hidden');
         }
 
         function closeConfirm() {
             confirmOverlay.classList.add('hidden');
-            pendingDeleteName = null;
+            pendingDeleteVariant = null;
         }
 
         function executeDelete() {
-            var name = pendingDeleteName;
-            if (!name) return;
+            var variantPath = pendingDeleteVariant;
+            if (!variantPath) return;
             closeConfirm();
 
-            fetch('/api/projects/' + encodeURIComponent(name), {
+            // variantPath is "name/provider/model"
+            var parts = variantPath.split('/');
+            var name = parts[0];
+            var provider = parts[1];
+            var model = parts.slice(2).join('/');
+
+            fetch('/api/projects/' + encodeURIComponent(name) + '/' + encodeURIComponent(provider) + '/' + encodeURIComponent(model), {
                 method: 'DELETE'
             })
             .then(function(res) {
@@ -1818,24 +2178,47 @@
                 return res.json();
             })
             .then(function() {
-                showToast('Project ' + name + ' deleted', 'success');
-                var card = document.querySelector('.project-card[data-project="' + name + '"]');
-                if (card) {
-                    card.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
-                    card.style.opacity = '0';
-                    card.style.transform = 'translateX(-1rem)';
-                    setTimeout(function() {
-                        card.remove();
-                        // Update count
-                        var remaining = document.querySelectorAll('.project-card').length;
-                        var countEl = document.getElementById('projects-count');
-                        if (countEl) countEl.textContent = '(' + remaining + ')';
-                        // Show empty state if no projects left
-                        if (remaining === 0) {
-                            buildEmptyState();
-                        }
-                    }, 300);
-                }
+                showToast('Variant ' + variantPath + ' deleted', 'success');
+                // Find and remove the variant card
+                var allCards = document.querySelectorAll('.variant-card');
+                allCards.forEach(function(card) {
+                    var cardName = card.getAttribute('data-project');
+                    var cardProvider = card.getAttribute('data-provider');
+                    var cardModel = card.getAttribute('data-model');
+                    if (cardName === name && cardProvider === provider && cardModel === model) {
+                        var group = card.closest('.project-group');
+                        card.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                        card.style.opacity = '0';
+                        card.style.transform = 'translateX(-1rem)';
+                        setTimeout(function() {
+                            card.remove();
+                            // If group has no more variant cards, remove the entire group
+                            if (group && group.querySelectorAll('.variant-card').length === 0) {
+                                group.style.transition = 'opacity 0.3s ease';
+                                group.style.opacity = '0';
+                                setTimeout(function() {
+                                    group.remove();
+                                    // Update count
+                                    var remaining = document.querySelectorAll('.project-group').length;
+                                    var countEl = document.getElementById('projects-count');
+                                    if (countEl) countEl.textContent = '(' + remaining + ')';
+                                    // Show empty state if no groups left
+                                    if (remaining === 0) {
+                                        buildEmptyState();
+                                    }
+                                    applyPagination();
+                                }, 300);
+                            } else if (group) {
+                                // Update variant count in group header
+                                var vcEl = group.querySelector('.group-variant-count');
+                                if (vcEl) {
+                                    var count = group.querySelectorAll('.variant-card').length;
+                                    vcEl.textContent = count + ' variant' + (count > 1 ? 's' : '');
+                                }
+                            }
+                        }, 300);
+                    }
+                });
             })
             .catch(function(err) {
                 var msg = (err && err.detail) || (err && err.message) || 'Delete failed';
@@ -1890,11 +2273,11 @@
             list.appendChild(wrapper);
         }
 
-        /* Delete button delegated click */
+        /* Delete variant button delegated click */
         document.addEventListener('click', function(e) {
-            var deleteBtn = e.target.closest('[data-delete]');
+            var deleteBtn = e.target.closest('[data-delete-variant]');
             if (!deleteBtn) return;
-            openConfirm(deleteBtn.getAttribute('data-delete'));
+            openConfirm(deleteBtn.getAttribute('data-delete-variant'));
         });
 
         confirmCancelBtn.addEventListener('click', closeConfirm);
@@ -1909,23 +2292,23 @@
         var currentPage = 1;
         var perPage = 10;
 
-        function getVisibleCards() {
-            /* Get cards that match the search filter (not hidden by search) */
-            return Array.from(document.querySelectorAll('.project-card')).filter(function(card) {
-                return !card.classList.contains('search-hidden');
+        function getVisibleGroups() {
+            /* Get project groups that match the search filter (not hidden by search) */
+            return Array.from(document.querySelectorAll('.project-group')).filter(function(group) {
+                return !group.classList.contains('search-hidden');
             });
         }
 
         function applyPagination() {
-            var cards = getVisibleCards();
-            var totalPages = Math.max(1, Math.ceil(cards.length / perPage));
+            var groups = getVisibleGroups();
+            var totalPages = Math.max(1, Math.ceil(groups.length / perPage));
             if (currentPage > totalPages) currentPage = totalPages;
 
             var start = (currentPage - 1) * perPage;
             var end = start + perPage;
 
-            cards.forEach(function(card, i) {
-                card.style.display = (i >= start && i < end) ? '' : 'none';
+            groups.forEach(function(group, i) {
+                group.style.display = (i >= start && i < end) ? '' : 'none';
             });
 
             var pageInfo = document.getElementById('page-info');
@@ -1959,8 +2342,8 @@
         var nextPageBtn = document.getElementById('next-page');
         if (nextPageBtn) {
             nextPageBtn.addEventListener('click', function() {
-                var cards = getVisibleCards();
-                var totalPages = Math.max(1, Math.ceil(cards.length / perPage));
+                var groups = getVisibleGroups();
+                var totalPages = Math.max(1, Math.ceil(groups.length / perPage));
                 if (currentPage < totalPages) {
                     currentPage++;
                     applyPagination();
@@ -1973,14 +2356,14 @@
         if (searchInput) {
             searchInput.addEventListener('input', function() {
                 var query = this.value.toLowerCase().trim();
-                var cards = document.querySelectorAll('.project-card');
-                cards.forEach(function(card) {
-                    var name = card.getAttribute('data-project').toLowerCase();
+                var groups = document.querySelectorAll('.project-group');
+                groups.forEach(function(group) {
+                    var name = group.getAttribute('data-repo').toLowerCase();
                     if (!query || name.indexOf(query) !== -1) {
-                        card.classList.remove('search-hidden');
+                        group.classList.remove('search-hidden');
                     } else {
-                        card.classList.add('search-hidden');
-                        card.style.display = 'none';
+                        group.classList.add('search-hidden');
+                        group.style.display = 'none';
                     }
                 });
                 currentPage = 1;
@@ -2000,10 +2383,22 @@
         // Always poll for status changes (10s interval)
         startStatusPolling();
 
-        // Start progress polling if there are generating projects (5s interval)
-        if (hasGeneratingProjects()) {
+        // Start progress polling if there are generating variants (5s interval)
+        if (hasGeneratingVariants()) {
             startProgressPolling();
         }
+
+        /* ----- Restore Form State ----- */
+        restoreFormState();
+
+        /* ----- Attach Event Listeners to Save Form State on Every Change ----- */
+        var repoInput = document.getElementById('gen-repo-url');
+        var forceCheck = document.getElementById('gen-force');
+
+        if (repoInput) repoInput.addEventListener('input', saveFormState);
+        if (providerSelect) providerSelect.addEventListener('change', saveFormState);
+        if (modelInput) modelInput.addEventListener('input', saveFormState);
+        if (forceCheck) forceCheck.addEventListener('change', saveFormState);
 
     })();
     </script>

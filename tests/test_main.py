@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 from pathlib import Path
 from unittest.mock import patch
 
@@ -107,4 +108,116 @@ async def test_abort_no_active_generation(client: AsyncClient) -> None:
 
 async def test_delete_project_not_found(client: AsyncClient) -> None:
     response = await client.delete("/api/projects/nonexistent")
+    assert response.status_code == 404
+
+
+async def test_generate_duplicate_variant(client: AsyncClient) -> None:
+    """Test that generating the same variant twice returns 409."""
+    from docsfy.main import _generating
+
+    _generating["repo/claude/opus"] = asyncio.create_task(asyncio.sleep(100))
+    try:
+        response = await client.post(
+            "/api/generate",
+            json={
+                "repo_url": "https://github.com/org/repo.git",
+                "ai_provider": "claude",
+                "ai_model": "opus",
+            },
+        )
+        assert response.status_code == 409
+    finally:
+        task = _generating.pop("repo/claude/opus", None)
+        if task:
+            task.cancel()
+            try:
+                await task
+            except asyncio.CancelledError:
+                pass
+
+
+async def test_variant_specific_endpoints(client: AsyncClient) -> None:
+    """Test variant-specific get, delete, and download endpoints."""
+    from docsfy.storage import save_project, update_project_status
+
+    await save_project(
+        name="test-repo",
+        repo_url="https://github.com/org/test-repo.git",
+        status="generating",
+        ai_provider="claude",
+        ai_model="opus",
+    )
+    await update_project_status(
+        "test-repo",
+        "claude",
+        "opus",
+        status="ready",
+        page_count=5,
+    )
+
+    # Get variant details
+    response = await client.get("/api/projects/test-repo/claude/opus")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["name"] == "test-repo"
+    assert data["ai_provider"] == "claude"
+    assert data["ai_model"] == "opus"
+
+    # Get nonexistent variant
+    response = await client.get("/api/projects/test-repo/gemini/flash")
+    assert response.status_code == 404
+
+    # Delete nonexistent variant
+    response = await client.delete("/api/projects/test-repo/gemini/flash")
+    assert response.status_code == 404
+
+    # Delete existing variant
+    response = await client.delete("/api/projects/test-repo/claude/opus")
+    assert response.status_code == 200
+    assert response.json()["deleted"] == "test-repo/claude/opus"
+
+
+async def test_get_project_returns_variants(client: AsyncClient) -> None:
+    """Test that GET /api/projects/{name} returns all variants."""
+    from docsfy.storage import save_project, update_project_status
+
+    await save_project(
+        name="multi-repo",
+        repo_url="https://github.com/org/multi-repo.git",
+        status="generating",
+        ai_provider="claude",
+        ai_model="opus",
+    )
+    await update_project_status(
+        "multi-repo",
+        "claude",
+        "opus",
+        status="ready",
+        page_count=5,
+    )
+    await save_project(
+        name="multi-repo",
+        repo_url="https://github.com/org/multi-repo.git",
+        status="generating",
+        ai_provider="gemini",
+        ai_model="pro",
+    )
+    await update_project_status(
+        "multi-repo",
+        "gemini",
+        "pro",
+        status="ready",
+        page_count=3,
+    )
+
+    response = await client.get("/api/projects/multi-repo")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["name"] == "multi-repo"
+    assert len(data["variants"]) == 2
+
+
+async def test_abort_variant_endpoint(client: AsyncClient) -> None:
+    """Test variant-specific abort endpoint returns 404 when no active gen."""
+    response = await client.post("/api/projects/repo/claude/opus/abort")
     assert response.status_code == 404

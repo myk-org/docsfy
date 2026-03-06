@@ -48,13 +48,15 @@ async def test_dashboard_shows_projects(client: AsyncClient) -> None:
         name="test-repo",
         repo_url="https://github.com/org/test-repo.git",
         status="generating",
+        ai_provider="claude",
+        ai_model="opus",
     )
     await update_project_status(
         "test-repo",
+        "claude",
+        "opus",
         status="ready",
         page_count=10,
-        ai_provider="claude",
-        ai_model="opus",
     )
 
     response = await client.get("/")
