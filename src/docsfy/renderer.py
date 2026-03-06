@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 import shutil
 from pathlib import Path
 from typing import Any
@@ -28,6 +29,24 @@ def _get_jinja_env() -> Environment:
     return _jinja_env
 
 
+def _sanitize_html(html: str) -> str:
+    """Remove dangerous HTML elements from AI-generated content."""
+    # Remove script tags and content
+    html = re.sub(
+        r"<script[^>]*>.*?</script>", "", html, flags=re.DOTALL | re.IGNORECASE
+    )
+    # Remove iframe, object, embed, form tags
+    for tag in ["iframe", "object", "embed", "form"]:
+        html = re.sub(
+            rf"<{tag}[^>]*>.*?</{tag}>", "", html, flags=re.DOTALL | re.IGNORECASE
+        )
+        html = re.sub(rf"<{tag}[^>]*/>", "", html, flags=re.IGNORECASE)
+    # Remove event handler attributes
+    html = re.sub(r'\s+on\w+\s*=\s*["\'][^"\']*["\']', "", html, flags=re.IGNORECASE)
+    html = re.sub(r"\s+on\w+\s*=\s*\S+", "", html, flags=re.IGNORECASE)
+    return html
+
+
 def _md_to_html(md_text: str) -> tuple[str, str]:
     """Convert markdown to HTML. Returns (content_html, toc_html)."""
     md = markdown.Markdown(
@@ -37,7 +56,7 @@ def _md_to_html(md_text: str) -> tuple[str, str]:
             "toc": {"toc_depth": "2-3"},
         },
     )
-    content_html = md.convert(md_text)
+    content_html = _sanitize_html(md.convert(md_text))
     toc_html = getattr(md, "toc", "")
     return content_html, toc_html
 

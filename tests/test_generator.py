@@ -120,3 +120,64 @@ async def test_generate_page_uses_cache(tmp_path: Path) -> None:
     )
 
     assert md == "# Cached content"
+
+
+async def test_run_incremental_planner(tmp_path: Path, sample_plan: dict) -> None:
+    from docsfy.generator import run_incremental_planner
+
+    with patch(
+        "docsfy.generator.call_ai_cli",
+        return_value=(True, '["introduction"]'),
+    ):
+        result = await run_incremental_planner(
+            repo_path=tmp_path,
+            project_name="test-repo",
+            ai_provider="claude",
+            ai_model="opus",
+            changed_files=["src/main.py"],
+            existing_plan=sample_plan,
+        )
+
+    assert result == ["introduction"]
+
+
+async def test_run_incremental_planner_returns_all_on_failure(
+    tmp_path: Path, sample_plan: dict
+) -> None:
+    from docsfy.generator import run_incremental_planner
+
+    with patch(
+        "docsfy.generator.call_ai_cli",
+        return_value=(False, "AI error"),
+    ):
+        result = await run_incremental_planner(
+            repo_path=tmp_path,
+            project_name="test-repo",
+            ai_provider="claude",
+            ai_model="opus",
+            changed_files=["src/main.py"],
+            existing_plan=sample_plan,
+        )
+
+    assert result == ["all"]
+
+
+async def test_run_incremental_planner_returns_all_on_bad_json(
+    tmp_path: Path, sample_plan: dict
+) -> None:
+    from docsfy.generator import run_incremental_planner
+
+    with patch(
+        "docsfy.generator.call_ai_cli",
+        return_value=(True, "not json at all"),
+    ):
+        result = await run_incremental_planner(
+            repo_path=tmp_path,
+            project_name="test-repo",
+            ai_provider="claude",
+            ai_model="opus",
+            changed_files=["src/main.py"],
+            existing_plan=sample_plan,
+        )
+
+    assert result == ["all"]

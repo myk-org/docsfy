@@ -364,17 +364,19 @@ async def get_project(
 
 async def list_projects(
     owner: str | None = None,
-    accessible_names: list[str] | None = None,
+    accessible: list[tuple[str, str]] | None = None,
 ) -> list[dict[str, str | int | None]]:
     async with aiosqlite.connect(DB_PATH) as db:
         db.row_factory = aiosqlite.Row
-        if owner and accessible_names and len(accessible_names) > 0:
-            # Show owned + assigned projects
-            placeholders = ",".join("?" * len(accessible_names))
-            cursor = await db.execute(
-                f"SELECT * FROM projects WHERE owner = ? OR name IN ({placeholders}) ORDER BY updated_at DESC",
-                [owner] + accessible_names,
-            )
+        if owner and accessible and len(accessible) > 0:
+            # Build OR conditions for each (name, owner) pair
+            conditions = ["(owner = ?)"]
+            params: list[str] = [owner]
+            for proj_name, proj_owner in accessible:
+                conditions.append("(name = ? AND owner = ?)")
+                params.extend([proj_name, proj_owner])
+            query = f"SELECT * FROM projects WHERE {' OR '.join(conditions)} ORDER BY updated_at DESC"
+            cursor = await db.execute(query, params)
         elif owner:
             cursor = await db.execute(
                 "SELECT * FROM projects WHERE owner = ? ORDER BY updated_at DESC",
@@ -432,14 +434,14 @@ async def get_project_access(project_name: str, project_owner: str = "") -> list
         return [row[0] for row in await cursor.fetchall()]
 
 
-async def get_user_accessible_projects(username: str) -> list[str]:
-    """Get list of project names a user has been granted access to."""
+async def get_user_accessible_projects(username: str) -> list[tuple[str, str]]:
+    """Get list of (project_name, project_owner) tuples a user has been granted access to."""
     async with aiosqlite.connect(DB_PATH) as db:
         cursor = await db.execute(
-            "SELECT project_name FROM project_access WHERE username = ? ORDER BY project_name",
+            "SELECT project_name, project_owner FROM project_access WHERE username = ? ORDER BY project_name",
             (username,),
         )
-        return [row[0] for row in await cursor.fetchall()]
+        return [(row[0], row[1]) for row in await cursor.fetchall()]
 
 
 async def delete_project(

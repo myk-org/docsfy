@@ -21,9 +21,9 @@ from starlette.responses import JSONResponse, RedirectResponse, Response
 
 from docsfy.ai_client import check_ai_cli_available
 from docsfy.config import get_settings
-from docsfy.generator import generate_all_pages, run_planner
+from docsfy.generator import generate_all_pages, run_incremental_planner, run_planner
 from docsfy.models import GenerateRequest
-from docsfy.repository import clone_repo, get_local_repo_info
+from docsfy.repository import clone_repo, get_changed_files, get_local_repo_info
 from docsfy.renderer import render_site
 from docsfy.storage import (
     SESSION_TTL_SECONDS,
@@ -285,7 +285,7 @@ async def dashboard(request: Request) -> HTMLResponse:
         projects = await list_projects()  # admin sees all
     else:
         accessible = await get_user_accessible_projects(username)
-        projects = await list_projects(owner=username, accessible_names=accessible)
+        projects = await list_projects(owner=username, accessible=accessible)
 
     known_models = await get_known_models()
 
@@ -358,7 +358,7 @@ async def status(request: Request) -> dict[str, Any]:
     else:
         accessible = await get_user_accessible_projects(request.state.username)
         projects = await list_projects(
-            owner=request.state.username, accessible_names=accessible
+            owner=request.state.username, accessible=accessible
         )
     known_models = await get_known_models()
     return {"projects": projects, "known_models": known_models}
@@ -738,6 +738,10 @@ async def _generate_from_path(
     force: bool,
     owner: str = "",
 ) -> None:
+    use_cache = False
+    old_sha: str | None = None
+    existing: dict[str, Any] | None = None
+
     if force:
         cache_dir = get_project_cache_dir(project_name, ai_provider, ai_model, owner)
         if cache_dir.exists():
@@ -756,21 +760,25 @@ async def _generate_from_path(
         existing = await get_project(
             project_name, ai_provider=ai_provider, ai_model=ai_model, owner=owner
         )
-        if (
-            existing
-            and existing.get("last_commit_sha") == commit_sha
-            and existing.get("last_generated")  # docs were previously generated
-        ):
-            logger.info(f"[{project_name}] Project is up to date at {commit_sha[:8]}")
-            await update_project_status(
-                project_name,
-                ai_provider,
-                ai_model,
-                status="ready",
-                owner=owner,
-                current_stage="up_to_date",
+        if existing and existing.get("last_generated"):
+            old_sha = (
+                str(existing["last_commit_sha"])
+                if existing.get("last_commit_sha")
+                else None
             )
-            return
+            if old_sha == commit_sha:
+                logger.info(
+                    f"[{project_name}] Project is up to date at {commit_sha[:8]}"
+                )
+                await update_project_status(
+                    project_name,
+                    ai_provider,
+                    ai_model,
+                    status="ready",
+                    owner=owner,
+                    current_stage="up_to_date",
+                )
+                return
 
     await update_project_status(
         project_name,
@@ -791,6 +799,48 @@ async def _generate_from_path(
 
     plan["repo_url"] = source_url
 
+    # Check if we can do incremental update
+    cache_dir = get_project_cache_dir(project_name, ai_provider, ai_model, owner)
+    if old_sha and old_sha != commit_sha and not force and existing:
+        changed_files = get_changed_files(repo_dir, old_sha, commit_sha)
+        if changed_files:
+            existing_plan_json = existing.get("plan_json")
+            if existing_plan_json:
+                try:
+                    existing_plan = json.loads(str(existing_plan_json))
+                    await update_project_status(
+                        project_name,
+                        ai_provider,
+                        ai_model,
+                        status="generating",
+                        owner=owner,
+                        current_stage="incremental_planning",
+                    )
+                    pages_to_regen = await run_incremental_planner(
+                        repo_dir,
+                        project_name,
+                        ai_provider,
+                        ai_model,
+                        changed_files,
+                        existing_plan,
+                        ai_cli_timeout,
+                    )
+                    if pages_to_regen != ["all"]:
+                        # Delete only the cached pages that need regeneration
+                        for slug in pages_to_regen:
+                            cache_file = cache_dir / f"{slug}.md"
+                            if cache_file.exists():
+                                cache_file.unlink()
+                        use_cache = True
+                        logger.info(
+                            f"[{project_name}] Incremental update: {len(changed_files)} files changed, "
+                            f"{len(pages_to_regen)} pages to regenerate"
+                        )
+                except (json.JSONDecodeError, TypeError):
+                    logger.warning(
+                        f"[{project_name}] Failed to parse existing plan, doing full regeneration"
+                    )
+
     # Store plan so API consumers can see doc structure while pages generate
     await update_project_status(
         project_name,
@@ -802,7 +852,6 @@ async def _generate_from_path(
         plan_json=json.dumps(plan),
     )
 
-    cache_dir = get_project_cache_dir(project_name, ai_provider, ai_model, owner)
     pages = await generate_all_pages(
         repo_path=repo_dir,
         plan=plan,
@@ -810,8 +859,9 @@ async def _generate_from_path(
         ai_provider=ai_provider,
         ai_model=ai_model,
         ai_cli_timeout=ai_cli_timeout,
-        use_cache=not force,
+        use_cache=use_cache if use_cache else not force,
         project_name=project_name,
+        owner=owner,
     )
 
     await update_project_status(

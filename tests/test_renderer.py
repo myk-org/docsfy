@@ -53,6 +53,48 @@ def test_render_site(tmp_path: Path) -> None:
     assert "Welcome to test-repo" in page_html
 
 
+def test_sanitize_html_removes_script_tags() -> None:
+    from docsfy.renderer import _sanitize_html
+
+    html = '<p>Hello</p><script>alert("xss")</script><p>World</p>'
+    result = _sanitize_html(html)
+    assert "<script" not in result
+    assert "alert" not in result
+    assert "<p>Hello</p>" in result
+    assert "<p>World</p>" in result
+
+
+def test_sanitize_html_removes_iframe_object_embed_form() -> None:
+    from docsfy.renderer import _sanitize_html
+
+    html = '<p>Safe</p><iframe src="evil.com"></iframe><object data="x"></object><embed src="y"/><form action="z">data</form>'
+    result = _sanitize_html(html)
+    assert "<iframe" not in result
+    assert "<object" not in result
+    assert "<embed" not in result
+    assert "<form" not in result
+    assert "<p>Safe</p>" in result
+
+
+def test_sanitize_html_removes_event_handlers() -> None:
+    from docsfy.renderer import _sanitize_html
+
+    html = '<img src="x" onerror="alert(1)"><div onclick="evil()">text</div>'
+    result = _sanitize_html(html)
+    assert "onerror" not in result
+    assert "onclick" not in result
+    assert "text" in result
+
+
+def test_md_to_html_sanitizes_content() -> None:
+    from docsfy.renderer import _md_to_html
+
+    md_text = '# Title\n\n<script>alert("xss")</script>\n\nSafe content.'
+    content_html, _ = _md_to_html(md_text)
+    assert "<script" not in content_html
+    assert "Safe content" in content_html
+
+
 def test_search_index_generated(tmp_path: Path) -> None:
     from docsfy.renderer import render_site
 

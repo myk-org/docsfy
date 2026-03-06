@@ -44,6 +44,21 @@ def clone_repo(repo_url: str, base_dir: Path) -> tuple[Path, str]:
     return repo_path, commit_sha
 
 
+def get_changed_files(repo_path: Path, old_sha: str, new_sha: str) -> list[str]:
+    """Get list of files changed between two commits."""
+    result = subprocess.run(
+        ["git", "diff", "--name-only", old_sha, new_sha],
+        cwd=repo_path,
+        capture_output=True,
+        text=True,
+        timeout=30,
+    )
+    if result.returncode != 0:
+        logger.warning(f"Failed to get diff: {result.stderr}")
+        return []  # Fall back to full regeneration
+    return [f.strip() for f in result.stdout.strip().split("\n") if f.strip()]
+
+
 def get_local_repo_info(repo_path: Path) -> tuple[Path, str]:
     """Get commit SHA from a local git repository."""
     sha_result = subprocess.run(

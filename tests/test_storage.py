@@ -680,17 +680,45 @@ async def test_revoke_project_access(db_path: Path) -> None:
 async def test_get_user_accessible_projects(db_path: Path) -> None:
     from docsfy.storage import get_user_accessible_projects, grant_project_access
 
-    await grant_project_access("repo-a", "alice")
-    await grant_project_access("repo-b", "alice")
+    await grant_project_access("repo-a", "alice", project_owner="owner1")
+    await grant_project_access("repo-b", "alice", project_owner="owner2")
 
     projects = await get_user_accessible_projects("alice")
-    assert "repo-a" in projects
-    assert "repo-b" in projects
+    assert ("repo-a", "owner1") in projects
+    assert ("repo-b", "owner2") in projects
 
 
 # ---------------------------------------------------------------------------
 # Test: get_project_dir includes owner in path
 # ---------------------------------------------------------------------------
+
+
+async def test_list_projects_with_accessible_tuples(db_path: Path) -> None:
+    """list_projects with accessible (name, owner) tuples should not expose other owners' same-name projects."""
+    from docsfy.storage import list_projects, save_project
+
+    # Alice and Bob both have a project named "shared-name"
+    await save_project(
+        name="shared-name",
+        repo_url="https://github.com/alice/repo.git",
+        ai_provider="claude",
+        ai_model="opus",
+        owner="alice",
+    )
+    await save_project(
+        name="shared-name",
+        repo_url="https://github.com/bob/repo.git",
+        ai_provider="claude",
+        ai_model="opus",
+        owner="bob",
+    )
+    # Charlie has access to alice's project, but NOT bob's
+    accessible: list[tuple[str, str]] = [("shared-name", "alice")]
+    projects = await list_projects(owner="charlie", accessible=accessible)
+
+    # Charlie should see only alice's project (not bob's)
+    assert len(projects) == 1
+    assert projects[0]["owner"] == "alice"
 
 
 async def test_get_project_dir_includes_owner(db_path: Path) -> None:
