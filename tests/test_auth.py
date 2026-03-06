@@ -682,8 +682,10 @@ async def test_viewer_sees_assigned_projects(_init_db: None) -> None:
         owner="other-owner",
     )
 
-    # Grant viewer access to the project
-    await grant_project_access("assigned-proj", "viewer-assigned")
+    # Grant viewer access to the project (scoped by project owner)
+    await grant_project_access(
+        "assigned-proj", "viewer-assigned", project_owner="other-owner"
+    )
 
     transport = ASGITransport(app=app)
     async with AsyncClient(

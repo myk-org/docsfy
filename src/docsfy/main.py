@@ -87,7 +87,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         raise SystemExit(1)
 
     _generating.clear()
-    await init_db()
+    await init_db(data_dir=settings.data_dir)
     await cleanup_expired_sessions()
     yield
 
@@ -195,11 +195,12 @@ async def _check_ownership(
     """Raise 404 if the requesting user does not own the project (unless admin)."""
     if request.state.is_admin:
         return
-    if project.get("owner") == request.state.username:
+    project_owner = str(project.get("owner", ""))
+    if project_owner == request.state.username:
         return
-    # Check if user has been granted access
-    accessible = await get_user_accessible_projects(request.state.username)
-    if project_name in accessible:
+    # Check if user has been granted access (scoped by project_owner)
+    access = await get_project_access(project_name, project_owner=project_owner)
+    if request.state.username in access:
         return
     raise HTTPException(status_code=404, detail="Not found")
 
@@ -373,6 +374,20 @@ async def generate(request: Request, gen_request: GenerateRequest) -> dict[str, 
             detail="Local repo path access requires admin privileges",
         )
 
+    # Validate repo_path existence after admin check to avoid leaking filesystem info
+    if gen_request.repo_path:
+        repo_p = Path(gen_request.repo_path)
+        if not repo_p.exists():
+            raise HTTPException(
+                status_code=400,
+                detail=f"Repository path does not exist: '{gen_request.repo_path}'",
+            )
+        if not (repo_p / ".git").exists():
+            raise HTTPException(
+                status_code=400,
+                detail=f"Not a git repository (no .git directory): '{gen_request.repo_path}'",
+            )
+
     # Fix 10 (SSRF): Reject internal/private network URLs.
     # This is an admin-provisioned service so the risk is low, but we add
     # basic validation to prevent accidental SSRF against internal hosts.
@@ -447,6 +462,12 @@ def _reject_private_url(url: str) -> None:
     try:
         parsed = urlparse(url)
         hostname = parsed.hostname
+        # Handle SSH format: git@hostname:org/repo.git
+        if not hostname and url.startswith("git@"):
+            try:
+                hostname = url.split("@")[1].split(":")[0]
+            except (IndexError, ValueError):
+                pass
         if not hostname:
             return
         # Check for localhost
@@ -923,11 +944,12 @@ async def download_variant(
 @app.get("/api/projects/{name}")
 async def get_project_details(request: Request, name: str) -> dict[str, Any]:
     name = _validate_project_name(name)
-    variants = await list_variants(name)
+    if request.state.is_admin:
+        variants = await list_variants(name)
+    else:
+        variants = await list_variants(name, owner=request.state.username)
     if not variants:
         raise HTTPException(status_code=404, detail=f"Project '{name}' not found")
-    # Check ownership against the first variant
-    await _check_ownership(request, name, variants[0])
     return {"name": name, "variants": variants}
 
 
@@ -943,11 +965,12 @@ async def delete_project_endpoint(request: Request, name: str) -> dict[str, str]
                 status_code=409,
                 detail=f"Cannot delete '{name}' while generation is in progress. Abort running variants first.",
             )
-    variants = await list_variants(name)
+    if request.state.is_admin:
+        variants = await list_variants(name)
+    else:
+        variants = await list_variants(name, owner=request.state.username)
     if not variants:
         raise HTTPException(status_code=404, detail=f"Project '{name}' not found")
-    # Check ownership against the first variant
-    await _check_ownership(request, name, variants[0])
     for v in variants:
         v_provider = str(v.get("ai_provider", ""))
         v_model = str(v.get("ai_model", ""))
@@ -964,7 +987,10 @@ async def delete_project_endpoint(request: Request, name: str) -> dict[str, str]
 @app.get("/api/projects/{name}/download")
 async def download_project(request: Request, name: str) -> StreamingResponse:
     name = _validate_project_name(name)
-    latest = await get_latest_variant(name)
+    if request.state.is_admin:
+        latest = await get_latest_variant(name)
+    else:
+        latest = await get_latest_variant(name, owner=request.state.username)
     if not latest:
         raise HTTPException(status_code=404, detail=f"No ready variant for '{name}'")
     await _check_ownership(request, name, latest)
@@ -1071,30 +1097,36 @@ async def grant_access(request: Request, name: str) -> dict[str, str]:
     _require_admin(request)
     body = await request.json()
     username = body.get("username", "")
+    project_owner = body.get("owner", "")
     if not username:
         raise HTTPException(status_code=400, detail="Username is required")
+    if not project_owner:
+        raise HTTPException(status_code=400, detail="Project owner is required")
     # Validate user exists
     user = await get_user_by_username(username)
     if not user:
         raise HTTPException(status_code=404, detail=f"User '{username}' not found")
-    # Validate project exists
-    variants = await list_variants(name)
+    # Validate project exists for the specified owner
+    variants = await list_variants(name, owner=project_owner)
     if not variants:
-        raise HTTPException(status_code=404, detail=f"Project '{name}' not found")
-    project_owner = str(variants[0].get("owner", ""))
+        raise HTTPException(
+            status_code=404,
+            detail=f"Project '{name}' not found for owner '{project_owner}'",
+        )
     await grant_project_access(name, username, project_owner=project_owner)
     logger.info(
-        f"[AUDIT] Admin '{request.state.username}' granted '{username}' access to '{name}'"
+        f"[AUDIT] Admin '{request.state.username}' granted '{username}' access to '{name}' (owner: '{project_owner}')"
     )
-    return {"granted": name, "username": username}
+    return {"granted": name, "username": username, "owner": project_owner}
 
 
 @app.delete("/api/admin/projects/{name}/access/{username}")
 async def revoke_access(request: Request, name: str, username: str) -> dict[str, str]:
     _require_admin(request)
-    await revoke_project_access(name, username)
+    project_owner = request.query_params.get("owner", "")
+    await revoke_project_access(name, username, project_owner=project_owner)
     logger.info(
-        f"[AUDIT] Admin '{request.state.username}' revoked '{username}' access to '{name}'"
+        f"[AUDIT] Admin '{request.state.username}' revoked '{username}' access to '{name}' (owner: '{project_owner}')"
     )
     return {"revoked": name, "username": username}
 
@@ -1102,8 +1134,9 @@ async def revoke_access(request: Request, name: str, username: str) -> dict[str,
 @app.get("/api/admin/projects/{name}/access")
 async def list_access(request: Request, name: str) -> dict[str, Any]:
     _require_admin(request)
-    users = await get_project_access(name)
-    return {"project": name, "users": users}
+    project_owner = request.query_params.get("owner", "")
+    users = await get_project_access(name, project_owner=project_owner)
+    return {"project": name, "owner": project_owner, "users": users}
 
 
 # ---------------------------------------------------------------------------
@@ -1207,7 +1240,10 @@ async def serve_docs(
     if not path or path == "/":
         path = "index.html"
     project = _validate_project_name(project)
-    latest = await get_latest_variant(project)
+    if request.state.is_admin:
+        latest = await get_latest_variant(project)
+    else:
+        latest = await get_latest_variant(project, owner=request.state.username)
     if not latest:
         raise HTTPException(status_code=404, detail="No docs available")
     await _check_ownership(request, project, latest)

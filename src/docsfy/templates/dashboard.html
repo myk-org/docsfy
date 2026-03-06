@@ -1,4 +1,4 @@
-{% macro regen_controls(variant, repo_name, default_provider, default_model, known_models, loop_index) %}
+{% macro regen_controls(variant, repo_name, default_provider, default_model, known_models) %}
 <div class="variant-regen">
     <select class="form-select form-select-sm" data-regen-provider="{{ repo_name }}">
         <option value="claude" {{ 'selected' if variant.ai_provider == 'claude' }}>claude</option>
@@ -1482,7 +1482,7 @@
                         </div>
                         {% if role != 'viewer' %}
                         <!-- Regenerate controls -->
-                        {{ regen_controls(variant, repo_name, default_provider, default_model, known_models, loop.index) }}
+                        {{ regen_controls(variant, repo_name, default_provider, default_model, known_models) }}
                         {% endif %}
 
                         {% elif variant.status == 'generating' %}
@@ -1505,7 +1505,7 @@
                         </div>
                         <div class="variant-actions">
                             {% if role != 'viewer' %}
-                            {{ regen_controls(variant, repo_name, default_provider, default_model, known_models, loop.index) }}
+                            {{ regen_controls(variant, repo_name, default_provider, default_model, known_models) }}
                             <button class="btn btn-danger btn-sm" data-delete-variant="{{ repo_name }}/{{ variant.ai_provider }}/{{ variant.ai_model }}">Delete</button>
                             {% endif %}
                         </div>
@@ -2080,7 +2080,9 @@
                 .then(function(data) {
                     if (!data) return;
                     var projectName = data.project || repoUrl;
-                    var statusUrl = '/status/' + encodeURIComponent(projectName) + '/' + encodeURIComponent(provider) + '/' + encodeURIComponent(model);
+                    var effectiveModel = model || data.ai_model || '{{ default_model }}';
+                    var effectiveProvider = provider || data.ai_provider || '{{ default_provider }}';
+                    var statusUrl = '/status/' + encodeURIComponent(projectName) + '/' + encodeURIComponent(effectiveProvider) + '/' + encodeURIComponent(effectiveModel);
                     showToast('Generation started for ' + projectName + '.', 'success', 6000, {
                         href: statusUrl,
                         text: 'View progress \u2192'
@@ -2149,7 +2151,9 @@
             })
             .then(function(data) {
                 if (!data) return;
-                var statusUrl = '/status/' + encodeURIComponent(name) + '/' + encodeURIComponent(provider) + '/' + encodeURIComponent(model);
+                var effectiveModel = model || data.ai_model || '{{ default_model }}';
+                var effectiveProvider = provider || data.ai_provider || '{{ default_provider }}';
+                var statusUrl = '/status/' + encodeURIComponent(name) + '/' + encodeURIComponent(effectiveProvider) + '/' + encodeURIComponent(effectiveModel);
                 showToast('Regeneration started for ' + name + '.', 'success', 6000, {
                     href: statusUrl,
                     text: 'View progress \u2192'

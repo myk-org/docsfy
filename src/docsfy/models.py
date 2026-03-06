@@ -47,11 +47,8 @@ class GenerateRequest(BaseModel):
         if v is None:
             return v
         path = Path(v)
-        if not path.exists():
-            msg = f"Repository path does not exist: '{v}'"
-            raise ValueError(msg)
-        if not (path / ".git").exists():
-            msg = f"Not a git repository (no .git directory): '{v}'"
+        if not path.is_absolute():
+            msg = "repo_path must be an absolute path"
             raise ValueError(msg)
         return v
 
