@@ -631,6 +631,35 @@ agent-browser screenshot
 
 ---
 
+### 4.7 Viewer blocked by API (not just UI)
+
+**Precondition:** Logged in as `testviewer-e2e`.
+
+Verify that the backend enforces viewer restrictions, not just the UI. Run `fetch` calls in the browser console:
+
+**Generate endpoint (POST):**
+```
+agent-browser eval "fetch('/api/generate', {method:'POST', headers:{'Content-Type':'application/json'}, credentials:'same-origin', body:JSON.stringify({repo_url:'https://github.com/myk-org/for-testing-only'})}).then(r => r.status)"
+```
+
+**Expected result:** Returns `403`.
+
+**Abort endpoint (POST):**
+```
+agent-browser eval "fetch('/api/projects/some-project/claude/opus/abort', {method:'POST', credentials:'same-origin'}).then(r => r.status)"
+```
+
+**Expected result:** Returns `403` or `404`.
+
+**Delete endpoint (DELETE):**
+```
+agent-browser eval "fetch('/api/projects/some-project/claude/opus', {method:'DELETE', credentials:'same-origin'}).then(r => r.status)"
+```
+
+**Expected result:** Returns `403` or `404`.
+
+---
+
 ## Test 5: Admin Role (DB user) Permissions
 
 ### 5.1 Admin user can login
@@ -762,20 +791,24 @@ agent-browser screenshot
 
 ### 6.3 View progress link works
 
+**Note:** The "View progress" link has `target="_blank"`, so `click + wait-for-navigation` will not follow it. Instead, capture the `href` and open it directly.
+
 **Commands:**
 ```
 agent-browser javascript "document.querySelector('.status-link') !== null"
 agent-browser javascript "document.querySelector('.status-link').getAttribute('href')"
-agent-browser click ".status-link"
-agent-browser wait-for-navigation
+```
+
+Capture the returned href (e.g., `/status/for-testing-only/gemini/gemini-2.5-flash`), then open it:
+```
+agent-browser navigate http://localhost:8800/status/for-testing-only/gemini/gemini-2.5-flash
 agent-browser screenshot
 ```
 
-**Check:** Clicking the "View progress" link navigates to the status page.
+**Check:** The status page loads for the project.
 
 **Expected result:**
 - The link href matches `/status/for-testing-only/gemini/gemini-2.5-flash`
-- The browser navigates to the status page
 - The status page shows the project name `for-testing-only`
 - The provider/model shows `gemini/gemini-2.5-flash`
 
@@ -829,10 +862,16 @@ Repeat every 10 seconds until the status is `ready` or `error`.
 
 ### 6.6 View Docs link works
 
+**Note:** The "View Docs" button has `target="_blank"`, so `click + wait-for-navigation` will not follow it. Instead, capture the `href` and open it directly.
+
 **Commands:**
 ```
-agent-browser click "#btn-view-docs"
-agent-browser wait-for-navigation
+agent-browser javascript "document.getElementById('btn-view-docs').getAttribute('href')"
+```
+
+Capture the returned href, then open it:
+```
+agent-browser navigate http://localhost:8800/docs/for-testing-only/gemini/gemini-2.5-flash/
 agent-browser screenshot
 ```
 
@@ -1725,6 +1764,184 @@ agent-browser javascript "document.querySelector('[data-abort-variant]')"
 
 ---
 
+### 11.6 Admin lists access for a project
+
+**Precondition:** Logged in as `admin`.
+
+```
+agent-browser navigate http://localhost:8800/logout
+agent-browser wait-for-navigation
+agent-browser type "#username" "admin"
+agent-browser type "#api_key" "12345678901234567890"
+agent-browser click ".btn-login"
+agent-browser wait-for-navigation
+```
+
+**Commands:**
+```
+agent-browser eval "fetch('/api/admin/projects/for-testing-only/access?owner=testuser-e2e', {credentials:'same-origin'}).then(r => r.json())"
+```
+
+**Check:** The access list includes the previously granted viewer.
+
+**Expected result:**
+- Returns a JSON object with a users list
+- The list includes `testviewer-e2e` (granted in Test 11.4)
+
+---
+
+### 11.7 Admin revokes access
+
+**Commands:**
+```
+agent-browser eval "fetch('/api/admin/projects/for-testing-only/access/testviewer-e2e?owner=testuser-e2e', {method:'DELETE', credentials:'same-origin'}).then(r => r.status)"
+```
+
+**Check:** The revocation succeeds.
+
+**Expected result:** Returns `200`.
+
+---
+
+### 11.8 Viewer can no longer see revoked project
+
+**Commands:**
+```
+agent-browser navigate http://localhost:8800/logout
+agent-browser wait-for-navigation
+agent-browser type "#username" "testviewer-e2e"
+agent-browser type "#api_key" "<TEST_VIEWER_PASSWORD>"
+agent-browser click ".btn-login"
+agent-browser wait-for-navigation
+agent-browser navigate http://localhost:8800/
+agent-browser javascript "Array.from(document.querySelectorAll('.project-group')).map(g => g.getAttribute('data-repo'))"
+agent-browser screenshot
+```
+
+**Check:** The revoked project no longer appears on the viewer's dashboard.
+
+**Expected result:**
+- The `for-testing-only` project is NOT in the list
+- The viewer sees the empty state ("No projects yet") or only other assigned projects
+
+---
+
+## Test 13: Direct URL Authorization
+
+Test that non-owners cannot access resources by URL even if they know the path.
+
+### 13.1 Non-owner cannot access status page
+
+**Precondition:** Logged in as `userb-e2e` (created in Test 11.2, has no access grants).
+
+```
+agent-browser navigate http://localhost:8800/logout
+agent-browser wait-for-navigation
+agent-browser type "#username" "userb-e2e"
+agent-browser type "#api_key" "<USERB_PASSWORD>"
+agent-browser click ".btn-login"
+agent-browser wait-for-navigation
+```
+
+**Commands:**
+```
+agent-browser navigate http://localhost:8800/status/for-testing-only/gemini/gemini-2.5-flash
+agent-browser screenshot
+agent-browser javascript "document.body.innerText"
+```
+
+**Check:** The server returns a 404 (not 403, to avoid leaking information about the resource).
+
+**Expected result:**
+- The page shows a 404 Not Found response
+- No project details are revealed
+
+---
+
+### 13.2 Non-owner cannot access docs
+
+**Commands:**
+```
+agent-browser navigate http://localhost:8800/docs/for-testing-only/gemini/gemini-2.5-flash/index.html
+agent-browser screenshot
+agent-browser javascript "document.body.innerText"
+```
+
+**Check:** The server returns a 404.
+
+**Expected result:**
+- The page shows a 404 Not Found response
+- No documentation content is revealed
+
+---
+
+### 13.3 Non-owner cannot access variant details
+
+**Commands:**
+```
+agent-browser eval "fetch('/api/projects/for-testing-only/gemini/gemini-2.5-flash', {credentials:'same-origin'}).then(r => r.status)"
+```
+
+**Check:** The API returns 404.
+
+**Expected result:** Returns `404`.
+
+---
+
+### 13.4 Non-owner cannot download
+
+**Commands:**
+```
+agent-browser eval "fetch('/api/projects/for-testing-only/gemini/gemini-2.5-flash/download', {credentials:'same-origin'}).then(r => r.status)"
+```
+
+**Check:** The API returns 404.
+
+**Expected result:** Returns `404`.
+
+---
+
+### 13.5 Granted user CAN access
+
+**Precondition:** Admin grants `userb-e2e` access to `testuser-e2e`'s project.
+
+```
+agent-browser navigate http://localhost:8800/logout
+agent-browser wait-for-navigation
+agent-browser type "#username" "admin"
+agent-browser type "#api_key" "12345678901234567890"
+agent-browser click ".btn-login"
+agent-browser wait-for-navigation
+```
+
+**Grant access:**
+```
+agent-browser eval "fetch('/api/admin/projects/for-testing-only/access', {method:'POST', headers:{'Content-Type':'application/json'}, credentials:'same-origin', body:JSON.stringify({username:'userb-e2e', owner:'testuser-e2e'})}).then(r => r.status)"
+```
+
+**Expected result:** Returns `200`.
+
+**Now log in as `userb-e2e` and access the docs:**
+```
+agent-browser navigate http://localhost:8800/logout
+agent-browser wait-for-navigation
+agent-browser type "#username" "userb-e2e"
+agent-browser type "#api_key" "<USERB_PASSWORD>"
+agent-browser click ".btn-login"
+agent-browser wait-for-navigation
+agent-browser navigate http://localhost:8800/docs/for-testing-only/gemini/gemini-2.5-flash/
+agent-browser screenshot
+```
+
+**Check:** The docs page loads successfully for the granted user.
+
+**Expected result:**
+- The page returns 200
+- Documentation content is visible
+- A sidebar with navigation is present
+
+---
+
 ## Test 12: Logout
 
 ### 12.1 Logout redirects to login
@@ -1835,13 +2052,14 @@ agent-browser close
 | Test 1: Login Page | 5 | Login page load, theme, invalid/valid login |
 | Test 2: Admin Panel | 6 | Admin link, CRUD users, change password |
 | Test 3: User Role | 6 | User login, form visibility, permissions, generation |
-| Test 4: Viewer Role | 6 | Viewer login, restricted UI, password change |
+| Test 4: Viewer Role | 7 | Viewer login, restricted UI, password change, API enforcement |
 | Test 5: Admin DB User | 4 | DB admin login, access, project visibility |
 | Test 6: Doc Generation | 7 | Full generation lifecycle |
 | Test 7: Dashboard Features | 8 | Search, pagination, regen, abort, delete, combobox, form state |
 | Test 8: Generated Docs | 8 | Docs quality, theme, TOC, copy, footer, llms.txt |
 | Test 9: Status Page | 3 | Activity log, abort, regenerate controls |
 | Test 10: Custom Modals | 4 | Themed modals for delete, password, abort, escape key |
-| Test 11: Cross-User Isolation | 5 | User isolation, admin visibility, access grants |
+| Test 11: Cross-User Isolation | 8 | User isolation, admin visibility, access grants, revoke |
 | Test 12: Logout | 2 | Logout redirect, session invalidation |
-| **Total** | **64** | |
+| Test 13: Direct URL Authorization | 5 | Non-owner URL access blocked, granted user access |
+| **Total** | **73** | |
