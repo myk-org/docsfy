@@ -658,3 +658,42 @@ async def test_login_cookie_has_samesite_strict(
     )
     set_cookie = response.headers.get("set-cookie", "")
     assert "samesite=strict" in set_cookie.lower()
+
+
+# ---------------------------------------------------------------------------
+# Test: viewer sees assigned projects
+# ---------------------------------------------------------------------------
+
+
+async def test_viewer_sees_assigned_projects(_init_db: None) -> None:
+    """A viewer with granted access should see assigned projects."""
+    from docsfy.main import _generating, app
+    from docsfy.storage import create_user, grant_project_access, save_project
+
+    _generating.clear()
+    _, viewer_key = await create_user("viewer-assigned", role="viewer")
+
+    # Create a project owned by someone else
+    await save_project(
+        name="assigned-proj",
+        repo_url="https://github.com/org/assigned.git",
+        ai_provider="claude",
+        ai_model="opus",
+        owner="other-owner",
+    )
+
+    # Grant viewer access to the project
+    await grant_project_access("assigned-proj", "viewer-assigned")
+
+    transport = ASGITransport(app=app)
+    async with AsyncClient(
+        transport=transport,
+        base_url="http://test",
+        headers={"Authorization": f"Bearer {viewer_key}"},
+    ) as ac:
+        response = await ac.get("/api/status")
+    assert response.status_code == 200
+    projects = response.json()["projects"]
+    project_names = [p["name"] for p in projects]
+    assert "assigned-proj" in project_names
+    _generating.clear()

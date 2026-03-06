@@ -34,16 +34,20 @@ from docsfy.storage import (
     get_known_models,
     get_latest_variant,
     get_project,
+    get_project_access,
     get_project_cache_dir,
     get_project_dir,
     get_project_site_dir,
     get_session,
+    get_user_accessible_projects,
     get_user_by_key,
     get_user_by_username,
+    grant_project_access,
     init_db,
     list_projects,
     list_users,
     list_variants,
+    revoke_project_access,
     save_project,
     update_project_status,
 )
@@ -171,10 +175,19 @@ def _require_write_access(request: Request) -> None:
         )
 
 
-def _check_ownership(request: Request, project: dict[str, Any]) -> None:
+async def _check_ownership(
+    request: Request, project_name: str, project: dict[str, Any]
+) -> None:
     """Raise 403 if the requesting user does not own the project (unless admin)."""
-    if not request.state.is_admin and project.get("owner") != request.state.username:
-        raise HTTPException(status_code=403, detail="Access denied")
+    if request.state.is_admin:
+        return
+    if project.get("owner") == request.state.username:
+        return
+    # Check if user has been granted access
+    accessible = await get_user_accessible_projects(request.state.username)
+    if project_name in accessible:
+        return
+    raise HTTPException(status_code=403, detail="Access denied")
 
 
 @app.get("/login", response_class=HTMLResponse)
@@ -249,7 +262,8 @@ async def dashboard(request: Request) -> HTMLResponse:
     if is_admin:
         projects = await list_projects()  # admin sees all
     else:
-        projects = await list_projects(owner=username)
+        accessible = await get_user_accessible_projects(username)
+        projects = await list_projects(owner=username, accessible_names=accessible)
 
     known_models = await get_known_models()
 
@@ -317,7 +331,10 @@ async def status(request: Request) -> dict[str, Any]:
     if request.state.is_admin:
         projects = await list_projects()
     else:
-        projects = await list_projects(owner=request.state.username)
+        accessible = await get_user_accessible_projects(request.state.username)
+        projects = await list_projects(
+            owner=request.state.username, accessible_names=accessible
+        )
     known_models = await get_known_models()
     return {"projects": projects, "known_models": known_models}
 
@@ -694,7 +711,7 @@ async def get_variant_details(
     project = await get_project(name, ai_provider=provider, ai_model=model)
     if not project:
         raise HTTPException(status_code=404, detail="Variant not found")
-    _check_ownership(request, project)
+    await _check_ownership(request, name, project)
     return project
 
 
@@ -733,7 +750,7 @@ async def download_variant(
     project = await get_project(name, ai_provider=provider, ai_model=model)
     if not project:
         raise HTTPException(status_code=404, detail="Variant not found")
-    _check_ownership(request, project)
+    await _check_ownership(request, name, project)
     if project["status"] != "ready":
         raise HTTPException(status_code=400, detail="Variant not ready")
     site_dir = get_project_site_dir(name, provider, model)
@@ -769,7 +786,7 @@ async def get_project_details(request: Request, name: str) -> dict[str, Any]:
     if not variants:
         raise HTTPException(status_code=404, detail=f"Project '{name}' not found")
     # Fix 17: Check ownership on first variant (all variants share the same owner)
-    _check_ownership(request, variants[0])
+    await _check_ownership(request, name, variants[0])
     return {"name": name, "variants": variants}
 
 
@@ -803,7 +820,7 @@ async def download_project(request: Request, name: str) -> StreamingResponse:
     latest = await get_latest_variant(name)
     if not latest:
         raise HTTPException(status_code=404, detail=f"No ready variant for '{name}'")
-    _check_ownership(request, latest)
+    await _check_ownership(request, name, latest)
     provider = str(latest.get("ai_provider", ""))
     model = str(latest.get("ai_model", ""))
     site_dir = get_project_site_dir(name, provider, model)
@@ -897,6 +914,37 @@ async def list_users_endpoint(
     _require_admin(request)
     users = await list_users()
     return {"users": users}
+
+
+@app.post("/api/admin/projects/{name}/access")
+async def grant_access(request: Request, name: str) -> dict[str, str]:
+    _require_admin(request)
+    body = await request.json()
+    username = body.get("username", "")
+    if not username:
+        raise HTTPException(status_code=400, detail="Username is required")
+    await grant_project_access(name, username)
+    logger.info(
+        f"[AUDIT] Admin '{request.state.username}' granted '{username}' access to '{name}'"
+    )
+    return {"granted": name, "username": username}
+
+
+@app.delete("/api/admin/projects/{name}/access/{username}")
+async def revoke_access(request: Request, name: str, username: str) -> dict[str, str]:
+    _require_admin(request)
+    await revoke_project_access(name, username)
+    logger.info(
+        f"[AUDIT] Admin '{request.state.username}' revoked '{username}' access to '{name}'"
+    )
+    return {"revoked": name, "username": username}
+
+
+@app.get("/api/admin/projects/{name}/access")
+async def list_access(request: Request, name: str) -> dict[str, Any]:
+    _require_admin(request)
+    users = await get_project_access(name)
+    return {"project": name, "users": users}
 
 
 # IMPORTANT: variant-specific route MUST be defined BEFORE the generic route

@@ -478,3 +478,44 @@ async def test_get_user_by_username(db_path: Path) -> None:
 
     missing = await get_user_by_username("nonexistent")
     assert missing is None
+
+
+# ---------------------------------------------------------------------------
+# Test: project access management
+# ---------------------------------------------------------------------------
+
+
+async def test_grant_and_get_project_access(db_path: Path) -> None:
+    from docsfy.storage import get_project_access, grant_project_access
+
+    await grant_project_access("my-repo", "alice")
+    await grant_project_access("my-repo", "bob")
+
+    users = await get_project_access("my-repo")
+    assert "alice" in users
+    assert "bob" in users
+
+
+async def test_revoke_project_access(db_path: Path) -> None:
+    from docsfy.storage import (
+        get_project_access,
+        grant_project_access,
+        revoke_project_access,
+    )
+
+    await grant_project_access("my-repo", "alice")
+    await revoke_project_access("my-repo", "alice")
+
+    users = await get_project_access("my-repo")
+    assert "alice" not in users
+
+
+async def test_get_user_accessible_projects(db_path: Path) -> None:
+    from docsfy.storage import get_user_accessible_projects, grant_project_access
+
+    await grant_project_access("repo-a", "alice")
+    await grant_project_access("repo-b", "alice")
+
+    projects = await get_user_accessible_projects("alice")
+    assert "repo-a" in projects
+    assert "repo-b" in projects

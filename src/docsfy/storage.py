@@ -6,7 +6,7 @@ import os
 import re
 import secrets
 import sqlite3
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import aiosqlite
@@ -167,6 +167,14 @@ async def init_db() -> None:
                 raise
 
         await db.execute("""
+            CREATE TABLE IF NOT EXISTS project_access (
+                project_name TEXT NOT NULL,
+                username TEXT NOT NULL,
+                PRIMARY KEY (project_name, username)
+            )
+        """)
+
+        await db.execute("""
             CREATE TABLE IF NOT EXISTS sessions (
                 token TEXT PRIMARY KEY,
                 username TEXT NOT NULL,
@@ -266,10 +274,20 @@ async def get_project(
         return dict(row) if row else None
 
 
-async def list_projects(owner: str | None = None) -> list[dict[str, str | int | None]]:
+async def list_projects(
+    owner: str | None = None,
+    accessible_names: list[str] | None = None,
+) -> list[dict[str, str | int | None]]:
     async with aiosqlite.connect(DB_PATH) as db:
         db.row_factory = aiosqlite.Row
-        if owner:
+        if owner and accessible_names:
+            # Show owned + assigned projects
+            placeholders = ",".join("?" * len(accessible_names))
+            cursor = await db.execute(
+                f"SELECT * FROM projects WHERE owner = ? OR name IN ({placeholders}) ORDER BY updated_at DESC",
+                [owner] + accessible_names,
+            )
+        elif owner:
             cursor = await db.execute(
                 "SELECT * FROM projects WHERE owner = ? ORDER BY updated_at DESC",
                 (owner,),
@@ -278,6 +296,46 @@ async def list_projects(owner: str | None = None) -> list[dict[str, str | int | 
             cursor = await db.execute("SELECT * FROM projects ORDER BY updated_at DESC")
         rows = await cursor.fetchall()
         return [dict(row) for row in rows]
+
+
+async def grant_project_access(project_name: str, username: str) -> None:
+    """Grant a user access to all variants of a project."""
+    async with aiosqlite.connect(DB_PATH) as db:
+        await db.execute(
+            "INSERT OR IGNORE INTO project_access (project_name, username) VALUES (?, ?)",
+            (project_name, username),
+        )
+        await db.commit()
+
+
+async def revoke_project_access(project_name: str, username: str) -> None:
+    """Revoke a user's access to a project."""
+    async with aiosqlite.connect(DB_PATH) as db:
+        await db.execute(
+            "DELETE FROM project_access WHERE project_name = ? AND username = ?",
+            (project_name, username),
+        )
+        await db.commit()
+
+
+async def get_project_access(project_name: str) -> list[str]:
+    """Get list of usernames with access to a project."""
+    async with aiosqlite.connect(DB_PATH) as db:
+        cursor = await db.execute(
+            "SELECT username FROM project_access WHERE project_name = ? ORDER BY username",
+            (project_name,),
+        )
+        return [row[0] for row in await cursor.fetchall()]
+
+
+async def get_user_accessible_projects(username: str) -> list[str]:
+    """Get list of project names a user has been granted access to."""
+    async with aiosqlite.connect(DB_PATH) as db:
+        cursor = await db.execute(
+            "SELECT project_name FROM project_access WHERE username = ? ORDER BY project_name",
+            (username,),
+        )
+        return [row[0] for row in await cursor.fetchall()]
 
 
 async def delete_project(name: str, ai_provider: str = "", ai_model: str = "") -> bool:
@@ -442,7 +500,7 @@ async def create_session(
 ) -> str:
     """Create an opaque session token."""
     token = secrets.token_urlsafe(32)
-    expires_at = datetime.utcnow() + timedelta(hours=ttl_hours)
+    expires_at = datetime.now(timezone.utc) + timedelta(hours=ttl_hours)
     async with aiosqlite.connect(DB_PATH) as db:
         await db.execute(
             "INSERT INTO sessions (token, username, is_admin, expires_at) VALUES (?, ?, ?, ?)",
