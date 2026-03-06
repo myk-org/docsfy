@@ -130,6 +130,10 @@ function showModal(options) {
     var okBtn = document.getElementById('modal-ok');
     var cancelBtn = document.getElementById('modal-cancel');
 
+    // Reset state from any previous modal
+    okBtn.onclick = null;
+    cancelBtn.onclick = null;
+
     titleEl.textContent = options.title || '';
     bodyEl.textContent = options.body || '';
 
@@ -153,8 +157,11 @@ function showModal(options) {
         cancelBtn.style.display = 'none';
     }
 
-    overlay.style.display = 'flex';
-    if (options.input) inputEl.focus();
+    // Use requestAnimationFrame to ensure previous modal cleanup has taken effect
+    requestAnimationFrame(function() {
+        overlay.style.display = 'flex';
+        if (options.input) inputEl.focus();
+    });
 
     function cleanup() {
         overlay.style.display = 'none';
@@ -178,7 +185,6 @@ function showModal(options) {
         if (e.key === 'Escape') {
             cleanup();
             if (options.onCancel) options.onCancel();
-            document.removeEventListener('keydown', escHandler);
         }
     }
     document.addEventListener('keydown', escHandler);
