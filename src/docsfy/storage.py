@@ -1,7 +1,10 @@
 from __future__ import annotations
 
+import hashlib
 import os
 import re
+import secrets
+import sqlite3
 from pathlib import Path
 
 import aiosqlite
@@ -124,6 +127,14 @@ async def init_db() -> None:
             await db.execute("ALTER TABLE projects_new RENAME TO projects")
             logger.info("Database migration complete")
 
+        # Migration: add owner column
+        try:
+            await db.execute("ALTER TABLE projects ADD COLUMN owner TEXT DEFAULT ''")
+        except sqlite3.OperationalError as exc:
+            if "duplicate column name" not in str(exc).lower():
+                logger.error(f"Migration failed: {exc}")
+                raise
+
         # Reset orphaned "generating" projects from previous server run
         cursor = await db.execute(
             "UPDATE projects SET status = 'error', error_message = 'Server restarted during generation', current_stage = NULL WHERE status = 'generating'"
@@ -132,6 +143,26 @@ async def init_db() -> None:
             logger.info(
                 f"Reset {cursor.rowcount} orphaned generating project(s) to error status"
             )
+
+        await db.execute("""
+            CREATE TABLE IF NOT EXISTS users (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                username TEXT UNIQUE NOT NULL,
+                api_key_hash TEXT NOT NULL,
+                role TEXT NOT NULL DEFAULT 'user',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+
+        # Migration: add role column for existing DBs
+        try:
+            await db.execute(
+                "ALTER TABLE users ADD COLUMN role TEXT NOT NULL DEFAULT 'user'"
+            )
+        except sqlite3.OperationalError as exc:
+            if "duplicate column name" not in str(exc).lower():
+                logger.error(f"Migration failed: {exc}")
+                raise
 
         await db.commit()
 
@@ -142,21 +173,23 @@ async def save_project(
     status: str = "generating",
     ai_provider: str = "",
     ai_model: str = "",
+    owner: str = "",
 ) -> None:
     if status not in VALID_STATUSES:
         msg = f"Invalid project status: '{status}'. Valid: {', '.join(sorted(VALID_STATUSES))}"
         raise ValueError(msg)
     async with aiosqlite.connect(DB_PATH) as db:
         await db.execute(
-            """INSERT INTO projects (name, ai_provider, ai_model, repo_url, status, updated_at)
-               VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+            """INSERT INTO projects (name, ai_provider, ai_model, repo_url, status, owner, updated_at)
+               VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
                ON CONFLICT(name, ai_provider, ai_model) DO UPDATE SET
                repo_url = excluded.repo_url,
                status = excluded.status,
+               owner = excluded.owner,
                error_message = NULL,
                current_stage = NULL,
                updated_at = CURRENT_TIMESTAMP""",
-            (name, ai_provider, ai_model, repo_url, status),
+            (name, ai_provider, ai_model, repo_url, status, owner),
         )
         await db.commit()
 
@@ -221,10 +254,16 @@ async def get_project(
         return dict(row) if row else None
 
 
-async def list_projects() -> list[dict[str, str | int | None]]:
+async def list_projects(owner: str | None = None) -> list[dict[str, str | int | None]]:
     async with aiosqlite.connect(DB_PATH) as db:
         db.row_factory = aiosqlite.Row
-        cursor = await db.execute("SELECT * FROM projects ORDER BY updated_at DESC")
+        if owner:
+            cursor = await db.execute(
+                "SELECT * FROM projects WHERE owner = ? ORDER BY updated_at DESC",
+                (owner,),
+            )
+        else:
+            cursor = await db.execute("SELECT * FROM projects ORDER BY updated_at DESC")
         rows = await cursor.fetchall()
         return [dict(row) for row in rows]
 
@@ -309,3 +348,62 @@ async def get_known_models() -> dict[str, list[str]]:
             if model not in models[provider]:
                 models[provider].append(model)
         return models
+
+
+def hash_api_key(key: str) -> str:
+    """Hash an API key for storage."""
+    return hashlib.sha256(key.encode()).hexdigest()
+
+
+def generate_api_key() -> str:
+    """Generate a random API key."""
+    return f"docsfy_{secrets.token_urlsafe(32)}"
+
+
+VALID_ROLES = frozenset({"admin", "user", "viewer"})
+
+
+async def create_user(username: str, role: str = "user") -> tuple[str, str]:
+    """Create a user and return (username, raw_api_key)."""
+    if role not in VALID_ROLES:
+        msg = f"Invalid role: '{role}'. Must be admin, user, or viewer."
+        raise ValueError(msg)
+    raw_key = generate_api_key()
+    key_hash = hash_api_key(raw_key)
+    async with aiosqlite.connect(DB_PATH) as db:
+        await db.execute(
+            "INSERT INTO users (username, api_key_hash, role) VALUES (?, ?, ?)",
+            (username, key_hash, role),
+        )
+        await db.commit()
+    return username, raw_key
+
+
+async def get_user_by_key(api_key: str) -> dict[str, str | int | None] | None:
+    """Look up a user by their raw API key."""
+    key_hash = hash_api_key(api_key)
+    async with aiosqlite.connect(DB_PATH) as db:
+        db.row_factory = aiosqlite.Row
+        cursor = await db.execute(
+            "SELECT * FROM users WHERE api_key_hash = ?", (key_hash,)
+        )
+        row = await cursor.fetchone()
+        return dict(row) if row else None
+
+
+async def delete_user(username: str) -> bool:
+    """Delete a user by username."""
+    async with aiosqlite.connect(DB_PATH) as db:
+        cursor = await db.execute("DELETE FROM users WHERE username = ?", (username,))
+        await db.commit()
+        return cursor.rowcount > 0
+
+
+async def list_users() -> list[dict[str, str | int | None]]:
+    """List all users (without key hashes)."""
+    async with aiosqlite.connect(DB_PATH) as db:
+        db.row_factory = aiosqlite.Row
+        cursor = await db.execute(
+            "SELECT id, username, role, created_at FROM users ORDER BY created_at DESC"
+        )
+        return [dict(row) for row in await cursor.fetchall()]

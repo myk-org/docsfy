@@ -23,7 +23,7 @@
 </div>
 {% endmacro %}
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -205,6 +205,39 @@
         display: flex;
         align-items: center;
         gap: 0.5rem;
+    }
+
+    .top-bar-admin-link {
+        padding: 6px 12px;
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: var(--text-primary);
+        text-decoration: none;
+        border: 1px solid var(--border-primary);
+        border-radius: 4px;
+        transition: all 0.15s ease;
+    }
+    .top-bar-admin-link:hover {
+        border-color: var(--accent);
+        color: var(--accent);
+    }
+
+    .top-bar-user {
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        font-weight: 500;
+    }
+
+    .top-bar-logout {
+        padding: 6px 12px;
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: var(--text-secondary);
+        text-decoration: none;
+        transition: color 0.15s ease;
+    }
+    .top-bar-logout:hover {
+        color: var(--accent);
     }
 
     .theme-toggle {
@@ -1319,6 +1352,11 @@
     <header class="dashboard-header">
         <a href="/" class="dashboard-logo">docs<span>fy</span></a>
         <div class="header-actions">
+            {% if role == 'admin' %}
+            <a href="/admin" class="top-bar-admin-link">Admin</a>
+            {% endif %}
+            <span class="top-bar-user">{{ username }}</span>
+            <a href="/logout" class="top-bar-logout">Logout</a>
             <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
                 <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
                     <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
@@ -1336,6 +1374,7 @@
     <!-- Main Content -->
     <main class="dashboard-main">
         <!-- Generate Form -->
+        {% if role != 'viewer' %}
         <section class="generate-section">
             <h2>Generate Documentation</h2>
             <form id="generate-form" autocomplete="off">
@@ -1380,6 +1419,7 @@
                 </div>
             </form>
         </section>
+        {% endif %}
 
         <!-- Projects Section -->
         <section class="projects-section">
@@ -1463,10 +1503,14 @@
                         <div class="variant-actions">
                             <a href="/docs/{{ repo_name }}/{{ variant.ai_provider | urlencode }}/{{ variant.ai_model | urlencode }}/" target="_blank" class="btn btn-primary btn-sm">View Docs</a>
                             <a href="/api/projects/{{ repo_name }}/{{ variant.ai_provider | urlencode }}/{{ variant.ai_model | urlencode }}/download" class="btn btn-secondary btn-sm">Download</a>
+                            {% if role != 'viewer' %}
                             <button class="btn btn-danger btn-sm" data-delete-variant="{{ repo_name }}/{{ variant.ai_provider }}/{{ variant.ai_model }}">Delete</button>
+                            {% endif %}
                         </div>
+                        {% if role != 'viewer' %}
                         <!-- Regenerate controls -->
                         {{ regen_controls(variant, repo_name, default_provider, default_model, known_models, loop.index) }}
+                        {% endif %}
 
                         {% elif variant.status == 'generating' %}
                         <div class="variant-progress">
@@ -1477,7 +1521,9 @@
                             </div>
                             <span class="progress-text">Generating...</span>
                             <a href="/status/{{ repo_name }}/{{ variant.ai_provider | urlencode }}/{{ variant.ai_model | urlencode }}" target="_blank" class="status-link">View progress &rarr;</a>
+                            {% if role != 'viewer' %}
                             <button class="btn btn-danger btn-sm" data-abort-variant="{{ repo_name }}/{{ variant.ai_provider }}/{{ variant.ai_model }}">Abort</button>
+                            {% endif %}
                         </div>
 
                         {% elif variant.status == 'error' or variant.status == 'aborted' %}
@@ -1485,8 +1531,10 @@
                             <span class="error-text">{{ variant.error_message }}</span>
                         </div>
                         <div class="variant-actions">
+                            {% if role != 'viewer' %}
                             {{ regen_controls(variant, repo_name, default_provider, default_model, known_models, loop.index) }}
                             <button class="btn btn-danger btn-sm" data-delete-variant="{{ repo_name }}/{{ variant.ai_provider }}/{{ variant.ai_model }}">Delete</button>
+                            {% endif %}
                         </div>
                         {% endif %}
                     </div>
@@ -1764,9 +1812,11 @@
 
         var toggle = document.getElementById('theme-toggle');
         var stored = getTheme();
-        if (stored) document.documentElement.setAttribute('data-theme', stored);
-        else if (window.matchMedia('(prefers-color-scheme: dark)').matches)
+        if (stored) {
+            document.documentElement.setAttribute('data-theme', stored);
+        } else {
             document.documentElement.setAttribute('data-theme', 'dark');
+        }
         if (toggle) toggle.addEventListener('click', function() {
             var current = document.documentElement.getAttribute('data-theme');
             var next = current === 'dark' ? 'light' : 'dark';

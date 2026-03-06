@@ -12,10 +12,12 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Any
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse, HTMLResponse, StreamingResponse
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 from simple_logger.logger import get_logger
+from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
+from starlette.responses import JSONResponse, RedirectResponse, Response
 
 from docsfy.ai_client import check_ai_cli_available
 from docsfy.config import get_settings
@@ -24,15 +26,19 @@ from docsfy.models import GenerateRequest
 from docsfy.repository import clone_repo, get_local_repo_info
 from docsfy.renderer import render_site
 from docsfy.storage import (
+    create_user,
     delete_project,
+    delete_user,
     get_known_models,
     get_latest_variant,
     get_project,
     get_project_cache_dir,
     get_project_dir,
     get_project_site_dir,
+    get_user_by_key,
     init_db,
     list_projects,
+    list_users,
     list_variants,
     save_project,
     update_project_status,
@@ -52,6 +58,15 @@ def _validate_project_name(name: str) -> str:
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+    settings = get_settings()
+    if not settings.admin_key:
+        logger.error("ADMIN_KEY environment variable is required")
+        raise SystemExit(1)
+
+    if len(settings.admin_key) < 16:
+        logger.error("ADMIN_KEY must be at least 16 characters long")
+        raise SystemExit(1)
+
     _generating.clear()
     await init_db()
     yield
@@ -65,10 +80,138 @@ app = FastAPI(
 )
 
 
-@app.get("/", response_class=HTMLResponse)
-async def dashboard() -> HTMLResponse:
+class AuthMiddleware(BaseHTTPMiddleware):
+    """Authenticate every request via Bearer token or session cookie."""
+
+    # Paths that do not require authentication
+    _PUBLIC_PATHS = frozenset({"/login", "/login/", "/health"})
+
+    async def dispatch(
+        self, request: Request, call_next: RequestResponseEndpoint
+    ) -> Response:
+        if request.url.path in self._PUBLIC_PATHS:
+            return await call_next(request)
+
+        settings = get_settings()
+        user = None
+        is_admin = False
+
+        # 1. Check Authorization header (API clients)
+        auth_header = request.headers.get("authorization", "")
+        if auth_header.startswith("Bearer "):
+            token = auth_header[7:]
+            if token == settings.admin_key:
+                is_admin = True
+            else:
+                user = await get_user_by_key(token)
+
+        # 2. Check session cookie (browser)
+        if not user and not is_admin:
+            session_token = request.cookies.get("docsfy_session")
+            if session_token:
+                if session_token == settings.admin_key:
+                    is_admin = True
+                else:
+                    user = await get_user_by_key(session_token)
+
+        if not user and not is_admin:
+            # Not authenticated
+            if request.url.path.startswith("/api/"):
+                return JSONResponse(status_code=401, content={"detail": "Unauthorized"})
+            return RedirectResponse(url="/login", status_code=302)
+
+        # Determine the role
+        if is_admin:
+            role = "admin"
+            username = "admin"
+        else:
+            assert user is not None  # guaranteed by the guard above
+            role = str(user.get("role", "user"))
+            username = str(user["username"])
+
+        # Store user info in request state
+        request.state.user = user
+        request.state.is_admin = is_admin or role == "admin"
+        request.state.role = role
+        request.state.username = username
+
+        return await call_next(request)
+
+
+app.add_middleware(AuthMiddleware)
+
+
+def _require_write_access(request: Request) -> None:
+    """Raise 403 if user is a viewer (read-only)."""
+    if request.state.role == "viewer":
+        raise HTTPException(
+            status_code=403,
+            detail="Viewers cannot perform this action. Contact admin for write access.",
+        )
+
+
+@app.get("/login", response_class=HTMLResponse)
+async def login_page() -> HTMLResponse:
+    """Render the login page."""
+    env = Environment(
+        loader=FileSystemLoader(str(Path(__file__).parent / "templates")),
+        autoescape=select_autoescape(["html"]),
+    )
+    template = env.get_template("login.html")
+    html = template.render(error=None)
+    return HTMLResponse(content=html)
+
+
+@app.post("/login", response_model=None)
+async def login(request: Request) -> RedirectResponse | HTMLResponse:
+    """Authenticate with username + API key and set a session cookie."""
+    form = await request.form()
+    username = str(form.get("username", ""))
+    api_key = str(form.get("api_key", ""))
     settings = get_settings()
-    projects = await list_projects()
+
+    # Check admin — username must be "admin" and key must match
+    if username == "admin" and api_key == settings.admin_key:
+        response = RedirectResponse(url="/", status_code=302)
+        response.set_cookie("docsfy_session", api_key, httponly=True, samesite="lax")
+        return response
+
+    # Check user key — verify username matches the key's owner
+    user = await get_user_by_key(api_key)
+    if user and user["username"] == username:
+        response = RedirectResponse(url="/", status_code=302)
+        response.set_cookie("docsfy_session", api_key, httponly=True, samesite="lax")
+        return response
+
+    # Invalid credentials -- show login page with error
+    env = Environment(
+        loader=FileSystemLoader(str(Path(__file__).parent / "templates")),
+        autoescape=select_autoescape(["html"]),
+    )
+    template = env.get_template("login.html")
+    html = template.render(error="Invalid username or API key")
+    return HTMLResponse(content=html, status_code=401)
+
+
+@app.get("/logout")
+async def logout() -> RedirectResponse:
+    """Clear the session cookie and redirect to login."""
+    response = RedirectResponse(url="/login", status_code=302)
+    response.delete_cookie("docsfy_session")
+    return response
+
+
+@app.get("/", response_class=HTMLResponse)
+async def dashboard(request: Request) -> HTMLResponse:
+    settings = get_settings()
+    username = request.state.username
+    is_admin = request.state.is_admin
+
+    if is_admin:
+        projects = await list_projects()  # admin sees all
+    else:
+        projects = await list_projects(owner=username)
+
     known_models = await get_known_models()
 
     # Group by repo name
@@ -90,6 +233,8 @@ async def dashboard() -> HTMLResponse:
         default_provider=settings.ai_provider,
         default_model=settings.ai_model,
         known_models=known_models,
+        role=request.state.role,
+        username=request.state.username,
     )
     return HTMLResponse(content=html)
 
@@ -144,11 +289,12 @@ async def status() -> dict[str, Any]:
 
 
 @app.post("/api/generate", status_code=202)
-async def generate(request: GenerateRequest) -> dict[str, str]:
+async def generate(request: Request, gen_request: GenerateRequest) -> dict[str, str]:
+    _require_write_access(request)
     settings = get_settings()
-    ai_provider = request.ai_provider or settings.ai_provider
-    ai_model = request.ai_model or settings.ai_model
-    project_name = request.project_name
+    ai_provider = gen_request.ai_provider or settings.ai_provider
+    ai_model = gen_request.ai_model or settings.ai_model
+    project_name = gen_request.project_name
 
     if ai_provider not in ("claude", "gemini", "cursor"):
         raise HTTPException(
@@ -167,22 +313,23 @@ async def generate(request: GenerateRequest) -> dict[str, str]:
 
     await save_project(
         name=project_name,
-        repo_url=request.repo_url or request.repo_path or "",
+        repo_url=gen_request.repo_url or gen_request.repo_path or "",
         status="generating",
         ai_provider=ai_provider,
         ai_model=ai_model,
+        owner=request.state.username,
     )
 
     try:
         task = asyncio.create_task(
             _run_generation(
-                repo_url=request.repo_url,
-                repo_path=request.repo_path,
+                repo_url=gen_request.repo_url,
+                repo_path=gen_request.repo_path,
                 project_name=project_name,
                 ai_provider=ai_provider,
                 ai_model=ai_model,
-                ai_cli_timeout=request.ai_cli_timeout or settings.ai_cli_timeout,
-                force=request.force,
+                ai_cli_timeout=gen_request.ai_cli_timeout or settings.ai_cli_timeout,
+                force=gen_request.force,
             )
         )
         _generating[gen_key] = task
@@ -194,12 +341,13 @@ async def generate(request: GenerateRequest) -> dict[str, str]:
 
 
 @app.post("/api/projects/{name}/abort")
-async def abort_generation(name: str) -> dict[str, str]:
+async def abort_generation(request: Request, name: str) -> dict[str, str]:
     """Abort generation for any variant of the given project name.
 
     Kept for backward compatibility. Finds the first active generation
     matching the project name.
     """
+    _require_write_access(request)
     name = _validate_project_name(name)
     # Find any active generation key that starts with this project name
     matching_key = None
@@ -249,7 +397,10 @@ async def abort_generation(name: str) -> dict[str, str]:
 
 
 @app.post("/api/projects/{name}/{provider}/{model}/abort")
-async def abort_variant(name: str, provider: str, model: str) -> dict[str, str]:
+async def abort_variant(
+    request: Request, name: str, provider: str, model: str
+) -> dict[str, str]:
+    _require_write_access(request)
     name = _validate_project_name(name)
     gen_key = f"{name}/{provider}/{model}"
     task = _generating.get(gen_key)
@@ -507,10 +658,12 @@ async def get_variant_details(
 
 @app.delete("/api/projects/{name}/{provider}/{model}")
 async def delete_variant(
+    request: Request,
     name: str,
     provider: str,
     model: str,
 ) -> dict[str, str]:
+    _require_write_access(request)
     name = _validate_project_name(name)
     gen_key = f"{name}/{provider}/{model}"
     if gen_key in _generating:
@@ -575,7 +728,8 @@ async def get_project_details(name: str) -> dict[str, Any]:
 
 
 @app.delete("/api/projects/{name}")
-async def delete_project_endpoint(name: str) -> dict[str, str]:
+async def delete_project_endpoint(request: Request, name: str) -> dict[str, str]:
+    _require_write_access(request)
     name = _validate_project_name(name)
     # Check if any variant is generating
     for gen_key in _generating:
@@ -629,6 +783,68 @@ async def download_project(name: str) -> StreamingResponse:
         media_type="application/gzip",
         headers={"Content-Disposition": f"attachment; filename={name}-docs.tar.gz"},
     )
+
+
+# ---------------------------------------------------------------------------
+# Admin endpoints — MUST be defined BEFORE /docs/{project}/{path:path}
+# catch-all to avoid FastAPI matching project="admin".
+# ---------------------------------------------------------------------------
+
+
+def _require_admin(request: Request) -> None:
+    """Raise 403 if the user is not an admin."""
+    if not request.state.is_admin:
+        raise HTTPException(status_code=403, detail="Admin access required")
+
+
+@app.get("/admin", response_class=HTMLResponse)
+async def admin_panel(request: Request) -> HTMLResponse:
+    """Render the admin panel with user management."""
+    _require_admin(request)
+    users = await list_users()
+    env = Environment(
+        loader=FileSystemLoader(str(Path(__file__).parent / "templates")),
+        autoescape=select_autoescape(["html"]),
+    )
+    template = env.get_template("admin.html")
+    html = template.render(users=users, username=request.state.username)
+    return HTMLResponse(content=html)
+
+
+@app.post("/api/admin/users")
+async def create_user_endpoint(request: Request) -> dict[str, str]:
+    """Create a new user and return the generated API key."""
+    _require_admin(request)
+    body = await request.json()
+    username = body.get("username", "")
+    role = body.get("role", "user")
+    if not username:
+        raise HTTPException(status_code=400, detail="Username is required")
+    try:
+        username, raw_key = await create_user(username, role)
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    return {"username": username, "api_key": raw_key, "role": role}
+
+
+@app.delete("/api/admin/users/{username}")
+async def delete_user_endpoint(request: Request, username: str) -> dict[str, str]:
+    """Delete a user by username."""
+    _require_admin(request)
+    deleted = await delete_user(username)
+    if not deleted:
+        raise HTTPException(status_code=404, detail=f"User '{username}' not found")
+    return {"deleted": username}
+
+
+@app.get("/api/admin/users")
+async def list_users_endpoint(
+    request: Request,
+) -> dict[str, list[dict[str, str | int | None]]]:
+    """List all users."""
+    _require_admin(request)
+    users = await list_users()
+    return {"users": users}
 
 
 # IMPORTANT: variant-specific route MUST be defined BEFORE the generic route

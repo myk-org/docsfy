@@ -8,9 +8,11 @@
 
   var toggle = document.getElementById('theme-toggle');
   var stored = getTheme();
-  if (stored) document.documentElement.setAttribute('data-theme', stored);
-  else if (window.matchMedia('(prefers-color-scheme: dark)').matches)
+  if (stored) {
+    document.documentElement.setAttribute('data-theme', stored);
+  } else {
     document.documentElement.setAttribute('data-theme', 'dark');
+  }
   if (toggle) toggle.addEventListener('click', function() {
     var current = document.documentElement.getAttribute('data-theme');
     var next = current === 'dark' ? 'light' : 'dark';
