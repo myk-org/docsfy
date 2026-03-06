@@ -735,6 +735,107 @@
             padding: 0.75rem 1rem;
         }
     }
+
+    .modal-overlay {
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(0, 0, 0, 0.6);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 10000;
+    }
+
+    .modal-box {
+        background: var(--bg-card, #1e1e2e);
+        border: 1px solid var(--border-primary, #2e3248);
+        border-radius: 12px;
+        padding: 1.5rem;
+        max-width: 480px;
+        width: 90%;
+        box-shadow: 0 16px 48px rgba(0, 0, 0, 0.4);
+    }
+
+    .modal-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--text-primary, #e5e7eb);
+        margin-bottom: 0.75rem;
+    }
+
+    .modal-body {
+        font-size: 0.9rem;
+        color: var(--text-secondary, #9ca3af);
+        margin-bottom: 1rem;
+        line-height: 1.5;
+    }
+
+    .modal-input {
+        width: 100%;
+        padding: 10px 12px;
+        background: var(--bg-primary, #0f1117);
+        border: 1px solid var(--border-primary, #2e3248);
+        border-radius: 6px;
+        color: var(--text-primary, #e5e7eb);
+        font-size: 0.9rem;
+        outline: none;
+        box-sizing: border-box;
+    }
+
+    .modal-input:focus {
+        border-color: var(--accent, #818cf8);
+    }
+
+    .modal-input-hint {
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+        margin-top: 0.5rem;
+    }
+
+    .modal-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.75rem;
+        margin-top: 1.25rem;
+    }
+
+    .modal-btn {
+        padding: 8px 20px;
+        border-radius: 6px;
+        font-size: 0.85rem;
+        font-weight: 500;
+        cursor: pointer;
+        border: 1px solid transparent;
+        transition: all 0.15s ease;
+    }
+
+    .modal-btn-cancel {
+        background: transparent;
+        color: var(--text-secondary);
+        border-color: var(--border-primary);
+    }
+
+    .modal-btn-cancel:hover {
+        background: var(--bg-secondary);
+    }
+
+    .modal-btn-primary {
+        background: var(--accent);
+        color: white;
+    }
+
+    .modal-btn-primary:hover {
+        opacity: 0.9;
+    }
+
+    .modal-btn-danger {
+        background: #ef4444;
+        color: white;
+    }
+
+    .modal-btn-danger:hover {
+        opacity: 0.9;
+    }
     </style>
 </head>
 <body>
@@ -1306,8 +1407,9 @@
         }
 
         /* ----- Abort Handler ----- */
-        function handleAbort() {
-            if (!confirm('Abort generation for ' + PROJECT_NAME + '?')) return;
+        async function handleAbort() {
+            var confirmed = await modalConfirm('Abort Generation', 'Abort generation for ' + PROJECT_NAME + '?', true);
+            if (!confirmed) return;
             var abortBtn = document.getElementById('btn-abort');
             if (abortBtn) {
                 abortBtn.disabled = true;
@@ -1594,6 +1696,123 @@
         }
 
     })();
+    </script>
+
+    <!-- Custom Modal -->
+    <div class="modal-overlay" id="custom-modal" style="display:none">
+        <div class="modal-box">
+            <div class="modal-title" id="modal-title"></div>
+            <div class="modal-body" id="modal-body"></div>
+            <div class="modal-input-wrap" id="modal-input-wrap" style="display:none">
+                <input type="text" class="modal-input" id="modal-input" autocomplete="off">
+                <div class="modal-input-hint" id="modal-input-hint"></div>
+            </div>
+            <div class="modal-actions">
+                <button class="modal-btn modal-btn-cancel" id="modal-cancel" style="display:none">Cancel</button>
+                <button class="modal-btn modal-btn-primary" id="modal-ok">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    function showModal(options) {
+        var overlay = document.getElementById('custom-modal');
+        var titleEl = document.getElementById('modal-title');
+        var bodyEl = document.getElementById('modal-body');
+        var inputWrap = document.getElementById('modal-input-wrap');
+        var inputEl = document.getElementById('modal-input');
+        var hintEl = document.getElementById('modal-input-hint');
+        var okBtn = document.getElementById('modal-ok');
+        var cancelBtn = document.getElementById('modal-cancel');
+
+        titleEl.textContent = options.title || '';
+        bodyEl.textContent = options.body || '';
+
+        if (options.input) {
+            inputWrap.style.display = 'block';
+            inputEl.value = '';
+            inputEl.type = options.inputType || 'text';
+            inputEl.placeholder = options.inputPlaceholder || '';
+            hintEl.textContent = options.inputHint || '';
+        } else {
+            inputWrap.style.display = 'none';
+        }
+
+        okBtn.textContent = options.confirmText || 'OK';
+        okBtn.className = 'modal-btn ' + (options.danger ? 'modal-btn-danger' : 'modal-btn-primary');
+
+        if (options.cancelText !== undefined || options.onCancel || options.input) {
+            cancelBtn.style.display = '';
+            cancelBtn.textContent = options.cancelText || 'Cancel';
+        } else {
+            cancelBtn.style.display = 'none';
+        }
+
+        overlay.style.display = 'flex';
+        if (options.input) inputEl.focus();
+
+        function cleanup() {
+            overlay.style.display = 'none';
+            okBtn.onclick = null;
+            cancelBtn.onclick = null;
+        }
+
+        okBtn.onclick = function() {
+            var value = options.input ? inputEl.value : true;
+            cleanup();
+            if (options.onConfirm) options.onConfirm(value);
+        };
+
+        cancelBtn.onclick = function() {
+            cleanup();
+            if (options.onCancel) options.onCancel();
+        };
+
+        function escHandler(e) {
+            if (e.key === 'Escape') {
+                cleanup();
+                if (options.onCancel) options.onCancel();
+                document.removeEventListener('keydown', escHandler);
+            }
+        }
+        document.addEventListener('keydown', escHandler);
+
+        if (options.input) {
+            inputEl.onkeydown = function(e) {
+                if (e.key === 'Enter') okBtn.click();
+            };
+        }
+    }
+
+    function modalAlert(title, body) {
+        return new Promise(function(resolve) {
+            showModal({ title: title, body: body, onConfirm: resolve });
+        });
+    }
+
+    function modalConfirm(title, body, danger) {
+        return new Promise(function(resolve) {
+            showModal({
+                title: title, body: body, danger: danger,
+                confirmText: danger ? 'Delete' : 'Confirm',
+                cancelText: 'Cancel',
+                onConfirm: function() { resolve(true); },
+                onCancel: function() { resolve(false); },
+            });
+        });
+    }
+
+    function modalPrompt(title, body, hint, placeholder) {
+        return new Promise(function(resolve) {
+            showModal({
+                title: title, body: body, input: true,
+                inputHint: hint, inputPlaceholder: placeholder,
+                confirmText: 'OK', cancelText: 'Cancel',
+                onConfirm: function(val) { resolve(val); },
+                onCancel: function() { resolve(null); },
+            });
+        });
+    }
     </script>
 </body>
 </html>
