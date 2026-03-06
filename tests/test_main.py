@@ -6,6 +6,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 import pytest
+from fastapi import HTTPException
 from httpx import ASGITransport, AsyncClient
 
 TEST_ADMIN_KEY = "test-admin-secret-key"
@@ -242,6 +243,26 @@ async def test_abort_variant_endpoint(client: AsyncClient) -> None:
     """Test variant-specific abort endpoint returns 404 when no active gen."""
     response = await client.post("/api/projects/repo/claude/opus/abort")
     assert response.status_code == 404
+
+
+def test_reject_private_url_dns(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Test that SSRF protection rejects DNS names resolving to private IPs."""
+    import socket
+
+    from docsfy.main import _reject_private_url
+
+    def mock_getaddrinfo(
+        host: str, port: object, *args: object, **kwargs: object
+    ) -> list[
+        tuple[socket.AddressFamily, socket.SocketKind, int, str, tuple[str, int]]
+    ]:
+        return [(socket.AF_INET, socket.SOCK_STREAM, 0, "", ("192.168.1.1", 0))]
+
+    monkeypatch.setattr(socket, "getaddrinfo", mock_getaddrinfo)
+
+    with pytest.raises(HTTPException) as exc_info:
+        _reject_private_url("https://evil.com/org/repo")
+    assert exc_info.value.status_code == 400
 
 
 async def test_generate_rejects_private_url(client: AsyncClient) -> None:

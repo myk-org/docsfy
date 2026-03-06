@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 import asyncio
+import ipaddress
 import json
 import os
 import re as _re
 import shutil
+import socket
 import tarfile
 import tempfile
 from collections.abc import AsyncIterator
@@ -456,7 +458,6 @@ def _reject_private_url(url: str) -> None:
     This provides basic protection against SSRF. More comprehensive protection
     (DNS rebinding, etc.) should be handled at the network/firewall level.
     """
-    import ipaddress
     from urllib.parse import urlparse
 
     try:
@@ -485,7 +486,21 @@ def _reject_private_url(url: str) -> None:
                     detail="Repository URL must not target localhost or private networks",
                 )
         except ValueError:
-            pass  # hostname is a DNS name, not an IP - allowed
+            # hostname is a DNS name - resolve and check
+            try:
+                resolved = socket.getaddrinfo(
+                    hostname, None, socket.AF_UNSPEC, socket.SOCK_STREAM
+                )
+                for _family, _socktype, _proto, _canonname, sockaddr in resolved:
+                    ip_str = sockaddr[0]
+                    addr = ipaddress.ip_address(ip_str)
+                    if addr.is_private or addr.is_loopback or addr.is_link_local:
+                        raise HTTPException(
+                            status_code=400,
+                            detail="Repository URL resolves to a private network address",
+                        )
+            except socket.gaierror:
+                pass  # DNS resolution failed - let git clone handle the error
     except HTTPException:
         raise
     except Exception:

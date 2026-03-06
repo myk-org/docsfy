@@ -1826,6 +1826,137 @@ agent-browser screenshot
 
 ---
 
+### 11.9 Two users generate same repo with same provider/model
+
+**Precondition:** Test 11.8 is complete. `testviewer-e2e` has been revoked access.
+
+**Commands (User A generates):**
+```
+agent-browser navigate http://localhost:8800/logout
+agent-browser wait-for-navigation
+agent-browser type "#username" "testuser-e2e"
+agent-browser type "#api_key" "<TEST_USER_PASSWORD>"
+agent-browser click ".btn-login"
+agent-browser wait-for-navigation
+agent-browser navigate http://localhost:8800/
+agent-browser clear "#gen-repo-url"
+agent-browser type "#gen-repo-url" "https://github.com/myk-org/for-testing-only"
+agent-browser select "#gen-provider" "gemini"
+agent-browser clear "#gen-model"
+agent-browser type "#gen-model" "gemini-2.5-flash"
+agent-browser click "#gen-submit"
+```
+
+Wait for completion (poll until ready, max 2 minutes).
+
+**Commands (User B generates the same config):**
+```
+agent-browser navigate http://localhost:8800/logout
+agent-browser wait-for-navigation
+agent-browser type "#username" "userb-e2e"
+agent-browser type "#api_key" "<USERB_PASSWORD>"
+agent-browser click ".btn-login"
+agent-browser wait-for-navigation
+agent-browser navigate http://localhost:8800/
+agent-browser clear "#gen-repo-url"
+agent-browser type "#gen-repo-url" "https://github.com/myk-org/for-testing-only"
+agent-browser select "#gen-provider" "gemini"
+agent-browser clear "#gen-model"
+agent-browser type "#gen-model" "gemini-2.5-flash"
+agent-browser click "#gen-submit"
+```
+
+Wait for completion (poll until ready, max 2 minutes).
+
+**Commands (Verify User A sees only their copy):**
+```
+agent-browser navigate http://localhost:8800/logout
+agent-browser wait-for-navigation
+agent-browser type "#username" "testuser-e2e"
+agent-browser type "#api_key" "<TEST_USER_PASSWORD>"
+agent-browser click ".btn-login"
+agent-browser wait-for-navigation
+agent-browser navigate http://localhost:8800/
+agent-browser javascript "Array.from(document.querySelectorAll('.project-group')).length"
+agent-browser screenshot
+```
+
+**Commands (Verify User B sees only their copy):**
+```
+agent-browser navigate http://localhost:8800/logout
+agent-browser wait-for-navigation
+agent-browser type "#username" "userb-e2e"
+agent-browser type "#api_key" "<USERB_PASSWORD>"
+agent-browser click ".btn-login"
+agent-browser wait-for-navigation
+agent-browser navigate http://localhost:8800/
+agent-browser javascript "Array.from(document.querySelectorAll('.project-group')).length"
+agent-browser screenshot
+```
+
+**Commands (Verify Admin sees both):**
+```
+agent-browser navigate http://localhost:8800/logout
+agent-browser wait-for-navigation
+agent-browser type "#username" "admin"
+agent-browser type "#api_key" "12345678901234567890"
+agent-browser click ".btn-login"
+agent-browser wait-for-navigation
+agent-browser navigate http://localhost:8800/
+agent-browser javascript "Array.from(document.querySelectorAll('.project-group[data-owner=\"testuser-e2e\"]')).length"
+agent-browser javascript "Array.from(document.querySelectorAll('.project-group[data-owner=\"userb-e2e\"]')).length"
+agent-browser screenshot
+```
+
+**Check:** Both users have independent copies of the same repo/provider/model combination.
+
+**Expected result:**
+- `testuser-e2e` sees exactly 1 project group for `for-testing-only`
+- `userb-e2e` sees exactly 1 project group for `for-testing-only`
+- Admin sees 2 project groups (one owned by `testuser-e2e`, one owned by `userb-e2e`)
+- The variants are isolated by owner
+
+---
+
+### 11.10 After revoke, viewer cannot access via direct URL
+
+**Precondition:** Test 11.7 is complete. Access has been revoked from `testviewer-e2e`.
+
+**Commands (Login as testviewer-e2e):**
+```
+agent-browser navigate http://localhost:8800/logout
+agent-browser wait-for-navigation
+agent-browser type "#username" "testviewer-e2e"
+agent-browser type "#api_key" "<TEST_VIEWER_PASSWORD>"
+agent-browser click ".btn-login"
+agent-browser wait-for-navigation
+```
+
+**Try accessing docs directly:**
+```
+agent-browser eval "fetch('/docs/for-testing-only/gemini/gemini-2.5-flash/index.html', {credentials:'same-origin'}).then(r => r.status)"
+```
+
+**Try accessing status page directly:**
+```
+agent-browser eval "fetch('/status/for-testing-only/gemini/gemini-2.5-flash', {credentials:'same-origin'}).then(r => r.status)"
+```
+
+**Try accessing download API directly:**
+```
+agent-browser eval "fetch('/api/projects/for-testing-only/gemini/gemini-2.5-flash/download', {credentials:'same-origin'}).then(r => r.status)"
+```
+
+**Check:** All direct URL accesses return 404, not just hidden from the dashboard.
+
+**Expected result:**
+- Docs endpoint returns `404`
+- Status page endpoint returns `404`
+- Download API endpoint returns `404`
+- Revocation is enforced at the route level, not just UI level
+
+---
+
 ## Test 13: Direct URL Authorization
 
 Test that non-owners cannot access resources by URL even if they know the path.
@@ -1939,6 +2070,43 @@ agent-browser screenshot
 - The page returns 200
 - Documentation content is visible
 - A sidebar with navigation is present
+
+---
+
+### 13.6 Non-owner cannot access via owner-agnostic download route
+
+**Precondition:** Logged in as `userb-e2e` (after revocation in Test 13.5, or fresh user with no access).
+
+```
+agent-browser navigate http://localhost:8800/logout
+agent-browser wait-for-navigation
+agent-browser type "#username" "userb-e2e"
+agent-browser type "#api_key" "<USERB_PASSWORD>"
+agent-browser click ".btn-login"
+agent-browser wait-for-navigation
+```
+
+**Commands:**
+```
+agent-browser eval "fetch('/api/projects/for-testing-only/download', {credentials:'same-origin'}).then(r => r.status)"
+```
+
+**Check:** The owner-agnostic download route returns 404 for non-owners.
+
+**Expected result:** Returns `404`.
+
+---
+
+### 13.7 Non-owner cannot access via owner-agnostic docs route
+
+**Commands:**
+```
+agent-browser eval "fetch('/docs/for-testing-only/index.html', {credentials:'same-origin'}).then(r => r.status)"
+```
+
+**Check:** The owner-agnostic docs route returns 404 for non-owners.
+
+**Expected result:** Returns `404`.
 
 ---
 
@@ -2059,7 +2227,7 @@ agent-browser close
 | Test 8: Generated Docs | 8 | Docs quality, theme, TOC, copy, footer, llms.txt |
 | Test 9: Status Page | 3 | Activity log, abort, regenerate controls |
 | Test 10: Custom Modals | 4 | Themed modals for delete, password, abort, escape key |
-| Test 11: Cross-User Isolation | 8 | User isolation, admin visibility, access grants, revoke |
+| Test 11: Cross-User Isolation | 10 | User isolation, admin visibility, access grants, revoke, collision test, direct URL after revoke |
 | Test 12: Logout | 2 | Logout redirect, session invalidation |
-| Test 13: Direct URL Authorization | 5 | Non-owner URL access blocked, granted user access |
-| **Total** | **73** | |
+| Test 13: Direct URL Authorization | 7 | Non-owner URL access blocked, granted user access, owner-agnostic routes |
+| **Total** | **78** | |

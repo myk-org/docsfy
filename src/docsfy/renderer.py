@@ -60,6 +60,13 @@ def _sanitize_html(html: str) -> str:
     html = re.sub(
         r'src\s*=\s*["\']data:[^"\']*["\']', 'src="#"', html, flags=re.IGNORECASE
     )
+    # Also catch unquoted javascript:/data: URLs
+    html = re.sub(
+        r"href\s*=\s*javascript:[^\s>]*", 'href="#"', html, flags=re.IGNORECASE
+    )
+    html = re.sub(r"src\s*=\s*javascript:[^\s>]*", 'src="#"', html, flags=re.IGNORECASE)
+    html = re.sub(r"href\s*=\s*data:[^\s>]*", 'href="#"', html, flags=re.IGNORECASE)
+    html = re.sub(r"src\s*=\s*data:[^\s>]*", 'src="#"', html, flags=re.IGNORECASE)
     return html
 
 

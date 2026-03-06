@@ -95,6 +95,22 @@ def test_md_to_html_sanitizes_content() -> None:
     assert "Safe content" in content_html
 
 
+def test_sanitize_html_unquoted_javascript() -> None:
+    from docsfy.renderer import _sanitize_html
+
+    result = _sanitize_html("<a href=javascript:alert(1)>x</a>")
+    assert "javascript:" not in result
+
+    result = _sanitize_html("<img src=javascript:alert(1)>")
+    assert "javascript:" not in result
+
+    result = _sanitize_html("<a href=data:text/html,<script>alert(1)</script>>x</a>")
+    assert "data:" not in result
+
+    result = _sanitize_html("<img src=data:text/html,evil>")
+    assert "data:" not in result
+
+
 def test_search_index_generated(tmp_path: Path) -> None:
     from docsfy.renderer import render_site
 
