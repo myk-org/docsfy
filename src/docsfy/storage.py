@@ -543,6 +543,24 @@ async def delete_session(token: str) -> None:
         await db.commit()
 
 
+async def rotate_user_key(username: str) -> str:
+    """Generate a new API key for a user. Returns the raw new key."""
+    raw_key = generate_api_key()
+    key_hash = hash_api_key(raw_key)
+    async with aiosqlite.connect(DB_PATH) as db:
+        cursor = await db.execute(
+            "UPDATE users SET api_key_hash = ? WHERE username = ?",
+            (key_hash, username),
+        )
+        if cursor.rowcount == 0:
+            msg = f"User '{username}' not found"
+            raise ValueError(msg)
+        # Invalidate all existing sessions for this user
+        await db.execute("DELETE FROM sessions WHERE username = ?", (username,))
+        await db.commit()
+    return raw_key
+
+
 async def cleanup_expired_sessions() -> None:
     """Remove expired sessions."""
     async with aiosqlite.connect(DB_PATH) as db:

@@ -697,3 +697,111 @@ async def test_viewer_sees_assigned_projects(_init_db: None) -> None:
     project_names = [p["name"] for p in projects]
     assert "assigned-proj" in project_names
     _generating.clear()
+
+
+# ---------------------------------------------------------------------------
+# Test: user rotates own key
+# ---------------------------------------------------------------------------
+
+
+async def test_user_rotates_own_key(_init_db: None) -> None:
+    """A user can rotate their own API key, invalidating the old one."""
+    from docsfy.main import _generating, app
+    from docsfy.storage import create_user
+
+    _generating.clear()
+    username, key = await create_user("rotatetest", role="user")
+
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        # Login
+        resp = await ac.post(
+            "/login",
+            data={"username": "rotatetest", "api_key": key},
+            follow_redirects=False,
+        )
+        cookie = resp.cookies.get("docsfy_session")
+
+        # Rotate
+        resp = await ac.post("/api/me/rotate-key", cookies={"docsfy_session": cookie})
+        assert resp.status_code == 200
+        data = resp.json()
+        assert "new_api_key" in data
+        assert data["new_api_key"] != key
+
+        # Old key should no longer work for login
+        resp = await ac.post(
+            "/login",
+            data={"username": "rotatetest", "api_key": key},
+            follow_redirects=False,
+        )
+        assert resp.status_code != 302  # login should fail
+
+    _generating.clear()
+
+
+# ---------------------------------------------------------------------------
+# Test: admin rotates user key
+# ---------------------------------------------------------------------------
+
+
+async def test_admin_rotates_user_key(admin_client: AsyncClient) -> None:
+    """Admin can rotate another user's API key."""
+    from docsfy.storage import create_user
+
+    await create_user("target", role="user")
+
+    resp = await admin_client.post("/api/admin/users/target/rotate-key")
+    assert resp.status_code == 200
+    assert "new_api_key" in resp.json()
+
+
+# ---------------------------------------------------------------------------
+# Test: admin rotate key for non-existent user returns 404
+# ---------------------------------------------------------------------------
+
+
+async def test_admin_rotates_nonexistent_user_key(
+    admin_client: AsyncClient,
+) -> None:
+    """Admin rotating key for a non-existent user should return 404."""
+    resp = await admin_client.post("/api/admin/users/no-such-user/rotate-key")
+    assert resp.status_code == 404
+
+
+# ---------------------------------------------------------------------------
+# Test: viewer cannot rotate key
+# ---------------------------------------------------------------------------
+
+
+async def test_viewer_cannot_rotate_key(_init_db: None) -> None:
+    """A viewer should get 403 when trying to rotate their key."""
+    from docsfy.main import _generating, app
+    from docsfy.storage import create_user
+
+    _generating.clear()
+    _, viewer_key = await create_user("viewer-rotate", role="viewer")
+
+    transport = ASGITransport(app=app)
+    async with AsyncClient(
+        transport=transport,
+        base_url="http://test",
+        headers={"Authorization": f"Bearer {viewer_key}"},
+    ) as ac:
+        resp = await ac.post("/api/me/rotate-key")
+    assert resp.status_code == 403
+    _generating.clear()
+
+
+# ---------------------------------------------------------------------------
+# Test: ADMIN_KEY user cannot rotate key
+# ---------------------------------------------------------------------------
+
+
+async def test_admin_key_user_cannot_rotate_own_key(
+    admin_client: AsyncClient,
+) -> None:
+    """ADMIN_KEY users should get 400 when trying to rotate their own key."""
+    resp = await admin_client.post("/api/me/rotate-key")
+    assert resp.status_code == 400
+    assert "ADMIN_KEY" in resp.json()["detail"]

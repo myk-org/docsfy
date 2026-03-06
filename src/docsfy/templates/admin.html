@@ -111,6 +111,9 @@
     .btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
     .btn-danger { color: var(--status-error); border-color: var(--status-error); }
     .btn-danger:hover { background: var(--status-error-bg); }
+    .btn-warning { color: #d97706; border-color: #d97706; }
+    .btn-warning:hover { background: #fffbeb; }
+    [data-theme="dark"] .btn-warning:hover { background: #451a03; }
     .btn-sm { padding: 0.25rem 0.625rem; font-size: 0.75rem; }
 
     .theme-toggle {
@@ -385,6 +388,7 @@
                             </td>
                             <td>{{ user.created_at }}</td>
                             <td>
+                                <button class="btn btn-warning btn-sm" data-rotate-user="{{ user.username }}">Rotate Key</button>
                                 <button class="btn btn-danger btn-sm" data-delete-user="{{ user.username }}">Delete</button>
                             </td>
                         </tr>
@@ -556,6 +560,32 @@
         if (!btn) return;
         var username = btn.getAttribute('data-delete-user');
         deleteUser(username);
+    });
+
+    document.addEventListener('click', function(e) {
+        var btn = e.target.closest('[data-rotate-user]');
+        if (!btn) return;
+        var username = btn.getAttribute('data-rotate-user');
+        if (!confirm("Rotate API key for '" + username + "'? Their current key will stop working.")) return;
+
+        fetch('/api/admin/users/' + encodeURIComponent(username) + '/rotate-key', {
+            method: 'POST',
+            credentials: 'same-origin',
+        })
+        .then(function(resp) {
+            if (!resp.ok) return resp.json().then(function(d) { throw d; });
+            return resp.json();
+        })
+        .then(function(data) {
+            var display = document.getElementById('new-key-display');
+            document.getElementById('new-key-username').textContent = data.username;
+            document.getElementById('new-key-role').textContent = 'rotated';
+            document.getElementById('new-key-value').textContent = data.new_api_key;
+            display.style.display = 'block';
+        })
+        .catch(function(err) {
+            showAlert('error', (err && err.detail) || 'Failed to rotate key');
+        });
     });
     </script>
 </body>

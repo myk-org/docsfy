@@ -49,6 +49,7 @@ from docsfy.storage import (
     list_users,
     list_variants,
     revoke_project_access,
+    rotate_user_key,
     save_project,
     update_project_status,
 )
@@ -979,6 +980,44 @@ async def list_access(request: Request, name: str) -> dict[str, Any]:
     _require_admin(request)
     users = await get_project_access(name)
     return {"project": name, "users": users}
+
+
+# ---------------------------------------------------------------------------
+# Key rotation endpoints
+# ---------------------------------------------------------------------------
+
+
+@app.post("/api/me/rotate-key")
+async def rotate_own_key(request: Request) -> dict[str, str]:
+    """User rotates their own API key."""
+    _require_write_access(request)
+    if request.state.is_admin and not request.state.user:
+        raise HTTPException(
+            status_code=400,
+            detail="ADMIN_KEY users cannot rotate keys. Change the ADMIN_KEY env var instead.",
+        )
+    username = request.state.username
+    new_key = await rotate_user_key(username)
+    logger.info(f"[AUDIT] User '{username}' rotated their own API key")
+    # Clear current session -- user must re-login with new key
+    session_token = request.cookies.get("docsfy_session")
+    if session_token:
+        await delete_session(session_token)
+    return {"username": username, "new_api_key": new_key}
+
+
+@app.post("/api/admin/users/{username}/rotate-key")
+async def admin_rotate_key(request: Request, username: str) -> dict[str, str]:
+    """Admin rotates a user's API key."""
+    _require_admin(request)
+    try:
+        new_key = await rotate_user_key(username)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    logger.info(
+        f"[AUDIT] Admin '{request.state.username}' rotated API key for user '{username}'"
+    )
+    return {"username": username, "new_api_key": new_key}
 
 
 # IMPORTANT: variant-specific route MUST be defined BEFORE the generic route
