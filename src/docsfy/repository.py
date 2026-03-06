@@ -51,8 +51,8 @@ def get_changed_files(repo_path: Path, old_sha: str, new_sha: str) -> list[str] 
     Returns None on error (caller should fall back to full regeneration),
     or an empty list when there are no changes.
     """
-    if not re.match(r"^[0-9a-fA-F]{4,40}$", old_sha) or not re.match(
-        r"^[0-9a-fA-F]{4,40}$", new_sha
+    if not re.match(r"^[0-9a-fA-F]{4,64}$", old_sha) or not re.match(
+        r"^[0-9a-fA-F]{4,64}$", new_sha
     ):
         logger.warning("Invalid SHA format")
         return None

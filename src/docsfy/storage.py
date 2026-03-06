@@ -591,6 +591,9 @@ def hash_api_key(key: str, hmac_secret: str = "") -> str:
     Uses ADMIN_KEY as the HMAC secret so that even if the source is read,
     keys cannot be cracked without the environment secret.
     """
+    # NOTE: ADMIN_KEY is used as the HMAC secret. Rotating ADMIN_KEY will
+    # invalidate all existing api_key_hash values, requiring all users to
+    # regenerate their API keys.
     secret = hmac_secret or os.getenv("ADMIN_KEY", "")
     if not secret:
         msg = "ADMIN_KEY environment variable is required for key hashing"

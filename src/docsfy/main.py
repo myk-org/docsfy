@@ -562,8 +562,8 @@ async def _reject_private_url(url: str) -> None:
                 pass  # DNS resolution failed - let git clone handle the error
     except HTTPException:
         raise
-    except Exception:
-        pass  # URL parsing errors are handled by Pydantic validation
+    except Exception as exc:
+        logger.debug(f"URL validation skipped for '{url}': {exc}")
 
 
 @app.post("/api/projects/{name}/abort")
