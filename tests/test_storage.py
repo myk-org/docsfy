@@ -397,7 +397,12 @@ async def test_get_nonexistent_session(db_path: Path) -> None:
 async def test_cleanup_expired_sessions(db_path: Path) -> None:
     import aiosqlite
 
-    from docsfy.storage import DB_PATH, cleanup_expired_sessions, create_session
+    from docsfy.storage import (
+        DB_PATH,
+        _hash_session_token,
+        cleanup_expired_sessions,
+        create_session,
+    )
 
     # Directly insert a session with a past expiration
     async with aiosqlite.connect(DB_PATH) as db:
@@ -419,8 +424,10 @@ async def test_cleanup_expired_sessions(db_path: Path) -> None:
         assert row is not None
         assert row[0] == 1
 
+        # Session tokens are stored as hashes
+        token_hash = _hash_session_token(valid_token)
         cursor = await db.execute(
-            "SELECT username FROM sessions WHERE token = ?", (valid_token,)
+            "SELECT username FROM sessions WHERE token = ?", (token_hash,)
         )
         row = await cursor.fetchone()
         assert row is not None

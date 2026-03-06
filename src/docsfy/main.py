@@ -26,6 +26,7 @@ from docsfy.models import GenerateRequest
 from docsfy.repository import clone_repo, get_local_repo_info
 from docsfy.renderer import render_site
 from docsfy.storage import (
+    cleanup_expired_sessions,
     create_session,
     create_user,
     delete_project,
@@ -83,6 +84,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 
     _generating.clear()
     await init_db()
+    await cleanup_expired_sessions()
     yield
 
 
@@ -248,8 +250,14 @@ async def logout(request: Request) -> RedirectResponse:
     session_token = request.cookies.get("docsfy_session")
     if session_token:
         await delete_session(session_token)
+    settings = get_settings()
     response = RedirectResponse(url="/login", status_code=302)
-    response.delete_cookie("docsfy_session")
+    response.delete_cookie(
+        "docsfy_session",
+        httponly=True,
+        samesite="strict",
+        secure=settings.secure_cookies,
+    )
     return response
 
 
@@ -289,11 +297,14 @@ async def dashboard(request: Request) -> HTMLResponse:
 
 
 @app.get("/status/{name}/{provider}/{model}", response_class=HTMLResponse)
-async def project_status_page(name: str, provider: str, model: str) -> HTMLResponse:
+async def project_status_page(
+    request: Request, name: str, provider: str, model: str
+) -> HTMLResponse:
     name = _validate_project_name(name)
     project = await get_project(name, ai_provider=provider, ai_model=model)
     if not project:
         raise HTTPException(status_code=404, detail="Variant not found")
+    await _check_ownership(request, name, project)
 
     # Parse plan_json string into a dict for template consumption
     plan_json = None
@@ -423,6 +434,11 @@ async def abort_generation(request: Request, name: str) -> dict[str, str]:
     ai_provider = parts[1] if len(parts) > 1 else ""
     ai_model = parts[2] if len(parts) > 2 else ""
 
+    # Check ownership before allowing abort
+    project = await get_project(name, ai_provider=ai_provider, ai_model=ai_model)
+    if project:
+        await _check_ownership(request, name, project)
+
     task.cancel()
     try:
         await asyncio.wait_for(task, timeout=5.0)
@@ -466,6 +482,11 @@ async def abort_variant(
             status_code=404,
             detail="No active generation for this variant",
         )
+
+    # Check ownership before allowing abort
+    project = await get_project(name, ai_provider=provider, ai_model=model)
+    if project:
+        await _check_ownership(request, name, project)
 
     task.cancel()
     try:
@@ -730,6 +751,10 @@ async def delete_variant(
             status_code=409,
             detail=f"Cannot delete '{name}/{provider}/{model}' while generation is in progress. Abort first.",
         )
+    project = await get_project(name, ai_provider=provider, ai_model=model)
+    if not project:
+        raise HTTPException(status_code=404, detail="Variant not found")
+    await _check_ownership(request, name, project)
     deleted = await delete_project(name, ai_provider=provider, ai_model=model)
     if not deleted:
         raise HTTPException(status_code=404, detail="Variant not found")
@@ -804,6 +829,7 @@ async def delete_project_endpoint(request: Request, name: str) -> dict[str, str]
     variants = await list_variants(name)
     if not variants:
         raise HTTPException(status_code=404, detail=f"Project '{name}' not found")
+    await _check_ownership(request, name, variants[0])
     for v in variants:
         provider = str(v.get("ai_provider", ""))
         model = str(v.get("ai_model", ""))
@@ -923,6 +949,14 @@ async def grant_access(request: Request, name: str) -> dict[str, str]:
     username = body.get("username", "")
     if not username:
         raise HTTPException(status_code=400, detail="Username is required")
+    # Validate user exists
+    user = await get_user_by_username(username)
+    if not user:
+        raise HTTPException(status_code=404, detail=f"User '{username}' not found")
+    # Validate project exists
+    variants = await list_variants(name)
+    if not variants:
+        raise HTTPException(status_code=404, detail=f"Project '{name}' not found")
     await grant_project_access(name, username)
     logger.info(
         f"[AUDIT] Admin '{request.state.username}' granted '{username}' access to '{name}'"
@@ -951,6 +985,7 @@ async def list_access(request: Request, name: str) -> dict[str, Any]:
 # so FastAPI matches it first.
 @app.get("/docs/{project}/{provider}/{model}/{path:path}")
 async def serve_variant_docs(
+    request: Request,
     project: str,
     provider: str,
     model: str,
@@ -959,6 +994,9 @@ async def serve_variant_docs(
     if not path or path == "/":
         path = "index.html"
     project = _validate_project_name(project)
+    proj = await get_project(project, ai_provider=provider, ai_model=model)
+    if proj:
+        await _check_ownership(request, project, proj)
     site_dir = get_project_site_dir(project, provider, model)
     file_path = site_dir / path
     try:
@@ -971,7 +1009,9 @@ async def serve_variant_docs(
 
 
 @app.get("/docs/{project}/{path:path}")
-async def serve_docs(project: str, path: str = "index.html") -> FileResponse:
+async def serve_docs(
+    request: Request, project: str, path: str = "index.html"
+) -> FileResponse:
     """Serve the most recently generated variant."""
     if not path or path == "/":
         path = "index.html"
@@ -979,6 +1019,7 @@ async def serve_docs(project: str, path: str = "index.html") -> FileResponse:
     latest = await get_latest_variant(project)
     if not latest:
         raise HTTPException(status_code=404, detail="No docs available")
+    await _check_ownership(request, project, latest)
     site_dir = get_project_site_dir(
         project,
         str(latest["ai_provider"]),
