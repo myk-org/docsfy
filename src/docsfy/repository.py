@@ -58,7 +58,7 @@ def get_changed_files(repo_path: Path, old_sha: str, new_sha: str) -> list[str] 
         return None
     try:
         result = subprocess.run(
-            ["git", "diff", "--name-only", old_sha, new_sha],
+            ["git", "diff", "--name-only", "-z", old_sha, new_sha],
             cwd=repo_path,
             capture_output=True,
             text=True,
@@ -70,7 +70,7 @@ def get_changed_files(repo_path: Path, old_sha: str, new_sha: str) -> list[str] 
     if result.returncode != 0:
         logger.warning(f"Failed to get diff: {result.stderr}")
         return None
-    return [f.strip() for f in result.stdout.strip().split("\n") if f.strip()]
+    return [path for path in result.stdout.split("\0") if path]
 
 
 def get_local_repo_info(repo_path: Path) -> tuple[Path, str]:

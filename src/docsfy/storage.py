@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+import asyncio
 import hashlib
 import hmac
 import os
 import re
 import secrets
+import shutil
 import sqlite3
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -656,7 +658,21 @@ async def delete_user(username: str) -> bool:
         await db.execute("DELETE FROM project_access WHERE username = ?", (username,))
         cursor = await db.execute("DELETE FROM users WHERE username = ?", (username,))
         await db.commit()
-        return cursor.rowcount > 0
+
+        deleted = cursor.rowcount > 0
+        if deleted:
+            owner_dir = PROJECTS_DIR / username
+            try:
+                await asyncio.to_thread(shutil.rmtree, owner_dir, True)
+                logger.info(
+                    f"Cleaned up project directory for user '{username}': {owner_dir}"
+                )
+            except OSError:
+                logger.exception(
+                    f"Failed to clean up project directory for user '{username}': {owner_dir}"
+                )
+
+        return deleted
 
 
 async def list_users() -> list[dict[str, str | int | None]]:

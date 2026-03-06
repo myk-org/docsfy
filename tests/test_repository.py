@@ -88,7 +88,7 @@ def test_get_changed_files_success(tmp_path: Path) -> None:
     with patch("docsfy.repository.subprocess.run") as mock_run:
         mock_run.return_value = MagicMock(
             returncode=0,
-            stdout="src/main.py\nsrc/utils.py\nREADME.md\n",
+            stdout="src/main.py\0src/utils.py\0README.md\0",
             stderr="",
         )
         files = get_changed_files(tmp_path, "abc123", "def456")
@@ -97,6 +97,7 @@ def test_get_changed_files_success(tmp_path: Path) -> None:
     call_args = mock_run.call_args
     assert "diff" in call_args.args[0]
     assert "--name-only" in call_args.args[0]
+    assert "-z" in call_args.args[0]
     assert "abc123" in call_args.args[0]
     assert "def456" in call_args.args[0]
 
