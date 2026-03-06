@@ -207,6 +207,32 @@ async def _check_ownership(
     raise HTTPException(status_code=404, detail="Not found")
 
 
+async def _resolve_project(
+    request: Request,
+    name: str,
+    ai_provider: str,
+    ai_model: str,
+) -> dict[str, Any]:
+    """Find a project variant, preferring the requesting user's owned copy.
+
+    Raises 404 if not found or not accessible.
+    """
+    proj = None
+    if not request.state.is_admin:
+        proj = await get_project(
+            name,
+            ai_provider=ai_provider,
+            ai_model=ai_model,
+            owner=request.state.username,
+        )
+    if not proj:
+        proj = await get_project(name, ai_provider=ai_provider, ai_model=ai_model)
+        if not proj:
+            raise HTTPException(status_code=404, detail="Not found")
+        await _check_ownership(request, name, proj)
+    return proj
+
+
 @app.get("/login", response_class=HTMLResponse)
 async def login_page() -> HTMLResponse:
     """Render the login page."""
@@ -317,20 +343,9 @@ async def project_status_page(
     request: Request, name: str, provider: str, model: str
 ) -> HTMLResponse:
     name = _validate_project_name(name)
-
-    # Try to find a project owned by the requesting user first
-    project = None
-    if not request.state.is_admin:
-        project = await get_project(
-            name, ai_provider=provider, ai_model=model, owner=request.state.username
-        )
-
-    if not project:
-        # Admin or user doesn't own it — check for any variant and verify access
-        project = await get_project(name, ai_provider=provider, ai_model=model)
-        if not project:
-            raise HTTPException(status_code=404, detail="Variant not found")
-        await _check_ownership(request, name, project)
+    project = await _resolve_project(
+        request, name, ai_provider=provider, ai_model=model
+    )
 
     # Parse plan_json string into a dict for template consumption
     plan_json = None
@@ -953,20 +968,9 @@ async def get_variant_details(
     model: str,
 ) -> dict[str, str | int | None]:
     name = _validate_project_name(name)
-
-    # Try to find a project owned by the requesting user first
-    project = None
-    if not request.state.is_admin:
-        project = await get_project(
-            name, ai_provider=provider, ai_model=model, owner=request.state.username
-        )
-
-    if not project:
-        # Admin or user doesn't own it — check for any variant and verify access
-        project = await get_project(name, ai_provider=provider, ai_model=model)
-        if not project:
-            raise HTTPException(status_code=404, detail="Variant not found")
-        await _check_ownership(request, name, project)
+    project = await _resolve_project(
+        request, name, ai_provider=provider, ai_model=model
+    )
 
     return project
 
@@ -995,19 +999,9 @@ async def delete_variant(
                 detail=f"Cannot delete '{name}/{provider}/{model}' while generation is in progress. Abort first.",
             )
 
-    # Try to find a project owned by the requesting user first
-    project = None
-    if not request.state.is_admin:
-        project = await get_project(
-            name, ai_provider=provider, ai_model=model, owner=request.state.username
-        )
-
-    if not project:
-        # Admin or user doesn't own it — check for any variant and verify access
-        project = await get_project(name, ai_provider=provider, ai_model=model)
-        if not project:
-            raise HTTPException(status_code=404, detail="Variant not found")
-        await _check_ownership(request, name, project)
+    project = await _resolve_project(
+        request, name, ai_provider=provider, ai_model=model
+    )
 
     project_owner = str(project.get("owner", ""))
     deleted = await delete_project(
@@ -1029,20 +1023,9 @@ async def download_variant(
     model: str,
 ) -> StreamingResponse:
     name = _validate_project_name(name)
-
-    # Try to find a project owned by the requesting user first
-    project = None
-    if not request.state.is_admin:
-        project = await get_project(
-            name, ai_provider=provider, ai_model=model, owner=request.state.username
-        )
-
-    if not project:
-        # Admin or user doesn't own it — check for any variant and verify access
-        project = await get_project(name, ai_provider=provider, ai_model=model)
-        if not project:
-            raise HTTPException(status_code=404, detail="Variant not found")
-        await _check_ownership(request, name, project)
+    project = await _resolve_project(
+        request, name, ai_provider=provider, ai_model=model
+    )
 
     if project["status"] != "ready":
         raise HTTPException(status_code=400, detail="Variant not ready")
@@ -1348,20 +1331,9 @@ async def serve_variant_docs(
     if not path or path == "/":
         path = "index.html"
     project = _validate_project_name(project)
-
-    # Try to find a project owned by the requesting user first
-    proj = None
-    if not request.state.is_admin:
-        proj = await get_project(
-            project, ai_provider=provider, ai_model=model, owner=request.state.username
-        )
-
-    if not proj:
-        # Admin or user doesn't own it — check for any variant and verify access
-        proj = await get_project(project, ai_provider=provider, ai_model=model)
-        if not proj:
-            raise HTTPException(status_code=404, detail="Not found")
-        await _check_ownership(request, project, proj)
+    proj = await _resolve_project(
+        request, project, ai_provider=provider, ai_model=model
+    )
 
     proj_owner = str(proj.get("owner", ""))
     site_dir = get_project_site_dir(project, provider, model, proj_owner)
