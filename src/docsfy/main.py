@@ -217,7 +217,7 @@ async def _resolve_project(
 
     Raises 404 if not found or not accessible.
     """
-    proj = None
+    # 1. Try owned by requesting user
     if not request.state.is_admin:
         proj = await get_project(
             name,
@@ -225,12 +225,29 @@ async def _resolve_project(
             ai_model=ai_model,
             owner=request.state.username,
         )
-    if not proj:
+        if proj:
+            return proj
+
+    # 2. For admin, just get any
+    if request.state.is_admin:
         proj = await get_project(name, ai_provider=ai_provider, ai_model=ai_model)
         if not proj:
             raise HTTPException(status_code=404, detail="Not found")
-        await _check_ownership(request, name, proj)
-    return proj
+        return proj
+
+    # 3. For non-admin, check granted access — find which owner granted access
+    accessible = await get_user_accessible_projects(request.state.username)
+    for proj_name, proj_owner in accessible:
+        if proj_name == name:
+            # Found a grant — look up this specific owner's variant
+            proj = await get_project(
+                name, ai_provider=ai_provider, ai_model=ai_model, owner=proj_owner
+            )
+            if proj:
+                return proj
+
+    # 4. Not found
+    raise HTTPException(status_code=404, detail="Not found")
 
 
 @app.get("/login", response_class=HTMLResponse)
