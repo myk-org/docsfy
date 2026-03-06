@@ -150,6 +150,14 @@ async def generate(request: GenerateRequest) -> dict[str, str]:
     ai_model = request.ai_model or settings.ai_model
     project_name = request.project_name
 
+    if ai_provider not in ("claude", "gemini", "cursor"):
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid AI provider: '{ai_provider}'. Must be claude, gemini, or cursor.",
+        )
+    if not ai_model:
+        raise HTTPException(status_code=400, detail="AI model must be specified.")
+
     gen_key = f"{project_name}/{ai_provider}/{ai_model}"
     if gen_key in _generating:
         raise HTTPException(
@@ -403,7 +411,7 @@ async def _generate_from_path(
         if (
             existing
             and existing.get("last_commit_sha") == commit_sha
-            and existing.get("status") == "ready"
+            and existing.get("last_generated")  # docs were previously generated
         ):
             logger.info(f"[{project_name}] Project is up to date at {commit_sha[:8]}")
             await update_project_status(
@@ -411,6 +419,7 @@ async def _generate_from_path(
                 ai_provider,
                 ai_model,
                 status="ready",
+                current_stage="up_to_date",
             )
             return
 
@@ -503,6 +512,12 @@ async def delete_variant(
     model: str,
 ) -> dict[str, str]:
     name = _validate_project_name(name)
+    gen_key = f"{name}/{provider}/{model}"
+    if gen_key in _generating:
+        raise HTTPException(
+            status_code=409,
+            detail=f"Cannot delete '{name}/{provider}/{model}' while generation is in progress. Abort first.",
+        )
     deleted = await delete_project(name, ai_provider=provider, ai_model=model)
     if not deleted:
         raise HTTPException(status_code=404, detail="Variant not found")
@@ -562,6 +577,13 @@ async def get_project_details(name: str) -> dict[str, Any]:
 @app.delete("/api/projects/{name}")
 async def delete_project_endpoint(name: str) -> dict[str, str]:
     name = _validate_project_name(name)
+    # Check if any variant is generating
+    for gen_key in _generating:
+        if gen_key.startswith(f"{name}/"):
+            raise HTTPException(
+                status_code=409,
+                detail=f"Cannot delete '{name}' while generation is in progress. Abort running variants first.",
+            )
     variants = await list_variants(name)
     if not variants:
         raise HTTPException(status_code=404, detail=f"Project '{name}' not found")

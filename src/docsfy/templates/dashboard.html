@@ -1542,31 +1542,35 @@
             if (forceCheck) sessionStorage.setItem('docsfy-force', forceCheck.checked ? '1' : '0');
         }
 
-        function restoreFormState() {
-            var repo = sessionStorage.getItem('docsfy-repo');
-            var provider = sessionStorage.getItem('docsfy-provider');
-            var model = sessionStorage.getItem('docsfy-model');
-            var force = sessionStorage.getItem('docsfy-force');
+        var _restoring = false;
 
-            if (repo) {
-                var repoInput = document.getElementById('gen-repo-url');
-                if (repoInput) repoInput.value = repo;
-            }
-            if (provider) {
-                var sel = document.getElementById('gen-provider');
-                if (sel) {
-                    sel.value = provider;
-                    // Trigger the change handler so the model dropdown filter updates
-                    sel.dispatchEvent(new Event('change'));
+        function restoreFormState() {
+            _restoring = true;
+            try {
+                var repo = sessionStorage.getItem('docsfy-repo');
+                var provider = sessionStorage.getItem('docsfy-provider');
+                var model = sessionStorage.getItem('docsfy-model');
+                var force = sessionStorage.getItem('docsfy-force');
+
+                if (repo) {
+                    var repoInput = document.getElementById('gen-repo-url');
+                    if (repoInput) repoInput.value = repo;
                 }
-            }
-            if (model) {
-                var inp = document.getElementById('gen-model');
-                if (inp) inp.value = model;
-            }
-            if (force === '1') {
-                var forceCheck = document.getElementById('gen-force');
-                if (forceCheck) forceCheck.checked = true;
+                if (provider) {
+                    var sel = document.getElementById('gen-provider');
+                    if (sel) sel.value = provider;
+                    // Don't dispatch change event — we'll set the model explicitly next
+                }
+                if (model) {
+                    var inp = document.getElementById('gen-model');
+                    if (inp) inp.value = model;
+                }
+                if (force === '1') {
+                    var forceCheck = document.getElementById('gen-force');
+                    if (forceCheck) forceCheck.checked = true;
+                }
+            } finally {
+                _restoring = false;
             }
         }
 
@@ -1654,6 +1658,7 @@
 
         if (providerSelect && modelDropdown) {
             providerSelect.addEventListener('change', function() {
+                if (_restoring) return;
                 var newProvider = this.value;
                 var modelsForProvider = knownModels[newProvider] || [];
 

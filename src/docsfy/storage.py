@@ -60,6 +60,11 @@ async def init_db() -> None:
 
         if needs_migration:
             logger.info("Migrating database to composite PK schema")
+
+            # Check which columns exist in the old table
+            cursor = await db.execute("PRAGMA table_info(projects)")
+            old_columns = {row[1] for row in await cursor.fetchall()}
+
             await db.execute("""
                 CREATE TABLE IF NOT EXISTS projects_new (
                     name TEXT NOT NULL,
@@ -78,14 +83,41 @@ async def init_db() -> None:
                     PRIMARY KEY (name, ai_provider, ai_model)
                 )
             """)
-            await db.execute("""
+
+            # Build SELECT with safe defaults for missing columns
+            select_cols = []
+            select_cols.append("name")
+            select_cols.append(
+                "COALESCE(ai_provider, '') AS ai_provider"
+                if "ai_provider" in old_columns
+                else "'' AS ai_provider"
+            )
+            select_cols.append(
+                "COALESCE(ai_model, '') AS ai_model"
+                if "ai_model" in old_columns
+                else "'' AS ai_model"
+            )
+            select_cols.append("repo_url")
+            select_cols.append("status")
+            select_cols.append(
+                "current_stage"
+                if "current_stage" in old_columns
+                else "NULL AS current_stage"
+            )
+            select_cols.append("last_commit_sha")
+            select_cols.append("last_generated")
+            select_cols.append("page_count")
+            select_cols.append("error_message")
+            select_cols.append("plan_json")
+            select_cols.append("created_at")
+            select_cols.append("updated_at")
+
+            await db.execute(f"""
                 INSERT OR IGNORE INTO projects_new
                     (name, ai_provider, ai_model, repo_url, status, current_stage,
                      last_commit_sha, last_generated, page_count, error_message,
                      plan_json, created_at, updated_at)
-                SELECT name, COALESCE(ai_provider, ''), COALESCE(ai_model, ''),
-                       repo_url, status, current_stage, last_commit_sha, last_generated,
-                       page_count, error_message, plan_json, created_at, updated_at
+                SELECT {", ".join(select_cols)}
                 FROM projects
             """)
             await db.execute("DROP TABLE projects")
@@ -219,6 +251,16 @@ def get_project_dir(name: str, ai_provider: str = "", ai_model: str = "") -> Pat
     if not ai_provider or not ai_model:
         msg = "ai_provider and ai_model are required for project directory paths"
         raise ValueError(msg)
+    # Sanitize path segments to prevent traversal
+    for segment_name, segment in [("ai_provider", ai_provider), ("ai_model", ai_model)]:
+        if (
+            "/" in segment
+            or "\\" in segment
+            or ".." in segment
+            or segment.startswith(".")
+        ):
+            msg = f"Invalid {segment_name}: '{segment}'"
+            raise ValueError(msg)
     return PROJECTS_DIR / _validate_name(name) / ai_provider / ai_model
 
 
