@@ -365,22 +365,20 @@ a:hover {
 
 .theme-toggle {
     background: none;
-    border: 1px solid var(--border-primary);
+    border: none;
     color: var(--text-secondary);
     cursor: pointer;
-    padding: 7px;
-    border-radius: 8px;
+    padding: 6px;
+    border-radius: 6px;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: color var(--transition-fast), background-color var(--transition-fast),
-                border-color var(--transition-fast);
+    transition: color var(--transition-fast), background-color var(--transition-fast);
 }
 
 .theme-toggle:hover {
     color: var(--text-primary);
     background: var(--bg-tertiary);
-    border-color: var(--border-primary);
 }
 
 /* Show sun in dark mode, moon in light mode */
