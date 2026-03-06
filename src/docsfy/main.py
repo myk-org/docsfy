@@ -828,7 +828,26 @@ async def _generate_from_path(
                     if pages_to_regen != ["all"]:
                         # Delete only the cached pages that need regeneration
                         for slug in pages_to_regen:
+                            # Validate slug to prevent path traversal
+                            if (
+                                "/" in slug
+                                or "\\" in slug
+                                or ".." in slug
+                                or slug.startswith(".")
+                            ):
+                                logger.warning(
+                                    f"[{project_name}] Skipping invalid slug from incremental planner: {slug}"
+                                )
+                                continue
                             cache_file = cache_dir / f"{slug}.md"
+                            # Extra safety: ensure the resolved path is inside cache_dir
+                            try:
+                                cache_file.resolve().relative_to(cache_dir.resolve())
+                            except ValueError:
+                                logger.warning(
+                                    f"[{project_name}] Path traversal attempt in slug: {slug}"
+                                )
+                                continue
                             if cache_file.exists():
                                 cache_file.unlink()
                         use_cache = True

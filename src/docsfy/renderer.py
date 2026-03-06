@@ -44,6 +44,22 @@ def _sanitize_html(html: str) -> str:
     # Remove event handler attributes
     html = re.sub(r'\s+on\w+\s*=\s*["\'][^"\']*["\']', "", html, flags=re.IGNORECASE)
     html = re.sub(r"\s+on\w+\s*=\s*\S+", "", html, flags=re.IGNORECASE)
+    # Remove javascript: and data: URL schemes in href and src attributes
+    html = re.sub(
+        r'href\s*=\s*["\']javascript:[^"\']*["\']',
+        'href="#"',
+        html,
+        flags=re.IGNORECASE,
+    )
+    html = re.sub(
+        r'src\s*=\s*["\']javascript:[^"\']*["\']', 'src="#"', html, flags=re.IGNORECASE
+    )
+    html = re.sub(
+        r'href\s*=\s*["\']data:[^"\']*["\']', 'href="#"', html, flags=re.IGNORECASE
+    )
+    html = re.sub(
+        r'src\s*=\s*["\']data:[^"\']*["\']', 'src="#"', html, flags=re.IGNORECASE
+    )
     return html
 
 

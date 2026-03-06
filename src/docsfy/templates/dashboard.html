@@ -668,36 +668,6 @@
         gap: 0.75rem;
     }
 
-    .project-card {
-        background: var(--bg-card);
-        border: 1px solid var(--border-primary);
-        border-radius: 12px;
-        padding: 1.25rem 1.5rem;
-        box-shadow: var(--shadow-sm);
-        transition: box-shadow var(--transition-normal), border-color var(--transition-normal);
-    }
-
-    .project-card:hover {
-        box-shadow: var(--shadow-md);
-        border-color: var(--border-focus);
-    }
-
-    .project-card[data-status="error"] {
-        border-left: 3px solid var(--status-error);
-    }
-
-    .project-card[data-status="aborted"] {
-        border-left: 3px solid var(--status-aborted);
-    }
-
-    .project-card[data-status="generating"] {
-        border-left: 3px solid var(--status-generating);
-    }
-
-    .project-card[data-status="ready"] {
-        border-left: 3px solid var(--status-ready);
-    }
-
     .card-header {
         display: flex;
         align-items: flex-start;
