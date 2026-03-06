@@ -1107,7 +1107,7 @@ async def delete_variant(
             raise HTTPException(status_code=404, detail="Variant not found")
         project_dir = get_project_dir(name, provider, model, project_owner)
         if project_dir.exists():
-            shutil.rmtree(project_dir)
+            await asyncio.to_thread(shutil.rmtree, project_dir)
     return {"deleted": f"{name}/{provider}/{model}"}
 
 
@@ -1159,13 +1159,28 @@ async def get_project_details(request: Request, name: str) -> dict[str, Any]:
         variants = await list_variants(name)
     else:
         variants = await list_variants(name, owner=request.state.username)
-        if not variants:
-            # Check shared access from other owners
-            accessible = await get_user_accessible_projects(request.state.username)
-            for proj_name, proj_owner in accessible:
-                if proj_name == name and proj_owner:
-                    shared_variants = await list_variants(name, owner=proj_owner)
-                    variants.extend(shared_variants)
+        # Always merge shared variants so they appear alongside owned ones
+        seen: set[tuple[str, str, str]] = {
+            (
+                str(v.get("owner", "")),
+                str(v.get("ai_provider", "")),
+                str(v.get("ai_model", "")),
+            )
+            for v in variants
+        }
+        accessible = await get_user_accessible_projects(request.state.username)
+        for proj_name, proj_owner in accessible:
+            if proj_name == name and proj_owner:
+                shared_variants = await list_variants(name, owner=proj_owner)
+                for sv in shared_variants:
+                    key = (
+                        str(sv.get("owner", "")),
+                        str(sv.get("ai_provider", "")),
+                        str(sv.get("ai_model", "")),
+                    )
+                    if key not in seen:
+                        seen.add(key)
+                        variants.append(sv)
     if not variants:
         raise HTTPException(status_code=404, detail=f"Project '{name}' not found")
     return {"name": name, "variants": variants}
@@ -1202,7 +1217,7 @@ async def delete_project_endpoint(request: Request, name: str) -> dict[str, str]
             )
             project_dir = get_project_dir(name, v_provider, v_model, v_owner)
             if project_dir.exists():
-                shutil.rmtree(project_dir)
+                await asyncio.to_thread(shutil.rmtree, project_dir)
     return {"deleted": name}
 
 
