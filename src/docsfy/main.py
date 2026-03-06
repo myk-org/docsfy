@@ -13,6 +13,7 @@ from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Any
+from uuid import uuid4
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse, HTMLResponse, StreamingResponse
@@ -586,34 +587,35 @@ async def abort_generation(request: Request, name: str) -> dict[str, str]:
     _require_write_access(request)
     name = _validate_project_name(name)
     # Find active generation keys matching this project name
-    matching_keys = [
-        key
-        for key in _generating
-        if len(key.split("/", 3)) == 4 and key.split("/", 3)[1] == name
-    ]
-
-    if not request.state.is_admin:
-        # Non-admin users can only abort their own generation tasks
+    async with _gen_lock:
         matching_keys = [
             key
-            for key in matching_keys
-            if key.split("/", 3)[0] == request.state.username
+            for key in _generating
+            if len(key.split("/", 3)) == 4 and key.split("/", 3)[1] == name
         ]
-        if not matching_keys:
-            raise HTTPException(
-                status_code=404, detail=f"No active generation for '{name}'"
-            )
-    else:
-        if len(matching_keys) > 1:
-            distinct_owners = {key.split("/", 3)[0] for key in matching_keys}
-            if len(distinct_owners) > 1:
-                raise HTTPException(
-                    status_code=409,
-                    detail="Multiple owners found for this variant, please specify owner",
-                )
 
-    matching_key = matching_keys[0] if matching_keys else None
-    task = _generating.get(matching_key) if matching_key else None
+        if not request.state.is_admin:
+            # Non-admin users can only abort their own generation tasks
+            matching_keys = [
+                key
+                for key in matching_keys
+                if key.split("/", 3)[0] == request.state.username
+            ]
+            if not matching_keys:
+                raise HTTPException(
+                    status_code=404, detail=f"No active generation for '{name}'"
+                )
+        else:
+            if len(matching_keys) > 1:
+                distinct_owners = {key.split("/", 3)[0] for key in matching_keys}
+                if len(distinct_owners) > 1:
+                    raise HTTPException(
+                        status_code=409,
+                        detail="Multiple owners found for this variant, please specify owner",
+                    )
+
+        matching_key = matching_keys[0] if matching_keys else None
+        task = _generating.get(matching_key) if matching_key else None
     if not task or not matching_key:
         raise HTTPException(
             status_code=404, detail=f"No active generation for '{name}'"
@@ -835,7 +837,8 @@ async def _run_generation(
             error_message=str(exc),
         )
     finally:
-        _generating.pop(gen_key, None)
+        async with _gen_lock:
+            _generating.pop(gen_key, None)
 
 
 async def _generate_from_path(
@@ -1077,6 +1080,7 @@ async def delete_variant(
         raise HTTPException(status_code=404, detail="Variant not found")
 
     # Hold _gen_lock for the entire check+delete to prevent TOCTOU race
+    dir_to_delete: Path | None = None
     async with _gen_lock:
         # Check for active generation scoped to the target owner
         for key in _generating:
@@ -1099,10 +1103,19 @@ async def delete_variant(
         if not deleted:
             raise HTTPException(status_code=404, detail="Variant not found")
 
+        # Rename to tombstone while still holding the lock so a new
+        # generation cannot recreate the directory before we delete it.
+        project_dir = get_project_dir(name, provider, model, project_owner)
+        if project_dir.exists():
+            tombstone = project_dir.with_name(
+                f"{project_dir.name}.deleting-{uuid4().hex}"
+            )
+            project_dir.replace(tombstone)
+            dir_to_delete = tombstone
+
     # Filesystem cleanup outside lock to reduce contention
-    project_dir = get_project_dir(name, provider, model, project_owner)
-    if project_dir.exists():
-        await asyncio.to_thread(shutil.rmtree, project_dir)
+    if dir_to_delete is not None:
+        await asyncio.to_thread(shutil.rmtree, dir_to_delete)
     return {"deleted": f"{name}/{provider}/{model}"}
 
 
@@ -1193,6 +1206,7 @@ async def delete_project_endpoint(request: Request, name: str) -> dict[str, str]
         raise HTTPException(status_code=404, detail=f"Project '{name}' not found")
 
     # Hold _gen_lock for the entire check+delete to prevent TOCTOU race
+    dirs_to_delete: list[Path] = []
     async with _gen_lock:
         # Check if any variant owned by the target owner(s) is generating
         target_owners = {str(v.get("owner", "")) for v in variants}
@@ -1203,7 +1217,6 @@ async def delete_project_endpoint(request: Request, name: str) -> dict[str, str]
                     status_code=409,
                     detail=f"Cannot delete '{name}' while generation is in progress. Abort running variants first.",
                 )
-        dirs_to_delete: list[Path] = []
         for v in variants:
             v_provider = str(v.get("ai_provider", ""))
             v_model = str(v.get("ai_model", ""))
@@ -1211,12 +1224,19 @@ async def delete_project_endpoint(request: Request, name: str) -> dict[str, str]
             await delete_project(
                 name, ai_provider=v_provider, ai_model=v_model, owner=v_owner
             )
-            dirs_to_delete.append(get_project_dir(name, v_provider, v_model, v_owner))
+            # Rename to tombstone while still holding the lock so a new
+            # generation cannot recreate the directory before we delete it.
+            project_dir = get_project_dir(name, v_provider, v_model, v_owner)
+            if project_dir.exists():
+                tombstone = project_dir.with_name(
+                    f"{project_dir.name}.deleting-{uuid4().hex}"
+                )
+                project_dir.replace(tombstone)
+                dirs_to_delete.append(tombstone)
 
     # Filesystem cleanup outside lock to reduce contention
-    for project_dir in dirs_to_delete:
-        if project_dir.exists():
-            await asyncio.to_thread(shutil.rmtree, project_dir)
+    for d in dirs_to_delete:
+        await asyncio.to_thread(shutil.rmtree, d)
     return {"deleted": name}
 
 
