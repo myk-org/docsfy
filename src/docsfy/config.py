@@ -19,6 +19,7 @@ class Settings(BaseSettings):
     ai_cli_timeout: int = Field(default=60, gt=0)
     log_level: str = "INFO"
     data_dir: str = "/data"
+    secure_cookies: bool = True  # Set to False for local HTTP dev
 
 
 @lru_cache

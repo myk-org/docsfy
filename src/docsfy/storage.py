@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 import hashlib
+import hmac
 import os
 import re
 import secrets
 import sqlite3
+from datetime import datetime, timedelta
 from pathlib import Path
 
 import aiosqlite
@@ -163,6 +165,16 @@ async def init_db() -> None:
             if "duplicate column name" not in str(exc).lower():
                 logger.error(f"Migration failed: {exc}")
                 raise
+
+        await db.execute("""
+            CREATE TABLE IF NOT EXISTS sessions (
+                token TEXT PRIMARY KEY,
+                username TEXT NOT NULL,
+                is_admin INTEGER NOT NULL DEFAULT 0,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                expires_at TIMESTAMP NOT NULL
+            )
+        """)
 
         await db.commit()
 
@@ -351,8 +363,12 @@ async def get_known_models() -> dict[str, list[str]]:
 
 
 def hash_api_key(key: str) -> str:
-    """Hash an API key for storage."""
-    return hashlib.sha256(key.encode()).hexdigest()
+    """Hash an API key with HMAC-SHA256 for storage.
+
+    Uses a fixed prefix as the HMAC key. The API keys themselves are random
+    and high-entropy, so a simple HMAC prevents rainbow table attacks.
+    """
+    return hmac.new(b"docsfy-api-key-hmac", key.encode(), hashlib.sha256).hexdigest()
 
 
 def generate_api_key() -> str:
@@ -365,6 +381,9 @@ VALID_ROLES = frozenset({"admin", "user", "viewer"})
 
 async def create_user(username: str, role: str = "user") -> tuple[str, str]:
     """Create a user and return (username, raw_api_key)."""
+    if username.lower() == "admin":
+        msg = "Username 'admin' is reserved"
+        raise ValueError(msg)
     if role not in VALID_ROLES:
         msg = f"Invalid role: '{role}'. Must be admin, user, or viewer."
         raise ValueError(msg)
@@ -407,3 +426,53 @@ async def list_users() -> list[dict[str, str | int | None]]:
             "SELECT id, username, role, created_at FROM users ORDER BY created_at DESC"
         )
         return [dict(row) for row in await cursor.fetchall()]
+
+
+async def get_user_by_username(username: str) -> dict[str, str | int | None] | None:
+    """Look up a user by username."""
+    async with aiosqlite.connect(DB_PATH) as db:
+        db.row_factory = aiosqlite.Row
+        cursor = await db.execute("SELECT * FROM users WHERE username = ?", (username,))
+        row = await cursor.fetchone()
+        return dict(row) if row else None
+
+
+async def create_session(
+    username: str, is_admin: bool = False, ttl_hours: int = 8
+) -> str:
+    """Create an opaque session token."""
+    token = secrets.token_urlsafe(32)
+    expires_at = datetime.utcnow() + timedelta(hours=ttl_hours)
+    async with aiosqlite.connect(DB_PATH) as db:
+        await db.execute(
+            "INSERT INTO sessions (token, username, is_admin, expires_at) VALUES (?, ?, ?, ?)",
+            (token, username, 1 if is_admin else 0, expires_at.isoformat()),
+        )
+        await db.commit()
+    return token
+
+
+async def get_session(token: str) -> dict[str, str | int | None] | None:
+    """Look up a session. Returns None if expired or not found."""
+    async with aiosqlite.connect(DB_PATH) as db:
+        db.row_factory = aiosqlite.Row
+        cursor = await db.execute(
+            "SELECT * FROM sessions WHERE token = ? AND expires_at > datetime('now')",
+            (token,),
+        )
+        row = await cursor.fetchone()
+        return dict(row) if row else None
+
+
+async def delete_session(token: str) -> None:
+    """Delete a session (logout)."""
+    async with aiosqlite.connect(DB_PATH) as db:
+        await db.execute("DELETE FROM sessions WHERE token = ?", (token,))
+        await db.commit()
+
+
+async def cleanup_expired_sessions() -> None:
+    """Remove expired sessions."""
+    async with aiosqlite.connect(DB_PATH) as db:
+        await db.execute("DELETE FROM sessions WHERE expires_at <= datetime('now')")
+        await db.commit()

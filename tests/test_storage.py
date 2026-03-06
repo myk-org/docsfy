@@ -328,3 +328,153 @@ async def test_get_latest_variant(db_path: Path) -> None:
     assert latest is not None
     # gemini has a later last_generated timestamp
     assert latest["ai_provider"] == "gemini"
+
+
+# ---------------------------------------------------------------------------
+# Test: session management
+# ---------------------------------------------------------------------------
+
+
+async def test_create_and_get_session(db_path: Path) -> None:
+    from docsfy.storage import create_session, get_session
+
+    token = await create_session("testuser", is_admin=False)
+    assert token  # token is non-empty
+
+    session = await get_session(token)
+    assert session is not None
+    assert session["username"] == "testuser"
+    assert session["is_admin"] == 0
+
+
+async def test_create_admin_session(db_path: Path) -> None:
+    from docsfy.storage import create_session, get_session
+
+    token = await create_session("admin", is_admin=True)
+    session = await get_session(token)
+    assert session is not None
+    assert session["is_admin"] == 1
+
+
+async def test_delete_session(db_path: Path) -> None:
+    from docsfy.storage import create_session, delete_session, get_session
+
+    token = await create_session("testuser")
+    session = await get_session(token)
+    assert session is not None
+
+    await delete_session(token)
+    session = await get_session(token)
+    assert session is None
+
+
+async def test_expired_session_not_returned(db_path: Path) -> None:
+    import aiosqlite
+
+    from docsfy.storage import DB_PATH, get_session
+
+    # Directly insert a session with a past expiration
+    token = "expired-test-token"
+    async with aiosqlite.connect(DB_PATH) as db:
+        await db.execute(
+            "INSERT INTO sessions (token, username, is_admin, expires_at) VALUES (?, ?, ?, ?)",
+            (token, "testuser", 0, "2020-01-01T00:00:00"),
+        )
+        await db.commit()
+
+    # Session should not be found since it's expired
+    session = await get_session(token)
+    assert session is None
+
+
+async def test_get_nonexistent_session(db_path: Path) -> None:
+    from docsfy.storage import get_session
+
+    session = await get_session("nonexistent-token")
+    assert session is None
+
+
+async def test_cleanup_expired_sessions(db_path: Path) -> None:
+    import aiosqlite
+
+    from docsfy.storage import DB_PATH, cleanup_expired_sessions, create_session
+
+    # Directly insert a session with a past expiration
+    async with aiosqlite.connect(DB_PATH) as db:
+        await db.execute(
+            "INSERT INTO sessions (token, username, is_admin, expires_at) VALUES (?, ?, ?, ?)",
+            ("expired-token", "expired-user", 0, "2020-01-01T00:00:00"),
+        )
+        await db.commit()
+
+    # Create a valid session
+    valid_token = await create_session("valid-user", ttl_hours=8)
+
+    await cleanup_expired_sessions()
+
+    # Check that only the valid session remains
+    async with aiosqlite.connect(DB_PATH) as db:
+        cursor = await db.execute("SELECT COUNT(*) FROM sessions")
+        row = await cursor.fetchone()
+        assert row is not None
+        assert row[0] == 1
+
+        cursor = await db.execute(
+            "SELECT username FROM sessions WHERE token = ?", (valid_token,)
+        )
+        row = await cursor.fetchone()
+        assert row is not None
+        assert row[0] == "valid-user"
+
+
+# ---------------------------------------------------------------------------
+# Test: HMAC-based key hashing
+# ---------------------------------------------------------------------------
+
+
+async def test_hash_api_key_is_hmac(db_path: Path) -> None:
+    """hash_api_key should use HMAC, not plain SHA-256."""
+    import hashlib
+
+    from docsfy.storage import hash_api_key
+
+    key = "test-key-12345"
+    hmac_hash = hash_api_key(key)
+    plain_sha256 = hashlib.sha256(key.encode()).hexdigest()
+    # HMAC hash should differ from plain SHA-256
+    assert hmac_hash != plain_sha256
+
+
+# ---------------------------------------------------------------------------
+# Test: username 'admin' is reserved
+# ---------------------------------------------------------------------------
+
+
+async def test_create_user_rejects_admin_username(db_path: Path) -> None:
+    from docsfy.storage import create_user
+
+    with pytest.raises(ValueError, match="reserved"):
+        await create_user("admin")
+
+    with pytest.raises(ValueError, match="reserved"):
+        await create_user("Admin")
+
+    with pytest.raises(ValueError, match="reserved"):
+        await create_user("ADMIN")
+
+
+# ---------------------------------------------------------------------------
+# Test: get_user_by_username
+# ---------------------------------------------------------------------------
+
+
+async def test_get_user_by_username(db_path: Path) -> None:
+    from docsfy.storage import create_user, get_user_by_username
+
+    await create_user("lookup-user")
+    user = await get_user_by_username("lookup-user")
+    assert user is not None
+    assert user["username"] == "lookup-user"
+
+    missing = await get_user_by_username("nonexistent")
+    assert missing is None

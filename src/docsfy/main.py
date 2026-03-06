@@ -26,8 +26,10 @@ from docsfy.models import GenerateRequest
 from docsfy.repository import clone_repo, get_local_repo_info
 from docsfy.renderer import render_site
 from docsfy.storage import (
+    create_session,
     create_user,
     delete_project,
+    delete_session,
     delete_user,
     get_known_models,
     get_latest_variant,
@@ -35,7 +37,9 @@ from docsfy.storage import (
     get_project_cache_dir,
     get_project_dir,
     get_project_site_dir,
+    get_session,
     get_user_by_key,
+    get_user_by_username,
     init_db,
     list_projects,
     list_users,
@@ -47,6 +51,12 @@ from docsfy.storage import (
 logger = get_logger(name=__name__)
 
 _generating: dict[str, asyncio.Task[None]] = {}
+
+# Fix 10: Singleton Jinja2 environment to avoid repeated FileSystemLoader creation
+_jinja_env = Environment(
+    loader=FileSystemLoader(str(Path(__file__).parent / "templates")),
+    autoescape=select_autoescape(["html"]),
+)
 
 
 def _validate_project_name(name: str) -> str:
@@ -95,6 +105,7 @@ class AuthMiddleware(BaseHTTPMiddleware):
         settings = get_settings()
         user = None
         is_admin = False
+        username = ""
 
         # 1. Check Authorization header (API clients)
         auth_header = request.headers.get("authorization", "")
@@ -102,17 +113,20 @@ class AuthMiddleware(BaseHTTPMiddleware):
             token = auth_header[7:]
             if token == settings.admin_key:
                 is_admin = True
+                username = "admin"
             else:
                 user = await get_user_by_key(token)
 
-        # 2. Check session cookie (browser)
+        # 2. Check session cookie (browser) -- opaque session token
         if not user and not is_admin:
             session_token = request.cookies.get("docsfy_session")
             if session_token:
-                if session_token == settings.admin_key:
-                    is_admin = True
-                else:
-                    user = await get_user_by_key(session_token)
+                session = await get_session(session_token)
+                if session:
+                    is_admin = bool(session["is_admin"])
+                    username = str(session["username"])
+                    if not is_admin:
+                        user = await get_user_by_username(username)
 
         if not user and not is_admin:
             # Not authenticated
@@ -123,21 +137,28 @@ class AuthMiddleware(BaseHTTPMiddleware):
         # Determine the role
         if is_admin:
             role = "admin"
-            username = "admin"
+            if not username:
+                username = "admin"
         else:
             assert user is not None  # guaranteed by the guard above
             role = str(user.get("role", "user"))
             username = str(user["username"])
+            # Fix 6: DB user with admin role gets admin privileges
+            if role == "admin":
+                is_admin = True
 
         # Store user info in request state
         request.state.user = user
-        request.state.is_admin = is_admin or role == "admin"
+        request.state.is_admin = is_admin
         request.state.role = role
         request.state.username = username
 
         return await call_next(request)
 
 
+# TODO: Add rate limiting for login attempts.  Rate limiting is typically
+# done at the reverse proxy level (nginx, Caddy, etc.) but an in-app
+# fallback (e.g. slowapi) could be added for defense-in-depth.
 app.add_middleware(AuthMiddleware)
 
 
@@ -150,14 +171,16 @@ def _require_write_access(request: Request) -> None:
         )
 
 
+def _check_ownership(request: Request, project: dict[str, Any]) -> None:
+    """Raise 403 if the requesting user does not own the project (unless admin)."""
+    if not request.state.is_admin and project.get("owner") != request.state.username:
+        raise HTTPException(status_code=403, detail="Access denied")
+
+
 @app.get("/login", response_class=HTMLResponse)
 async def login_page() -> HTMLResponse:
     """Render the login page."""
-    env = Environment(
-        loader=FileSystemLoader(str(Path(__file__).parent / "templates")),
-        autoescape=select_autoescape(["html"]),
-    )
-    template = env.get_template("login.html")
+    template = _jinja_env.get_template("login.html")
     html = template.render(error=None)
     return HTMLResponse(content=html)
 
@@ -170,32 +193,48 @@ async def login(request: Request) -> RedirectResponse | HTMLResponse:
     api_key = str(form.get("api_key", ""))
     settings = get_settings()
 
-    # Check admin — username must be "admin" and key must match
+    is_admin = False
+    authenticated = False
+
+    # Check admin -- username must be "admin" and key must match
     if username == "admin" and api_key == settings.admin_key:
+        is_admin = True
+        authenticated = True
+    else:
+        # Check user key -- verify username matches the key's owner
+        user = await get_user_by_key(api_key)
+        if user and user["username"] == username:
+            authenticated = True
+            is_admin = user.get("role") == "admin"
+
+    if authenticated:
+        session_token = await create_session(username, is_admin=is_admin)
         response = RedirectResponse(url="/", status_code=302)
-        response.set_cookie("docsfy_session", api_key, httponly=True, samesite="lax")
+        response.set_cookie(
+            "docsfy_session",
+            session_token,
+            httponly=True,
+            samesite="strict",
+            secure=settings.secure_cookies,
+            max_age=28800,  # 8 hours
+        )
         return response
 
-    # Check user key — verify username matches the key's owner
-    user = await get_user_by_key(api_key)
-    if user and user["username"] == username:
-        response = RedirectResponse(url="/", status_code=302)
-        response.set_cookie("docsfy_session", api_key, httponly=True, samesite="lax")
-        return response
+    # Fix 18: Audit log failed login attempts
+    logger.info(f"[AUDIT] Failed login attempt for username '{username}'")
 
     # Invalid credentials -- show login page with error
-    env = Environment(
-        loader=FileSystemLoader(str(Path(__file__).parent / "templates")),
-        autoescape=select_autoescape(["html"]),
-    )
-    template = env.get_template("login.html")
+    template = _jinja_env.get_template("login.html")
     html = template.render(error="Invalid username or API key")
     return HTMLResponse(content=html, status_code=401)
 
 
 @app.get("/logout")
-async def logout() -> RedirectResponse:
-    """Clear the session cookie and redirect to login."""
+async def logout(request: Request) -> RedirectResponse:
+    """Clear the session cookie, delete session from DB, and redirect to login."""
+    session_token = request.cookies.get("docsfy_session")
+    if session_token:
+        await delete_session(session_token)
     response = RedirectResponse(url="/login", status_code=302)
     response.delete_cookie("docsfy_session")
     return response
@@ -222,11 +261,7 @@ async def dashboard(request: Request) -> HTMLResponse:
             grouped[name] = []
         grouped[name].append(p)
 
-    env = Environment(
-        loader=FileSystemLoader(str(Path(__file__).parent / "templates")),
-        autoescape=select_autoescape(["html"]),
-    )
-    template = env.get_template("dashboard.html")
+    template = _jinja_env.get_template("dashboard.html")
     html = template.render(
         grouped_projects=grouped,
         projects=projects,  # keep for backward compat
@@ -260,11 +295,7 @@ async def project_status_page(name: str, provider: str, model: str) -> HTMLRespo
     settings = get_settings()
     known_models = await get_known_models()
 
-    env = Environment(
-        loader=FileSystemLoader(str(Path(__file__).parent / "templates")),
-        autoescape=select_autoescape(["html"]),
-    )
-    template = env.get_template("status.html")
+    template = _jinja_env.get_template("status.html")
     html = template.render(
         project=project,
         plan_json=plan_json,
@@ -282,8 +313,11 @@ async def health() -> dict[str, str]:
 
 
 @app.get("/api/status")
-async def status() -> dict[str, Any]:
-    projects = await list_projects()
+async def status(request: Request) -> dict[str, Any]:
+    if request.state.is_admin:
+        projects = await list_projects()
+    else:
+        projects = await list_projects(owner=request.state.username)
     known_models = await get_known_models()
     return {"projects": projects, "known_models": known_models}
 
@@ -291,6 +325,12 @@ async def status() -> dict[str, Any]:
 @app.post("/api/generate", status_code=202)
 async def generate(request: Request, gen_request: GenerateRequest) -> dict[str, str]:
     _require_write_access(request)
+    # Fix 9: Local repo path access requires admin privileges
+    if gen_request.repo_path and not request.state.is_admin:
+        raise HTTPException(
+            status_code=403,
+            detail="Local repo path access requires admin privileges",
+        )
     settings = get_settings()
     ai_provider = gen_request.ai_provider or settings.ai_provider
     ai_model = gen_request.ai_model or settings.ai_model
@@ -645,6 +685,7 @@ async def _generate_from_path(
 
 @app.get("/api/projects/{name}/{provider}/{model}")
 async def get_variant_details(
+    request: Request,
     name: str,
     provider: str,
     model: str,
@@ -653,6 +694,7 @@ async def get_variant_details(
     project = await get_project(name, ai_provider=provider, ai_model=model)
     if not project:
         raise HTTPException(status_code=404, detail="Variant not found")
+    _check_ownership(request, project)
     return project
 
 
@@ -682,6 +724,7 @@ async def delete_variant(
 
 @app.get("/api/projects/{name}/{provider}/{model}/download")
 async def download_variant(
+    request: Request,
     name: str,
     provider: str,
     model: str,
@@ -690,6 +733,7 @@ async def download_variant(
     project = await get_project(name, ai_provider=provider, ai_model=model)
     if not project:
         raise HTTPException(status_code=404, detail="Variant not found")
+    _check_ownership(request, project)
     if project["status"] != "ready":
         raise HTTPException(status_code=400, detail="Variant not ready")
     site_dir = get_project_site_dir(name, provider, model)
@@ -713,17 +757,19 @@ async def download_variant(
         _stream_and_cleanup(),
         media_type="application/gzip",
         headers={
-            "Content-Disposition": f"attachment; filename={name}-{provider}-{model}-docs.tar.gz"
+            "Content-Disposition": f'attachment; filename="{name}-{provider}-{model}-docs.tar.gz"'
         },
     )
 
 
 @app.get("/api/projects/{name}")
-async def get_project_details(name: str) -> dict[str, Any]:
+async def get_project_details(request: Request, name: str) -> dict[str, Any]:
     name = _validate_project_name(name)
     variants = await list_variants(name)
     if not variants:
         raise HTTPException(status_code=404, detail=f"Project '{name}' not found")
+    # Fix 17: Check ownership on first variant (all variants share the same owner)
+    _check_ownership(request, variants[0])
     return {"name": name, "variants": variants}
 
 
@@ -752,11 +798,12 @@ async def delete_project_endpoint(request: Request, name: str) -> dict[str, str]
 
 
 @app.get("/api/projects/{name}/download")
-async def download_project(name: str) -> StreamingResponse:
+async def download_project(request: Request, name: str) -> StreamingResponse:
     name = _validate_project_name(name)
     latest = await get_latest_variant(name)
     if not latest:
         raise HTTPException(status_code=404, detail=f"No ready variant for '{name}'")
+    _check_ownership(request, latest)
     provider = str(latest.get("ai_provider", ""))
     model = str(latest.get("ai_model", ""))
     site_dir = get_project_site_dir(name, provider, model)
@@ -781,7 +828,7 @@ async def download_project(name: str) -> StreamingResponse:
     return StreamingResponse(
         _stream_and_cleanup(),
         media_type="application/gzip",
-        headers={"Content-Disposition": f"attachment; filename={name}-docs.tar.gz"},
+        headers={"Content-Disposition": f'attachment; filename="{name}-docs.tar.gz"'},
     )
 
 
@@ -802,11 +849,7 @@ async def admin_panel(request: Request) -> HTMLResponse:
     """Render the admin panel with user management."""
     _require_admin(request)
     users = await list_users()
-    env = Environment(
-        loader=FileSystemLoader(str(Path(__file__).parent / "templates")),
-        autoescape=select_autoescape(["html"]),
-    )
-    template = env.get_template("admin.html")
+    template = _jinja_env.get_template("admin.html")
     html = template.render(users=users, username=request.state.username)
     return HTMLResponse(content=html)
 
@@ -824,6 +867,10 @@ async def create_user_endpoint(request: Request) -> dict[str, str]:
         username, raw_key = await create_user(username, role)
     except Exception as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
+    # Fix 18: Audit logging
+    logger.info(
+        f"[AUDIT] User '{request.state.username}' created user '{username}' with role '{role}'"
+    )
     return {"username": username, "api_key": raw_key, "role": role}
 
 
@@ -831,9 +878,14 @@ async def create_user_endpoint(request: Request) -> dict[str, str]:
 async def delete_user_endpoint(request: Request, username: str) -> dict[str, str]:
     """Delete a user by username."""
     _require_admin(request)
+    # Fix 13: Prevent admin self-delete
+    if username == request.state.username:
+        raise HTTPException(status_code=400, detail="Cannot delete your own account")
     deleted = await delete_user(username)
     if not deleted:
         raise HTTPException(status_code=404, detail=f"User '{username}' not found")
+    # Fix 18: Audit logging
+    logger.info(f"[AUDIT] User '{request.state.username}' deleted user '{username}'")
     return {"deleted": username}
 
 
@@ -898,6 +950,6 @@ def run() -> None:
     import uvicorn
 
     reload = os.getenv("DEBUG", "").lower() == "true"
-    host = os.getenv("HOST", "0.0.0.0")
+    host = os.getenv("HOST", "127.0.0.1")
     port = int(os.getenv("PORT", "8000"))
     uvicorn.run("docsfy.main:app", host=host, port=port, reload=reload)

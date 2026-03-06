@@ -385,7 +385,7 @@
                             </td>
                             <td>{{ user.created_at }}</td>
                             <td>
-                                <button class="btn btn-danger btn-sm" onclick="deleteUser('{{ user.username }}')">Delete</button>
+                                <button class="btn btn-danger btn-sm" onclick="deleteUser({{ user.username | tojson }})">Delete</button>
                             </td>
                         </tr>
                         {% endfor %}
