@@ -385,7 +385,7 @@
                             </td>
                             <td>{{ user.created_at }}</td>
                             <td>
-                                <button class="btn btn-danger btn-sm" onclick="deleteUser({{ user.username | tojson }})">Delete</button>
+                                <button class="btn btn-danger btn-sm" data-delete-user="{{ user.username }}">Delete</button>
                             </td>
                         </tr>
                         {% endfor %}
@@ -441,13 +441,28 @@
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
                 credentials: "same-origin",
+                redirect: "error",
                 body: JSON.stringify({username: username, role: role})
             });
-            const data = await resp.json();
-            if (!resp.ok) {
-                showAlert("error", data.detail || "Failed to create user");
+            if (resp.redirected || resp.status === 302) {
+                showAlert("error", "Session expired. Please login again.");
+                setTimeout(function() { window.location.href = "/login"; }, 2000);
                 return;
             }
+            if (!resp.ok) {
+                let msg = "Failed to create user";
+                try {
+                    const data = await resp.json();
+                    msg = data.detail || msg;
+                } catch (e) {
+                    if (resp.status === 401 || resp.status === 403) {
+                        msg = "Authentication required. Please login again.";
+                    }
+                }
+                showAlert("error", msg);
+                return;
+            }
+            const data = await resp.json();
             showAlert("success", "User '" + data.username + "' created successfully");
             document.getElementById("new-key-username").textContent = data.username;
             document.getElementById("new-key-role").textContent = role;
@@ -455,7 +470,7 @@
             document.getElementById("new-key-display").style.display = "block";
             document.getElementById("new-username").value = "";
         } catch (err) {
-            showAlert("error", "Request failed: " + err.message);
+            showAlert("error", "Request failed. You may need to login again.");
         }
     }
 
@@ -506,20 +521,42 @@
         try {
             const resp = await fetch("/api/admin/users/" + encodeURIComponent(username), {
                 method: "DELETE",
-                credentials: "same-origin"
+                credentials: "same-origin",
+                redirect: "error",
             });
-            const data = await resp.json();
-            if (!resp.ok) {
-                showAlert("error", data.detail || "Failed to delete user");
+            if (resp.redirected || resp.status === 302) {
+                showAlert("error", "Session expired. Please login again.");
+                setTimeout(function() { window.location.href = "/login"; }, 2000);
                 return;
             }
+            if (!resp.ok) {
+                let msg = "Failed to delete user";
+                try {
+                    const data = await resp.json();
+                    msg = data.detail || msg;
+                } catch (e) {
+                    if (resp.status === 401 || resp.status === 403) {
+                        msg = "Authentication required. Please login again.";
+                    }
+                }
+                showAlert("error", msg);
+                return;
+            }
+            const data = await resp.json();
             showAlert("success", "User '" + username + "' deleted");
             const row = document.getElementById("user-row-" + username);
             if (row) row.remove();
         } catch (err) {
-            showAlert("error", "Request failed: " + err.message);
+            showAlert("error", "Request failed. You may need to login again.");
         }
     }
+
+    document.addEventListener('click', function(e) {
+        var btn = e.target.closest('[data-delete-user]');
+        if (!btn) return;
+        var username = btn.getAttribute('data-delete-user');
+        deleteUser(username);
+    });
     </script>
 </body>
 </html>

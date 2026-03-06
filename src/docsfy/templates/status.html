@@ -1295,6 +1295,16 @@
             }
         }
 
+        /* ----- Auth redirect detection ----- */
+        function isAuthRedirect(res) {
+            return res.redirected || res.status === 302 || res.type === 'opaqueredirect';
+        }
+        function handleAuthRedirect() {
+            errorText.textContent = 'Session expired. Please login again.';
+            errorMessage.style.display = '';
+            setTimeout(function() { window.location.href = '/login'; }, 2000);
+        }
+
         /* ----- Abort Handler ----- */
         function handleAbort() {
             if (!confirm('Abort generation for ' + PROJECT_NAME + '?')) return;
@@ -1303,12 +1313,13 @@
                 abortBtn.disabled = true;
                 abortBtn.textContent = 'Aborting...';
             }
-            fetch('/api/projects/' + encodeURIComponent(PROJECT_NAME) + '/' + encodeURIComponent(PROJECT_PROVIDER) + '/' + encodeURIComponent(PROJECT_MODEL) + '/abort', { method: 'POST', credentials: 'same-origin' })
+            fetch('/api/projects/' + encodeURIComponent(PROJECT_NAME) + '/' + encodeURIComponent(PROJECT_PROVIDER) + '/' + encodeURIComponent(PROJECT_MODEL) + '/abort', { method: 'POST', credentials: 'same-origin', redirect: 'manual' })
                 .then(function(r) {
+                    if (isAuthRedirect(r)) { handleAuthRedirect(); return null; }
                     if (!r.ok) return r.json().then(function(data) { throw data; });
                     return r.json();
                 })
-                .then(function() { location.reload(); })
+                .then(function(data) { if (data !== null) location.reload(); })
                 .catch(function(err) {
                     var msg = (err && err.detail) || (err && err.message) || 'Abort request failed';
                     errorText.textContent = msg;
@@ -1350,13 +1361,16 @@
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'same-origin',
+                redirect: 'manual',
                 body: JSON.stringify(payload)
             })
             .then(function(res) {
+                if (isAuthRedirect(res)) { handleAuthRedirect(); return null; }
                 if (!res.ok) return res.json().then(function(data) { throw data; });
                 return res.json();
             })
-            .then(function() {
+            .then(function(data) {
+                if (!data) return;
                 /* Reset state and start polling */
                 currentStatus = 'generating';
                 currentStage = 'cloning';
@@ -1404,12 +1418,14 @@
         }
 
         function pollProject() {
-            fetch('/api/projects/' + encodeURIComponent(PROJECT_NAME) + '/' + encodeURIComponent(PROJECT_PROVIDER) + '/' + encodeURIComponent(PROJECT_MODEL), { credentials: 'same-origin' })
+            fetch('/api/projects/' + encodeURIComponent(PROJECT_NAME) + '/' + encodeURIComponent(PROJECT_PROVIDER) + '/' + encodeURIComponent(PROJECT_MODEL), { credentials: 'same-origin', redirect: 'manual' })
                 .then(function(res) {
+                    if (isAuthRedirect(res)) { handleAuthRedirect(); stopPolling(); return null; }
                     if (!res.ok) throw new Error('Not found');
                     return res.json();
                 })
                 .then(function(proj) {
+                    if (!proj) return;
                     updateFromProject(proj);
                 })
                 .catch(function() {

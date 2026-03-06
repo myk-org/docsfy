@@ -1,0 +1,37 @@
+# Environment files with secrets
+.env
+.dev/.env
+*.env.local
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+*.egg-info/
+
+# Tox
+.tox/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Data
+data/
+.dev/data/
+
+# pytest
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Build
+dist/
+build/

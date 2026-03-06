@@ -1857,6 +1857,16 @@
             return name + '/' + provider + '/' + model;
         }
 
+        /* ----- Auth redirect detection ----- */
+        function checkAuthRedirect(res) {
+            if (res.redirected || res.status === 302) {
+                showToast('Session expired. Please login again.', 'error', 6000);
+                setTimeout(function() { window.location.href = '/login'; }, 2000);
+                return true;
+            }
+            return false;
+        }
+
         /* ----- Polling State ----- */
         var statusPollInterval = null;      // Slow poll for status changes (10s)
         var progressPollInterval = null;    // Fast poll for progress updates (5s)
@@ -1911,9 +1921,17 @@
 
         /* ----- Poll /api/status for status changes (10s interval) ----- */
         function pollStatusChanges() {
-            fetch('/api/status', { credentials: 'same-origin' })
-                .then(function(res) { return res.json(); })
+            fetch('/api/status', { credentials: 'same-origin', redirect: 'manual' })
+                .then(function(res) {
+                    if (checkAuthRedirect(res)) return null;
+                    if (res.type === 'opaqueredirect') {
+                        checkAuthRedirect({ redirected: true, status: 302 });
+                        return null;
+                    }
+                    return res.json();
+                })
                 .then(function(data) {
+                    if (!data) return;
                     var projectsList = data.projects || data;
                     if (!Array.isArray(projectsList)) return;
 
@@ -1977,9 +1995,17 @@
 
         /* ----- Poll /api/status for progress updates (5s interval) ----- */
         function pollProgressUpdates() {
-            fetch('/api/status', { credentials: 'same-origin' })
-                .then(function(res) { return res.json(); })
+            fetch('/api/status', { credentials: 'same-origin', redirect: 'manual' })
+                .then(function(res) {
+                    if (checkAuthRedirect(res)) return null;
+                    if (res.type === 'opaqueredirect') {
+                        checkAuthRedirect({ redirected: true, status: 302 });
+                        return null;
+                    }
+                    return res.json();
+                })
                 .then(function(data) {
+                    if (!data) return;
                     var projectsList = data.projects || data;
                     if (!Array.isArray(projectsList)) return;
 
@@ -2077,13 +2103,20 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     credentials: 'same-origin',
+                    redirect: 'manual',
                     body: JSON.stringify(body)
                 })
                 .then(function(res) {
+                    if (res.redirected || res.status === 302 || res.type === 'opaqueredirect') {
+                        showToast('Session expired. Please login again.', 'error', 6000);
+                        setTimeout(function() { window.location.href = '/login'; }, 2000);
+                        return null;
+                    }
                     if (!res.ok) return res.json().then(function(data) { throw data; });
                     return res.json();
                 })
                 .then(function(data) {
+                    if (!data) return;
                     var projectName = data.project || repoUrl;
                     var statusUrl = '/status/' + encodeURIComponent(projectName) + '/' + encodeURIComponent(provider) + '/' + encodeURIComponent(model);
                     showToast('Generation started for ' + projectName + '.', 'success', 6000, {
@@ -2140,13 +2173,20 @@
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'same-origin',
+                redirect: 'manual',
                 body: JSON.stringify(body)
             })
             .then(function(res) {
+                if (res.redirected || res.status === 302 || res.type === 'opaqueredirect') {
+                    showToast('Session expired. Please login again.', 'error', 6000);
+                    setTimeout(function() { window.location.href = '/login'; }, 2000);
+                    return null;
+                }
                 if (!res.ok) return res.json().then(function(data) { throw data; });
                 return res.json();
             })
-            .then(function() {
+            .then(function(data) {
+                if (!data) return;
                 var statusUrl = '/status/' + encodeURIComponent(name) + '/' + encodeURIComponent(provider) + '/' + encodeURIComponent(model);
                 showToast('Regeneration started for ' + name + '.', 'success', 6000, {
                     href: statusUrl,
@@ -2179,12 +2219,17 @@
             if (!confirm('Abort generation for ' + name + ' (' + provider + '/' + model + ')?')) return;
             abortBtn.disabled = true;
             abortBtn.textContent = 'Aborting...';
-            fetch('/api/projects/' + encodeURIComponent(name) + '/' + encodeURIComponent(provider) + '/' + encodeURIComponent(model) + '/abort', { method: 'POST', credentials: 'same-origin' })
+            fetch('/api/projects/' + encodeURIComponent(name) + '/' + encodeURIComponent(provider) + '/' + encodeURIComponent(model) + '/abort', { method: 'POST', credentials: 'same-origin', redirect: 'manual' })
                 .then(function(r) {
+                    if (r.redirected || r.status === 302 || r.type === 'opaqueredirect') {
+                        showToast('Session expired. Please login again.', 'error', 6000);
+                        setTimeout(function() { window.location.href = '/login'; }, 2000);
+                        return null;
+                    }
                     if (!r.ok) return r.json().then(function(data) { throw data; });
                     return r.json();
                 })
-                .then(function() { saveFormState(); location.reload(); })
+                .then(function(data) { if (data !== null) { saveFormState(); location.reload(); } })
                 .catch(function(err) {
                     abortBtn.disabled = false;
                     abortBtn.textContent = 'Abort';
@@ -2224,13 +2269,20 @@
 
             fetch('/api/projects/' + encodeURIComponent(name) + '/' + encodeURIComponent(provider) + '/' + encodeURIComponent(model), {
                 method: 'DELETE',
-                credentials: 'same-origin'
+                credentials: 'same-origin',
+                redirect: 'manual'
             })
             .then(function(res) {
+                if (res.redirected || res.status === 302 || res.type === 'opaqueredirect') {
+                    showToast('Session expired. Please login again.', 'error', 6000);
+                    setTimeout(function() { window.location.href = '/login'; }, 2000);
+                    return null;
+                }
                 if (!res.ok) return res.json().then(function(data) { throw data; });
                 return res.json();
             })
-            .then(function() {
+            .then(function(data) {
+                if (!data) return;
                 showToast('Variant ' + variantPath + ' deleted', 'success');
                 // Find and remove the variant card
                 var allCards = document.querySelectorAll('.variant-card');
