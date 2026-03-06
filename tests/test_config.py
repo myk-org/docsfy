@@ -11,6 +11,7 @@ def test_default_settings() -> None:
 
     with patch.dict(os.environ, {}, clear=True):
         settings = Settings(_env_file=None)
+    assert settings.admin_key == ""
     assert settings.ai_provider == "claude"
     assert settings.ai_model == "claude-opus-4-6[1m]"
     assert settings.ai_cli_timeout == 60
@@ -22,6 +23,7 @@ def test_custom_settings() -> None:
     from docsfy.config import Settings
 
     env = {
+        "ADMIN_KEY": "my-secret-key-long-enough",
         "AI_PROVIDER": "gemini",
         "AI_MODEL": "gemini-2.5-pro",
         "AI_CLI_TIMEOUT": "120",
@@ -29,6 +31,7 @@ def test_custom_settings() -> None:
     }
     with patch.dict(os.environ, env, clear=True):
         settings = Settings(_env_file=None)
+    assert settings.admin_key == "my-secret-key-long-enough"
     assert settings.ai_provider == "gemini"
     assert settings.ai_model == "gemini-2.5-pro"
     assert settings.ai_cli_timeout == 120

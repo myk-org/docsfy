@@ -1,18 +1,21 @@
 from __future__ import annotations
 
+import os
 from pathlib import Path
 from unittest.mock import patch
 
 import pytest
 from httpx import ASGITransport, AsyncClient
 
+TEST_ADMIN_KEY = "test-admin-secret-key"
+
 
 @pytest.fixture
 async def client(tmp_path: Path):
     import docsfy.storage as storage
+    from docsfy.config import get_settings
     from docsfy.main import _generating
 
-    # Save originals
     orig_db = storage.DB_PATH
     orig_data = storage.DATA_DIR
     orig_projects = storage.PROJECTS_DIR
@@ -22,19 +25,28 @@ async def client(tmp_path: Path):
     storage.PROJECTS_DIR = tmp_path / "projects"
     _generating.clear()
 
+    get_settings.cache_clear()
+
     from docsfy.main import app
 
     try:
-        await storage.init_db()
-        transport = ASGITransport(app=app)
-        async with AsyncClient(transport=transport, base_url="http://test") as ac:
-            yield ac
+        with patch.dict(os.environ, {"ADMIN_KEY": TEST_ADMIN_KEY}):
+            get_settings.cache_clear()
+            await storage.init_db()
+            transport = ASGITransport(app=app)
+            async with AsyncClient(
+                transport=transport,
+                base_url="http://test",
+                headers={"Authorization": f"Bearer {TEST_ADMIN_KEY}"},
+            ) as ac:
+                yield ac
     finally:
         # Restore originals
         storage.DB_PATH = orig_db
         storage.DATA_DIR = orig_data
         storage.PROJECTS_DIR = orig_projects
         _generating.clear()
+        get_settings.cache_clear()
 
 
 async def test_full_flow_mock(client: AsyncClient, tmp_path: Path) -> None:
@@ -75,6 +87,7 @@ async def test_full_flow_mock(client: AsyncClient, tmp_path: Path) -> None:
             status="generating",
             ai_provider="claude",
             ai_model="opus",
+            owner="admin",
         )
 
         await _run_generation(
@@ -84,6 +97,7 @@ async def test_full_flow_mock(client: AsyncClient, tmp_path: Path) -> None:
             ai_provider="claude",
             ai_model="opus",
             ai_cli_timeout=60,
+            owner="admin",
         )
 
     # Check status

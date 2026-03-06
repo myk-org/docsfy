@@ -1,16 +1,21 @@
 from __future__ import annotations
 
 import asyncio
+import os
 from pathlib import Path
 from unittest.mock import patch
 
 import pytest
+from fastapi import HTTPException
 from httpx import ASGITransport, AsyncClient
+
+TEST_ADMIN_KEY = "test-admin-secret-key"
 
 
 @pytest.fixture
 async def client(tmp_path: Path):
     import docsfy.storage as storage
+    from docsfy.config import get_settings
     from docsfy.main import _generating
 
     # Save originals
@@ -23,19 +28,29 @@ async def client(tmp_path: Path):
     storage.PROJECTS_DIR = tmp_path / "projects"
     _generating.clear()
 
+    # Clear cached settings so ADMIN_KEY is picked up
+    get_settings.cache_clear()
+
     from docsfy.main import app
 
     try:
-        await storage.init_db()
-        transport = ASGITransport(app=app)
-        async with AsyncClient(transport=transport, base_url="http://test") as ac:
-            yield ac
+        with patch.dict(os.environ, {"ADMIN_KEY": TEST_ADMIN_KEY}):
+            get_settings.cache_clear()
+            await storage.init_db()
+            transport = ASGITransport(app=app)
+            async with AsyncClient(
+                transport=transport,
+                base_url="http://test",
+                headers={"Authorization": f"Bearer {TEST_ADMIN_KEY}"},
+            ) as ac:
+                yield ac
     finally:
         # Restore originals
         storage.DB_PATH = orig_db
         storage.DATA_DIR = orig_data
         storage.PROJECTS_DIR = orig_projects
         _generating.clear()
+        get_settings.cache_clear()
 
 
 async def test_health_endpoint(client: AsyncClient) -> None:
@@ -115,7 +130,8 @@ async def test_generate_duplicate_variant(client: AsyncClient) -> None:
     """Test that generating the same variant twice returns 409."""
     from docsfy.main import _generating
 
-    _generating["repo/claude/opus"] = asyncio.create_task(asyncio.sleep(100))
+    # gen_key format now includes owner: "owner/name/provider/model"
+    _generating["admin/repo/claude/opus"] = asyncio.create_task(asyncio.sleep(100))
     try:
         response = await client.post(
             "/api/generate",
@@ -127,7 +143,7 @@ async def test_generate_duplicate_variant(client: AsyncClient) -> None:
         )
         assert response.status_code == 409
     finally:
-        task = _generating.pop("repo/claude/opus", None)
+        task = _generating.pop("admin/repo/claude/opus", None)
         if task:
             task.cancel()
             try:
@@ -146,12 +162,14 @@ async def test_variant_specific_endpoints(client: AsyncClient) -> None:
         status="generating",
         ai_provider="claude",
         ai_model="opus",
+        owner="admin",
     )
     await update_project_status(
         "test-repo",
         "claude",
         "opus",
         status="ready",
+        owner="admin",
         page_count=5,
     )
 
@@ -187,12 +205,14 @@ async def test_get_project_returns_variants(client: AsyncClient) -> None:
         status="generating",
         ai_provider="claude",
         ai_model="opus",
+        owner="admin",
     )
     await update_project_status(
         "multi-repo",
         "claude",
         "opus",
         status="ready",
+        owner="admin",
         page_count=5,
     )
     await save_project(
@@ -201,12 +221,14 @@ async def test_get_project_returns_variants(client: AsyncClient) -> None:
         status="generating",
         ai_provider="gemini",
         ai_model="pro",
+        owner="admin",
     )
     await update_project_status(
         "multi-repo",
         "gemini",
         "pro",
         status="ready",
+        owner="admin",
         page_count=3,
     )
 
@@ -221,3 +243,33 @@ async def test_abort_variant_endpoint(client: AsyncClient) -> None:
     """Test variant-specific abort endpoint returns 404 when no active gen."""
     response = await client.post("/api/projects/repo/claude/opus/abort")
     assert response.status_code == 404
+
+
+async def test_reject_private_url_dns(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Test that SSRF protection rejects DNS names resolving to private IPs."""
+    import socket
+
+    from docsfy.main import _reject_private_url
+
+    def mock_getaddrinfo(
+        host: str, port: object, *args: object, **kwargs: object
+    ) -> list[
+        tuple[socket.AddressFamily, socket.SocketKind, int, str, tuple[str, int]]
+    ]:
+        return [(socket.AF_INET, socket.SOCK_STREAM, 0, "", ("192.168.1.1", 0))]
+
+    monkeypatch.setattr(socket, "getaddrinfo", mock_getaddrinfo)
+
+    with pytest.raises(HTTPException) as exc_info:
+        await _reject_private_url("https://evil.com/org/repo")
+    assert exc_info.value.status_code == 400
+
+
+async def test_generate_rejects_private_url(client: AsyncClient) -> None:
+    """Test that SSRF protection rejects private/localhost URLs."""
+    response = await client.post(
+        "/api/generate",
+        json={"repo_url": "https://localhost/org/repo.git"},
+    )
+    # Should be rejected by URL validation (either Pydantic or SSRF check)
+    assert response.status_code in (400, 422)

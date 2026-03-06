@@ -1,20 +1,35 @@
 from __future__ import annotations
 
+import os
 from pathlib import Path
+from unittest.mock import patch
 
 import pytest
+
+TEST_ADMIN_KEY = "test-admin-secret-key"
 
 
 @pytest.fixture
 async def db_path(tmp_path: Path) -> Path:
     import docsfy.storage as storage
 
+    # Save original globals to restore after test
+    orig_db_path = storage.DB_PATH
+    orig_data_dir = storage.DATA_DIR
+    orig_projects_dir = storage.PROJECTS_DIR
+
     db = tmp_path / "test.db"
     storage.DB_PATH = db
     storage.DATA_DIR = tmp_path
     storage.PROJECTS_DIR = tmp_path / "projects"
-    await storage.init_db()
-    return db
+    with patch.dict(os.environ, {"ADMIN_KEY": TEST_ADMIN_KEY}):
+        await storage.init_db()
+        yield db
+
+    # Restore original globals
+    storage.DB_PATH = orig_db_path
+    storage.DATA_DIR = orig_data_dir
+    storage.PROJECTS_DIR = orig_projects_dir
 
 
 async def test_init_db_creates_table(db_path: Path) -> None:
@@ -30,14 +45,18 @@ async def test_save_and_get_project(db_path: Path) -> None:
         status="generating",
         ai_provider="claude",
         ai_model="opus",
+        owner="testuser",
     )
-    project = await get_project("my-repo", ai_provider="claude", ai_model="opus")
+    project = await get_project(
+        "my-repo", ai_provider="claude", ai_model="opus", owner="testuser"
+    )
     assert project is not None
     assert project["name"] == "my-repo"
     assert project["repo_url"] == "https://github.com/org/my-repo.git"
     assert project["status"] == "generating"
     assert project["ai_provider"] == "claude"
     assert project["ai_model"] == "opus"
+    assert project["owner"] == "testuser"
 
 
 async def test_update_project_status(db_path: Path) -> None:
@@ -49,16 +68,20 @@ async def test_update_project_status(db_path: Path) -> None:
         status="generating",
         ai_provider="claude",
         ai_model="opus",
+        owner="testuser",
     )
     await update_project_status(
         "my-repo",
         "claude",
         "opus",
         status="ready",
+        owner="testuser",
         last_commit_sha="abc123",
         page_count=5,
     )
-    project = await get_project("my-repo", ai_provider="claude", ai_model="opus")
+    project = await get_project(
+        "my-repo", ai_provider="claude", ai_model="opus", owner="testuser"
+    )
     assert project is not None
     assert project["status"] == "ready"
     assert project["last_commit_sha"] == "abc123"
@@ -74,6 +97,7 @@ async def test_list_projects(db_path: Path) -> None:
         status="ready",
         ai_provider="claude",
         ai_model="opus",
+        owner="testuser",
     )
     await save_project(
         name="repo-b",
@@ -81,6 +105,7 @@ async def test_list_projects(db_path: Path) -> None:
         status="generating",
         ai_provider="gemini",
         ai_model="pro",
+        owner="testuser",
     )
     projects = await list_projects()
     assert len(projects) == 2
@@ -95,10 +120,15 @@ async def test_delete_project(db_path: Path) -> None:
         status="ready",
         ai_provider="claude",
         ai_model="opus",
+        owner="testuser",
     )
-    deleted = await delete_project("my-repo", ai_provider="claude", ai_model="opus")
+    deleted = await delete_project(
+        "my-repo", ai_provider="claude", ai_model="opus", owner="testuser"
+    )
     assert deleted is True
-    project = await get_project("my-repo", ai_provider="claude", ai_model="opus")
+    project = await get_project(
+        "my-repo", ai_provider="claude", ai_model="opus", owner="testuser"
+    )
     assert project is None
 
 
@@ -125,12 +155,14 @@ async def test_get_known_models(db_path: Path) -> None:
         status="generating",
         ai_provider="claude",
         ai_model="opus-4-6",
+        owner="testuser",
     )
     await update_project_status(
         "repo-a",
         "claude",
         "opus-4-6",
         status="ready",
+        owner="testuser",
     )
     await save_project(
         name="repo-b",
@@ -138,12 +170,14 @@ async def test_get_known_models(db_path: Path) -> None:
         status="generating",
         ai_provider="claude",
         ai_model="sonnet-4-6",
+        owner="testuser",
     )
     await update_project_status(
         "repo-b",
         "claude",
         "sonnet-4-6",
         status="ready",
+        owner="testuser",
     )
     await save_project(
         name="repo-c",
@@ -151,12 +185,14 @@ async def test_get_known_models(db_path: Path) -> None:
         status="generating",
         ai_provider="gemini",
         ai_model="gemini-2.5-pro",
+        owner="testuser",
     )
     await update_project_status(
         "repo-c",
         "gemini",
         "gemini-2.5-pro",
         status="ready",
+        owner="testuser",
     )
 
     models = await get_known_models()
@@ -176,12 +212,15 @@ async def test_init_db_resets_orphaned_generating(db_path: Path) -> None:
         status="generating",
         ai_provider="claude",
         ai_model="opus",
+        owner="testuser",
     )
 
     # Simulate server restart by re-running init_db
     await init_db()
 
-    project = await get_project("stuck-repo", ai_provider="claude", ai_model="opus")
+    project = await get_project(
+        "stuck-repo", ai_provider="claude", ai_model="opus", owner="testuser"
+    )
     assert project is not None
     assert project["status"] == "error"
     assert "Server restarted" in project["error_message"]
@@ -196,16 +235,20 @@ async def test_update_project_with_ai_info(db_path: Path) -> None:
         status="generating",
         ai_provider="claude",
         ai_model="opus-4-6",
+        owner="testuser",
     )
     await update_project_status(
         "my-repo",
         "claude",
         "opus-4-6",
         status="ready",
+        owner="testuser",
         last_commit_sha="abc123",
         page_count=5,
     )
-    project = await get_project("my-repo", ai_provider="claude", ai_model="opus-4-6")
+    project = await get_project(
+        "my-repo", ai_provider="claude", ai_model="opus-4-6", owner="testuser"
+    )
     assert project is not None
     assert project["ai_provider"] == "claude"
     assert project["ai_model"] == "opus-4-6"
@@ -219,22 +262,28 @@ async def test_multiple_variants_same_repo(db_path: Path) -> None:
         repo_url="https://github.com/org/repo.git",
         ai_provider="claude",
         ai_model="opus",
+        owner="testuser",
     )
     await save_project(
         name="repo",
         repo_url="https://github.com/org/repo.git",
         ai_provider="gemini",
         ai_model="pro",
+        owner="testuser",
     )
 
     projects = await list_projects()
     assert len(projects) == 2
 
-    p1 = await get_project("repo", ai_provider="claude", ai_model="opus")
+    p1 = await get_project(
+        "repo", ai_provider="claude", ai_model="opus", owner="testuser"
+    )
     assert p1 is not None
     assert p1["ai_provider"] == "claude"
 
-    p2 = await get_project("repo", ai_provider="gemini", ai_model="pro")
+    p2 = await get_project(
+        "repo", ai_provider="gemini", ai_model="pro", owner="testuser"
+    )
     assert p2 is not None
     assert p2["ai_provider"] == "gemini"
 
@@ -247,15 +296,19 @@ async def test_delete_specific_variant(db_path: Path) -> None:
         repo_url="https://github.com/org/repo.git",
         ai_provider="claude",
         ai_model="opus",
+        owner="testuser",
     )
     await save_project(
         name="repo",
         repo_url="https://github.com/org/repo.git",
         ai_provider="gemini",
         ai_model="pro",
+        owner="testuser",
     )
 
-    deleted = await delete_project("repo", ai_provider="claude", ai_model="opus")
+    deleted = await delete_project(
+        "repo", ai_provider="claude", ai_model="opus", owner="testuser"
+    )
     assert deleted is True
 
     projects = await list_projects()
@@ -271,12 +324,14 @@ async def test_list_variants(db_path: Path) -> None:
         repo_url="https://github.com/org/repo.git",
         ai_provider="claude",
         ai_model="opus",
+        owner="testuser",
     )
     await save_project(
         name="repo",
         repo_url="https://github.com/org/repo.git",
         ai_provider="gemini",
         ai_model="pro",
+        owner="testuser",
     )
 
     variants = await list_variants("repo")
@@ -298,9 +353,15 @@ async def test_get_latest_variant(db_path: Path) -> None:
         repo_url="https://github.com/org/repo.git",
         ai_provider="claude",
         ai_model="opus",
+        owner="testuser",
     )
     await update_project_status(
-        "repo", "claude", "opus", status="ready", last_commit_sha="abc"
+        "repo",
+        "claude",
+        "opus",
+        status="ready",
+        owner="testuser",
+        last_commit_sha="abc",
     )
 
     await save_project(
@@ -308,9 +369,10 @@ async def test_get_latest_variant(db_path: Path) -> None:
         repo_url="https://github.com/org/repo.git",
         ai_provider="gemini",
         ai_model="pro",
+        owner="testuser",
     )
     await update_project_status(
-        "repo", "gemini", "pro", status="ready", last_commit_sha="def"
+        "repo", "gemini", "pro", status="ready", owner="testuser", last_commit_sha="def"
     )
 
     # Manually set last_generated to ensure deterministic ordering
@@ -328,3 +390,390 @@ async def test_get_latest_variant(db_path: Path) -> None:
     assert latest is not None
     # gemini has a later last_generated timestamp
     assert latest["ai_provider"] == "gemini"
+
+
+# ---------------------------------------------------------------------------
+# Test: per-user scoping -- two users can have same project name
+# ---------------------------------------------------------------------------
+
+
+async def test_per_user_scoping(db_path: Path) -> None:
+    from docsfy.storage import get_project, list_projects, save_project
+
+    await save_project(
+        name="shared-name",
+        repo_url="https://github.com/alice/repo.git",
+        ai_provider="claude",
+        ai_model="opus",
+        owner="alice",
+    )
+    await save_project(
+        name="shared-name",
+        repo_url="https://github.com/bob/repo.git",
+        ai_provider="claude",
+        ai_model="opus",
+        owner="bob",
+    )
+
+    # Both exist
+    all_projects = await list_projects()
+    assert len(all_projects) == 2
+
+    # Each owner sees only their own
+    alice_proj = await get_project(
+        "shared-name", ai_provider="claude", ai_model="opus", owner="alice"
+    )
+    assert alice_proj is not None
+    assert alice_proj["repo_url"] == "https://github.com/alice/repo.git"
+
+    bob_proj = await get_project(
+        "shared-name", ai_provider="claude", ai_model="opus", owner="bob"
+    )
+    assert bob_proj is not None
+    assert bob_proj["repo_url"] == "https://github.com/bob/repo.git"
+
+    # Filtered list by owner
+    alice_list = await list_projects(owner="alice")
+    assert len(alice_list) == 1
+    assert alice_list[0]["owner"] == "alice"
+
+
+# ---------------------------------------------------------------------------
+# Test: delete_project cleans up project_access
+# ---------------------------------------------------------------------------
+
+
+async def test_delete_project_cleans_up_access(db_path: Path) -> None:
+    from docsfy.storage import (
+        delete_project,
+        get_project_access,
+        grant_project_access,
+        save_project,
+    )
+
+    await save_project(
+        name="cleanup-proj",
+        repo_url="https://github.com/org/repo.git",
+        ai_provider="claude",
+        ai_model="opus",
+        owner="testuser",
+    )
+    await grant_project_access("cleanup-proj", "alice", project_owner="testuser")
+
+    # Delete the only variant
+    await delete_project(
+        "cleanup-proj", ai_provider="claude", ai_model="opus", owner="testuser"
+    )
+
+    # Access entries should be cleaned up
+    users = await get_project_access("cleanup-proj", project_owner="testuser")
+    assert len(users) == 0
+
+
+# ---------------------------------------------------------------------------
+# Test: delete_user cleans up project_access
+# ---------------------------------------------------------------------------
+
+
+async def test_delete_user_cleans_up_access(db_path: Path) -> None:
+    from docsfy.storage import (
+        create_user,
+        delete_user,
+        get_project_access,
+        grant_project_access,
+        save_project,
+    )
+
+    await create_user("cleanup-user")
+    await save_project(
+        name="some-proj",
+        repo_url="https://github.com/org/repo.git",
+        ai_provider="claude",
+        ai_model="opus",
+        owner="admin",
+    )
+    await grant_project_access("some-proj", "cleanup-user", project_owner="admin")
+
+    await delete_user("cleanup-user")
+
+    users = await get_project_access("some-proj", project_owner="admin")
+    assert "cleanup-user" not in users
+
+
+# ---------------------------------------------------------------------------
+# Test: session management
+# ---------------------------------------------------------------------------
+
+
+async def test_create_and_get_session(db_path: Path) -> None:
+    from docsfy.storage import create_session, get_session
+
+    token = await create_session("testuser", is_admin=False)
+    assert token  # token is non-empty
+
+    session = await get_session(token)
+    assert session is not None
+    assert session["username"] == "testuser"
+    assert session["is_admin"] == 0
+
+
+async def test_create_admin_session(db_path: Path) -> None:
+    from docsfy.storage import create_session, get_session
+
+    token = await create_session("admin", is_admin=True)
+    session = await get_session(token)
+    assert session is not None
+    assert session["is_admin"] == 1
+
+
+async def test_delete_session(db_path: Path) -> None:
+    from docsfy.storage import create_session, delete_session, get_session
+
+    token = await create_session("testuser")
+    session = await get_session(token)
+    assert session is not None
+
+    await delete_session(token)
+    session = await get_session(token)
+    assert session is None
+
+
+async def test_expired_session_not_returned(db_path: Path) -> None:
+    import aiosqlite
+
+    from docsfy.storage import DB_PATH, _hash_session_token, get_session
+
+    # Directly insert a session with a past expiration
+    # Tokens are stored as hashes, so hash the token before inserting
+    token = "expired-test-token"
+    token_hash = _hash_session_token(token)
+    async with aiosqlite.connect(DB_PATH) as db:
+        await db.execute(
+            "INSERT INTO sessions (token, username, is_admin, expires_at) VALUES (?, ?, ?, ?)",
+            (token_hash, "testuser", 0, "2020-01-01T00:00:00"),
+        )
+        await db.commit()
+
+    # Session should not be found since it's expired
+    session = await get_session(token)
+    assert session is None
+
+
+async def test_get_nonexistent_session(db_path: Path) -> None:
+    from docsfy.storage import get_session
+
+    session = await get_session("nonexistent-token")
+    assert session is None
+
+
+async def test_cleanup_expired_sessions(db_path: Path) -> None:
+    import aiosqlite
+
+    from docsfy.storage import (
+        DB_PATH,
+        _hash_session_token,
+        cleanup_expired_sessions,
+        create_session,
+    )
+
+    # Directly insert a session with a past expiration
+    async with aiosqlite.connect(DB_PATH) as db:
+        await db.execute(
+            "INSERT INTO sessions (token, username, is_admin, expires_at) VALUES (?, ?, ?, ?)",
+            ("expired-token", "expired-user", 0, "2020-01-01T00:00:00"),
+        )
+        await db.commit()
+
+    # Create a valid session
+    valid_token = await create_session("valid-user", ttl_hours=8)
+
+    await cleanup_expired_sessions()
+
+    # Check that only the valid session remains
+    async with aiosqlite.connect(DB_PATH) as db:
+        cursor = await db.execute("SELECT COUNT(*) FROM sessions")
+        row = await cursor.fetchone()
+        assert row is not None
+        assert row[0] == 1
+
+        # Session tokens are stored as hashes
+        token_hash = _hash_session_token(valid_token)
+        cursor = await db.execute(
+            "SELECT username FROM sessions WHERE token = ?", (token_hash,)
+        )
+        row = await cursor.fetchone()
+        assert row is not None
+        assert row[0] == "valid-user"
+
+
+# ---------------------------------------------------------------------------
+# Test: HMAC-based key hashing
+# ---------------------------------------------------------------------------
+
+
+async def test_hash_api_key_is_hmac(db_path: Path) -> None:
+    """hash_api_key should use HMAC, not plain SHA-256."""
+    import hashlib
+
+    from docsfy.storage import hash_api_key
+
+    key = "test-key-12345"
+    hmac_hash = hash_api_key(key)
+    plain_sha256 = hashlib.sha256(key.encode()).hexdigest()
+    # HMAC hash should differ from plain SHA-256
+    assert hmac_hash != plain_sha256
+
+
+# ---------------------------------------------------------------------------
+# Test: username 'admin' is reserved
+# ---------------------------------------------------------------------------
+
+
+async def test_create_user_rejects_admin_username(db_path: Path) -> None:
+    from docsfy.storage import create_user
+
+    with pytest.raises(ValueError, match="reserved"):
+        await create_user("admin")
+
+    with pytest.raises(ValueError, match="reserved"):
+        await create_user("Admin")
+
+    with pytest.raises(ValueError, match="reserved"):
+        await create_user("ADMIN")
+
+
+# ---------------------------------------------------------------------------
+# Test: get_user_by_username
+# ---------------------------------------------------------------------------
+
+
+async def test_get_user_by_username(db_path: Path) -> None:
+    from docsfy.storage import create_user, get_user_by_username
+
+    await create_user("lookup-user")
+    user = await get_user_by_username("lookup-user")
+    assert user is not None
+    assert user["username"] == "lookup-user"
+
+    missing = await get_user_by_username("nonexistent")
+    assert missing is None
+
+
+# ---------------------------------------------------------------------------
+# Test: project access management
+# ---------------------------------------------------------------------------
+
+
+async def test_grant_and_get_project_access(db_path: Path) -> None:
+    from docsfy.storage import get_project_access, grant_project_access
+
+    await grant_project_access("my-repo", "alice", project_owner="testowner")
+    await grant_project_access("my-repo", "bob", project_owner="testowner")
+
+    users = await get_project_access("my-repo", project_owner="testowner")
+    assert "alice" in users
+    assert "bob" in users
+
+
+async def test_revoke_project_access(db_path: Path) -> None:
+    from docsfy.storage import (
+        get_project_access,
+        grant_project_access,
+        revoke_project_access,
+    )
+
+    await grant_project_access("my-repo", "alice", project_owner="testowner")
+    await revoke_project_access("my-repo", "alice", project_owner="testowner")
+
+    users = await get_project_access("my-repo", project_owner="testowner")
+    assert "alice" not in users
+
+
+async def test_get_user_accessible_projects(db_path: Path) -> None:
+    from docsfy.storage import get_user_accessible_projects, grant_project_access
+
+    await grant_project_access("repo-a", "alice", project_owner="owner1")
+    await grant_project_access("repo-b", "alice", project_owner="owner2")
+
+    projects = await get_user_accessible_projects("alice")
+    assert ("repo-a", "owner1") in projects
+    assert ("repo-b", "owner2") in projects
+
+
+# ---------------------------------------------------------------------------
+# Test: get_project_dir includes owner in path
+# ---------------------------------------------------------------------------
+
+
+async def test_list_projects_with_accessible_tuples(db_path: Path) -> None:
+    """list_projects with accessible (name, owner) tuples should not expose other owners' same-name projects."""
+    from docsfy.storage import list_projects, save_project
+
+    # Alice and Bob both have a project named "shared-name"
+    await save_project(
+        name="shared-name",
+        repo_url="https://github.com/alice/repo.git",
+        ai_provider="claude",
+        ai_model="opus",
+        owner="alice",
+    )
+    await save_project(
+        name="shared-name",
+        repo_url="https://github.com/bob/repo.git",
+        ai_provider="claude",
+        ai_model="opus",
+        owner="bob",
+    )
+    # Charlie has access to alice's project, but NOT bob's
+    accessible: list[tuple[str, str]] = [("shared-name", "alice")]
+    projects = await list_projects(owner="charlie", accessible=accessible)
+
+    # Charlie should see only alice's project (not bob's)
+    assert len(projects) == 1
+    assert projects[0]["owner"] == "alice"
+
+
+async def test_get_project_dir_includes_owner(db_path: Path) -> None:
+    from docsfy.storage import get_project_dir
+
+    path = get_project_dir("my-repo", "claude", "opus", "alice")
+    assert "alice" in str(path)
+    assert str(path).endswith("alice/my-repo/claude/opus")
+
+
+async def test_get_project_dir_default_owner(db_path: Path) -> None:
+    from docsfy.storage import get_project_dir
+
+    path = get_project_dir("my-repo", "claude", "opus", "")
+    assert "_default" in str(path)
+
+
+# ---------------------------------------------------------------------------
+# Test: init_db with data_dir parameter (Fix 11)
+# ---------------------------------------------------------------------------
+
+
+async def test_init_db_with_data_dir(tmp_path: Path) -> None:
+    import docsfy.storage as storage
+
+    # Save original globals to restore after test
+    orig_db_path = storage.DB_PATH
+    orig_data_dir = storage.DATA_DIR
+    orig_projects_dir = storage.PROJECTS_DIR
+
+    custom_dir = tmp_path / "custom_data"
+    custom_dir.mkdir()
+
+    try:
+        with patch.dict(os.environ, {"ADMIN_KEY": TEST_ADMIN_KEY}):
+            await storage.init_db(data_dir=str(custom_dir))
+
+        assert storage.DB_PATH == custom_dir / "docsfy.db"
+        assert storage.DATA_DIR == custom_dir
+        assert storage.PROJECTS_DIR == custom_dir / "projects"
+        assert storage.DB_PATH.exists()
+    finally:
+        # Restore original globals so other tests are not affected
+        storage.DB_PATH = orig_db_path
+        storage.DATA_DIR = orig_data_dir
+        storage.PROJECTS_DIR = orig_projects_dir

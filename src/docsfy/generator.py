@@ -6,8 +6,12 @@ from typing import Any
 from simple_logger.logger import get_logger
 
 from docsfy.ai_client import call_ai_cli, run_parallel_with_limit
-from docsfy.json_parser import parse_json_response
-from docsfy.prompts import build_page_prompt, build_planner_prompt
+from docsfy.json_parser import parse_json_list_response, parse_json_response
+from docsfy.prompts import (
+    build_incremental_planner_prompt,
+    build_page_prompt,
+    build_planner_prompt,
+)
 
 logger = get_logger(name=__name__)
 
@@ -70,8 +74,12 @@ async def generate_page(
     ai_cli_timeout: int | None = None,
     use_cache: bool = False,
     project_name: str = "",
+    owner: str = "",
 ) -> str:
     _label = project_name or repo_path.name
+
+    if project_name and not owner:
+        logger.warning(f"[{_label}] owner missing for page count update, skipping")
 
     # Validate slug to prevent path traversal
     if "/" in slug or "\\" in slug or slug.startswith(".") or ".." in slug:
@@ -115,6 +123,7 @@ async def generate_page(
             project_name,
             ai_provider,
             ai_model,
+            owner=owner,
             status="generating",
             page_count=existing_pages,
         )
@@ -131,6 +140,7 @@ async def generate_all_pages(
     ai_cli_timeout: int | None = None,
     use_cache: bool = False,
     project_name: str = "",
+    owner: str = "",
 ) -> dict[str, str]:
     _label = project_name or repo_path.name
 
@@ -167,6 +177,7 @@ async def generate_all_pages(
             ai_cli_timeout=ai_cli_timeout,
             use_cache=use_cache,
             project_name=project_name,
+            owner=owner,
         )
         for p in all_pages
     ]
@@ -188,3 +199,45 @@ async def generate_all_pages(
 
     logger.info(f"[{_label}] Generated {len(pages)} pages total")
     return pages
+
+
+async def run_incremental_planner(
+    repo_path: Path,
+    project_name: str,
+    ai_provider: str,
+    ai_model: str,
+    changed_files: list[str],
+    existing_plan: dict[str, Any],
+    ai_cli_timeout: int | None = None,
+) -> list[str]:
+    """Ask AI which pages need regeneration based on changed files."""
+    logger.info(
+        f"[{project_name}] Running incremental planner for {len(changed_files)} changed files"
+    )
+    prompt = build_incremental_planner_prompt(
+        project_name, changed_files, existing_plan
+    )
+    cli_flags = ["--trust"] if ai_provider == "cursor" else None
+    success, output = await call_ai_cli(
+        prompt=prompt,
+        cwd=repo_path,
+        ai_provider=ai_provider,
+        ai_model=ai_model,
+        ai_cli_timeout=ai_cli_timeout,
+        cli_flags=cli_flags,
+    )
+    if not success:
+        logger.warning(f"[{project_name}] Incremental planner failed, regenerating all")
+        return ["all"]
+
+    result = parse_json_list_response(output)
+    if result is None or not isinstance(result, list):
+        return ["all"]
+    # Validate all items are strings
+    result = [item for item in result if isinstance(item, str)]
+    if not result:
+        return ["all"]
+    logger.info(
+        f"[{project_name}] Incremental planner identified {len(result)} pages to regenerate"
+    )
+    return result

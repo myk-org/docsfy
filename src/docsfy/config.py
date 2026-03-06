@@ -13,11 +13,13 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
+    admin_key: str = ""  # Required — validated at startup
     ai_provider: str = "claude"
     ai_model: str = "claude-opus-4-6[1m]"  # [1m] = 1 million token context window
     ai_cli_timeout: int = Field(default=60, gt=0)
     log_level: str = "INFO"
     data_dir: str = "/data"
+    secure_cookies: bool = True  # Set to False for local HTTP dev
 
 
 @lru_cache

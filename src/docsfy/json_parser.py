@@ -28,6 +28,49 @@ def parse_json_response(raw_text: str) -> dict[str, Any] | None:
     return None
 
 
+def parse_json_list_response(raw_text: str) -> list[str] | None:
+    """Parse AI response as a JSON list of strings."""
+    text = raw_text.strip()
+    if not text:
+        return None
+    # Try direct parse first
+    if text.startswith("["):
+        try:
+            result = json.loads(text)
+            if isinstance(result, list):
+                return [item for item in result if isinstance(item, str)]
+        except (json.JSONDecodeError, ValueError):
+            pass
+    # Extract from brackets
+    first_bracket = text.find("[")
+    if first_bracket == -1:
+        return None
+    last_bracket = text.rfind("]")
+    if last_bracket == -1 or last_bracket <= first_bracket:
+        return None
+    json_str = text[first_bracket : last_bracket + 1]
+    try:
+        result = json.loads(json_str)
+        if isinstance(result, list):
+            return [item for item in result if isinstance(item, str)]
+    except (json.JSONDecodeError, ValueError):
+        pass
+    # Try extracting from code blocks
+    blocks = re.findall(r"```(?:json)?\s*\n?(.*?)```", text, re.DOTALL)
+    for block_content in blocks:
+        block_content = block_content.strip()
+        if not block_content or "[" not in block_content:
+            continue
+        try:
+            result = json.loads(block_content)
+            if isinstance(result, list):
+                return [item for item in result if isinstance(item, str)]
+        except (json.JSONDecodeError, ValueError):
+            pass
+    logger.warning("Failed to parse AI response as JSON list")
+    return None
+
+
 def _extract_json_by_braces(text: str) -> dict[str, Any] | None:
     first_brace = text.find("{")
     if first_brace == -1:

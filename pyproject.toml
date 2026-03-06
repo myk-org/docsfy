@@ -13,6 +13,7 @@ dependencies = [
     "jinja2",
     "markdown",
     "pygments",
+    "python-multipart>=0.0.22",
 ]
 
 [project.urls]

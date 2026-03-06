@@ -1,4 +1,4 @@
-{% macro regen_controls(variant, repo_name, default_provider, default_model, known_models, loop_index) %}
+{% macro regen_controls(variant, repo_name, default_provider, default_model, known_models) %}
 <div class="variant-regen">
     <select class="form-select form-select-sm" data-regen-provider="{{ repo_name }}">
         <option value="claude" {{ 'selected' if variant.ai_provider == 'claude' }}>claude</option>
@@ -23,7 +23,7 @@
 </div>
 {% endmacro %}
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -185,6 +185,12 @@
         z-index: 100;
     }
 
+    .header-left {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
     .dashboard-logo {
         font-size: 1.25rem;
         font-weight: 700;
@@ -197,6 +203,22 @@
         color: var(--accent);
     }
 
+    .docs-badge {
+        font-size: 0.7rem;
+        font-weight: 600;
+        padding: 2px 8px;
+        background: var(--accent);
+        color: white;
+        border-radius: 4px;
+        text-decoration: none;
+        margin-left: 8px;
+        transition: opacity 0.15s ease;
+    }
+
+    .docs-badge:hover {
+        opacity: 0.8;
+    }
+
     .brand-accent {
         color: var(--accent);
     }
@@ -205,6 +227,55 @@
         display: flex;
         align-items: center;
         gap: 0.5rem;
+    }
+
+    .top-bar-admin-link {
+        padding: 6px 12px;
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: var(--text-primary);
+        text-decoration: none;
+        border: 1px solid var(--border-primary);
+        border-radius: 4px;
+        transition: all 0.15s ease;
+    }
+    .top-bar-admin-link:hover {
+        border-color: var(--accent);
+        color: var(--accent);
+    }
+
+    .top-bar-user {
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        font-weight: 500;
+    }
+
+    .top-bar-logout {
+        padding: 6px 12px;
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: var(--text-secondary);
+        text-decoration: none;
+        transition: color 0.15s ease;
+    }
+    .top-bar-logout:hover {
+        color: var(--accent);
+    }
+
+    .top-bar-btn {
+        padding: 6px 12px;
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: var(--text-secondary);
+        background: none;
+        border: 1px solid var(--border-primary);
+        border-radius: 0.375rem;
+        cursor: pointer;
+        transition: color 0.15s ease, border-color 0.15s ease;
+    }
+    .top-bar-btn:hover {
+        color: var(--accent);
+        border-color: var(--accent);
     }
 
     .theme-toggle {
@@ -619,36 +690,6 @@
         gap: 0.75rem;
     }
 
-    .project-card {
-        background: var(--bg-card);
-        border: 1px solid var(--border-primary);
-        border-radius: 12px;
-        padding: 1.25rem 1.5rem;
-        box-shadow: var(--shadow-sm);
-        transition: box-shadow var(--transition-normal), border-color var(--transition-normal);
-    }
-
-    .project-card:hover {
-        box-shadow: var(--shadow-md);
-        border-color: var(--border-focus);
-    }
-
-    .project-card[data-status="error"] {
-        border-left: 3px solid var(--status-error);
-    }
-
-    .project-card[data-status="aborted"] {
-        border-left: 3px solid var(--status-aborted);
-    }
-
-    .project-card[data-status="generating"] {
-        border-left: 3px solid var(--status-generating);
-    }
-
-    .project-card[data-status="ready"] {
-        border-left: 3px solid var(--status-ready);
-    }
-
     .card-header {
         display: flex;
         align-items: flex-start;
@@ -929,52 +970,6 @@
         color: var(--accent-hover);
     }
 
-    /* --------------------------------------------------------------------------
-       Confirm Dialog
-       -------------------------------------------------------------------------- */
-    .confirm-overlay {
-        position: fixed;
-        inset: 0;
-        background: rgba(0, 0, 0, 0.5);
-        z-index: 300;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        animation: fadeIn 0.15s ease;
-    }
-
-    .confirm-overlay.hidden {
-        display: none;
-    }
-
-    .confirm-dialog {
-        background: var(--bg-card);
-        border: 1px solid var(--border-primary);
-        border-radius: 12px;
-        padding: 1.5rem;
-        max-width: 400px;
-        width: calc(100% - 2rem);
-        box-shadow: var(--shadow-lg);
-    }
-
-    .confirm-dialog h3 {
-        font-size: 1rem;
-        font-weight: 600;
-        margin-bottom: 0.5rem;
-    }
-
-    .confirm-dialog p {
-        font-size: 0.875rem;
-        color: var(--text-secondary);
-        margin-bottom: 1.25rem;
-    }
-
-    .confirm-dialog-actions {
-        display: flex;
-        gap: 0.5rem;
-        justify-content: flex-end;
-    }
-
     @keyframes fadeIn {
         from { opacity: 0; }
         to { opacity: 1; }
@@ -1074,6 +1069,14 @@
     .variant-pages {
         font-size: 0.8125rem;
         color: var(--text-tertiary);
+    }
+
+    .variant-owner {
+        font-size: 0.75rem;
+        color: var(--text-secondary);
+        background: var(--bg-tertiary);
+        padding: 2px 6px;
+        border-radius: 4px;
     }
 
     .variant-meta {
@@ -1312,13 +1315,24 @@
             align-items: stretch;
         }
     }
+
+    /* Modal CSS is in _modal.html (shared include) */
     </style>
 </head>
 <body>
     <!-- Header -->
     <header class="dashboard-header">
-        <a href="/" class="dashboard-logo">docs<span>fy</span></a>
+        <div class="header-left">
+            <a href="/" class="dashboard-logo">docs<span>fy</span></a>
+            <a href="https://myk-org.github.io/docsfy/" target="_blank" rel="noopener noreferrer" class="docs-badge" title="Documentation">Docs</a>
+        </div>
         <div class="header-actions">
+            {% if role == 'admin' %}
+            <a href="/admin" class="top-bar-admin-link">Admin</a>
+            {% endif %}
+            <span class="top-bar-user">{{ username }}</span>
+            <button class="top-bar-btn" onclick="rotateOwnKey()">Change Password</button>
+            <a href="/logout" class="top-bar-logout">Logout</a>
             <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
                 <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
                     <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
@@ -1336,6 +1350,7 @@
     <!-- Main Content -->
     <main class="dashboard-main">
         <!-- Generate Form -->
+        {% if role != 'viewer' %}
         <section class="generate-section">
             <h2>Generate Documentation</h2>
             <form id="generate-form" autocomplete="off">
@@ -1380,6 +1395,7 @@
                 </div>
             </form>
         </section>
+        {% endif %}
 
         <!-- Projects Section -->
         <section class="projects-section">
@@ -1444,6 +1460,9 @@
                         <div class="variant-header">
                             <span class="status-dot status-dot-{{ variant.status }}"></span>
                             <span class="variant-provider-model">{{ variant.ai_provider }}/{{ variant.ai_model }}</span>
+                            {% if role == 'admin' and variant.owner %}
+                            <span class="variant-owner">{{ variant.owner }}</span>
+                            {% endif %}
                             <span class="variant-status badge-{{ variant.status }}">{{ variant.status | upper }}</span>
                             {% if variant.page_count > 0 %}
                             <span class="variant-pages">{{ variant.page_count }} pages</span>
@@ -1463,10 +1482,14 @@
                         <div class="variant-actions">
                             <a href="/docs/{{ repo_name }}/{{ variant.ai_provider | urlencode }}/{{ variant.ai_model | urlencode }}/" target="_blank" class="btn btn-primary btn-sm">View Docs</a>
                             <a href="/api/projects/{{ repo_name }}/{{ variant.ai_provider | urlencode }}/{{ variant.ai_model | urlencode }}/download" class="btn btn-secondary btn-sm">Download</a>
+                            {% if role != 'viewer' %}
                             <button class="btn btn-danger btn-sm" data-delete-variant="{{ repo_name }}/{{ variant.ai_provider }}/{{ variant.ai_model }}">Delete</button>
+                            {% endif %}
                         </div>
+                        {% if role != 'viewer' %}
                         <!-- Regenerate controls -->
-                        {{ regen_controls(variant, repo_name, default_provider, default_model, known_models, loop.index) }}
+                        {{ regen_controls(variant, repo_name, default_provider, default_model, known_models) }}
+                        {% endif %}
 
                         {% elif variant.status == 'generating' %}
                         <div class="variant-progress">
@@ -1477,7 +1500,9 @@
                             </div>
                             <span class="progress-text">Generating...</span>
                             <a href="/status/{{ repo_name }}/{{ variant.ai_provider | urlencode }}/{{ variant.ai_model | urlencode }}" target="_blank" class="status-link">View progress &rarr;</a>
+                            {% if role != 'viewer' %}
                             <button class="btn btn-danger btn-sm" data-abort-variant="{{ repo_name }}/{{ variant.ai_provider }}/{{ variant.ai_model }}">Abort</button>
+                            {% endif %}
                         </div>
 
                         {% elif variant.status == 'error' or variant.status == 'aborted' %}
@@ -1485,8 +1510,10 @@
                             <span class="error-text">{{ variant.error_message }}</span>
                         </div>
                         <div class="variant-actions">
-                            {{ regen_controls(variant, repo_name, default_provider, default_model, known_models, loop.index) }}
+                            {% if role != 'viewer' %}
+                            {{ regen_controls(variant, repo_name, default_provider, default_model, known_models) }}
                             <button class="btn btn-danger btn-sm" data-delete-variant="{{ repo_name }}/{{ variant.ai_provider }}/{{ variant.ai_model }}">Delete</button>
+                            {% endif %}
                         </div>
                         {% endif %}
                     </div>
@@ -1510,17 +1537,8 @@
         <p>Powered by <a href="https://github.com/myk-org/docsfy" target="_blank" rel="noopener noreferrer">docs<span class="brand-accent">fy</span></a></p>
     </footer>
 
-    <!-- Confirm Dialog (hidden by default) -->
-    <div class="confirm-overlay hidden" id="confirm-overlay">
-        <div class="confirm-dialog">
-            <h3>Delete Project</h3>
-            <p id="confirm-message"></p>
-            <div class="confirm-dialog-actions">
-                <button class="btn btn-secondary btn-sm" id="confirm-cancel">Cancel</button>
-                <button class="btn btn-danger btn-sm" id="confirm-delete">Delete</button>
-            </div>
-        </div>
-    </div>
+
+    {% include '_theme.html' %}
 
     <script>
     /* =========================================================================
@@ -1754,26 +1772,6 @@
             });
         });
 
-        /* ----- Theme Toggle (same pattern as theme.js) ----- */
-        function getTheme() {
-            try { return localStorage.getItem('theme'); } catch(e) { return null; }
-        }
-        function setTheme(theme) {
-            try { localStorage.setItem('theme', theme); } catch(e) {}
-        }
-
-        var toggle = document.getElementById('theme-toggle');
-        var stored = getTheme();
-        if (stored) document.documentElement.setAttribute('data-theme', stored);
-        else if (window.matchMedia('(prefers-color-scheme: dark)').matches)
-            document.documentElement.setAttribute('data-theme', 'dark');
-        if (toggle) toggle.addEventListener('click', function() {
-            var current = document.documentElement.getAttribute('data-theme');
-            var next = current === 'dark' ? 'light' : 'dark';
-            document.documentElement.setAttribute('data-theme', next);
-            setTheme(next);
-        });
-
         /* ----- Toast Notifications ----- */
         var toastContainer = document.getElementById('toast-container');
 
@@ -1805,6 +1803,16 @@
         /* ----- Helper: build composite key for a variant ----- */
         function variantKey(name, provider, model) {
             return name + '/' + provider + '/' + model;
+        }
+
+        /* ----- Auth redirect detection ----- */
+        function checkAuthRedirect(res) {
+            if (res.redirected || res.status === 302) {
+                showToast('Session expired. Please login again.', 'error', 6000);
+                setTimeout(function() { window.location.href = '/login'; }, 2000);
+                return true;
+            }
+            return false;
         }
 
         /* ----- Polling State ----- */
@@ -1861,9 +1869,17 @@
 
         /* ----- Poll /api/status for status changes (10s interval) ----- */
         function pollStatusChanges() {
-            fetch('/api/status')
-                .then(function(res) { return res.json(); })
+            fetch('/api/status', { credentials: 'same-origin', redirect: 'manual' })
+                .then(function(res) {
+                    if (checkAuthRedirect(res)) return null;
+                    if (res.type === 'opaqueredirect') {
+                        checkAuthRedirect({ redirected: true, status: 302 });
+                        return null;
+                    }
+                    return res.json();
+                })
                 .then(function(data) {
+                    if (!data) return;
                     var projectsList = data.projects || data;
                     if (!Array.isArray(projectsList)) return;
 
@@ -1927,9 +1943,17 @@
 
         /* ----- Poll /api/status for progress updates (5s interval) ----- */
         function pollProgressUpdates() {
-            fetch('/api/status')
-                .then(function(res) { return res.json(); })
+            fetch('/api/status', { credentials: 'same-origin', redirect: 'manual' })
+                .then(function(res) {
+                    if (checkAuthRedirect(res)) return null;
+                    if (res.type === 'opaqueredirect') {
+                        checkAuthRedirect({ redirected: true, status: 302 });
+                        return null;
+                    }
+                    return res.json();
+                })
                 .then(function(data) {
+                    if (!data) return;
                     var projectsList = data.projects || data;
                     if (!Array.isArray(projectsList)) return;
 
@@ -2026,15 +2050,25 @@
                 fetch('/api/generate', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
+                    credentials: 'same-origin',
+                    redirect: 'manual',
                     body: JSON.stringify(body)
                 })
                 .then(function(res) {
+                    if (res.redirected || res.status === 302 || res.type === 'opaqueredirect') {
+                        showToast('Session expired. Please login again.', 'error', 6000);
+                        setTimeout(function() { window.location.href = '/login'; }, 2000);
+                        return null;
+                    }
                     if (!res.ok) return res.json().then(function(data) { throw data; });
                     return res.json();
                 })
                 .then(function(data) {
+                    if (!data) return;
                     var projectName = data.project || repoUrl;
-                    var statusUrl = '/status/' + encodeURIComponent(projectName) + '/' + encodeURIComponent(provider) + '/' + encodeURIComponent(model);
+                    var effectiveModel = model || data.ai_model || '{{ default_model }}';
+                    var effectiveProvider = provider || data.ai_provider || '{{ default_provider }}';
+                    var statusUrl = '/status/' + encodeURIComponent(projectName) + '/' + encodeURIComponent(effectiveProvider) + '/' + encodeURIComponent(effectiveModel);
                     showToast('Generation started for ' + projectName + '.', 'success', 6000, {
                         href: statusUrl,
                         text: 'View progress \u2192'
@@ -2088,14 +2122,24 @@
             fetch('/api/generate', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
+                credentials: 'same-origin',
+                redirect: 'manual',
                 body: JSON.stringify(body)
             })
             .then(function(res) {
+                if (res.redirected || res.status === 302 || res.type === 'opaqueredirect') {
+                    showToast('Session expired. Please login again.', 'error', 6000);
+                    setTimeout(function() { window.location.href = '/login'; }, 2000);
+                    return null;
+                }
                 if (!res.ok) return res.json().then(function(data) { throw data; });
                 return res.json();
             })
-            .then(function() {
-                var statusUrl = '/status/' + encodeURIComponent(name) + '/' + encodeURIComponent(provider) + '/' + encodeURIComponent(model);
+            .then(function(data) {
+                if (!data) return;
+                var effectiveModel = model || data.ai_model || '{{ default_model }}';
+                var effectiveProvider = provider || data.ai_provider || '{{ default_provider }}';
+                var statusUrl = '/status/' + encodeURIComponent(name) + '/' + encodeURIComponent(effectiveProvider) + '/' + encodeURIComponent(effectiveModel);
                 showToast('Regeneration started for ' + name + '.', 'success', 6000, {
                     href: statusUrl,
                     text: 'View progress \u2192'
@@ -2115,7 +2159,7 @@
         });
 
         /* ----- Abort Variant Generation ----- */
-        document.addEventListener('click', function(e) {
+        document.addEventListener('click', async function(e) {
             var abortBtn = e.target.closest('[data-abort-variant]');
             if (!abortBtn) return;
             var composite = abortBtn.getAttribute('data-abort-variant');
@@ -2124,15 +2168,21 @@
             var name = parts[0];
             var provider = parts[1];
             var model = parts.slice(2).join('/');
-            if (!confirm('Abort generation for ' + name + ' (' + provider + '/' + model + ')?')) return;
+            var confirmed = await modalConfirm('Abort Generation', 'Abort generation for ' + name + ' (' + provider + '/' + model + ')?', true);
+            if (!confirmed) return;
             abortBtn.disabled = true;
             abortBtn.textContent = 'Aborting...';
-            fetch('/api/projects/' + encodeURIComponent(name) + '/' + encodeURIComponent(provider) + '/' + encodeURIComponent(model) + '/abort', { method: 'POST' })
+            fetch('/api/projects/' + encodeURIComponent(name) + '/' + encodeURIComponent(provider) + '/' + encodeURIComponent(model) + '/abort', { method: 'POST', credentials: 'same-origin', redirect: 'manual' })
                 .then(function(r) {
+                    if (r.redirected || r.status === 302 || r.type === 'opaqueredirect') {
+                        showToast('Session expired. Please login again.', 'error', 6000);
+                        setTimeout(function() { window.location.href = '/login'; }, 2000);
+                        return null;
+                    }
                     if (!r.ok) return r.json().then(function(data) { throw data; });
                     return r.json();
                 })
-                .then(function() { saveFormState(); location.reload(); })
+                .then(function(data) { if (data !== null) { saveFormState(); location.reload(); } })
                 .catch(function(err) {
                     abortBtn.disabled = false;
                     abortBtn.textContent = 'Abort';
@@ -2141,28 +2191,10 @@
                 });
         });
 
-        /* ----- Delete Variant with Confirmation ----- */
-        var confirmOverlay = document.getElementById('confirm-overlay');
-        var confirmMessage = document.getElementById('confirm-message');
-        var confirmCancelBtn = document.getElementById('confirm-cancel');
-        var confirmDeleteBtn = document.getElementById('confirm-delete');
-        var pendingDeleteVariant = null;
-
-        function openConfirm(variantPath) {
-            pendingDeleteVariant = variantPath;
-            confirmMessage.textContent = 'Are you sure you want to delete "' + variantPath + '"? This will remove the generated documentation for this variant and cannot be undone.';
-            confirmOverlay.classList.remove('hidden');
-        }
-
-        function closeConfirm() {
-            confirmOverlay.classList.add('hidden');
-            pendingDeleteVariant = null;
-        }
-
-        function executeDelete() {
-            var variantPath = pendingDeleteVariant;
-            if (!variantPath) return;
-            closeConfirm();
+        /* ----- Delete Variant with modalConfirm ----- */
+        async function deleteVariant(variantPath) {
+            var confirmed = await modalConfirm('Delete Variant', 'Are you sure you want to delete "' + variantPath + '"? This will remove the generated documentation for this variant and cannot be undone.', true);
+            if (!confirmed) return;
 
             // variantPath is "name/provider/model"
             var parts = variantPath.split('/');
@@ -2171,13 +2203,21 @@
             var model = parts.slice(2).join('/');
 
             fetch('/api/projects/' + encodeURIComponent(name) + '/' + encodeURIComponent(provider) + '/' + encodeURIComponent(model), {
-                method: 'DELETE'
+                method: 'DELETE',
+                credentials: 'same-origin',
+                redirect: 'manual'
             })
             .then(function(res) {
+                if (res.redirected || res.status === 302 || res.type === 'opaqueredirect') {
+                    showToast('Session expired. Please login again.', 'error', 6000);
+                    setTimeout(function() { window.location.href = '/login'; }, 2000);
+                    return null;
+                }
                 if (!res.ok) return res.json().then(function(data) { throw data; });
                 return res.json();
             })
-            .then(function() {
+            .then(function(data) {
+                if (!data) return;
                 showToast('Variant ' + variantPath + ' deleted', 'success');
                 // Find and remove the variant card
                 var allCards = document.querySelectorAll('.variant-card');
@@ -2277,15 +2317,7 @@
         document.addEventListener('click', function(e) {
             var deleteBtn = e.target.closest('[data-delete-variant]');
             if (!deleteBtn) return;
-            openConfirm(deleteBtn.getAttribute('data-delete-variant'));
-        });
-
-        confirmCancelBtn.addEventListener('click', closeConfirm);
-        confirmDeleteBtn.addEventListener('click', executeDelete);
-
-        /* Close confirm on overlay background click */
-        confirmOverlay.addEventListener('click', function(e) {
-            if (e.target === confirmOverlay) closeConfirm();
+            deleteVariant(deleteBtn.getAttribute('data-delete-variant'));
         });
 
         /* ----- Pagination State ----- */
@@ -2374,11 +2406,6 @@
         /* ----- Initial Pagination ----- */
         applyPagination();
 
-        /* ----- Close confirm on Escape ----- */
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') closeConfirm();
-        });
-
         /* ----- Auto-start polling ----- */
         // Always poll for status changes (10s interval)
         startStatusPolling();
@@ -2401,6 +2428,41 @@
         if (forceCheck) forceCheck.addEventListener('change', saveFormState);
 
     })();
+
+    async function rotateOwnKey() {
+        var newKey = await modalPrompt('Change Password', 'Enter new password (min 16 characters), or leave empty to auto-generate:', 'Minimum 16 characters', '', 'password');
+        if (newKey === null) return;  // cancelled
+
+        var body = {};
+        if (newKey.trim()) {
+            if (newKey.trim().length < 16) {
+                await modalAlert('Invalid Password', 'Password must be at least 16 characters long.');
+                return;
+            }
+            body.new_key = newKey.trim();
+        }
+
+        try {
+            var resp = await fetch('/api/me/rotate-key', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                credentials: 'same-origin',
+                body: JSON.stringify(body),
+            });
+            if (!resp.ok) {
+                var data = await resp.json();
+                await modalAlert('Error', data.detail || 'Failed to change password');
+                return;
+            }
+            var data = await resp.json();
+            await modalAlert('Password Changed', 'Your new password (save it now!):\n\n' + data.new_api_key + '\n\nYou will be redirected to login.');
+            window.location.href = '/login';
+        } catch (err) {
+            await modalAlert('Error', 'Failed: ' + err.message);
+        }
+    }
     </script>
+
+    {% include '_modal.html' %}
 </body>
 </html>

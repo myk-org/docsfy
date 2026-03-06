@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 import shutil
 from pathlib import Path
 from typing import Any
@@ -28,6 +29,65 @@ def _get_jinja_env() -> Environment:
     return _jinja_env
 
 
+def _sanitize_html(html: str) -> str:
+    """Remove dangerous HTML elements from AI-generated content."""
+    # Remove script tags and content
+    html = re.sub(
+        r"<script[^>]*>.*?</script>", "", html, flags=re.DOTALL | re.IGNORECASE
+    )
+    # Remove iframe, object, embed, form tags
+    for tag in ["iframe", "object", "embed", "form"]:
+        html = re.sub(
+            rf"<{tag}[^>]*>.*?</{tag}>", "", html, flags=re.DOTALL | re.IGNORECASE
+        )
+        html = re.sub(rf"<{tag}[^>]*/>", "", html, flags=re.IGNORECASE)
+    # Remove event handler attributes
+    html = re.sub(r'\s+on\w+\s*=\s*["\'][^"\']*["\']', "", html, flags=re.IGNORECASE)
+    html = re.sub(r"\s+on\w+\s*=\s*\S+", "", html, flags=re.IGNORECASE)
+
+    # Sanitize href/src: allowlist-based URL validation.
+    # Safe schemes that pass through unchanged: http://, https://, #, /, mailto:
+    # This preserves valid markdown-generated HTML like <a href="https://...">,
+    # anchor links (#section), relative paths (/page), and mailto: links.
+    # All other schemes (javascript:, data:, vbscript:, etc.) are blocked
+    # by replacing the URL with "#".
+    def _sanitize_url_attr(match: re.Match) -> str:  # type: ignore[type-arg]
+        attr = match.group(1)  # href or src
+        quote = match.group(2)  # " or '
+        url = match.group(3)  # the URL value
+        # Strip whitespace and decode common HTML entities
+        clean_url = url.strip()
+        # Check for safe schemes
+        if clean_url.startswith(("http://", "https://", "#", "/", "mailto:")):
+            return match.group(0)  # Keep as-is
+        # Block everything else (javascript:, data:, vbscript:, etc.)
+        return f"{attr}={quote}#{quote}"
+
+    html = re.sub(
+        r"(href|src)\s*=\s*([\"'])(.*?)\2",
+        _sanitize_url_attr,
+        html,
+        flags=re.IGNORECASE | re.DOTALL,
+    )
+
+    # Also handle unquoted URLs
+    def _sanitize_unquoted_url(match: re.Match) -> str:  # type: ignore[type-arg]
+        attr = match.group(1)
+        url = match.group(2).strip()
+        if url.startswith(("http://", "https://", "#", "/", "mailto:")):
+            return match.group(0)
+        return f'{attr}="#"'
+
+    html = re.sub(
+        r"(href|src)\s*=\s*([^\s\"'>=]+)",
+        _sanitize_unquoted_url,
+        html,
+        flags=re.IGNORECASE,
+    )
+
+    return html
+
+
 def _md_to_html(md_text: str) -> tuple[str, str]:
     """Convert markdown to HTML. Returns (content_html, toc_html)."""
     md = markdown.Markdown(
@@ -37,7 +97,7 @@ def _md_to_html(md_text: str) -> tuple[str, str]:
             "toc": {"toc_depth": "2-3"},
         },
     )
-    content_html = md.convert(md_text)
+    content_html = _sanitize_html(md.convert(md_text))
     toc_html = getattr(md, "toc", "")
     return content_html, toc_html
 

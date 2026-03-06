@@ -47,11 +47,8 @@ class GenerateRequest(BaseModel):
         if v is None:
             return v
         path = Path(v)
-        if not path.exists():
-            msg = f"Repository path does not exist: '{v}'"
-            raise ValueError(msg)
-        if not (path / ".git").exists():
-            msg = f"Not a git repository (no .git directory): '{v}'"
+        if not path.is_absolute():
+            msg = "repo_path must be an absolute path"
             raise ValueError(msg)
         return v
 
@@ -82,13 +79,3 @@ class DocPlan(BaseModel):
     project_name: str
     tagline: str = ""
     navigation: list[NavGroup] = Field(default_factory=list)
-
-
-class ProjectStatus(BaseModel):
-    name: str
-    repo_url: str
-    status: Literal["generating", "ready", "error"] = "generating"
-    last_commit_sha: str | None = None
-    last_generated: str | None = None
-    error_message: str | None = None
-    page_count: int = 0

@@ -80,3 +80,44 @@ def test_get_local_repo_info_failure(tmp_path: Path) -> None:
         )
         with pytest.raises(RuntimeError, match="Failed to get commit SHA"):
             get_local_repo_info(tmp_path)
+
+
+def test_get_changed_files_success(tmp_path: Path) -> None:
+    from docsfy.repository import get_changed_files
+
+    with patch("docsfy.repository.subprocess.run") as mock_run:
+        mock_run.return_value = MagicMock(
+            returncode=0,
+            stdout="src/main.py\nsrc/utils.py\nREADME.md\n",
+            stderr="",
+        )
+        files = get_changed_files(tmp_path, "abc123", "def456")
+
+    assert files == ["src/main.py", "src/utils.py", "README.md"]
+    call_args = mock_run.call_args
+    assert "diff" in call_args.args[0]
+    assert "--name-only" in call_args.args[0]
+    assert "abc123" in call_args.args[0]
+    assert "def456" in call_args.args[0]
+
+
+def test_get_changed_files_failure(tmp_path: Path) -> None:
+    from docsfy.repository import get_changed_files
+
+    with patch("docsfy.repository.subprocess.run") as mock_run:
+        mock_run.return_value = MagicMock(
+            returncode=1, stdout="", stderr="fatal: bad object"
+        )
+        files = get_changed_files(tmp_path, "abc123", "def456")
+
+    assert files is None
+
+
+def test_get_changed_files_empty_output(tmp_path: Path) -> None:
+    from docsfy.repository import get_changed_files
+
+    with patch("docsfy.repository.subprocess.run") as mock_run:
+        mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
+        files = get_changed_files(tmp_path, "abc123", "def456")
+
+    assert files == []

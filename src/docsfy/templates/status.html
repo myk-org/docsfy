@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -170,6 +170,22 @@
 
     .dashboard-logo span {
         color: var(--accent);
+    }
+
+    .docs-badge {
+        font-size: 0.7rem;
+        font-weight: 600;
+        padding: 2px 8px;
+        background: var(--accent);
+        color: white;
+        border-radius: 4px;
+        text-decoration: none;
+        margin-left: 8px;
+        transition: opacity 0.15s ease;
+    }
+
+    .docs-badge:hover {
+        opacity: 0.8;
     }
 
     .brand-accent {
@@ -735,6 +751,8 @@
             padding: 0.75rem 1rem;
         }
     }
+
+    /* Modal CSS is in _modal.html (shared include) */
     </style>
 </head>
 <body>
@@ -742,6 +760,7 @@
     <header class="dashboard-header">
         <div class="header-left">
             <a href="/" class="dashboard-logo">docs<span>fy</span></a>
+            <a href="https://myk-org.github.io/docsfy/" target="_blank" rel="noopener noreferrer" class="docs-badge" title="Documentation">Docs</a>
             <span class="header-separator">/</span>
             <span class="header-project-name">{{ project.name }} / {{ project.ai_provider }}/{{ project.ai_model }}</span>
         </div>
@@ -917,6 +936,8 @@
         <p>Powered by <a href="https://github.com/myk-org/docsfy" target="_blank" rel="noopener noreferrer">docs<span class="brand-accent">fy</span></a></p>
     </footer>
 
+    {% include '_theme.html' %}
+
     <script>
     /* =========================================================================
        docsfy Status Page - Inline JavaScript
@@ -929,26 +950,6 @@
         var PROJECT_PROVIDER = {{ project.ai_provider | tojson }};
         var PROJECT_MODEL = {{ project.ai_model | tojson }};
         var POLL_INTERVAL_MS = 3000;
-
-        /* ----- Theme Toggle ----- */
-        function getTheme() {
-            try { return localStorage.getItem('theme'); } catch(e) { return null; }
-        }
-        function setTheme(theme) {
-            try { localStorage.setItem('theme', theme); } catch(e) {}
-        }
-
-        var toggle = document.getElementById('theme-toggle');
-        var stored = getTheme();
-        if (stored) document.documentElement.setAttribute('data-theme', stored);
-        else if (window.matchMedia('(prefers-color-scheme: dark)').matches)
-            document.documentElement.setAttribute('data-theme', 'dark');
-        if (toggle) toggle.addEventListener('click', function() {
-            var current = document.documentElement.getAttribute('data-theme');
-            var next = current === 'dark' ? 'light' : 'dark';
-            document.documentElement.setAttribute('data-theme', next);
-            setTheme(next);
-        });
 
         /* ----- Model Suggestions (combobox) ----- */
         var knownModels = {{ known_models | tojson }};
@@ -1258,6 +1259,10 @@
 
                 actionLinks.appendChild(retryDiv);
 
+                // Prepopulate with current variant's provider/model
+                providerSelect.value = PROJECT_PROVIDER;
+                modelInput.value = PROJECT_MODEL;
+
                 // Wire up provider change handler
                 providerSelect.addEventListener('change', function() {
                     var provider = this.value;
@@ -1268,6 +1273,14 @@
                         option.value = model;
                         datalist.appendChild(option);
                     });
+                });
+
+                // Populate initial datalist for prepopulated provider
+                var initialModels = knownModels[PROJECT_PROVIDER] || [];
+                initialModels.forEach(function(model) {
+                    var option = document.createElement('option');
+                    option.value = model;
+                    datalist.appendChild(option);
                 });
             }
 
@@ -1293,20 +1306,32 @@
             }
         }
 
+        /* ----- Auth redirect detection ----- */
+        function isAuthRedirect(res) {
+            return res.redirected || res.status === 302 || res.type === 'opaqueredirect' || res.status === 401 || res.status === 403;
+        }
+        function handleAuthRedirect() {
+            errorText.textContent = 'Session expired. Please login again.';
+            errorMessage.style.display = '';
+            setTimeout(function() { window.location.href = '/login'; }, 2000);
+        }
+
         /* ----- Abort Handler ----- */
-        function handleAbort() {
-            if (!confirm('Abort generation for ' + PROJECT_NAME + '?')) return;
+        async function handleAbort() {
+            var confirmed = await modalConfirm('Abort Generation', 'Abort generation for ' + PROJECT_NAME + '?', true);
+            if (!confirmed) return;
             var abortBtn = document.getElementById('btn-abort');
             if (abortBtn) {
                 abortBtn.disabled = true;
                 abortBtn.textContent = 'Aborting...';
             }
-            fetch('/api/projects/' + encodeURIComponent(PROJECT_NAME) + '/' + encodeURIComponent(PROJECT_PROVIDER) + '/' + encodeURIComponent(PROJECT_MODEL) + '/abort', { method: 'POST' })
+            fetch('/api/projects/' + encodeURIComponent(PROJECT_NAME) + '/' + encodeURIComponent(PROJECT_PROVIDER) + '/' + encodeURIComponent(PROJECT_MODEL) + '/abort', { method: 'POST', credentials: 'same-origin', redirect: 'manual' })
                 .then(function(r) {
+                    if (isAuthRedirect(r)) { handleAuthRedirect(); return null; }
                     if (!r.ok) return r.json().then(function(data) { throw data; });
                     return r.json();
                 })
-                .then(function() { location.reload(); })
+                .then(function(data) { if (data !== null) location.reload(); })
                 .catch(function(err) {
                     var msg = (err && err.detail) || (err && err.message) || 'Abort request failed';
                     errorText.textContent = msg;
@@ -1347,13 +1372,24 @@
             fetch('/api/generate', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
+                credentials: 'same-origin',
+                redirect: 'manual',
                 body: JSON.stringify(payload)
             })
             .then(function(res) {
+                if (isAuthRedirect(res)) { handleAuthRedirect(); return null; }
                 if (!res.ok) return res.json().then(function(data) { throw data; });
                 return res.json();
             })
-            .then(function() {
+            .then(function(data) {
+                if (!data) return;
+                /* Fix 9: If provider/model changed, redirect to the new status page */
+                var newProvider = providerSelect ? providerSelect.value : PROJECT_PROVIDER;
+                var newModel = modelInput ? modelInput.value : PROJECT_MODEL;
+                if (newProvider !== PROJECT_PROVIDER || newModel !== PROJECT_MODEL) {
+                    window.location.href = '/status/' + encodeURIComponent(PROJECT_NAME) + '/' + encodeURIComponent(newProvider) + '/' + encodeURIComponent(newModel);
+                    return;
+                }
                 /* Reset state and start polling */
                 currentStatus = 'generating';
                 currentStage = 'cloning';
@@ -1400,18 +1436,24 @@
             }
         }
 
+        var _polling = false;
         function pollProject() {
-            fetch('/api/projects/' + encodeURIComponent(PROJECT_NAME) + '/' + encodeURIComponent(PROJECT_PROVIDER) + '/' + encodeURIComponent(PROJECT_MODEL))
+            if (_polling) return;
+            _polling = true;
+            fetch('/api/projects/' + encodeURIComponent(PROJECT_NAME) + '/' + encodeURIComponent(PROJECT_PROVIDER) + '/' + encodeURIComponent(PROJECT_MODEL), { credentials: 'same-origin', redirect: 'manual' })
                 .then(function(res) {
+                    if (isAuthRedirect(res)) { handleAuthRedirect(); stopPolling(); return null; }
                     if (!res.ok) throw new Error('Not found');
                     return res.json();
                 })
                 .then(function(proj) {
+                    if (!proj) return;
                     updateFromProject(proj);
                 })
                 .catch(function() {
                     /* Silently fail; retry on next interval */
-                });
+                })
+                .finally(function() { _polling = false; });
         }
 
         function updateFromProject(proj) {
@@ -1576,5 +1618,7 @@
 
     })();
     </script>
+
+    {% include '_modal.html' %}
 </body>
 </html>
