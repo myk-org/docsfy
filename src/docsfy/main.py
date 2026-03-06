@@ -634,7 +634,11 @@ async def abort_generation(request: Request, name: str) -> dict[str, str]:
     if project:
         await _check_ownership(request, name, project)
 
-    task.cancel()
+    if not task.cancel():
+        raise HTTPException(
+            status_code=409,
+            detail=f"Generation for '{name}' already finished. Refresh status and retry only if needed.",
+        )
     try:
         await asyncio.wait_for(task, timeout=5.0)
     except asyncio.CancelledError:
@@ -1240,18 +1244,27 @@ async def delete_project_endpoint(request: Request, name: str) -> dict[str, str]
     return {"deleted": name}
 
 
-async def _resolve_latest_shared_variant(
+async def _resolve_latest_accessible_variant(
     username: str, name: str
 ) -> dict[str, Any] | None:
-    """Find the newest shared variant across all accessible owners.
+    """Find the newest variant across owned and shared projects.
 
-    Collects all matching variants from all owners that have granted
-    access to *username*, then returns the one with the newest
-    ``last_generated`` timestamp.  If multiple variants share the same
-    newest timestamp (ambiguous), raises HTTP 409.
+    Collects the caller's own latest variant **and** all shared variants
+    from owners that have granted access to *username*, then returns the
+    one with the newest ``last_generated`` timestamp.  If multiple
+    variants tie on the newest timestamp (ambiguous), raises HTTP 409.
+
+    Returns ``None`` when no variants are found at all.
     """
-    accessible = await get_user_accessible_projects(username)
     candidates: list[dict[str, Any]] = []
+
+    # 1. Caller's owned variant
+    owned = await get_latest_variant(name, owner=username)
+    if owned:
+        candidates.append(owned)
+
+    # 2. Shared variants from other owners
+    accessible = await get_user_accessible_projects(username)
     for proj_name, proj_owner in accessible:
         if proj_name == name and proj_owner:
             variant = await get_latest_variant(name, owner=proj_owner)
@@ -1285,10 +1298,7 @@ async def download_project(request: Request, name: str) -> StreamingResponse:
     if request.state.is_admin:
         latest = await get_latest_variant(name)
     else:
-        latest = await get_latest_variant(name, owner=request.state.username)
-        if not latest:
-            # Check shared access from other owners -- pick newest variant
-            latest = await _resolve_latest_shared_variant(request.state.username, name)
+        latest = await _resolve_latest_accessible_variant(request.state.username, name)
     if not latest:
         raise HTTPException(status_code=404, detail=f"No ready variant for '{name}'")
     await _check_ownership(request, name, latest)
@@ -1554,12 +1564,9 @@ async def serve_docs(
     if request.state.is_admin:
         latest = await get_latest_variant(project)
     else:
-        latest = await get_latest_variant(project, owner=request.state.username)
-        if not latest:
-            # Check shared access from other owners -- pick newest variant
-            latest = await _resolve_latest_shared_variant(
-                request.state.username, project
-            )
+        latest = await _resolve_latest_accessible_variant(
+            request.state.username, project
+        )
     if not latest:
         raise HTTPException(status_code=404, detail="No docs available")
     await _check_ownership(request, project, latest)
