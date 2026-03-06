@@ -866,7 +866,10 @@ async def _generate_from_path(
     cache_dir = get_project_cache_dir(project_name, ai_provider, ai_model, owner)
     if old_sha and old_sha != commit_sha and not force and existing:
         changed_files = get_changed_files(repo_dir, old_sha, commit_sha)
-        if changed_files:
+        if changed_files is None:
+            # Error getting diff — fall back to full regeneration
+            use_cache = False
+        elif changed_files:
             existing_plan_json = existing.get("plan_json")
             if existing_plan_json:
                 try:

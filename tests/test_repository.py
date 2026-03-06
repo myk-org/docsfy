@@ -110,7 +110,7 @@ def test_get_changed_files_failure(tmp_path: Path) -> None:
         )
         files = get_changed_files(tmp_path, "abc123", "def456")
 
-    assert files == []
+    assert files is None
 
 
 def test_get_changed_files_empty_output(tmp_path: Path) -> None:

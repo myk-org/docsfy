@@ -346,7 +346,7 @@ async def get_project(
     name: str,
     ai_provider: str = "",
     ai_model: str = "",
-    owner: str = "",
+    owner: str | None = None,
 ) -> dict[str, str | int | None] | None:
     async with aiosqlite.connect(DB_PATH) as db:
         db.row_factory = aiosqlite.Row
@@ -354,7 +354,7 @@ async def get_project(
             "SELECT * FROM projects WHERE name = ? AND ai_provider = ? AND ai_model = ?"
         )
         params: list[str] = [name, ai_provider, ai_model]
-        if owner:
+        if owner is not None:
             query += " AND owner = ?"
             params.append(owner)
         query += " ORDER BY CASE WHEN owner = '' THEN 1 ELSE 0 END"

@@ -2229,6 +2229,47 @@ agent-browser eval "fetch('/api/projects/for-testing-only/gemini/gemini-2.5-flas
 
 ---
 
+## Test 12: Logout
+
+### 12.1 Logout redirects to login
+
+**Precondition:** Logged in as any user.
+
+**Commands:**
+```
+agent-browser click ".top-bar-logout"
+agent-browser wait-for-navigation
+agent-browser screenshot
+```
+
+**Check:** Logout redirects to the login page.
+
+**Expected result:**
+- The URL is `http://localhost:8800/login`
+- The login form is visible
+- The "Enter your credentials to continue" subtitle is shown
+
+---
+
+### 12.2 After logout, /dashboard redirects to login
+
+**Commands:**
+```
+agent-browser navigate http://localhost:8800/
+agent-browser wait-for-navigation
+agent-browser javascript "window.location.href"
+agent-browser screenshot
+```
+
+**Check:** Accessing the dashboard without authentication redirects to login.
+
+**Expected result:**
+- The URL has been redirected to `http://localhost:8800/login`
+- The login form is displayed
+- No dashboard content is visible
+
+---
+
 ## Test 13: Direct URL Authorization
 
 Test that non-owners cannot access resources by URL even if they know the path.
@@ -2379,47 +2420,6 @@ agent-browser screenshot
 - The page returns 200
 - Documentation content is visible
 - A sidebar with navigation is present
-
----
-
-## Test 12: Logout
-
-### 12.1 Logout redirects to login
-
-**Precondition:** Logged in as any user.
-
-**Commands:**
-```
-agent-browser click ".top-bar-logout"
-agent-browser wait-for-navigation
-agent-browser screenshot
-```
-
-**Check:** Logout redirects to the login page.
-
-**Expected result:**
-- The URL is `http://localhost:8800/login`
-- The login form is visible
-- The "Enter your credentials to continue" subtitle is shown
-
----
-
-### 12.2 After logout, /dashboard redirects to login
-
-**Commands:**
-```
-agent-browser navigate http://localhost:8800/
-agent-browser wait-for-navigation
-agent-browser javascript "window.location.href"
-agent-browser screenshot
-```
-
-**Check:** Accessing the dashboard without authentication redirects to login.
-
-**Expected result:**
-- The URL has been redirected to `http://localhost:8800/login`
-- The login form is displayed
-- No dashboard content is visible
 
 ---
 

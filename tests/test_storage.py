@@ -756,13 +756,24 @@ async def test_get_project_dir_default_owner(db_path: Path) -> None:
 async def test_init_db_with_data_dir(tmp_path: Path) -> None:
     import docsfy.storage as storage
 
+    # Save original globals to restore after test
+    orig_db_path = storage.DB_PATH
+    orig_data_dir = storage.DATA_DIR
+    orig_projects_dir = storage.PROJECTS_DIR
+
     custom_dir = tmp_path / "custom_data"
     custom_dir.mkdir()
 
-    with patch.dict(os.environ, {"ADMIN_KEY": TEST_ADMIN_KEY}):
-        await storage.init_db(data_dir=str(custom_dir))
+    try:
+        with patch.dict(os.environ, {"ADMIN_KEY": TEST_ADMIN_KEY}):
+            await storage.init_db(data_dir=str(custom_dir))
 
-    assert storage.DB_PATH == custom_dir / "docsfy.db"
-    assert storage.DATA_DIR == custom_dir
-    assert storage.PROJECTS_DIR == custom_dir / "projects"
-    assert storage.DB_PATH.exists()
+        assert storage.DB_PATH == custom_dir / "docsfy.db"
+        assert storage.DATA_DIR == custom_dir
+        assert storage.PROJECTS_DIR == custom_dir / "projects"
+        assert storage.DB_PATH.exists()
+    finally:
+        # Restore original globals so other tests are not affected
+        storage.DB_PATH = orig_db_path
+        storage.DATA_DIR = orig_data_dir
+        storage.PROJECTS_DIR = orig_projects_dir
