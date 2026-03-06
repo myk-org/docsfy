@@ -230,7 +230,7 @@ async def abort_generation(name: str) -> dict[str, str]:
             detail=f"Abort still in progress for '{name}'. Please retry shortly.",
         ) from exc
     except Exception as exc:
-        logger.exception(f"[{name}] Abort failed: {exc}")
+        logger.exception(f"[{name}] Abort failed")
         raise HTTPException(
             status_code=500, detail=f"Failed to abort '{name}'"
         ) from exc
@@ -273,7 +273,7 @@ async def abort_variant(name: str, provider: str, model: str) -> dict[str, str]:
             detail=f"Abort still in progress for '{gen_key}'. Please retry shortly.",
         ) from exc
     except Exception as exc:
-        logger.exception(f"[{gen_key}] Abort failed: {exc}")
+        logger.exception(f"[{gen_key}] Abort failed")
         raise HTTPException(
             status_code=500, detail=f"Failed to abort '{gen_key}'"
         ) from exc
