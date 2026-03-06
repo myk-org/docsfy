@@ -1,8 +1,12 @@
 from __future__ import annotations
 
+import os
 from pathlib import Path
+from unittest.mock import patch
 
 import pytest
+
+TEST_ADMIN_KEY = "test-admin-secret-key"
 
 
 @pytest.fixture
@@ -13,8 +17,9 @@ async def db_path(tmp_path: Path) -> Path:
     storage.DB_PATH = db
     storage.DATA_DIR = tmp_path
     storage.PROJECTS_DIR = tmp_path / "projects"
-    await storage.init_db()
-    return db
+    with patch.dict(os.environ, {"ADMIN_KEY": TEST_ADMIN_KEY}):
+        await storage.init_db()
+        yield db
 
 
 async def test_init_db_creates_table(db_path: Path) -> None:

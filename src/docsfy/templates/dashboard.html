@@ -978,52 +978,6 @@
         color: var(--accent-hover);
     }
 
-    /* --------------------------------------------------------------------------
-       Confirm Dialog
-       -------------------------------------------------------------------------- */
-    .confirm-overlay {
-        position: fixed;
-        inset: 0;
-        background: rgba(0, 0, 0, 0.5);
-        z-index: 300;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        animation: fadeIn 0.15s ease;
-    }
-
-    .confirm-overlay.hidden {
-        display: none;
-    }
-
-    .confirm-dialog {
-        background: var(--bg-card);
-        border: 1px solid var(--border-primary);
-        border-radius: 12px;
-        padding: 1.5rem;
-        max-width: 400px;
-        width: calc(100% - 2rem);
-        box-shadow: var(--shadow-lg);
-    }
-
-    .confirm-dialog h3 {
-        font-size: 1rem;
-        font-weight: 600;
-        margin-bottom: 0.5rem;
-    }
-
-    .confirm-dialog p {
-        font-size: 0.875rem;
-        color: var(--text-secondary);
-        margin-bottom: 1.25rem;
-    }
-
-    .confirm-dialog-actions {
-        display: flex;
-        gap: 0.5rem;
-        justify-content: flex-end;
-    }
-
     @keyframes fadeIn {
         from { opacity: 0; }
         to { opacity: 1; }
@@ -1362,106 +1316,7 @@
         }
     }
 
-    .modal-overlay {
-        position: fixed;
-        top: 0; left: 0; right: 0; bottom: 0;
-        background: rgba(0, 0, 0, 0.6);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        z-index: 10000;
-    }
-
-    .modal-box {
-        background: var(--bg-card, #1e1e2e);
-        border: 1px solid var(--border-primary, #2e3248);
-        border-radius: 12px;
-        padding: 1.5rem;
-        max-width: 480px;
-        width: 90%;
-        box-shadow: 0 16px 48px rgba(0, 0, 0, 0.4);
-    }
-
-    .modal-title {
-        font-size: 1.1rem;
-        font-weight: 600;
-        color: var(--text-primary, #e5e7eb);
-        margin-bottom: 0.75rem;
-    }
-
-    .modal-body {
-        font-size: 0.9rem;
-        color: var(--text-secondary, #9ca3af);
-        margin-bottom: 1rem;
-        line-height: 1.5;
-    }
-
-    .modal-input {
-        width: 100%;
-        padding: 10px 12px;
-        background: var(--bg-primary, #0f1117);
-        border: 1px solid var(--border-primary, #2e3248);
-        border-radius: 6px;
-        color: var(--text-primary, #e5e7eb);
-        font-size: 0.9rem;
-        outline: none;
-        box-sizing: border-box;
-    }
-
-    .modal-input:focus {
-        border-color: var(--accent, #818cf8);
-    }
-
-    .modal-input-hint {
-        font-size: 0.8rem;
-        color: var(--text-secondary);
-        margin-top: 0.5rem;
-    }
-
-    .modal-actions {
-        display: flex;
-        justify-content: flex-end;
-        gap: 0.75rem;
-        margin-top: 1.25rem;
-    }
-
-    .modal-btn {
-        padding: 8px 20px;
-        border-radius: 6px;
-        font-size: 0.85rem;
-        font-weight: 500;
-        cursor: pointer;
-        border: 1px solid transparent;
-        transition: all 0.15s ease;
-    }
-
-    .modal-btn-cancel {
-        background: transparent;
-        color: var(--text-secondary);
-        border-color: var(--border-primary);
-    }
-
-    .modal-btn-cancel:hover {
-        background: var(--bg-secondary);
-    }
-
-    .modal-btn-primary {
-        background: var(--accent);
-        color: white;
-    }
-
-    .modal-btn-primary:hover {
-        opacity: 0.9;
-    }
-
-    .modal-btn-danger {
-        background: #ef4444;
-        color: white;
-    }
-
-    .modal-btn-danger:hover {
-        opacity: 0.9;
-    }
+    /* Modal CSS is in _modal.html (shared include) */
     </style>
 </head>
 <body>
@@ -1473,9 +1328,7 @@
             <a href="/admin" class="top-bar-admin-link">Admin</a>
             {% endif %}
             <span class="top-bar-user">{{ username }}</span>
-            {% if role != 'viewer' %}
             <button class="top-bar-btn" onclick="rotateOwnKey()">Change Password</button>
-            {% endif %}
             <a href="/logout" class="top-bar-logout">Logout</a>
             <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
                 <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
@@ -1678,17 +1531,6 @@
         <p>Powered by <a href="https://github.com/myk-org/docsfy" target="_blank" rel="noopener noreferrer">docs<span class="brand-accent">fy</span></a></p>
     </footer>
 
-    <!-- Confirm Dialog (hidden by default) -->
-    <div class="confirm-overlay hidden" id="confirm-overlay">
-        <div class="confirm-dialog">
-            <h3>Delete Project</h3>
-            <p id="confirm-message"></p>
-            <div class="confirm-dialog-actions">
-                <button class="btn btn-secondary btn-sm" id="confirm-cancel">Cancel</button>
-                <button class="btn btn-danger btn-sm" id="confirm-delete">Delete</button>
-            </div>
-        </div>
-    </div>
 
     <script>
     /* =========================================================================
@@ -2359,28 +2201,10 @@
                 });
         });
 
-        /* ----- Delete Variant with Confirmation ----- */
-        var confirmOverlay = document.getElementById('confirm-overlay');
-        var confirmMessage = document.getElementById('confirm-message');
-        var confirmCancelBtn = document.getElementById('confirm-cancel');
-        var confirmDeleteBtn = document.getElementById('confirm-delete');
-        var pendingDeleteVariant = null;
-
-        function openConfirm(variantPath) {
-            pendingDeleteVariant = variantPath;
-            confirmMessage.textContent = 'Are you sure you want to delete "' + variantPath + '"? This will remove the generated documentation for this variant and cannot be undone.';
-            confirmOverlay.classList.remove('hidden');
-        }
-
-        function closeConfirm() {
-            confirmOverlay.classList.add('hidden');
-            pendingDeleteVariant = null;
-        }
-
-        function executeDelete() {
-            var variantPath = pendingDeleteVariant;
-            if (!variantPath) return;
-            closeConfirm();
+        /* ----- Delete Variant with modalConfirm ----- */
+        async function deleteVariant(variantPath) {
+            var confirmed = await modalConfirm('Delete Variant', 'Are you sure you want to delete "' + variantPath + '"? This will remove the generated documentation for this variant and cannot be undone.', true);
+            if (!confirmed) return;
 
             // variantPath is "name/provider/model"
             var parts = variantPath.split('/');
@@ -2503,15 +2327,7 @@
         document.addEventListener('click', function(e) {
             var deleteBtn = e.target.closest('[data-delete-variant]');
             if (!deleteBtn) return;
-            openConfirm(deleteBtn.getAttribute('data-delete-variant'));
-        });
-
-        confirmCancelBtn.addEventListener('click', closeConfirm);
-        confirmDeleteBtn.addEventListener('click', executeDelete);
-
-        /* Close confirm on overlay background click */
-        confirmOverlay.addEventListener('click', function(e) {
-            if (e.target === confirmOverlay) closeConfirm();
+            deleteVariant(deleteBtn.getAttribute('data-delete-variant'));
         });
 
         /* ----- Pagination State ----- */
@@ -2600,11 +2416,6 @@
         /* ----- Initial Pagination ----- */
         applyPagination();
 
-        /* ----- Close confirm on Escape ----- */
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') closeConfirm();
-        });
-
         /* ----- Auto-start polling ----- */
         // Always poll for status changes (10s interval)
         startStatusPolling();
@@ -2629,7 +2440,7 @@
     })();
 
     async function rotateOwnKey() {
-        var newKey = await modalPrompt('Change Password', 'Enter new password, or leave empty to auto-generate.', 'Minimum 16 characters', 'New password');
+        var newKey = await modalPrompt('Change Password', 'Enter new password (min 16 characters), or leave empty to auto-generate:', 'Minimum 16 characters', '', 'password');
         if (newKey === null) return;  // cancelled
 
         var body = {};
@@ -2662,121 +2473,6 @@
     }
     </script>
 
-    <!-- Custom Modal -->
-    <div class="modal-overlay" id="custom-modal" style="display:none">
-        <div class="modal-box">
-            <div class="modal-title" id="modal-title"></div>
-            <div class="modal-body" id="modal-body"></div>
-            <div class="modal-input-wrap" id="modal-input-wrap" style="display:none">
-                <input type="text" class="modal-input" id="modal-input" autocomplete="off">
-                <div class="modal-input-hint" id="modal-input-hint"></div>
-            </div>
-            <div class="modal-actions">
-                <button class="modal-btn modal-btn-cancel" id="modal-cancel" style="display:none">Cancel</button>
-                <button class="modal-btn modal-btn-primary" id="modal-ok">OK</button>
-            </div>
-        </div>
-    </div>
-
-    <script>
-    function showModal(options) {
-        var overlay = document.getElementById('custom-modal');
-        var titleEl = document.getElementById('modal-title');
-        var bodyEl = document.getElementById('modal-body');
-        var inputWrap = document.getElementById('modal-input-wrap');
-        var inputEl = document.getElementById('modal-input');
-        var hintEl = document.getElementById('modal-input-hint');
-        var okBtn = document.getElementById('modal-ok');
-        var cancelBtn = document.getElementById('modal-cancel');
-
-        titleEl.textContent = options.title || '';
-        bodyEl.textContent = options.body || '';
-
-        if (options.input) {
-            inputWrap.style.display = 'block';
-            inputEl.value = '';
-            inputEl.type = options.inputType || 'text';
-            inputEl.placeholder = options.inputPlaceholder || '';
-            hintEl.textContent = options.inputHint || '';
-        } else {
-            inputWrap.style.display = 'none';
-        }
-
-        okBtn.textContent = options.confirmText || 'OK';
-        okBtn.className = 'modal-btn ' + (options.danger ? 'modal-btn-danger' : 'modal-btn-primary');
-
-        if (options.cancelText !== undefined || options.onCancel || options.input) {
-            cancelBtn.style.display = '';
-            cancelBtn.textContent = options.cancelText || 'Cancel';
-        } else {
-            cancelBtn.style.display = 'none';
-        }
-
-        overlay.style.display = 'flex';
-        if (options.input) inputEl.focus();
-
-        function cleanup() {
-            overlay.style.display = 'none';
-            okBtn.onclick = null;
-            cancelBtn.onclick = null;
-        }
-
-        okBtn.onclick = function() {
-            var value = options.input ? inputEl.value : true;
-            cleanup();
-            if (options.onConfirm) options.onConfirm(value);
-        };
-
-        cancelBtn.onclick = function() {
-            cleanup();
-            if (options.onCancel) options.onCancel();
-        };
-
-        function escHandler(e) {
-            if (e.key === 'Escape') {
-                cleanup();
-                if (options.onCancel) options.onCancel();
-                document.removeEventListener('keydown', escHandler);
-            }
-        }
-        document.addEventListener('keydown', escHandler);
-
-        if (options.input) {
-            inputEl.onkeydown = function(e) {
-                if (e.key === 'Enter') okBtn.click();
-            };
-        }
-    }
-
-    function modalAlert(title, body) {
-        return new Promise(function(resolve) {
-            showModal({ title: title, body: body, onConfirm: resolve });
-        });
-    }
-
-    function modalConfirm(title, body, danger) {
-        return new Promise(function(resolve) {
-            showModal({
-                title: title, body: body, danger: danger,
-                confirmText: danger ? 'Delete' : 'Confirm',
-                cancelText: 'Cancel',
-                onConfirm: function() { resolve(true); },
-                onCancel: function() { resolve(false); },
-            });
-        });
-    }
-
-    function modalPrompt(title, body, hint, placeholder) {
-        return new Promise(function(resolve) {
-            showModal({
-                title: title, body: body, input: true,
-                inputHint: hint, inputPlaceholder: placeholder,
-                confirmText: 'OK', cancelText: 'Cancel',
-                onConfirm: function(val) { resolve(val); },
-                onCancel: function() { resolve(null); },
-            });
-        });
-    }
-    </script>
+    {% include '_modal.html' %}
 </body>
 </html>

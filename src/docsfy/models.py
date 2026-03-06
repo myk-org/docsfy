@@ -82,13 +82,3 @@ class DocPlan(BaseModel):
     project_name: str
     tagline: str = ""
     navigation: list[NavGroup] = Field(default_factory=list)
-
-
-class ProjectStatus(BaseModel):
-    name: str
-    repo_url: str
-    status: Literal["generating", "ready", "error"] = "generating"
-    last_commit_sha: str | None = None
-    last_generated: str | None = None
-    error_message: str | None = None
-    page_count: int = 0

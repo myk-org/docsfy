@@ -18,6 +18,9 @@ VALID_STATUSES = frozenset({"generating", "ready", "error", "aborted"})
 
 MIN_KEY_LENGTH = 16
 
+SESSION_TTL_SECONDS = 28800  # 8 hours
+SESSION_TTL_HOURS = SESSION_TTL_SECONDS // 3600
+
 
 def validate_api_key(key: str) -> None:
     """Validate API key meets minimum requirements."""
@@ -436,8 +439,11 @@ def hash_api_key(key: str, hmac_secret: str = "") -> str:
     Uses ADMIN_KEY as the HMAC secret so that even if the source is read,
     keys cannot be cracked without the environment secret.
     """
-    secret = (hmac_secret or os.getenv("ADMIN_KEY", "docsfy-fallback")).encode()
-    return hmac.new(secret, key.encode(), hashlib.sha256).hexdigest()
+    secret = hmac_secret or os.getenv("ADMIN_KEY", "")
+    if not secret:
+        msg = "ADMIN_KEY environment variable is required for key hashing"
+        raise RuntimeError(msg)
+    return hmac.new(secret.encode(), key.encode(), hashlib.sha256).hexdigest()
 
 
 def generate_api_key() -> str:
@@ -453,8 +459,8 @@ async def create_user(username: str, role: str = "user") -> tuple[str, str]:
     if username.lower() == "admin":
         msg = "Username 'admin' is reserved"
         raise ValueError(msg)
-    if not re.match(r"^[a-zA-Z0-9][a-zA-Z0-9._-]{0,49}$", username):
-        msg = f"Invalid username: '{username}'. Must be 1-50 alphanumeric characters, dots, hyphens, underscores."
+    if not re.match(r"^[a-zA-Z0-9][a-zA-Z0-9._-]{1,49}$", username):
+        msg = f"Invalid username: '{username}'. Must be 2-50 alphanumeric characters, dots, hyphens, underscores."
         raise ValueError(msg)
     if role not in VALID_ROLES:
         msg = f"Invalid role: '{role}'. Must be admin, user, or viewer."
@@ -516,7 +522,7 @@ def _hash_session_token(token: str) -> str:
 
 
 async def create_session(
-    username: str, is_admin: bool = False, ttl_hours: int = 8
+    username: str, is_admin: bool = False, ttl_hours: int = SESSION_TTL_HOURS
 ) -> str:
     """Create an opaque session token."""
     token = secrets.token_urlsafe(32)

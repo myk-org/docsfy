@@ -356,7 +356,7 @@ async def test_viewer_cannot_generate(_init_db: None) -> None:
             },
         )
     assert response.status_code == 403
-    assert "Viewers cannot perform this action" in response.json()["detail"]
+    assert "Write access required" in response.json()["detail"]
     _generating.clear()
 
 
@@ -599,13 +599,13 @@ async def test_non_owner_cannot_access_project(_init_db: None) -> None:
         base_url="http://test",
         headers={"Authorization": f"Bearer {bob_key}"},
     ) as ac:
-        # GET /api/projects/{name}
+        # GET /api/projects/{name} - returns 404 to avoid leaking existence
         response = await ac.get("/api/projects/secret-proj")
-        assert response.status_code == 403
+        assert response.status_code == 404
 
         # GET /api/projects/{name}/{provider}/{model}
         response = await ac.get("/api/projects/secret-proj/claude/opus")
-        assert response.status_code == 403
+        assert response.status_code == 404
 
     _generating.clear()
 
@@ -778,8 +778,8 @@ async def test_admin_rotates_nonexistent_user_key(
 # ---------------------------------------------------------------------------
 
 
-async def test_viewer_cannot_rotate_key(_init_db: None) -> None:
-    """A viewer should get 403 when trying to rotate their key."""
+async def test_viewer_can_rotate_key(_init_db: None) -> None:
+    """A viewer should be able to rotate their own key (change password)."""
     from docsfy.main import _generating, app
     from docsfy.storage import create_user
 
@@ -787,13 +787,23 @@ async def test_viewer_cannot_rotate_key(_init_db: None) -> None:
     _, viewer_key = await create_user("viewer-rotate", role="viewer")
 
     transport = ASGITransport(app=app)
-    async with AsyncClient(
-        transport=transport,
-        base_url="http://test",
-        headers={"Authorization": f"Bearer {viewer_key}"},
-    ) as ac:
-        resp = await ac.post("/api/me/rotate-key", json={})
-    assert resp.status_code == 403
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        # Login first
+        resp = await ac.post(
+            "/login",
+            data={"username": "viewer-rotate", "api_key": viewer_key},
+            follow_redirects=False,
+        )
+        cookie = resp.cookies.get("docsfy_session")
+
+        # Rotate should succeed
+        resp = await ac.post(
+            "/api/me/rotate-key",
+            cookies={"docsfy_session": cookie},
+            json={},
+        )
+    assert resp.status_code == 200
+    assert "new_api_key" in resp.json()
     _generating.clear()
 
 

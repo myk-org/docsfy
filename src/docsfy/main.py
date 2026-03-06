@@ -26,6 +26,7 @@ from docsfy.models import GenerateRequest
 from docsfy.repository import clone_repo, get_local_repo_info
 from docsfy.renderer import render_site
 from docsfy.storage import (
+    SESSION_TTL_SECONDS,
     cleanup_expired_sessions,
     create_session,
     create_user,
@@ -171,17 +172,17 @@ app.add_middleware(AuthMiddleware)
 
 def _require_write_access(request: Request) -> None:
     """Raise 403 if user is a viewer (read-only)."""
-    if request.state.role == "viewer":
+    if request.state.role not in ("admin", "user"):
         raise HTTPException(
             status_code=403,
-            detail="Viewers cannot perform this action. Contact admin for write access.",
+            detail="Write access required.",
         )
 
 
 async def _check_ownership(
     request: Request, project_name: str, project: dict[str, Any]
 ) -> None:
-    """Raise 403 if the requesting user does not own the project (unless admin)."""
+    """Raise 404 if the requesting user does not own the project (unless admin)."""
     if request.state.is_admin:
         return
     if project.get("owner") == request.state.username:
@@ -190,7 +191,7 @@ async def _check_ownership(
     accessible = await get_user_accessible_projects(request.state.username)
     if project_name in accessible:
         return
-    raise HTTPException(status_code=403, detail="Access denied")
+    raise HTTPException(status_code=404, detail="Not found")
 
 
 @app.get("/login", response_class=HTMLResponse)
@@ -232,7 +233,7 @@ async def login(request: Request) -> RedirectResponse | HTMLResponse:
             httponly=True,
             samesite="strict",
             secure=settings.secure_cookies,
-            max_age=28800,  # 8 hours
+            max_age=SESSION_TTL_SECONDS,
         )
         return response
 
@@ -430,10 +431,11 @@ async def abort_generation(request: Request, name: str) -> dict[str, str]:
             status_code=404, detail=f"No active generation for '{name}'"
         )
 
-    # Extract provider/model from the key
+    # Extract provider/model from the key (format: "name/provider/model")
     parts = matching_key.split("/", 2)
-    ai_provider = parts[1] if len(parts) > 1 else ""
-    ai_model = parts[2] if len(parts) > 2 else ""
+    if len(parts) != 3:
+        raise HTTPException(status_code=500, detail="Invalid generation key format")
+    _, ai_provider, ai_model = parts
 
     # Check ownership before allowing abort
     project = await get_project(name, ai_provider=ai_provider, ai_model=ai_model)
@@ -811,7 +813,7 @@ async def get_project_details(request: Request, name: str) -> dict[str, Any]:
     variants = await list_variants(name)
     if not variants:
         raise HTTPException(status_code=404, detail=f"Project '{name}' not found")
-    # Fix 17: Check ownership on first variant (all variants share the same owner)
+    # All variants share the same owner (enforced by save_project ON CONFLICT)
     await _check_ownership(request, name, variants[0])
     return {"name": name, "variants": variants}
 
@@ -830,6 +832,7 @@ async def delete_project_endpoint(request: Request, name: str) -> dict[str, str]
     variants = await list_variants(name)
     if not variants:
         raise HTTPException(status_code=404, detail=f"Project '{name}' not found")
+    # All variants share the same owner (enforced by save_project ON CONFLICT)
     await _check_ownership(request, name, variants[0])
     for v in variants:
         provider = str(v.get("ai_provider", ""))
@@ -899,7 +902,7 @@ async def admin_panel(request: Request) -> HTMLResponse:
 
 
 @app.post("/api/admin/users")
-async def create_user_endpoint(request: Request) -> dict[str, str]:
+async def create_user_endpoint(request: Request) -> JSONResponse:
     """Create a new user and return the generated API key."""
     _require_admin(request)
     body = await request.json()
@@ -911,11 +914,13 @@ async def create_user_endpoint(request: Request) -> dict[str, str]:
         username, raw_key = await create_user(username, role)
     except Exception as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
-    # Fix 18: Audit logging
     logger.info(
         f"[AUDIT] User '{request.state.username}' created user '{username}' with role '{role}'"
     )
-    return {"username": username, "api_key": raw_key, "role": role}
+    return JSONResponse(
+        content={"username": username, "api_key": raw_key, "role": role},
+        headers={"Cache-Control": "no-store"},
+    )
 
 
 @app.delete("/api/admin/users/{username}")
@@ -988,9 +993,9 @@ async def list_access(request: Request, name: str) -> dict[str, Any]:
 
 
 @app.post("/api/me/rotate-key")
-async def rotate_own_key(request: Request) -> dict[str, str]:
+async def rotate_own_key(request: Request) -> JSONResponse:
     """User rotates their own API key."""
-    _require_write_access(request)
+    # Don't call _require_write_access -- viewers should be able to change their password
     if request.state.is_admin and not request.state.user:
         raise HTTPException(
             status_code=400,
@@ -1011,11 +1016,22 @@ async def rotate_own_key(request: Request) -> dict[str, str]:
     session_token = request.cookies.get("docsfy_session")
     if session_token:
         await delete_session(session_token)
-    return {"username": username, "new_api_key": new_key}
+    settings = get_settings()
+    response = JSONResponse(
+        content={"username": username, "new_api_key": new_key},
+        headers={"Cache-Control": "no-store"},
+    )
+    response.delete_cookie(
+        "docsfy_session",
+        httponly=True,
+        samesite="strict",
+        secure=settings.secure_cookies,
+    )
+    return response
 
 
 @app.post("/api/admin/users/{username}/rotate-key")
-async def admin_rotate_key(request: Request, username: str) -> dict[str, str]:
+async def admin_rotate_key(request: Request, username: str) -> JSONResponse:
     """Admin rotates a user's API key."""
     _require_admin(request)
     body = await request.json()
@@ -1029,7 +1045,10 @@ async def admin_rotate_key(request: Request, username: str) -> dict[str, str]:
     logger.info(
         f"[AUDIT] Admin '{request.state.username}' rotated API key for user '{username}'"
     )
-    return {"username": username, "new_api_key": new_key}
+    return JSONResponse(
+        content={"username": username, "new_api_key": new_key},
+        headers={"Cache-Control": "no-store"},
+    )
 
 
 # IMPORTANT: variant-specific route MUST be defined BEFORE the generic route
@@ -1046,8 +1065,9 @@ async def serve_variant_docs(
         path = "index.html"
     project = _validate_project_name(project)
     proj = await get_project(project, ai_provider=provider, ai_model=model)
-    if proj:
-        await _check_ownership(request, project, proj)
+    if not proj:
+        raise HTTPException(status_code=404, detail="Not found")
+    await _check_ownership(request, project, proj)
     site_dir = get_project_site_dir(project, provider, model)
     file_path = site_dir / path
     try:

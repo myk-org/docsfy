@@ -86,15 +86,3 @@ def test_generate_request_rejects_both() -> None:
         GenerateRequest(
             repo_url="https://github.com/org/repo.git", repo_path="/some/path"
         )
-
-
-def test_project_status_model() -> None:
-    from docsfy.models import ProjectStatus
-
-    status = ProjectStatus(
-        name="my-repo",
-        repo_url="https://github.com/org/my-repo.git",
-        status="ready",
-    )
-    assert status.name == "my-repo"
-    assert status.status == "ready"
