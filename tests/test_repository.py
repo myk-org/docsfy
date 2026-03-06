@@ -102,6 +102,41 @@ def test_get_changed_files_success(tmp_path: Path) -> None:
     assert "def456" in call_args.args[0]
 
 
+def test_get_changed_files_with_special_names(tmp_path: Path) -> None:
+    """Test that filenames with spaces and embedded newlines are parsed correctly with -z flag.
+
+    A naive newline-based split would break on filenames that contain spaces
+    (combined with the surrounding entries) or literal newlines.  The -z flag
+    makes ``git diff`` use NUL as the delimiter, so the parser must split on
+    ``\\0`` rather than ``\\n``.
+    """
+    from docsfy.repository import get_changed_files
+
+    with patch("docsfy.repository.subprocess.run") as mock_run:
+        # Simulate NUL-delimited output that includes:
+        #   - a filename with a space ("src/my file.py")
+        #   - a path whose directory contains a space ("dir/sub dir/test.js")
+        #   - a filename with an embedded newline ("dir/file\nname.py")
+        #   - a plain filename ("README.md")
+        mock_run.return_value = MagicMock(
+            returncode=0,
+            stdout="src/my file.py\0dir/sub dir/test.js\0dir/file\nname.py\0README.md\0",
+            stderr="",
+        )
+        files = get_changed_files(tmp_path, "abc123", "def456")
+
+    assert files == [
+        "src/my file.py",
+        "dir/sub dir/test.js",
+        "dir/file\nname.py",
+        "README.md",
+    ]
+
+    # Confirm -z flag is passed so git uses NUL delimiters
+    call_args = mock_run.call_args
+    assert "-z" in call_args.args[0]
+
+
 def test_get_changed_files_failure(tmp_path: Path) -> None:
     from docsfy.repository import get_changed_files
 

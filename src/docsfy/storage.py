@@ -663,9 +663,13 @@ async def delete_user(username: str) -> bool:
         if deleted:
             owner_dir = PROJECTS_DIR / username
             try:
-                await asyncio.to_thread(shutil.rmtree, owner_dir, True)
+                await asyncio.to_thread(shutil.rmtree, owner_dir)
                 logger.info(
                     f"Cleaned up project directory for user '{username}': {owner_dir}"
+                )
+            except FileNotFoundError:
+                logger.debug(
+                    f"Project directory already removed for user '{username}': {owner_dir}"
                 )
             except OSError:
                 logger.exception(
