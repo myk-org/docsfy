@@ -1433,6 +1433,16 @@ agent-browser screenshot
 - Success modal displays the new password `my-new-secure-password-123`
 - After dismissing the modal, the user is redirected to the login page (session invalidated)
 
+**Dismiss the modal:**
+```
+agent-browser click "#modal-ok"
+agent-browser wait 2000
+```
+The page should redirect to /login after the modal is dismissed.
+```
+agent-browser wait --url "**/login"
+```
+
 **Try logging in with the OLD password:**
 ```
 agent-browser type "#username" "testuser-e2e"

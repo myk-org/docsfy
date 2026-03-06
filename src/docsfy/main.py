@@ -480,7 +480,7 @@ async def _reject_private_url(url: str) -> None:
         # Check if hostname is an IP address in private range
         try:
             addr = ipaddress.ip_address(hostname)
-            if addr.is_private or addr.is_loopback or addr.is_link_local:
+            if not addr.is_global:
                 raise HTTPException(
                     status_code=400,
                     detail="Repository URL must not target localhost or private networks",
@@ -500,7 +500,7 @@ async def _reject_private_url(url: str) -> None:
                 for _family, _socktype, _proto, _canonname, sockaddr in resolved:
                     ip_str = sockaddr[0]
                     addr = ipaddress.ip_address(ip_str)
-                    if addr.is_private or addr.is_loopback or addr.is_link_local:
+                    if not addr.is_global:
                         raise HTTPException(
                             status_code=400,
                             detail="Repository URL resolves to a private network address",
