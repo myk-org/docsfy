@@ -99,42 +99,7 @@
     }
     .header-title { font-size: 0.875rem; color: var(--text-secondary); }
     .header-right { display: flex; align-items: center; gap: 0.75rem; }
-    /* ---- User Menu Dropdown ---- */
-    .user-menu { position: relative; }
-    .user-menu-toggle {
-        display: inline-flex; align-items: center; gap: 6px;
-        padding: 6px 12px; font-size: 0.85rem; font-weight: 500; font-family: inherit;
-        color: var(--text-secondary); background: var(--bg-primary);
-        border: 1px solid var(--border-primary); border-radius: 8px;
-        cursor: pointer; transition: color var(--transition-fast), border-color var(--transition-fast);
-        line-height: 1;
-    }
-    .user-menu-toggle:hover, .user-menu-toggle[aria-expanded="true"] {
-        color: var(--text-primary); border-color: var(--border-focus);
-    }
-    .user-menu-chevron { transition: transform var(--transition-fast); }
-    .user-menu-toggle[aria-expanded="true"] .user-menu-chevron { transform: rotate(180deg); }
-    .user-menu-dropdown {
-        display: none; position: absolute; top: calc(100% + 6px); right: 0;
-        min-width: 200px; background: var(--bg-card);
-        border: 1px solid var(--border-primary); border-radius: 8px;
-        box-shadow: var(--shadow-md); padding: 4px 0; z-index: 150;
-    }
-    .user-menu-dropdown.open { display: block; }
-    .user-menu-item {
-        display: flex; align-items: center; gap: 10px; width: 100%;
-        padding: 10px 14px; font-size: 0.8125rem; font-weight: 500; font-family: inherit;
-        color: var(--text-primary); background: none; border: none;
-        text-decoration: none; cursor: pointer;
-        transition: background var(--transition-fast); text-align: left;
-    }
-    .user-menu-item:hover { background: var(--bg-tertiary); }
-    .user-menu-item svg { color: var(--text-tertiary); flex-shrink: 0; }
-    .user-menu-item:hover svg { color: var(--text-secondary); }
-    .user-menu-item-danger { color: var(--status-error); }
-    .user-menu-item-danger svg { color: var(--status-error); }
-    .user-menu-item-danger:hover { background: var(--status-error-bg); }
-    .user-menu-divider { height: 1px; background: var(--border-primary); margin: 4px 0; }
+    {% include '_user_menu.css' %}
 
     .btn {
         display: inline-flex;
@@ -166,22 +131,20 @@
     .btn-sm { padding: 0.25rem 0.625rem; font-size: 0.75rem; }
 
     .theme-toggle {
-        display: inline-flex;
+        background: none;
+        border: none;
+        color: var(--text-secondary);
+        cursor: pointer;
+        padding: 6px;
+        border-radius: 6px;
+        display: flex;
         align-items: center;
         justify-content: center;
-        background: none;
-        border: 1px solid var(--border-primary);
-        border-radius: 0.375rem;
-        padding: 0.375rem 0.5rem;
-        cursor: pointer;
-        color: var(--text-secondary);
-        font-size: 1rem;
-        line-height: 1;
-        transition: color var(--transition-fast), border-color var(--transition-fast);
+        transition: color var(--transition-fast), background-color var(--transition-fast);
     }
     .theme-toggle:hover {
         color: var(--text-primary);
-        border-color: var(--border-focus);
+        background: var(--bg-tertiary);
     }
     [data-theme="dark"] .icon-sun { display: none; }
     [data-theme="light"] .icon-moon { display: none; }
@@ -368,15 +331,15 @@
                         <polyline points="6 9 12 15 18 9"/>
                     </svg>
                 </button>
-                <div class="user-menu-dropdown" id="user-menu-dropdown" role="menu">
-                    <a href="/" class="user-menu-item" role="menuitem">
+                <div class="user-menu-dropdown" id="user-menu-dropdown">
+                    <a href="/" class="user-menu-item">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
                         </svg>
                         Dashboard
                     </a>
                     <div class="user-menu-divider"></div>
-                    <a href="/logout" class="user-menu-item user-menu-item-danger" role="menuitem">
+                    <a href="/logout" class="user-menu-item user-menu-item-danger">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
                             <polyline points="16 17 21 12 16 7"/>
@@ -682,33 +645,9 @@
         });
     });
 
-    // ---- User Menu Dropdown ----
-    function closeUserMenu() {
-        var dropdown = document.getElementById('user-menu-dropdown');
-        var toggle = document.getElementById('user-menu-toggle');
-        if (dropdown) dropdown.classList.remove('open');
-        if (toggle) toggle.setAttribute('aria-expanded', 'false');
-    }
-    (function() {
-        var toggle = document.getElementById('user-menu-toggle');
-        var dropdown = document.getElementById('user-menu-dropdown');
-        if (!toggle || !dropdown) return;
-        toggle.addEventListener('click', function(e) {
-            e.stopPropagation();
-            var isOpen = dropdown.classList.contains('open');
-            if (isOpen) { closeUserMenu(); } else {
-                dropdown.classList.add('open');
-                toggle.setAttribute('aria-expanded', 'true');
-            }
-        });
-        document.addEventListener('click', function(e) {
-            if (!e.target.closest('#user-menu')) closeUserMenu();
-        });
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') { closeUserMenu(); toggle.focus(); }
-        });
-    })();
     </script>
+
+    {% include '_user_menu.js' %}
 
     {% include '_modal.html' %}
 </body>
