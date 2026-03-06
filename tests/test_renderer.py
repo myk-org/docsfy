@@ -111,6 +111,32 @@ def test_sanitize_html_unquoted_javascript() -> None:
     assert "data:" not in result
 
 
+def test_sanitize_html_whitespace_javascript() -> None:
+    from docsfy.renderer import _sanitize_html
+
+    result = _sanitize_html('<a href="   javascript:alert(1)">x</a>')
+    assert "javascript:" not in result
+
+
+def test_sanitize_html_entity_encoded_javascript() -> None:
+    from docsfy.renderer import _sanitize_html
+
+    # HTML entities would be decoded by the browser, making this dangerous
+    result = _sanitize_html('<a href="&#x6a;avascript:alert(1)">x</a>')
+    assert "javascript" not in result.lower() or 'href="#"' in result
+
+
+def test_sanitize_html_keeps_safe_urls() -> None:
+    from docsfy.renderer import _sanitize_html
+
+    result = _sanitize_html('<a href="https://example.com">link</a>')
+    assert "https://example.com" in result
+    result2 = _sanitize_html('<a href="/path/to/page">link</a>')
+    assert "/path/to/page" in result2
+    result3 = _sanitize_html('<a href="#section">link</a>')
+    assert "#section" in result3
+
+
 def test_search_index_generated(tmp_path: Path) -> None:
     from docsfy.renderer import render_site
 

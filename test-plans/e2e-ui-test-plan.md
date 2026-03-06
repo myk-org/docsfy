@@ -143,6 +143,40 @@ agent-browser screenshot
 
 ---
 
+### 1.6 ADMIN_KEY user Change Password is denied
+
+**Precondition:** Logged in as `admin` (ADMIN_KEY user, from Test 1.5).
+
+**Commands:**
+```
+agent-browser click ".btn-change-password"
+agent-browser wait 1000
+agent-browser screenshot
+```
+
+**Check:** The change password modal appears.
+
+**Expected result:**
+- The modal overlay is visible
+- The modal title reads "Change Password"
+
+**Enter a new password and confirm:**
+```
+agent-browser type "#modal-input" "somenewpassword12345"
+agent-browser click "#modal-ok"
+agent-browser wait 2000
+agent-browser screenshot
+```
+
+**Check:** An error message is shown indicating ADMIN_KEY users cannot change passwords.
+
+**Expected result:**
+- Error message appears: "ADMIN_KEY users cannot rotate keys. Change the ADMIN_KEY env var instead."
+- The password is NOT changed
+- The admin session remains valid
+
+---
+
 ## Test 2: Admin Panel
 
 ### 2.1 Admin link visible for admin
@@ -390,6 +424,145 @@ Update `TEST_USER_PASSWORD` to this new value (`newpassword1234567890`).
 agent-browser click "#new-key-display .btn-primary"
 agent-browser wait 2000
 ```
+
+---
+
+### 2.7 Deleted user session is invalidated
+
+**Commands (create and login as a disposable user):**
+```
+agent-browser navigate http://localhost:8800/admin
+agent-browser type "#new-username" "session-test-e2e"
+agent-browser select "#new-role" "user"
+agent-browser click "#create-user-form button[type='submit']"
+agent-browser wait 2000
+agent-browser screenshot
+```
+
+**Check:** The user `session-test-e2e` is created and the password is displayed.
+
+**Expected result:**
+- A success alert appears with text containing "User 'session-test-e2e' created successfully"
+- The `#new-key-display` section becomes visible
+- The displayed username shows `session-test-e2e`
+
+**Capture the password:**
+```
+agent-browser javascript "document.getElementById('new-key-value').textContent"
+```
+
+Save the password as `SESSION_TEST_PASSWORD`.
+
+**Click Done:**
+```
+agent-browser click "#new-key-display .btn-primary"
+agent-browser wait 2000
+```
+
+**Open a new browser context and login as session-test-e2e:**
+```
+agent-browser new-context
+agent-browser navigate http://localhost:8800/login
+agent-browser type "#username" "session-test-e2e"
+agent-browser type "#api_key" "<SESSION_TEST_PASSWORD>"
+agent-browser click ".btn-login"
+agent-browser wait-for-navigation
+agent-browser screenshot
+```
+
+**Check:** The dashboard loads for session-test-e2e.
+
+**Expected result:**
+- The browser is redirected to `/` (the dashboard)
+- The header shows the username "session-test-e2e"
+
+**Switch back to admin context and delete the user:**
+```
+agent-browser switch-context 0
+agent-browser navigate http://localhost:8800/admin
+agent-browser click "[data-delete-user='session-test-e2e']"
+agent-browser wait 1000
+agent-browser click "#modal-ok"
+agent-browser wait 2000
+agent-browser screenshot
+```
+
+**Check:** The user is deleted from the admin panel.
+
+**Expected result:**
+- A success alert appears with text "User 'session-test-e2e' deleted"
+- The row for `session-test-e2e` no longer exists in the table
+
+**Switch back to session-test-e2e's context and refresh:**
+```
+agent-browser switch-context 1
+agent-browser navigate http://localhost:8800/
+agent-browser wait-for-navigation
+agent-browser screenshot
+```
+
+**Check:** The deleted user's session is invalidated.
+
+**Expected result:**
+- The browser is redirected to `/login`
+- The session is no longer valid; the dashboard does not load
+
+**Clean up (close extra context):**
+```
+agent-browser close-context
+```
+
+---
+
+### 2.8 Cannot create user with reserved username "admin"
+
+**Precondition:** Logged in as `admin` on the admin panel.
+
+**Commands:**
+```
+agent-browser navigate http://localhost:8800/admin
+agent-browser type "#new-username" "admin"
+agent-browser select "#new-role" "user"
+agent-browser click "#create-user-form button[type='submit']"
+agent-browser wait 2000
+agent-browser screenshot
+```
+
+**Check:** An error message appears and no new user is created.
+
+**Expected result:**
+- An error message appears indicating that the username "admin" is reserved
+- No new user row for "admin" appears in the users table
+- The `#new-key-display` section does NOT become visible
+
+---
+
+### 2.9 Cannot delete own admin account
+
+**Precondition:** Logged in as `admin` on the admin panel.
+
+**Commands (attempt via API):**
+```
+agent-browser javascript "fetch('/api/admin/users/admin', {method:'DELETE', credentials:'same-origin'}).then(r => r.json())"
+agent-browser wait 2000
+```
+
+**Check:** The API rejects the self-deletion attempt.
+
+**Expected result:**
+- The response status is `400`
+- The response body contains "Cannot delete your own account"
+
+**Verify admin still exists in the table:**
+```
+agent-browser navigate http://localhost:8800/admin
+agent-browser javascript "document.getElementById('user-row-admin') !== null"
+agent-browser screenshot
+```
+
+**Expected result:**
+- Returns `true`
+- The admin row is still visible in the users table
 
 ---
 
@@ -2217,8 +2390,8 @@ agent-browser close
 
 | Test Section | Count | Description |
 |---|---|---|
-| Test 1: Login Page | 5 | Login page load, theme, invalid/valid login |
-| Test 2: Admin Panel | 6 | Admin link, CRUD users, change password |
+| Test 1: Login Page | 6 | Login page load, theme, invalid/valid login, ADMIN_KEY password denial |
+| Test 2: Admin Panel | 9 | Admin link, CRUD users, change password, session invalidation, reserved username, self-delete guard |
 | Test 3: User Role | 6 | User login, form visibility, permissions, generation |
 | Test 4: Viewer Role | 7 | Viewer login, restricted UI, password change, API enforcement |
 | Test 5: Admin DB User | 4 | DB admin login, access, project visibility |
@@ -2230,4 +2403,4 @@ agent-browser close
 | Test 11: Cross-User Isolation | 10 | User isolation, admin visibility, access grants, revoke, collision test, direct URL after revoke |
 | Test 12: Logout | 2 | Logout redirect, session invalidation |
 | Test 13: Direct URL Authorization | 7 | Non-owner URL access blocked, granted user access, owner-agnostic routes |
-| **Total** | **78** | |
+| **Total** | **82** | |

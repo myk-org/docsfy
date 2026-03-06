@@ -624,9 +624,25 @@ blockquote.callout-tip {
     margin: 1.5rem 0;
 }
 
+blockquote.callout-danger {
+    border-left: 4px solid #ef4444;
+    background: rgba(239, 68, 68, 0.08);
+    padding: 1rem 1.25rem;
+    border-radius: 0 8px 8px 0;
+    margin: 1.5rem 0;
+}
+
+blockquote.callout-important {
+    border-left: 4px solid #8b5cf6;
+    background: rgba(139, 92, 246, 0.08);
+    padding: 1rem 1.25rem;
+    border-radius: 0 8px 8px 0;
+    margin: 1.5rem 0;
+}
+
 /* Chained :not() for broader browser compatibility */
 /* Default blockquote styling (not a callout) */
-blockquote:not(.callout-note):not(.callout-warning):not(.callout-tip) {
+blockquote:not(.callout-note):not(.callout-warning):not(.callout-tip):not(.callout-danger):not(.callout-important) {
     border-left: 4px solid var(--border-primary);
     padding: 1rem 1.25rem;
     margin: 1.5rem 0;

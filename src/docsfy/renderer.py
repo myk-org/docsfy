@@ -44,29 +44,43 @@ def _sanitize_html(html: str) -> str:
     # Remove event handler attributes
     html = re.sub(r'\s+on\w+\s*=\s*["\'][^"\']*["\']', "", html, flags=re.IGNORECASE)
     html = re.sub(r"\s+on\w+\s*=\s*\S+", "", html, flags=re.IGNORECASE)
-    # Remove javascript: and data: URL schemes in href and src attributes
+
+    # Sanitize href/src: only allow http:, https:, #, /, and relative paths
+    # Replace any href/src that doesn't start with a safe scheme
+    def _sanitize_url_attr(match: re.Match) -> str:  # type: ignore[type-arg]
+        attr = match.group(1)  # href or src
+        quote = match.group(2)  # " or '
+        url = match.group(3)  # the URL value
+        # Strip whitespace and decode common HTML entities
+        clean_url = url.strip()
+        # Check for safe schemes
+        if clean_url.startswith(("http://", "https://", "#", "/", "mailto:")):
+            return match.group(0)  # Keep as-is
+        # Block everything else (javascript:, data:, vbscript:, etc.)
+        return f"{attr}={quote}#{quote}"
+
     html = re.sub(
-        r'href\s*=\s*["\']javascript:[^"\']*["\']',
-        'href="#"',
+        r"(href|src)\s*=\s*([\"'])(.*?)\2",
+        _sanitize_url_attr,
+        html,
+        flags=re.IGNORECASE | re.DOTALL,
+    )
+
+    # Also handle unquoted URLs
+    def _sanitize_unquoted_url(match: re.Match) -> str:  # type: ignore[type-arg]
+        attr = match.group(1)
+        url = match.group(2).strip()
+        if url.startswith(("http://", "https://", "#", "/", "mailto:")):
+            return match.group(0)
+        return f'{attr}="#"'
+
+    html = re.sub(
+        r"(href|src)\s*=\s*([^\s\"'>=]+)",
+        _sanitize_unquoted_url,
         html,
         flags=re.IGNORECASE,
     )
-    html = re.sub(
-        r'src\s*=\s*["\']javascript:[^"\']*["\']', 'src="#"', html, flags=re.IGNORECASE
-    )
-    html = re.sub(
-        r'href\s*=\s*["\']data:[^"\']*["\']', 'href="#"', html, flags=re.IGNORECASE
-    )
-    html = re.sub(
-        r'src\s*=\s*["\']data:[^"\']*["\']', 'src="#"', html, flags=re.IGNORECASE
-    )
-    # Also catch unquoted javascript:/data: URLs
-    html = re.sub(
-        r"href\s*=\s*javascript:[^\s>]*", 'href="#"', html, flags=re.IGNORECASE
-    )
-    html = re.sub(r"src\s*=\s*javascript:[^\s>]*", 'src="#"', html, flags=re.IGNORECASE)
-    html = re.sub(r"href\s*=\s*data:[^\s>]*", 'href="#"', html, flags=re.IGNORECASE)
-    html = re.sub(r"src\s*=\s*data:[^\s>]*", 'src="#"', html, flags=re.IGNORECASE)
+
     return html
 
 
