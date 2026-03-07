@@ -186,7 +186,7 @@ def test_get_diff_deleted_file(tmp_path: Path) -> None:
     from docsfy.repository import get_diff
 
     diff_output = (
-        "diff --git a/src/deleted.py b/dev/null\n"
+        "diff --git a/src/deleted.py b/src/deleted.py\n"
         "deleted file mode 100644\n"
         "index abc1234..0000000\n"
         "--- a/src/deleted.py\n"

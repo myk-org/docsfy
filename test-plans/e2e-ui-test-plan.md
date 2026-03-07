@@ -3539,12 +3539,6 @@ agent-browser javascript "Array.from(document.querySelectorAll('.variant-card'))
 
 ---
 
-## Cleanup
-
-> **Note:** Comprehensive cleanup is now handled by **Test 20: Cleanup and Teardown** above.
-> Test 20 includes access grant revocation, project variant deletion, user deletion, and full verification.
-> Run Test 20 as the final step of the test suite.
-
 **Close browser:**
 ```shell
 agent-browser close

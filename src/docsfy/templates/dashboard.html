@@ -1363,7 +1363,7 @@
                 {% else %}
                 {% for repo_name, variants in grouped_projects.items() %}
                 <article class="project-group" data-repo="{{ repo_name }}">
-                    <div class="group-header">
+                    <div class="group-header" role="button" tabindex="0" aria-expanded="true">
                         <svg class="group-toggle-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <polyline points="6 9 12 15 18 9"/>
                         </svg>
@@ -2148,9 +2148,7 @@
             var model = parts.slice(2).join('/');
 
             var url = '/api/projects/' + encodeURIComponent(name) + '/' + encodeURIComponent(provider) + '/' + encodeURIComponent(model);
-            if (owner != null) {
-                url += '?owner=' + encodeURIComponent(owner);
-            }
+            url += '?owner=' + encodeURIComponent(owner || '');
             fetch(url, {
                 method: 'DELETE',
                 credentials: 'same-origin',
@@ -2492,11 +2490,25 @@
         }
 
         /* ----- Collapsible Project Groups ----- */
+        function toggleGroup(group) {
+            var isCollapsed = group.classList.toggle('collapsed');
+            var header = group.querySelector('.group-header');
+            if (header) header.setAttribute('aria-expanded', !isCollapsed);
+        }
+
         document.addEventListener('click', function(e) {
             var header = e.target.closest('.group-header');
             if (!header) return;
             if (e.target.closest('a, button, input, select')) return;
-            header.closest('.project-group').classList.toggle('collapsed');
+            toggleGroup(header.closest('.project-group'));
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key !== 'Enter' && e.key !== ' ') return;
+            var header = e.target.closest('.group-header');
+            if (!header || e.target.closest('a, button, input, select')) return;
+            e.preventDefault();
+            toggleGroup(header.closest('.project-group'));
         });
 
         /* ----- Restore Form State ----- */
