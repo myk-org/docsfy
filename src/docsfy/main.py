@@ -218,18 +218,17 @@ async def _resolve_project(
 
     Raises 404 if not found or not accessible.
     """
-    # 1. Try owned by requesting user
-    if not request.state.is_admin:
-        proj = await get_project(
-            name,
-            ai_provider=ai_provider,
-            ai_model=ai_model,
-            owner=request.state.username,
-        )
-        if proj:
-            return proj
+    # 1. Try owned by requesting user (including admin)
+    proj = await get_project(
+        name,
+        ai_provider=ai_provider,
+        ai_model=ai_model,
+        owner=request.state.username,
+    )
+    if proj:
+        return proj
 
-    # 2. For admin, disambiguate by owner
+    # 2. For admin, disambiguate by owner (fallback when admin doesn't own it)
     if request.state.is_admin:
         all_variants = await list_variants(name)
         matching = [
