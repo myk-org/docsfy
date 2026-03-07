@@ -111,30 +111,34 @@ def test_get_diff_success(tmp_path: Path) -> None:
         "-old readme\n"
         "+new readme\n"
     )
+    names_output = "src/main.py\0src/utils.py\0README.md\0"
 
     with patch("docsfy.repository.subprocess.run") as mock_run:
-        mock_run.return_value = MagicMock(
-            returncode=0,
-            stdout=diff_output,
-            stderr="",
-        )
+        mock_run.side_effect = [
+            MagicMock(returncode=0, stdout=diff_output, stderr=""),
+            MagicMock(returncode=0, stdout=names_output, stderr=""),
+        ]
         result = get_diff(tmp_path, "abc123", "def456")
 
     assert result is not None
     changed_files, diff_content = result
     assert changed_files == ["src/main.py", "src/utils.py", "README.md"]
     assert diff_content == diff_output
-    call_args = mock_run.call_args
-    cmd = call_args.args[0]
-    assert "diff" in cmd
-    assert "--stat" in cmd
-    assert "--patch" in cmd
-    assert "abc123" in cmd
-    assert "def456" in cmd
+    assert mock_run.call_count == 2
+
+    # Verify diff --stat --patch call
+    diff_cmd = mock_run.call_args_list[0].args[0]
+    assert "--stat" in diff_cmd
+    assert "--patch" in diff_cmd
+
+    # Verify diff --name-only -z call
+    names_cmd = mock_run.call_args_list[1].args[0]
+    assert "--name-only" in names_cmd
+    assert "-z" in names_cmd
 
 
 def test_get_diff_with_special_filenames(tmp_path: Path) -> None:
-    """Test that filenames with spaces are extracted from diff --git headers."""
+    """Test that filenames with spaces and 'b/' in paths are handled correctly."""
     from docsfy.repository import get_diff
 
     diff_output = (
@@ -145,10 +149,10 @@ def test_get_diff_with_special_filenames(tmp_path: Path) -> None:
         "@@ -1 +1 @@\n"
         "-old\n"
         "+new\n"
-        "diff --git a/dir/sub dir/test.js b/dir/sub dir/test.js\n"
+        "diff --git a/docs/a b/file.md b/docs/a b/file.md\n"
         "index 2222222..3333333 100644\n"
-        "--- a/dir/sub dir/test.js\n"
-        "+++ b/dir/sub dir/test.js\n"
+        "--- a/docs/a b/file.md\n"
+        "+++ b/docs/a b/file.md\n"
         "@@ -1 +1 @@\n"
         "-old\n"
         "+new\n"
@@ -160,25 +164,25 @@ def test_get_diff_with_special_filenames(tmp_path: Path) -> None:
         "-old\n"
         "+new\n"
     )
+    names_output = "src/my file.py\0docs/a b/file.md\0README.md\0"
 
     with patch("docsfy.repository.subprocess.run") as mock_run:
-        mock_run.return_value = MagicMock(
-            returncode=0,
-            stdout=diff_output,
-            stderr="",
-        )
+        mock_run.side_effect = [
+            MagicMock(returncode=0, stdout=diff_output, stderr=""),
+            MagicMock(returncode=0, stdout=names_output, stderr=""),
+        ]
         result = get_diff(tmp_path, "abc123", "def456")
 
     assert result is not None
     changed_files, _ = result
     assert changed_files == [
         "src/my file.py",
-        "dir/sub dir/test.js",
+        "docs/a b/file.md",
         "README.md",
     ]
 
 
-def test_get_diff_uses_deleted_path_instead_of_dev_null(tmp_path: Path) -> None:
+def test_get_diff_deleted_file(tmp_path: Path) -> None:
     from docsfy.repository import get_diff
 
     diff_output = (
@@ -190,13 +194,13 @@ def test_get_diff_uses_deleted_path_instead_of_dev_null(tmp_path: Path) -> None:
         "@@ -1 +0,0 @@\n"
         "-print('old file')\n"
     )
+    names_output = "src/deleted.py\0"
 
     with patch("docsfy.repository.subprocess.run") as mock_run:
-        mock_run.return_value = MagicMock(
-            returncode=0,
-            stdout=diff_output,
-            stderr="",
-        )
+        mock_run.side_effect = [
+            MagicMock(returncode=0, stdout=diff_output, stderr=""),
+            MagicMock(returncode=0, stdout=names_output, stderr=""),
+        ]
         result = get_diff(tmp_path, "abc123", "def456")
 
     assert result is not None
@@ -204,7 +208,7 @@ def test_get_diff_uses_deleted_path_instead_of_dev_null(tmp_path: Path) -> None:
     assert changed_files == ["src/deleted.py"]
 
 
-def test_get_diff_failure(tmp_path: Path) -> None:
+def test_get_diff_diff_failure(tmp_path: Path) -> None:
     from docsfy.repository import get_diff
 
     with patch("docsfy.repository.subprocess.run") as mock_run:
@@ -216,11 +220,27 @@ def test_get_diff_failure(tmp_path: Path) -> None:
     assert result is None
 
 
+def test_get_diff_name_only_failure(tmp_path: Path) -> None:
+    from docsfy.repository import get_diff
+
+    with patch("docsfy.repository.subprocess.run") as mock_run:
+        mock_run.side_effect = [
+            MagicMock(returncode=0, stdout="some diff", stderr=""),
+            MagicMock(returncode=1, stdout="", stderr="fatal: bad object"),
+        ]
+        result = get_diff(tmp_path, "abc123", "def456")
+
+    assert result is None
+
+
 def test_get_diff_empty_output(tmp_path: Path) -> None:
     from docsfy.repository import get_diff
 
     with patch("docsfy.repository.subprocess.run") as mock_run:
-        mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
+        mock_run.side_effect = [
+            MagicMock(returncode=0, stdout="", stderr=""),
+            MagicMock(returncode=0, stdout="", stderr=""),
+        ]
         result = get_diff(tmp_path, "abc123", "def456")
 
     assert result is not None
@@ -245,6 +265,12 @@ def test_get_diff_invalid_sha(tmp_path: Path) -> None:
 
     result = get_diff(tmp_path, "not-a-sha!", "def456")
     assert result is None
+
+
+def test_deepen_clone_for_diff_invalid_sha(tmp_path: Path) -> None:
+    from docsfy.repository import deepen_clone_for_diff
+
+    assert deepen_clone_for_diff(tmp_path, "not-a-sha!") is False
 
 
 def test_deepen_clone_for_diff_already_available(tmp_path: Path) -> None:

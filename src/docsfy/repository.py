@@ -45,18 +45,6 @@ def clone_repo(repo_url: str, base_dir: Path) -> tuple[Path, str]:
     return repo_path, commit_sha
 
 
-_DIFF_HEADER_RE = re.compile(r"^diff --git a/(.+) b/(.+)$", re.MULTILINE)
-
-
-def _extract_changed_files(diff_content: str) -> list[str]:
-    changed_files: list[str] = []
-    for match in _DIFF_HEADER_RE.finditer(diff_content):
-        old_path, new_path = match.groups()
-        # Git uses /dev/null on one side for adds/deletes; keep the real path.
-        changed_files.append(old_path if new_path == "dev/null" else new_path)
-    return changed_files
-
-
 def get_diff(
     repo_path: Path, old_sha: str, new_sha: str
 ) -> tuple[list[str], str] | None:
@@ -71,8 +59,10 @@ def get_diff(
     ):
         logger.warning("Invalid SHA format")
         return None
+
+    # Get diff content
     try:
-        result = subprocess.run(
+        diff_result = subprocess.run(
             ["git", "diff", "--stat", "--patch", old_sha, new_sha],
             cwd=repo_path,
             capture_output=True,
@@ -82,13 +72,28 @@ def get_diff(
     except (subprocess.TimeoutExpired, OSError) as exc:
         logger.warning(f"Failed to get diff: {exc}")
         return None
-    if result.returncode != 0:
-        logger.warning(f"Failed to get diff: {result.stderr}")
+    if diff_result.returncode != 0:
+        logger.warning(f"Failed to get diff: {diff_result.stderr}")
         return None
 
-    diff_content = result.stdout
-    changed_files = _extract_changed_files(diff_content)
-    return changed_files, diff_content
+    # Get file list reliably using NUL-delimited output
+    try:
+        names_result = subprocess.run(
+            ["git", "diff", "--name-only", "-z", old_sha, new_sha],
+            cwd=repo_path,
+            capture_output=True,
+            text=True,
+            timeout=30,
+        )
+    except (subprocess.TimeoutExpired, OSError) as exc:
+        logger.warning(f"Failed to get changed file names: {exc}")
+        return None
+    if names_result.returncode != 0:
+        logger.warning(f"Failed to get changed file names: {names_result.stderr}")
+        return None
+
+    changed_files = [f for f in names_result.stdout.split("\0") if f]
+    return changed_files, diff_result.stdout
 
 
 def deepen_clone_for_diff(repo_path: Path, old_sha: str) -> bool:
@@ -100,6 +105,9 @@ def deepen_clone_for_diff(repo_path: Path, old_sha: str) -> bool:
 
     Returns True if *old_sha* is now available, False on failure.
     """
+    if not re.match(r"^[0-9a-fA-F]{4,64}$", old_sha):
+        logger.warning("Invalid SHA format")
+        return False
     try:
         # Fast-path: commit already reachable (e.g. full clone or
         # previously deepened).

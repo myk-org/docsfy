@@ -2434,7 +2434,7 @@ agent-browser screenshot
 
 **Precondition:** Log in as `testuser-e2e` and ensure a completed generation exists for `for-testing-only` with `gemini/gemini-2.5-flash`. If not, generate one with the Force checkbox checked.
 
-```
+```shell
 agent-browser navigate http://localhost:8800/logout
 agent-browser wait-for-navigation
 agent-browser type "#username" "testuser-e2e"
@@ -2446,7 +2446,7 @@ agent-browser wait-for-navigation
 ### 14.1 Force-generate docs for baseline
 
 **Commands:**
-```
+```shell
 agent-browser navigate http://localhost:8800/
 agent-browser clear "#gen-repo-url"
 agent-browser type "#gen-repo-url" "https://github.com/myk-org/for-testing-only"
@@ -2468,7 +2468,7 @@ Wait for completion (poll status every 10s until ready, max 2 minutes).
 - A page count greater than 0 is displayed
 
 **Capture baseline page count:**
-```
+```shell
 agent-browser navigate http://localhost:8800/status/for-testing-only/gemini/gemini-2.5-flash
 agent-browser javascript "document.getElementById('page-count').textContent"
 ```
@@ -2476,7 +2476,7 @@ agent-browser javascript "document.getElementById('page-count').textContent"
 Store as `BASELINE_PAGE_COUNT`.
 
 **Capture baseline commit SHA:**
-```
+```shell
 agent-browser javascript "document.getElementById('commit-sha')?.textContent || document.querySelector('[data-commit]')?.getAttribute('data-commit')"
 ```
 
@@ -2489,12 +2489,12 @@ Store as `BASELINE_COMMIT`.
 **Precondition:** Baseline docs exist from Test 14.1. A new commit has been pushed to the test repo (or simulate by ensuring the stored commit SHA differs from HEAD).
 
 **Commands:**
-```
+```shell
 agent-browser navigate http://localhost:8800/
 ```
 
 Find the regenerate controls for the `for-testing-only` variant and regenerate WITHOUT force:
-```
+```shell
 agent-browser javascript "document.querySelector('[data-regen-force]').checked = false"
 agent-browser click "[data-regenerate-variant='for-testing-only']"
 agent-browser wait 3000
@@ -2513,7 +2513,7 @@ agent-browser screenshot
 ### 14.3 Verify incremental planner runs (not full planner)
 
 **Commands:**
-```
+```shell
 agent-browser navigate http://localhost:8800/status/for-testing-only/gemini/gemini-2.5-flash
 agent-browser wait 10000
 agent-browser javascript "Array.from(document.querySelectorAll('#log-body > *')).map(el => el.textContent)"
@@ -2534,7 +2534,7 @@ agent-browser screenshot
 **Precondition:** Incremental generation from Test 14.2 has completed. Wait for completion if needed (poll until ready).
 
 **Commands:**
-```
+```shell
 agent-browser navigate http://localhost:8800/status/for-testing-only/gemini/gemini-2.5-flash
 agent-browser wait 5000
 agent-browser javascript "document.getElementById('status-text').textContent"
@@ -2542,7 +2542,7 @@ agent-browser javascript "document.getElementById('status-text').textContent"
 
 Verify status is `ready`. Then check the activity log for cache hits:
 
-```
+```shell
 agent-browser javascript "Array.from(document.querySelectorAll('#log-body > *')).filter(el => el.textContent.toLowerCase().includes('cache') || el.textContent.toLowerCase().includes('unchanged') || el.textContent.toLowerCase().includes('skip')).length > 0"
 ```
 
@@ -2559,7 +2559,7 @@ agent-browser javascript "Array.from(document.querySelectorAll('#log-body > *'))
 **Precondition:** Incremental generation completed from Test 14.2.
 
 **Commands:**
-```
+```shell
 agent-browser navigate http://localhost:8800/docs/for-testing-only/gemini/gemini-2.5-flash/
 agent-browser screenshot
 ```
@@ -2576,7 +2576,7 @@ agent-browser screenshot
 ### 14.6 Verify page count remains the same (plan reused)
 
 **Commands:**
-```
+```shell
 agent-browser navigate http://localhost:8800/status/for-testing-only/gemini/gemini-2.5-flash
 agent-browser javascript "document.getElementById('page-count').textContent"
 ```
@@ -2600,7 +2600,7 @@ agent-browser javascript "document.getElementById('page-count').textContent"
 
 **Precondition:** Log in as `admin`. Ensure at least two users have generated docs for the same repo. Use `testuser-e2e` and `userb-e2e` from Test 11.9 (both have `for-testing-only` with `gemini/gemini-2.5-flash`). If not present, regenerate them.
 
-```
+```shell
 agent-browser navigate http://localhost:8800/logout
 agent-browser wait-for-navigation
 agent-browser type "#username" "admin"
@@ -2612,20 +2612,20 @@ agent-browser wait-for-navigation
 ### 15.1 Admin deletes a specific user's variant via Delete button
 
 **Commands:**
-```
+```shell
 agent-browser navigate http://localhost:8800/
 agent-browser screenshot
 ```
 
 Identify the variant card for `userb-e2e`'s `for-testing-only` project:
-```
+```shell
 agent-browser javascript "document.querySelector('.variant-card[data-owner=\"userb-e2e\"]') !== null"
 ```
 
 **Expected result:** Returns `true` -- the variant card for `userb-e2e` exists.
 
 **Click the Delete button on `userb-e2e`'s variant:**
-```
+```shell
 agent-browser click ".variant-card[data-owner='userb-e2e'] [data-delete-variant]"
 agent-browser wait 1000
 agent-browser screenshot
@@ -2643,13 +2643,13 @@ agent-browser screenshot
 ### 15.2 Verify `?owner=` parameter is sent in the DELETE request
 
 **Commands:**
-```
+```shell
 agent-browser click "#modal-cancel"
 agent-browser wait 500
 ```
 
 Intercept the network request by using JavaScript to verify the delete URL includes the owner parameter:
-```
+```shell
 agent-browser javascript "document.querySelector('.variant-card[data-owner=\"userb-e2e\"] [data-delete-variant]').getAttribute('data-delete-variant')"
 ```
 
@@ -2666,7 +2666,7 @@ agent-browser javascript "document.querySelector('.variant-card[data-owner=\"use
 **Commands:**
 
 First, confirm the delete of `userb-e2e`'s variant:
-```
+```shell
 agent-browser click ".variant-card[data-owner='userb-e2e'] [data-delete-variant]"
 agent-browser wait 1000
 agent-browser click "#modal-ok"
@@ -2682,7 +2682,7 @@ agent-browser screenshot
 - The variant card for `testuser-e2e`'s `for-testing-only` still exists
 
 **Verify:**
-```
+```shell
 agent-browser javascript "document.querySelector('.variant-card[data-owner=\"userb-e2e\"]') === null"
 agent-browser javascript "document.querySelector('.variant-card[data-owner=\"testuser-e2e\"]') !== null"
 ```
@@ -2698,12 +2698,12 @@ agent-browser javascript "document.querySelector('.variant-card[data-owner=\"tes
 **Precondition:** If any legacy variants exist (variants created before owner-scoping was introduced, with an empty or null owner), this test applies. If no legacy variants exist, this test can be skipped.
 
 **Commands:**
-```
+```shell
 agent-browser javascript "document.querySelector('.variant-card[data-owner=\"\"]') !== null || document.querySelector('.variant-card:not([data-owner])') !== null"
 ```
 
 If returns `true`, proceed to delete the legacy variant:
-```
+```shell
 agent-browser click ".variant-card:not([data-owner]) [data-delete-variant], .variant-card[data-owner=''] [data-delete-variant]"
 agent-browser wait 1000
 agent-browser click "#modal-ok"
@@ -2726,20 +2726,20 @@ If returns `false` (no legacy variants), this test is **SKIPPED**.
 **Precondition:** Regenerate variants for both `testuser-e2e` and `userb-e2e` so there are multiple variants to delete. If only one variant remains, generate a second one.
 
 **Commands:**
-```
+```shell
 agent-browser navigate http://localhost:8800/
 agent-browser screenshot
 ```
 
 Locate the "Delete All" button for the `for-testing-only` project group:
-```
+```shell
 agent-browser javascript "document.querySelector('.project-group[data-repo=\"for-testing-only\"] [data-delete-all]') !== null"
 ```
 
 **Expected result:** Returns `true`.
 
 **Click Delete All:**
-```
+```shell
 agent-browser click ".project-group[data-repo='for-testing-only'] [data-delete-all]"
 agent-browser wait 1000
 agent-browser screenshot
@@ -2752,7 +2752,7 @@ agent-browser screenshot
 - The modal body warns that all variants of the project will be removed
 
 **Confirm deletion:**
-```
+```shell
 agent-browser click "#modal-ok"
 agent-browser wait 3000
 agent-browser screenshot
@@ -2764,7 +2764,7 @@ agent-browser screenshot
 - A toast notification confirms the deletion
 
 **Verify:**
-```
+```shell
 agent-browser javascript "document.querySelector('.project-group[data-repo=\"for-testing-only\"]') === null"
 ```
 
@@ -2776,7 +2776,7 @@ agent-browser javascript "document.querySelector('.project-group[data-repo=\"for
 
 **Precondition:** Regenerate a variant for `testuser-e2e` so there is a variant to test against.
 
-```
+```shell
 agent-browser navigate http://localhost:8800/logout
 agent-browser wait-for-navigation
 agent-browser type "#username" "testuser-e2e"
@@ -2792,7 +2792,7 @@ agent-browser click "#gen-submit"
 ```
 
 Wait for completion. Then log in as admin:
-```
+```shell
 agent-browser navigate http://localhost:8800/logout
 agent-browser wait-for-navigation
 agent-browser type "#username" "admin"
@@ -2802,7 +2802,7 @@ agent-browser wait-for-navigation
 ```
 
 **Commands:**
-```
+```shell
 agent-browser navigate http://localhost:8800/
 agent-browser click ".variant-card[data-owner='testuser-e2e'] [data-delete-variant]"
 agent-browser wait 1000
@@ -2818,7 +2818,7 @@ agent-browser screenshot
 - The text might read something like "Delete variant for-testing-only/gemini/gemini-2.5-flash owned by testuser-e2e?"
 
 **Cancel:**
-```
+```shell
 agent-browser click "#modal-cancel"
 ```
 
@@ -2845,7 +2845,7 @@ The `testuser-e2e` variant regenerated in 15.6's precondition is needed by Tests
 **Precondition:** An incremental generation has been triggered (from Test 14.2 or a new one). This test verifies the backend behavior through the activity log and API responses.
 
 **Commands:**
-```
+```shell
 agent-browser navigate http://localhost:8800/status/for-testing-only/gemini/gemini-2.5-flash
 agent-browser wait 10000
 agent-browser javascript "Array.from(document.querySelectorAll('#log-body > *')).map(el => el.textContent)"
@@ -2863,7 +2863,7 @@ agent-browser screenshot
 ### 16.2 Verify patches are applied correctly to existing content
 
 **Commands:**
-```
+```shell
 agent-browser navigate http://localhost:8800/docs/for-testing-only/gemini/gemini-2.5-flash/
 agent-browser screenshot
 agent-browser javascript "document.querySelector('.content, .main-content, article')?.innerHTML.length > 0"
@@ -2883,7 +2883,7 @@ agent-browser javascript "document.querySelector('.content, .main-content, artic
 **Note:** This test verifies graceful degradation. It may require inspecting server logs or the activity log for evidence of fallback behavior.
 
 **Commands:**
-```
+```shell
 agent-browser navigate http://localhost:8800/status/for-testing-only/gemini/gemini-2.5-flash
 agent-browser javascript "Array.from(document.querySelectorAll('#log-body > *')).filter(el => el.textContent.toLowerCase().includes('fallback') || el.textContent.toLowerCase().includes('full generation') || el.textContent.toLowerCase().includes('patch failed')).map(el => el.textContent)"
 ```
@@ -2902,7 +2902,7 @@ agent-browser javascript "Array.from(document.querySelectorAll('#log-body > *'))
 **Note:** This test verifies that the system handles diff retrieval failures gracefully. If the git diff cannot be retrieved (e.g., repository unavailable), the system should fall back to a full generation.
 
 **Commands:**
-```
+```shell
 agent-browser navigate http://localhost:8800/status/for-testing-only/gemini/gemini-2.5-flash
 agent-browser javascript "Array.from(document.querySelectorAll('#log-body > *')).filter(el => el.textContent.toLowerCase().includes('diff') && (el.textContent.toLowerCase().includes('fail') || el.textContent.toLowerCase().includes('error') || el.textContent.toLowerCase().includes('fallback'))).map(el => el.textContent)"
 ```
@@ -2926,7 +2926,7 @@ agent-browser javascript "Array.from(document.querySelectorAll('#log-body > *'))
 
 **Precondition:** Log in as `testuser-e2e` and trigger a forced regeneration to observe the progress page behavior.
 
-```
+```shell
 agent-browser navigate http://localhost:8800/logout
 agent-browser wait-for-navigation
 agent-browser type "#username" "testuser-e2e"
@@ -2938,7 +2938,7 @@ agent-browser wait-for-navigation
 ### 17.1 Page count resets to 0 at start of regeneration
 
 **Commands:**
-```
+```shell
 agent-browser navigate http://localhost:8800/
 agent-browser javascript "document.querySelector('[data-regen-force]').checked = true"
 agent-browser click "[data-regenerate-variant='for-testing-only']"
@@ -2959,7 +2959,7 @@ agent-browser screenshot
 ### 17.2 Correct total page count shown once plan is ready
 
 **Commands:**
-```
+```shell
 agent-browser wait 15000
 agent-browser screenshot
 agent-browser javascript "document.querySelector('.progress-bar, [data-progress]')?.textContent || document.getElementById('page-count')?.textContent"
@@ -2979,12 +2979,12 @@ agent-browser javascript "document.querySelector('.progress-bar, [data-progress]
 **Commands:**
 
 Poll the progress counter during generation:
-```
+```shell
 agent-browser javascript "const progress = document.querySelector('.progress-text, [data-progress-text]')?.textContent; const match = progress?.match(/(\\d+)\\s*\\/\\s*(\\d+)/); match ? {current: parseInt(match[1]), total: parseInt(match[2]), overflow: parseInt(match[1]) > parseInt(match[2])} : 'no progress display found'"
 ```
 
 Repeat every 5 seconds during generation until status is `ready`:
-```
+```shell
 agent-browser wait 5000
 agent-browser javascript "const progress = document.querySelector('.progress-text, [data-progress-text]')?.textContent; const match = progress?.match(/(\\d+)\\s*\\/\\s*(\\d+)/); match ? {current: parseInt(match[1]), total: parseInt(match[2]), overflow: parseInt(match[1]) > parseInt(match[2])} : 'no progress display found'"
 ```
@@ -3012,7 +3012,7 @@ Wait for generation to complete before continuing.
 
 **Precondition:** Log in as `admin`.
 
-```
+```shell
 agent-browser navigate http://localhost:8800/logout
 agent-browser wait-for-navigation
 agent-browser type "#username" "admin"
@@ -3022,7 +3022,7 @@ agent-browser wait-for-navigation
 ```
 
 **Commands:**
-```
+```shell
 agent-browser navigate http://localhost:8800/
 agent-browser click ".username-dropdown, .user-menu-toggle, [data-dropdown-toggle]"
 agent-browser wait 500
@@ -3044,7 +3044,7 @@ agent-browser screenshot
 
 **Precondition:** Log in as `testuser-e2e`.
 
-```
+```shell
 agent-browser navigate http://localhost:8800/logout
 agent-browser wait-for-navigation
 agent-browser type "#username" "testuser-e2e"
@@ -3054,7 +3054,7 @@ agent-browser wait-for-navigation
 ```
 
 **Commands:**
-```
+```shell
 agent-browser navigate http://localhost:8800/
 agent-browser click ".username-dropdown, .user-menu-toggle, [data-dropdown-toggle]"
 agent-browser wait 500
@@ -3075,7 +3075,7 @@ agent-browser screenshot
 
 **Precondition:** Log in as `admin` and navigate to the admin panel.
 
-```
+```shell
 agent-browser navigate http://localhost:8800/logout
 agent-browser wait-for-navigation
 agent-browser type "#username" "admin"
@@ -3086,7 +3086,7 @@ agent-browser navigate http://localhost:8800/admin
 ```
 
 **Commands:**
-```
+```shell
 agent-browser click ".username-dropdown, .user-menu-toggle, [data-dropdown-toggle]"
 agent-browser wait 500
 agent-browser screenshot
@@ -3107,7 +3107,7 @@ agent-browser screenshot
 **Precondition:** The dropdown is open from the previous test step. If not, open it first.
 
 **Commands:**
-```
+```shell
 agent-browser navigate http://localhost:8800/
 agent-browser click ".username-dropdown, .user-menu-toggle, [data-dropdown-toggle]"
 agent-browser wait 500
@@ -3117,7 +3117,7 @@ agent-browser screenshot
 **Check:** The dropdown is open.
 
 **Now click outside the dropdown:**
-```
+```shell
 agent-browser click "body"
 agent-browser wait 500
 agent-browser screenshot
@@ -3134,7 +3134,7 @@ agent-browser screenshot
 ### 18.5 Escape key closes dropdown
 
 **Commands:**
-```
+```shell
 agent-browser navigate http://localhost:8800/
 agent-browser click ".username-dropdown, .user-menu-toggle, [data-dropdown-toggle]"
 agent-browser wait 500
@@ -3143,7 +3143,7 @@ agent-browser wait 500
 **Check:** The dropdown is open.
 
 **Press Escape:**
-```
+```shell
 agent-browser press "Escape"
 agent-browser wait 500
 agent-browser screenshot
@@ -3162,7 +3162,7 @@ agent-browser screenshot
 
 **Precondition:** Navigate to admin panel, open a modal, then verify Escape closes the modal (not the dropdown behind it).
 
-```
+```shell
 agent-browser navigate http://localhost:8800/admin
 agent-browser click "[data-delete-user='testuser-e2e']"
 agent-browser wait 1000
@@ -3172,7 +3172,7 @@ agent-browser screenshot
 **Check:** The modal is open.
 
 **Press Escape:**
-```
+```shell
 agent-browser press "Escape"
 agent-browser wait 500
 agent-browser javascript "document.getElementById('custom-modal').style.display"
@@ -3190,14 +3190,14 @@ agent-browser javascript "document.getElementById('custom-modal').style.display"
 ### 18.7 Theme toggle works independently (borderless text style)
 
 **Commands:**
-```
+```shell
 agent-browser navigate http://localhost:8800/
 agent-browser screenshot
 ```
 
 **Check:** The theme toggle button exists and is styled independently from the dropdown.
 
-```
+```shell
 agent-browser javascript "document.querySelector('#theme-toggle') !== null"
 agent-browser javascript "window.getComputedStyle(document.querySelector('#theme-toggle')).borderWidth"
 ```
@@ -3208,7 +3208,7 @@ agent-browser javascript "window.getComputedStyle(document.querySelector('#theme
 - The theme toggle is not inside the dropdown menu -- it operates independently
 
 **Toggle theme:**
-```
+```shell
 agent-browser click "#theme-toggle"
 agent-browser javascript "document.documentElement.getAttribute('data-theme')"
 ```
@@ -3231,7 +3231,7 @@ agent-browser javascript "document.documentElement.getAttribute('data-theme')"
 
 **Precondition:** Log in as `admin` to see multiple projects and variants.
 
-```
+```shell
 agent-browser navigate http://localhost:8800/logout
 agent-browser wait-for-navigation
 agent-browser type "#username" "admin"
@@ -3242,7 +3242,7 @@ agent-browser navigate http://localhost:8800/
 ```
 
 **Commands:**
-```
+```shell
 agent-browser screenshot
 agent-browser javascript "const header = document.querySelector('.project-header, .project-group-header'); const card = document.querySelector('.variant-card'); if (header && card) { const headerRect = header.getBoundingClientRect(); const cardRect = card.getBoundingClientRect(); ({headerLeft: headerRect.left, cardLeft: cardRect.left, indented: cardRect.left > headerRect.left}); } else { 'elements not found'; }"
 ```
@@ -3255,7 +3255,7 @@ agent-browser javascript "const header = document.querySelector('.project-header
 - Alternatively, the variant cards may have a `margin-left` or `padding-left` CSS value that creates indentation
 
 **Verify via CSS:**
-```
+```shell
 agent-browser javascript "const card = document.querySelector('.variant-card'); card ? window.getComputedStyle(card).marginLeft : 'no variant card found'"
 ```
 
@@ -3267,7 +3267,7 @@ agent-browser javascript "const card = document.querySelector('.variant-card'); 
 ### 19.2 Variant cards have slightly different background from project header
 
 **Commands:**
-```
+```shell
 agent-browser javascript "const header = document.querySelector('.project-header, .project-group-header'); const card = document.querySelector('.variant-card'); if (header && card) { ({headerBg: window.getComputedStyle(header).backgroundColor, cardBg: window.getComputedStyle(card).backgroundColor, different: window.getComputedStyle(header).backgroundColor !== window.getComputedStyle(card).backgroundColor}); } else { 'elements not found'; }"
 ```
 
@@ -3279,7 +3279,7 @@ agent-browser javascript "const header = document.querySelector('.project-header
 - The difference should be subtle (e.g., a slightly lighter or darker shade) to maintain visual cohesion
 
 **Screenshot for visual verification:**
-```
+```shell
 agent-browser screenshot
 ```
 
@@ -3295,7 +3295,7 @@ agent-browser screenshot
 **Precondition:** Logged in as `admin` on the dashboard with at least one project group visible.
 
 **Commands:**
-```
+```shell
 agent-browser navigate http://localhost:8800/
 agent-browser screenshot
 ```
@@ -3303,7 +3303,7 @@ agent-browser screenshot
 **Check:** Project groups have clickable headers that toggle visibility of their variant cards.
 
 **Verify the project header is clickable:**
-```
+```shell
 agent-browser javascript "const header = document.querySelector('.project-header, .project-group-header'); header ? header.style.cursor || window.getComputedStyle(header).cursor : 'no header found'"
 ```
 
@@ -3311,7 +3311,7 @@ agent-browser javascript "const header = document.querySelector('.project-header
 - The cursor style is `pointer` (indicating the header is clickable)
 
 **Click the project header to collapse:**
-```
+```shell
 agent-browser click ".project-header, .project-group-header"
 agent-browser wait 500
 agent-browser screenshot
@@ -3325,14 +3325,14 @@ agent-browser screenshot
 - A collapse indicator (chevron, arrow, or similar) changes direction to indicate collapsed state
 
 **Verify cards are hidden:**
-```
+```shell
 agent-browser javascript "const group = document.querySelector('.project-group'); const cards = group?.querySelectorAll('.variant-card'); cards ? Array.from(cards).every(c => c.offsetHeight === 0 || window.getComputedStyle(c).display === 'none' || c.closest('.collapsed, [data-collapsed]') !== null) : 'no cards found'"
 ```
 
 **Expected result:** Returns `true` -- all variant cards in the group are hidden.
 
 **Click again to expand:**
-```
+```shell
 agent-browser click ".project-header, .project-group-header"
 agent-browser wait 500
 agent-browser screenshot
@@ -3350,14 +3350,14 @@ agent-browser screenshot
 **Precondition:** Logged in as `admin` on the dashboard. At least one project group exists with variants.
 
 **Commands:**
-```
+```shell
 agent-browser navigate http://localhost:8800/
 agent-browser screenshot
 ```
 
 **Check:** The project header displays counts of ready and error variants.
 
-```
+```shell
 agent-browser javascript "const header = document.querySelector('.project-header, .project-group-header'); header ? header.textContent : 'no header found'"
 ```
 
@@ -3367,7 +3367,7 @@ agent-browser javascript "const header = document.querySelector('.project-header
 - Error count reflects the number of variants with `error` or `aborted` status
 
 **Verify counts match actual variant statuses:**
-```
+```shell
 agent-browser javascript "const group = document.querySelector('.project-group'); if (group) { const readyCards = group.querySelectorAll('.variant-card[data-status=\"ready\"]').length; const errorCards = group.querySelectorAll('.variant-card[data-status=\"error\"], .variant-card[data-status=\"aborted\"]').length; ({readyCards, errorCards}); } else { 'no project group found'; }"
 ```
 
@@ -3412,7 +3412,7 @@ This test provides a comprehensive cleanup of ALL test-created artifacts across 
 
 **Precondition:** Log in as `admin`.
 
-```
+```shell
 agent-browser navigate http://localhost:8800/logout
 agent-browser wait-for-navigation
 agent-browser type "#username" "admin"
@@ -3422,7 +3422,7 @@ agent-browser wait-for-navigation
 ```
 
 **Revoke `userb-e2e` access to `testuser-e2e`'s project (granted in Test 13.7, may already be revoked):**
-```
+```shell
 agent-browser eval "fetch('/api/admin/projects/for-testing-only/access/userb-e2e?owner=testuser-e2e', {method:'DELETE', credentials:'same-origin'}).then(r => r.status)"
 ```
 
@@ -3433,7 +3433,7 @@ agent-browser eval "fetch('/api/admin/projects/for-testing-only/access/userb-e2e
 ### 20.2 Delete test project variants
 
 **Delete `testuser-e2e`'s `for-testing-only` variant (if it exists):**
-```
+```shell
 agent-browser eval "fetch('/api/projects/for-testing-only/gemini/gemini-2.5-flash?owner=testuser-e2e', {method:'DELETE', credentials:'same-origin'}).then(r => r.status)"
 agent-browser wait 2000
 ```
@@ -3441,7 +3441,7 @@ agent-browser wait 2000
 **Expected result:** Returns `200` (deleted) or `404` (already deleted). Both are acceptable.
 
 **Delete `userb-e2e`'s `for-testing-only` variant (if it exists):**
-```
+```shell
 agent-browser eval "fetch('/api/projects/for-testing-only/gemini/gemini-2.5-flash?owner=userb-e2e', {method:'DELETE', credentials:'same-origin'}).then(r => r.status)"
 agent-browser wait 2000
 ```
@@ -3453,7 +3453,7 @@ agent-browser wait 2000
 ### 20.3 Delete test users
 
 **Navigate to admin panel:**
-```
+```shell
 agent-browser navigate http://localhost:8800/admin
 agent-browser wait 2000
 ```
@@ -3462,12 +3462,12 @@ agent-browser wait 2000
 
 For each user in [`testuser-e2e`, `testadmin-e2e`, `testviewer-e2e`, `userb-e2e`]:
 
-```
+```shell
 agent-browser javascript "document.getElementById('user-row-testuser-e2e') !== null"
 ```
 
 If `true`:
-```
+```shell
 agent-browser click "[data-delete-user='testuser-e2e']"
 agent-browser wait 1000
 agent-browser click "#modal-ok"
@@ -3475,12 +3475,12 @@ agent-browser wait 2000
 ```
 
 Repeat for `testadmin-e2e`:
-```
+```shell
 agent-browser javascript "document.getElementById('user-row-testadmin-e2e') !== null"
 ```
 
 If `true`:
-```
+```shell
 agent-browser click "[data-delete-user='testadmin-e2e']"
 agent-browser wait 1000
 agent-browser click "#modal-ok"
@@ -3488,12 +3488,12 @@ agent-browser wait 2000
 ```
 
 Repeat for `testviewer-e2e`:
-```
+```shell
 agent-browser javascript "document.getElementById('user-row-testviewer-e2e') !== null"
 ```
 
 If `true`:
-```
+```shell
 agent-browser click "[data-delete-user='testviewer-e2e']"
 agent-browser wait 1000
 agent-browser click "#modal-ok"
@@ -3501,12 +3501,12 @@ agent-browser wait 2000
 ```
 
 Repeat for `userb-e2e`:
-```
+```shell
 agent-browser javascript "document.getElementById('user-row-userb-e2e') !== null"
 ```
 
 If `true`:
-```
+```shell
 agent-browser click "[data-delete-user='userb-e2e']"
 agent-browser wait 1000
 agent-browser click "#modal-ok"
@@ -3518,7 +3518,7 @@ agent-browser wait 2000
 ### 20.4 Verify complete cleanup
 
 **Verify no test users remain:**
-```
+```shell
 agent-browser javascript "['testuser-e2e', 'testadmin-e2e', 'testviewer-e2e', 'userb-e2e'].filter(u => document.getElementById('user-row-' + u) !== null)"
 agent-browser screenshot
 ```
@@ -3528,7 +3528,7 @@ agent-browser screenshot
 - No test user rows remain in the users table
 
 **Verify no test project variants remain:**
-```
+```shell
 agent-browser navigate http://localhost:8800/
 agent-browser javascript "Array.from(document.querySelectorAll('.variant-card')).filter(c => ['testuser-e2e', 'userb-e2e'].includes(c.getAttribute('data-owner'))).length"
 ```
@@ -3546,7 +3546,7 @@ agent-browser javascript "Array.from(document.querySelectorAll('.variant-card'))
 > Run Test 20 as the final step of the test suite.
 
 **Close browser:**
-```
+```shell
 agent-browser close
 ```
 

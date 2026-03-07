@@ -1744,8 +1744,8 @@
         }
 
         /* ----- Helper: build composite key for a variant ----- */
-        function variantKey(name, provider, model) {
-            return name + '/' + provider + '/' + model;
+        function variantKey(name, provider, model, owner) {
+            return (owner || '') + '/' + name + '/' + provider + '/' + model;
         }
 
         /* ----- Auth redirect detection ----- */
@@ -1804,7 +1804,8 @@
                 var name = card.getAttribute('data-project');
                 var provider = card.getAttribute('data-provider');
                 var model = card.getAttribute('data-model');
-                var key = variantKey(name, provider, model);
+                var owner = card.getAttribute('data-owner');
+                var key = variantKey(name, provider, model, owner);
                 map[key] = card;
             });
             return map;
@@ -1839,7 +1840,7 @@
 
                     projectsList.forEach(function(proj) {
                         if (proj.status === 'generating') anyGenerating = true;
-                        var key = variantKey(proj.name, proj.ai_provider || '', proj.ai_model || '');
+                        var key = variantKey(proj.name, proj.ai_provider || '', proj.ai_model || '', proj.owner || '');
                         var card = existingCards[key];
                         if (!card) {
                             // New variant appeared: reload to get server-rendered card
@@ -1903,7 +1904,7 @@
                     var existingCards = getExistingVariantCards();
 
                     projectsList.forEach(function(proj) {
-                        var key = variantKey(proj.name, proj.ai_provider || '', proj.ai_model || '');
+                        var key = variantKey(proj.name, proj.ai_provider || '', proj.ai_model || '', proj.owner || '');
                         var card = existingCards[key];
                         if (card) {
                             updateVariantProgressDOM(card, proj);
@@ -2324,16 +2325,14 @@
             var deletePromises = [];
             variantButtons.forEach(function(btn) {
                 var variantPath = btn.getAttribute('data-delete-variant');
-                var owner = btn.getAttribute('data-delete-owner') || '';
+                var owner = btn.getAttribute('data-delete-owner');
                 var parts = variantPath.split('/');
                 var name = parts[0];
                 var provider = parts[1];
                 var model = parts.slice(2).join('/');
 
                 var url = '/api/projects/' + encodeURIComponent(name) + '/' + encodeURIComponent(provider) + '/' + encodeURIComponent(model);
-                if (owner) {
-                    url += '?owner=' + encodeURIComponent(owner);
-                }
+                url += '?owner=' + encodeURIComponent(owner || '');
 
                 deletePromises.push(
                     fetch(url, {
@@ -2367,23 +2366,23 @@
 
                 if (failed === 0) {
                     showToast('All ' + succeeded + ' variant' + (succeeded > 1 ? 's' : '') + ' of ' + projectName + ' deleted', 'success');
-                } else {
-                    showToast(succeeded + ' deleted, ' + failed + ' failed for ' + projectName, 'error', 6000);
-                }
 
-                /* Remove the entire project group with animation */
-                group.style.transition = 'opacity 0.3s ease';
-                group.style.opacity = '0';
-                setTimeout(function() {
-                    group.remove();
-                    var remaining = document.querySelectorAll('.project-group').length;
-                    var countEl = document.getElementById('projects-count');
-                    if (countEl) countEl.textContent = '(' + remaining + ')';
-                    if (remaining === 0) {
-                        buildEmptyState();
-                    }
-                    applyPagination();
-                }, 300);
+                    /* Remove the entire project group with animation only when ALL succeeded */
+                    group.style.transition = 'opacity 0.3s ease';
+                    group.style.opacity = '0';
+                    setTimeout(function() {
+                        group.remove();
+                        var remaining = document.querySelectorAll('.project-group').length;
+                        var countEl = document.getElementById('projects-count');
+                        if (countEl) countEl.textContent = '(' + remaining + ')';
+                        if (remaining === 0) {
+                            buildEmptyState();
+                        }
+                        applyPagination();
+                    }, 300);
+                } else {
+                    showToast(succeeded + ' deleted, ' + failed + ' failed for ' + projectName + '. Refresh to see current state.', 'error', 6000);
+                }
             } catch (err) {
                 var msg = (err && err.detail) || (err && err.message) || 'Delete all failed';
                 showToast(msg, 'error', 6000);
