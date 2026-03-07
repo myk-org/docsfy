@@ -55,3 +55,63 @@ def test_build_incremental_planner_prompt() -> None:
     assert "introduction" in prompt
     assert "configuration" in prompt
     assert "JSON array" in prompt
+    assert "must be the only item" in prompt.lower()
+    assert "do not output empty strings" in prompt.lower()
+
+
+def test_build_incremental_page_prompt() -> None:
+    from docsfy.prompts import build_incremental_page_prompt
+
+    existing_content = "# Introduction\n\nThis is the intro page."
+    changed_files = ["src/main.py", "src/config.py"]
+    diff_content = "diff --git a/src/main.py\n+added line"
+
+    prompt = build_incremental_page_prompt(
+        project_name="my-repo",
+        page_title="Introduction",
+        page_description="Overview of the project",
+        existing_content=existing_content,
+        changed_files=changed_files,
+        diff_content=diff_content,
+    )
+    assert "my-repo" in prompt
+    assert "Introduction" in prompt
+    assert "UPDATE" in prompt or "update" in prompt.lower()
+    assert "src/main.py" in prompt
+    assert existing_content in prompt
+    assert diff_content in prompt
+    assert "<repository_diff>" in prompt
+    assert "<existing_page_markdown>" in prompt
+
+    # Verify critical guardrail language is present
+    assert "json object" in prompt.lower()
+    assert '"updates"' in prompt
+    assert '"old_text"' in prompt
+    assert '"new_text"' in prompt
+    assert '{"updates": []}' in prompt
+    assert "do not return the full page" in prompt.lower()
+    assert "entire existing page as a single" in prompt.lower()
+    assert "smallest contiguous block" in prompt.lower()
+    assert "byte-for-byte" in prompt.lower()
+    assert "ignore" in prompt.lower()
+    assert "escaped newlines" in prompt.lower()
+    assert "\\\\n" in prompt
+    assert "actual codebase" in prompt.lower()
+    assert "> **note:** text" in prompt.lower()
+
+
+def test_build_incremental_page_prompt_truncates_large_diff() -> None:
+    from docsfy.prompts import build_incremental_page_prompt
+
+    large_diff = "x" * 40000  # exceeds _MAX_DIFF_CHARS (30000)
+    prompt = build_incremental_page_prompt(
+        project_name="my-repo",
+        page_title="API",
+        page_description="API docs",
+        existing_content="# API\n\nAPI page.",
+        changed_files=["src/api.py"],
+        diff_content=large_diff,
+    )
+    assert "truncated" in prompt.lower()
+    assert "do not guess" in prompt.lower()
+    assert len(prompt) < len(large_diff)  # prompt must be shorter than raw diff

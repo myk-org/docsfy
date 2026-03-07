@@ -6,8 +6,9 @@ from typing import Any
 from simple_logger.logger import get_logger
 
 from docsfy.ai_client import call_ai_cli, run_parallel_with_limit
-from docsfy.json_parser import parse_json_list_response, parse_json_response
+from docsfy.json_parser import parse_json_array_response, parse_json_response
 from docsfy.prompts import (
+    build_incremental_page_prompt,
     build_incremental_planner_prompt,
     build_page_prompt,
     build_planner_prompt,
@@ -16,6 +17,11 @@ from docsfy.prompts import (
 logger = get_logger(name=__name__)
 
 MAX_CONCURRENT_PAGES = 5
+
+
+def is_unsafe_slug(slug: str) -> bool:
+    """Check if a slug contains path traversal characters."""
+    return "/" in slug or "\\" in slug or slug.startswith(".") or ".." in slug
 
 
 def _strip_ai_preamble(text: str) -> str:
@@ -29,16 +35,13 @@ def _strip_ai_preamble(text: str) -> str:
     return text
 
 
-async def run_planner(
+async def _call_ai_or_raise(
+    prompt: str,
     repo_path: Path,
-    project_name: str,
     ai_provider: str,
     ai_model: str,
     ai_cli_timeout: int | None = None,
-) -> dict[str, Any]:
-    logger.info(f"[{project_name}] Calling AI planner")
-    prompt = build_planner_prompt(project_name)
-    # Build CLI flags based on provider
+) -> str:
     cli_flags = ["--trust"] if ai_provider == "cursor" else None
     success, output = await call_ai_cli(
         prompt=prompt,
@@ -49,8 +52,169 @@ async def run_planner(
         cli_flags=cli_flags,
     )
     if not success:
-        msg = f"Planner failed: {output}"
-        raise RuntimeError(msg)
+        raise RuntimeError(output)
+    return output
+
+
+def _normalize_incremental_planner_result(raw_result: list[Any]) -> list[str]:
+    if not all(isinstance(item, str) for item in raw_result):
+        msg = "Incremental planner output must be a JSON array of strings"
+        raise ValueError(msg)
+
+    result: list[str] = []
+    seen: set[str] = set()
+    for item in raw_result:
+        slug = item.strip()
+        if not slug:
+            msg = "Incremental planner output must not contain empty slugs"
+            raise ValueError(msg)
+        if slug == "all":
+            if len(raw_result) != 1:
+                msg = (
+                    "Incremental planner output must not combine 'all' with other slugs"
+                )
+                raise ValueError(msg)
+            return ["all"]
+        if slug not in seen:
+            seen.add(slug)
+            result.append(slug)
+
+    return result
+
+
+def _parse_incremental_page_updates(raw_text: str) -> list[tuple[str, str]]:
+    payload = parse_json_response(raw_text)
+    if payload is None:
+        msg = "Failed to parse incremental page update JSON"
+        raise ValueError(msg)
+
+    raw_updates = payload.get("updates")
+    if not isinstance(raw_updates, list):
+        msg = "Incremental page update payload must contain an 'updates' list"
+        raise ValueError(msg)
+
+    updates: list[tuple[str, str]] = []
+    for idx, item in enumerate(raw_updates):
+        if not isinstance(item, dict):
+            msg = f"Incremental update #{idx + 1} must be an object"
+            raise ValueError(msg)
+        old_text = item.get("old_text")
+        new_text = item.get("new_text")
+        if not isinstance(old_text, str) or not isinstance(new_text, str):
+            msg = f"Incremental update #{idx + 1} must contain string old_text/new_text values"
+            raise ValueError(msg)
+        if not old_text:
+            msg = f"Incremental update #{idx + 1} has an empty old_text value"
+            raise ValueError(msg)
+        updates.append((old_text, new_text))
+
+    return updates
+
+
+def _apply_incremental_page_updates(existing_content: str, raw_text: str) -> str:
+    updates = _parse_incremental_page_updates(raw_text)
+    if not updates:
+        return existing_content
+
+    replacements: list[tuple[int, int, str]] = []
+    for idx, (old_text, new_text) in enumerate(updates):
+        start = existing_content.find(old_text)
+        if start == -1:
+            msg = f"Incremental update #{idx + 1} old_text was not found in the existing page"
+            raise ValueError(msg)
+        if existing_content.find(old_text, start + 1) != -1:
+            msg = f"Incremental update #{idx + 1} old_text is not unique in the existing page"
+            raise ValueError(msg)
+        replacements.append((start, start + len(old_text), new_text))
+
+    replacements.sort(key=lambda item: item[0])
+    for i in range(1, len(replacements)):
+        prev_end = replacements[i - 1][1]
+        start = replacements[i][0]
+        if start < prev_end:
+            msg = "Incremental updates overlap; expected non-overlapping top-to-bottom replacements"
+            raise ValueError(msg)
+
+    parts: list[str] = []
+    cursor = 0
+    for start, end, new_text in replacements:
+        parts.append(existing_content[cursor:start])
+        parts.append(new_text)
+        cursor = end
+    parts.append(existing_content[cursor:])
+    return "".join(parts)
+
+
+async def _generate_full_page_content(
+    repo_path: Path,
+    project_name: str,
+    page_title: str,
+    page_description: str,
+    ai_provider: str,
+    ai_model: str,
+    ai_cli_timeout: int | None = None,
+) -> str:
+    prompt = build_page_prompt(
+        project_name=project_name,
+        page_title=page_title,
+        page_description=page_description,
+    )
+    output = await _call_ai_or_raise(
+        prompt=prompt,
+        repo_path=repo_path,
+        ai_provider=ai_provider,
+        ai_model=ai_model,
+        ai_cli_timeout=ai_cli_timeout,
+    )
+    return _strip_ai_preamble(output)
+
+
+async def _generate_incremental_page_content(
+    repo_path: Path,
+    project_name: str,
+    page_title: str,
+    page_description: str,
+    existing_content: str,
+    changed_files: list[str],
+    diff_content: str,
+    ai_provider: str,
+    ai_model: str,
+    ai_cli_timeout: int | None = None,
+) -> str:
+    prompt = build_incremental_page_prompt(
+        project_name=project_name,
+        page_title=page_title,
+        page_description=page_description,
+        existing_content=existing_content,
+        changed_files=changed_files,
+        diff_content=diff_content,
+    )
+    output = await _call_ai_or_raise(
+        prompt=prompt,
+        repo_path=repo_path,
+        ai_provider=ai_provider,
+        ai_model=ai_model,
+        ai_cli_timeout=ai_cli_timeout,
+    )
+    return _apply_incremental_page_updates(existing_content, output)
+
+
+async def run_planner(
+    repo_path: Path,
+    project_name: str,
+    ai_provider: str,
+    ai_model: str,
+    ai_cli_timeout: int | None = None,
+) -> dict[str, Any]:
+    logger.info(f"[{project_name}] Calling AI planner")
+    prompt = build_planner_prompt(project_name)
+    output = await _call_ai_or_raise(
+        prompt=prompt,
+        repo_path=repo_path,
+        ai_provider=ai_provider,
+        ai_model=ai_model,
+        ai_cli_timeout=ai_cli_timeout,
+    )
 
     plan = parse_json_response(output)
     if plan is None:
@@ -75,14 +239,18 @@ async def generate_page(
     use_cache: bool = False,
     project_name: str = "",
     owner: str = "",
+    existing_content: str | None = None,
+    changed_files: list[str] | None = None,
+    diff_content: str | None = None,
 ) -> str:
     _label = project_name or repo_path.name
+    prompt_project_name = project_name or repo_path.name
 
     if project_name and not owner:
         logger.warning(f"[{_label}] owner missing for page count update, skipping")
 
     # Validate slug to prevent path traversal
-    if "/" in slug or "\\" in slug or slug.startswith(".") or ".." in slug:
+    if is_unsafe_slug(slug):
         msg = f"Invalid page slug: '{slug}'"
         raise ValueError(msg)
 
@@ -91,24 +259,48 @@ async def generate_page(
         logger.debug(f"[{_label}] Using cached page: {slug}")
         return cache_file.read_text(encoding="utf-8")
 
-    prompt = build_page_prompt(
-        project_name=repo_path.name, page_title=title, page_description=description
-    )
-    # Build CLI flags based on provider
-    cli_flags = ["--trust"] if ai_provider == "cursor" else None
-    success, output = await call_ai_cli(
-        prompt=prompt,
-        cwd=repo_path,
-        ai_provider=ai_provider,
-        ai_model=ai_model,
-        ai_cli_timeout=ai_cli_timeout,
-        cli_flags=cli_flags,
-    )
-    if not success:
-        logger.warning(f"[{_label}] Failed to generate page '{slug}': {output}")
+    try:
+        if existing_content is not None and changed_files is not None:
+            try:
+                output = await _generate_incremental_page_content(
+                    repo_path=repo_path,
+                    project_name=prompt_project_name,
+                    page_title=title,
+                    page_description=description,
+                    existing_content=existing_content,
+                    changed_files=changed_files,
+                    diff_content=diff_content or "",
+                    ai_provider=ai_provider,
+                    ai_model=ai_model,
+                    ai_cli_timeout=ai_cli_timeout,
+                )
+            except (RuntimeError, ValueError) as exc:
+                logger.warning(
+                    f"[{_label}] Incremental update failed for page '{slug}', "
+                    f"falling back to full page generation: {exc}"
+                )
+                output = await _generate_full_page_content(
+                    repo_path=repo_path,
+                    project_name=prompt_project_name,
+                    page_title=title,
+                    page_description=description,
+                    ai_provider=ai_provider,
+                    ai_model=ai_model,
+                    ai_cli_timeout=ai_cli_timeout,
+                )
+        else:
+            output = await _generate_full_page_content(
+                repo_path=repo_path,
+                project_name=prompt_project_name,
+                page_title=title,
+                page_description=description,
+                ai_provider=ai_provider,
+                ai_model=ai_model,
+                ai_cli_timeout=ai_cli_timeout,
+            )
+    except RuntimeError as exc:
+        logger.warning(f"[{_label}] Failed to generate page '{slug}': {exc}")
         output = f"# {title}\n\n*Documentation generation failed. Please re-run.*"
-
-    output = _strip_ai_preamble(output)
     cache_dir.mkdir(parents=True, exist_ok=True)
     cache_file.write_text(output, encoding="utf-8")
     logger.info(f"[{_label}] Generated page: {slug} ({len(output)} chars)")
@@ -141,6 +333,9 @@ async def generate_all_pages(
     use_cache: bool = False,
     project_name: str = "",
     owner: str = "",
+    changed_files: list[str] | None = None,
+    existing_pages: dict[str, str] | None = None,
+    diff_content: str | None = None,
 ) -> dict[str, str]:
     _label = project_name or repo_path.name
 
@@ -154,7 +349,7 @@ async def generate_all_pages(
                     f"[{_label}] Skipping page with no slug in group '{group.get('group', 'unknown')}'"
                 )
                 continue
-            if "/" in slug or "\\" in slug or slug.startswith(".") or ".." in slug:
+            if is_unsafe_slug(slug):
                 logger.warning(f"[{_label}] Skipping path-unsafe slug: '{slug}'")
                 continue
             all_pages.append(
@@ -165,6 +360,7 @@ async def generate_all_pages(
                 }
             )
 
+    _existing_pages = existing_pages or {}
     coroutines = [
         generate_page(
             repo_path=repo_path,
@@ -178,6 +374,9 @@ async def generate_all_pages(
             use_cache=use_cache,
             project_name=project_name,
             owner=owner,
+            existing_content=_existing_pages.get(p["slug"]),
+            changed_files=changed_files,
+            diff_content=diff_content,
         )
         for p in all_pages
     ]
@@ -217,25 +416,32 @@ async def run_incremental_planner(
     prompt = build_incremental_planner_prompt(
         project_name, changed_files, existing_plan
     )
-    cli_flags = ["--trust"] if ai_provider == "cursor" else None
-    success, output = await call_ai_cli(
-        prompt=prompt,
-        cwd=repo_path,
-        ai_provider=ai_provider,
-        ai_model=ai_model,
-        ai_cli_timeout=ai_cli_timeout,
-        cli_flags=cli_flags,
-    )
-    if not success:
+    try:
+        output = await _call_ai_or_raise(
+            prompt=prompt,
+            repo_path=repo_path,
+            ai_provider=ai_provider,
+            ai_model=ai_model,
+            ai_cli_timeout=ai_cli_timeout,
+        )
+    except RuntimeError:
         logger.warning(f"[{project_name}] Incremental planner failed, regenerating all")
         return ["all"]
 
-    result = parse_json_list_response(output)
-    if result is None or not isinstance(result, list):
+    raw_result = parse_json_array_response(output)
+    if raw_result is None or not isinstance(raw_result, list):
+        logger.warning(
+            f"[{project_name}] Incremental planner returned unparseable output, "
+            f"regenerating all. Raw output: {output[:200]}"
+        )
         return ["all"]
-    # Validate all items are strings
-    result = [item for item in result if isinstance(item, str)]
-    if not result:
+    try:
+        result = _normalize_incremental_planner_result(raw_result)
+    except ValueError as exc:
+        logger.warning(
+            f"[{project_name}] Incremental planner normalization failed: {exc}. "
+            f"Raw result: {raw_result}"
+        )
         return ["all"]
     logger.info(
         f"[{project_name}] Incremental planner identified {len(result)} pages to regenerate"

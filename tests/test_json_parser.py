@@ -62,65 +62,63 @@ def test_parse_json_with_escaped_quotes() -> None:
     assert "quoted" in result["project_name"]
 
 
-def test_parse_json_list_direct() -> None:
-    from docsfy.json_parser import parse_json_list_response
+def test_parse_json_array_direct_strings() -> None:
+    from docsfy.json_parser import parse_json_array_response
 
-    result = parse_json_list_response('["introduction", "api-reference"]')
+    result = parse_json_array_response('["introduction", "api-reference"]')
     assert result == ["introduction", "api-reference"]
 
 
-def test_parse_json_list_with_surrounding_text() -> None:
-    from docsfy.json_parser import parse_json_list_response
+def test_parse_json_array_with_surrounding_text() -> None:
+    from docsfy.json_parser import parse_json_array_response
 
     raw = 'Based on the changes, these pages need regeneration:\n["introduction", "configuration"]\n'
-    result = parse_json_list_response(raw)
+    result = parse_json_array_response(raw)
     assert result is not None
     assert "introduction" in result
     assert "configuration" in result
 
 
-def test_parse_json_list_from_code_block() -> None:
-    from docsfy.json_parser import parse_json_list_response
+def test_parse_json_array_from_code_block() -> None:
+    from docsfy.json_parser import parse_json_array_response
 
     raw = '```json\n["api-reference", "quickstart"]\n```'
-    result = parse_json_list_response(raw)
+    result = parse_json_array_response(raw)
     assert result is not None
     assert "api-reference" in result
     assert "quickstart" in result
 
 
-def test_parse_json_list_empty() -> None:
-    from docsfy.json_parser import parse_json_list_response
+def test_parse_json_array_empty() -> None:
+    from docsfy.json_parser import parse_json_array_response
 
-    result = parse_json_list_response("[]")
+    result = parse_json_array_response("[]")
     assert result == []
 
 
-def test_parse_json_list_all() -> None:
-    from docsfy.json_parser import parse_json_list_response
+def test_parse_json_array_all() -> None:
+    from docsfy.json_parser import parse_json_array_response
 
-    result = parse_json_list_response('["all"]')
+    result = parse_json_array_response('["all"]')
     assert result == ["all"]
 
 
-def test_parse_json_list_returns_none_for_garbage() -> None:
-    from docsfy.json_parser import parse_json_list_response
+def test_parse_json_array_returns_none_for_garbage() -> None:
+    from docsfy.json_parser import parse_json_array_response
 
-    result = parse_json_list_response("this is not json at all")
+    result = parse_json_array_response("this is not json at all")
     assert result is None
 
 
-def test_parse_json_list_returns_none_for_empty() -> None:
-    from docsfy.json_parser import parse_json_list_response
+def test_parse_json_array_returns_none_for_empty() -> None:
+    from docsfy.json_parser import parse_json_array_response
 
-    result = parse_json_list_response("")
+    result = parse_json_array_response("")
     assert result is None
 
 
-def test_parse_json_list_non_string_items() -> None:
-    from docsfy.json_parser import parse_json_list_response
+def test_parse_json_array_preserves_non_string_items() -> None:
+    from docsfy.json_parser import parse_json_array_response
 
-    result = parse_json_list_response('[1, "valid", null, true]')
-    # Should handle gracefully - only strings are returned
-    assert result is not None
-    assert result == ["valid"]
+    result = parse_json_array_response('[1, "valid", null, true]')
+    assert result == [1, "valid", None, True]

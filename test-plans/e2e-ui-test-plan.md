@@ -1,5 +1,12 @@
 # docsfy E2E UI Test Plan
 
+## Cleanup Expectations
+
+> **Important:** Each test section is responsible for cleaning up ONLY the data it creates.
+> Do NOT delete pre-existing projects, users, or variants that were not created by the test.
+> Tests that only read data or verify UI behavior (no data creation) do not need cleanup steps.
+> The final **Test 20: Cleanup and Teardown** provides a comprehensive inventory of all test-created artifacts and a full teardown procedure.
+
 ## Prerequisites
 
 - Server running at `http://localhost:8800`
@@ -2423,12 +2430,654 @@ agent-browser screenshot
 
 ---
 
-## Cleanup
+## Test 14: Incremental Documentation Updates
 
-Delete all test users created during this test suite. Log in as admin first.
+**Precondition:** Log in as `testuser-e2e` and ensure a completed generation exists for `for-testing-only` with `gemini/gemini-2.5-flash`. If not, generate one with the Force checkbox checked.
 
+```shell
+agent-browser navigate http://localhost:8800/logout
+agent-browser wait-for-navigation
+agent-browser type "#username" "testuser-e2e"
+agent-browser type "#api_key" "<TEST_USER_PASSWORD>"
+agent-browser click ".btn-login"
+agent-browser wait-for-navigation
 ```
-agent-browser navigate http://localhost:8800/login
+
+### 14.1 Force-generate docs for baseline
+
+**Commands:**
+```shell
+agent-browser navigate http://localhost:8800/
+agent-browser clear "#gen-repo-url"
+agent-browser type "#gen-repo-url" "https://github.com/myk-org/for-testing-only"
+agent-browser select "#gen-provider" "gemini"
+agent-browser clear "#gen-model"
+agent-browser type "#gen-model" "gemini-2.5-flash"
+agent-browser click "#gen-force"
+agent-browser click "#gen-submit"
+agent-browser wait 3000
+```
+
+Wait for completion (poll status every 10s until ready, max 2 minutes).
+
+**Check:** A baseline generation completes successfully.
+
+**Expected result:**
+- The project status is `ready`
+- The status page shows "Documentation generated successfully!"
+- A page count greater than 0 is displayed
+
+**Capture baseline page count:**
+```shell
+agent-browser navigate http://localhost:8800/status/for-testing-only/gemini/gemini-2.5-flash
+agent-browser javascript "document.getElementById('page-count').textContent"
+```
+
+Store as `BASELINE_PAGE_COUNT`.
+
+**Capture baseline commit SHA:**
+```shell
+agent-browser javascript "document.getElementById('commit-sha')?.textContent || document.querySelector('[data-commit]')?.getAttribute('data-commit')"
+```
+
+Store as `BASELINE_COMMIT`.
+
+---
+
+### 14.2 Regenerate without force after code change (incremental)
+
+**Precondition:** Baseline docs exist from Test 14.1. A new commit has been pushed to the test repo (or simulate by ensuring the stored commit SHA differs from HEAD).
+
+**Commands:**
+```shell
+agent-browser navigate http://localhost:8800/
+```
+
+Find the regenerate controls for the `for-testing-only` variant and regenerate WITHOUT force:
+```shell
+agent-browser javascript "document.querySelector('[data-regen-force]').checked = false"
+agent-browser click "[data-regenerate-variant='for-testing-only']"
+agent-browser wait 3000
+agent-browser screenshot
+```
+
+**Check:** The generation starts and uses the incremental planner (not the full planner).
+
+**Expected result:**
+- A toast notification appears indicating generation started
+- The project status changes to `GENERATING`
+- The status page activity log shows an incremental planning stage (e.g., "incremental_planning" or "diff_planning") rather than a full "planning" stage
+
+---
+
+### 14.3 Verify incremental planner runs (not full planner)
+
+**Commands:**
+```shell
+agent-browser navigate http://localhost:8800/status/for-testing-only/gemini/gemini-2.5-flash
+agent-browser wait 10000
+agent-browser javascript "Array.from(document.querySelectorAll('#log-body > *')).map(el => el.textContent)"
+agent-browser screenshot
+```
+
+**Check:** The activity log entries indicate incremental planning was used.
+
+**Expected result:**
+- The log entries include a stage related to incremental or diff-based planning
+- The log does NOT show a full "planning" stage (which would indicate a from-scratch plan)
+- The log may show stages like "diff_analysis", "incremental_planning", or similar
+
+---
+
+### 14.4 Verify unchanged pages are cached (byte-for-byte identical)
+
+**Precondition:** Incremental generation from Test 14.2 has completed. Wait for completion if needed (poll until ready).
+
+**Commands:**
+```shell
+agent-browser navigate http://localhost:8800/status/for-testing-only/gemini/gemini-2.5-flash
+agent-browser wait 5000
+agent-browser javascript "document.getElementById('status-text').textContent"
+```
+
+Verify status is `ready`. Then check the activity log for cache hits:
+
+```shell
+agent-browser javascript "Array.from(document.querySelectorAll('#log-body > *')).filter(el => el.textContent.toLowerCase().includes('cache') || el.textContent.toLowerCase().includes('unchanged') || el.textContent.toLowerCase().includes('skip')).length > 0"
+```
+
+**Check:** Some pages were served from cache (unchanged).
+
+**Expected result:**
+- Returns `true` -- at least some log entries reference cached/unchanged/skipped pages
+- Pages that had no code changes in the diff were not regenerated
+
+---
+
+### 14.5 Verify changed pages contain new content
+
+**Precondition:** Incremental generation completed from Test 14.2.
+
+**Commands:**
+```shell
+agent-browser navigate http://localhost:8800/docs/for-testing-only/gemini/gemini-2.5-flash/
+agent-browser screenshot
+```
+
+**Check:** The generated docs page loads and contains updated content reflecting the new commit.
+
+**Expected result:**
+- The docs page loads without error
+- If the new commit introduced a visible change (e.g., new function, new file), that content is present in the documentation
+- The documentation reflects the current state of the repository, not the baseline
+
+---
+
+### 14.6 Verify page count remains the same (plan reused)
+
+**Commands:**
+```shell
+agent-browser navigate http://localhost:8800/status/for-testing-only/gemini/gemini-2.5-flash
+agent-browser javascript "document.getElementById('page-count').textContent"
+```
+
+**Check:** The page count matches the baseline.
+
+**Expected result:**
+- The page count equals `BASELINE_PAGE_COUNT` (captured in Test 14.1)
+- This confirms the plan was reused rather than regenerated from scratch
+- If a new page was added due to new files in the diff, the count may differ by 1; this is acceptable if the diff introduced a new file
+
+---
+
+### 14.7 Cleanup
+
+**Note:** Test 14 generates/regenerates the `for-testing-only` variant with `gemini/gemini-2.5-flash` owned by `testuser-e2e`. This variant is reused by subsequent tests (Test 15, Test 16, Test 17), so do NOT delete it here. Cleanup of this variant is handled in Test 20.
+
+---
+
+## Test 15: Delete with Owner Scoping
+
+**Precondition:** Log in as `admin`. Ensure at least two users have generated docs for the same repo. Use `testuser-e2e` and `userb-e2e` from Test 11.9 (both have `for-testing-only` with `gemini/gemini-2.5-flash`). If not present, regenerate them.
+
+```shell
+agent-browser navigate http://localhost:8800/logout
+agent-browser wait-for-navigation
+agent-browser type "#username" "admin"
+agent-browser type "#api_key" "12345678901234567890"
+agent-browser click ".btn-login"
+agent-browser wait-for-navigation
+```
+
+### 15.1 Admin deletes a specific user's variant via Delete button
+
+**Commands:**
+```shell
+agent-browser navigate http://localhost:8800/
+agent-browser screenshot
+```
+
+Identify the variant card for `userb-e2e`'s `for-testing-only` project:
+```shell
+agent-browser javascript "document.querySelector('.variant-card[data-owner=\"userb-e2e\"]') !== null"
+```
+
+**Expected result:** Returns `true` -- the variant card for `userb-e2e` exists.
+
+**Click the Delete button on `userb-e2e`'s variant:**
+```shell
+agent-browser click ".variant-card[data-owner='userb-e2e'] [data-delete-variant]"
+agent-browser wait 1000
+agent-browser screenshot
+```
+
+**Check:** The confirmation dialog appears.
+
+**Expected result:**
+- The modal overlay is visible
+- The modal title reads "Delete Variant"
+- The modal body mentions the variant path and references the owner `userb-e2e`
+
+---
+
+### 15.2 Verify `?owner=` parameter is sent in the DELETE request
+
+**Commands:**
+```shell
+agent-browser click "#modal-cancel"
+agent-browser wait 500
+```
+
+Intercept the network request by using JavaScript to verify the delete URL includes the owner parameter:
+```shell
+agent-browser javascript "document.querySelector('.variant-card[data-owner=\"userb-e2e\"] [data-delete-variant]').getAttribute('data-delete-variant')"
+```
+
+**Check:** The data attribute or the constructed delete URL includes owner information.
+
+**Expected result:**
+- The delete action constructs a URL that includes `?owner=userb-e2e` or encodes owner in the request path/body
+- This ensures the backend knows which user's variant to delete
+
+---
+
+### 15.3 Verify other users' variants are NOT affected
+
+**Commands:**
+
+First, confirm the delete of `userb-e2e`'s variant:
+```shell
+agent-browser click ".variant-card[data-owner='userb-e2e'] [data-delete-variant]"
+agent-browser wait 1000
+agent-browser click "#modal-ok"
+agent-browser wait 3000
+agent-browser screenshot
+```
+
+**Check:** Only `userb-e2e`'s variant was deleted; `testuser-e2e`'s variant remains.
+
+**Expected result:**
+- A toast notification confirms deletion
+- The variant card for `userb-e2e`'s `for-testing-only` is removed from the DOM
+- The variant card for `testuser-e2e`'s `for-testing-only` still exists
+
+**Verify:**
+```shell
+agent-browser javascript "document.querySelector('.variant-card[data-owner=\"userb-e2e\"]') === null"
+agent-browser javascript "document.querySelector('.variant-card[data-owner=\"testuser-e2e\"]') !== null"
+```
+
+**Expected result:**
+- First returns `true` (userb-e2e's variant is gone)
+- Second returns `true` (testuser-e2e's variant still exists)
+
+---
+
+### 15.4 Verify legacy variants (empty owner) can be deleted
+
+**Precondition:** If any legacy variants exist (variants created before owner-scoping was introduced, with an empty or null owner), this test applies. If no legacy variants exist, this test can be skipped.
+
+**Commands:**
+```shell
+agent-browser javascript "document.querySelector('.variant-card[data-owner=\"\"]') !== null || document.querySelector('.variant-card:not([data-owner])') !== null"
+```
+
+If returns `true`, proceed to delete the legacy variant:
+```shell
+agent-browser click ".variant-card:not([data-owner]) [data-delete-variant], .variant-card[data-owner=''] [data-delete-variant]"
+agent-browser wait 1000
+agent-browser click "#modal-ok"
+agent-browser wait 3000
+```
+
+**Check:** The legacy variant is deleted without errors.
+
+**Expected result:**
+- The delete request succeeds (no 400 or 500 error)
+- The legacy variant card is removed from the DOM
+- The server handles empty/null owner gracefully
+
+If returns `false` (no legacy variants), this test is **SKIPPED**.
+
+---
+
+### 15.5 Verify Delete All button removes all variants of a project
+
+**Precondition:** Regenerate variants for both `testuser-e2e` and `userb-e2e` so there are multiple variants to delete. If only one variant remains, generate a second one.
+
+**Commands:**
+```shell
+agent-browser navigate http://localhost:8800/
+agent-browser screenshot
+```
+
+Locate the "Delete All" button for the `for-testing-only` project group:
+```shell
+agent-browser javascript "document.querySelector('.project-group[data-repo=\"for-testing-only\"] [data-delete-all]') !== null"
+```
+
+**Expected result:** Returns `true`.
+
+**Click Delete All:**
+```shell
+agent-browser click ".project-group[data-repo='for-testing-only'] [data-delete-all]"
+agent-browser wait 1000
+agent-browser screenshot
+```
+
+**Check:** The confirmation dialog appears.
+
+**Expected result:**
+- The modal title reads "Delete All Variants" or similar
+- The modal body warns that all variants of the project will be removed
+
+**Confirm deletion:**
+```shell
+agent-browser click "#modal-ok"
+agent-browser wait 3000
+agent-browser screenshot
+```
+
+**Expected result:**
+- All variant cards under the `for-testing-only` project group are removed
+- The entire project group is removed from the DOM
+- A toast notification confirms the deletion
+
+**Verify:**
+```shell
+agent-browser javascript "document.querySelector('.project-group[data-repo=\"for-testing-only\"]') === null"
+```
+
+**Expected result:** Returns `true`.
+
+---
+
+### 15.6 Confirmation dialog shows owner name when admin deletes another user's docs
+
+**Precondition:** Regenerate a variant for `testuser-e2e` so there is a variant to test against.
+
+```shell
+agent-browser navigate http://localhost:8800/logout
+agent-browser wait-for-navigation
+agent-browser type "#username" "testuser-e2e"
+agent-browser type "#api_key" "<TEST_USER_PASSWORD>"
+agent-browser click ".btn-login"
+agent-browser wait-for-navigation
+agent-browser clear "#gen-repo-url"
+agent-browser type "#gen-repo-url" "https://github.com/myk-org/for-testing-only"
+agent-browser select "#gen-provider" "gemini"
+agent-browser clear "#gen-model"
+agent-browser type "#gen-model" "gemini-2.5-flash"
+agent-browser click "#gen-submit"
+```
+
+Wait for completion. Then log in as admin:
+```shell
+agent-browser navigate http://localhost:8800/logout
+agent-browser wait-for-navigation
+agent-browser type "#username" "admin"
+agent-browser type "#api_key" "12345678901234567890"
+agent-browser click ".btn-login"
+agent-browser wait-for-navigation
+```
+
+**Commands:**
+```shell
+agent-browser navigate http://localhost:8800/
+agent-browser click ".variant-card[data-owner='testuser-e2e'] [data-delete-variant]"
+agent-browser wait 1000
+agent-browser javascript "document.getElementById('modal-body').textContent"
+agent-browser screenshot
+```
+
+**Check:** The confirmation dialog explicitly mentions the owner name.
+
+**Expected result:**
+- The modal body text includes the owner name `testuser-e2e`
+- This makes it clear to the admin that they are deleting another user's documentation
+- The text might read something like "Delete variant for-testing-only/gemini/gemini-2.5-flash owned by testuser-e2e?"
+
+**Cancel:**
+```shell
+agent-browser click "#modal-cancel"
+```
+
+---
+
+### 15.7 Cleanup
+
+Test 15 deletes `userb-e2e`'s variant in 15.3 and may delete all variants in 15.5. It then regenerates `testuser-e2e`'s variant in 15.6's precondition. Clean up any remaining test artifacts:
+
+**Delete `userb-e2e`'s regenerated variant (if it was re-created for 15.5):**
+
+If `userb-e2e` still has a `for-testing-only` variant after Test 15.5, it was already deleted by "Delete All". No further cleanup needed for that variant.
+
+**Ensure `testuser-e2e`'s variant remains for subsequent tests:**
+
+The `testuser-e2e` variant regenerated in 15.6's precondition is needed by Tests 16 and 17. Do NOT delete it here.
+
+---
+
+## Test 16: Incremental Page JSON Patch
+
+### 16.1 Verify incremental prompt returns JSON patches
+
+**Precondition:** An incremental generation has been triggered (from Test 14.2 or a new one). This test verifies the backend behavior through the activity log and API responses.
+
+**Commands:**
+```shell
+agent-browser navigate http://localhost:8800/status/for-testing-only/gemini/gemini-2.5-flash
+agent-browser wait 10000
+agent-browser javascript "Array.from(document.querySelectorAll('#log-body > *')).map(el => el.textContent)"
+agent-browser screenshot
+```
+
+**Check:** The activity log shows evidence of JSON patch-based incremental updates.
+
+**Expected result:**
+- Log entries reference "patch", "incremental", "old_text/new_text", or similar terminology indicating JSON patch mode was used
+- The incremental generation did not regenerate all pages from scratch
+
+---
+
+### 16.2 Verify patches are applied correctly to existing content
+
+**Commands:**
+```shell
+agent-browser navigate http://localhost:8800/docs/for-testing-only/gemini/gemini-2.5-flash/
+agent-browser screenshot
+agent-browser javascript "document.querySelector('.content, .main-content, article')?.innerHTML.length > 0"
+```
+
+**Check:** The resulting documentation is coherent and the patches were applied correctly.
+
+**Expected result:**
+- Returns `true` -- the content area has non-empty HTML
+- The documentation page renders without broken HTML or missing sections
+- No visible artifacts from incorrectly applied patches (e.g., duplicated text, missing paragraphs)
+
+---
+
+### 16.3 Verify fallback to full page generation when patch fails
+
+**Note:** This test verifies graceful degradation. It may require inspecting server logs or the activity log for evidence of fallback behavior.
+
+**Commands:**
+```shell
+agent-browser navigate http://localhost:8800/status/for-testing-only/gemini/gemini-2.5-flash
+agent-browser javascript "Array.from(document.querySelectorAll('#log-body > *')).filter(el => el.textContent.toLowerCase().includes('fallback') || el.textContent.toLowerCase().includes('full generation') || el.textContent.toLowerCase().includes('patch failed')).map(el => el.textContent)"
+```
+
+**Check:** If any patches failed, the system fell back to full page generation.
+
+**Expected result:**
+- If fallback entries exist, they indicate the system detected a patch failure and regenerated the page from scratch
+- If no fallback entries exist, all patches succeeded (which is also acceptable)
+- In either case, the final documentation is complete and correct
+
+---
+
+### 16.4 Verify fallback when diff retrieval fails
+
+**Note:** This test verifies that the system handles diff retrieval failures gracefully. If the git diff cannot be retrieved (e.g., repository unavailable), the system should fall back to a full generation.
+
+**Commands:**
+```shell
+agent-browser navigate http://localhost:8800/status/for-testing-only/gemini/gemini-2.5-flash
+agent-browser javascript "Array.from(document.querySelectorAll('#log-body > *')).filter(el => el.textContent.toLowerCase().includes('diff') && (el.textContent.toLowerCase().includes('fail') || el.textContent.toLowerCase().includes('error') || el.textContent.toLowerCase().includes('fallback'))).map(el => el.textContent)"
+```
+
+**Check:** If diff retrieval failed, the system fell back gracefully.
+
+**Expected result:**
+- If diff errors exist in the log, a fallback to full generation was triggered
+- If no diff errors exist, the diff was retrieved successfully (also acceptable)
+- The final documentation is complete regardless of which path was taken
+
+---
+
+### 16.5 Cleanup
+
+**Note:** Test 16 does not create new data -- it inspects the status page and activity log of the existing `for-testing-only` variant generated in earlier tests. No cleanup needed.
+
+---
+
+## Test 17: Progress Page During Incremental Update
+
+**Precondition:** Log in as `testuser-e2e` and trigger a forced regeneration to observe the progress page behavior.
+
+```shell
+agent-browser navigate http://localhost:8800/logout
+agent-browser wait-for-navigation
+agent-browser type "#username" "testuser-e2e"
+agent-browser type "#api_key" "<TEST_USER_PASSWORD>"
+agent-browser click ".btn-login"
+agent-browser wait-for-navigation
+```
+
+### 17.1 Page count resets to 0 at start of regeneration
+
+**Commands:**
+```shell
+agent-browser navigate http://localhost:8800/
+agent-browser javascript "document.querySelector('[data-regen-force]').checked = true"
+agent-browser click "[data-regenerate-variant='for-testing-only']"
+agent-browser wait 2000
+agent-browser navigate http://localhost:8800/status/for-testing-only/gemini/gemini-2.5-flash
+agent-browser screenshot
+```
+
+**Check:** The page count resets when a new generation starts.
+
+**Expected result:**
+- The progress counter shows `0` or is reset at the start of the new generation
+- The previous generation's page count is not carried over
+- The status shows `generating`
+
+---
+
+### 17.2 Correct total page count shown once plan is ready
+
+**Commands:**
+```shell
+agent-browser wait 15000
+agent-browser screenshot
+agent-browser javascript "document.querySelector('.progress-bar, [data-progress]')?.textContent || document.getElementById('page-count')?.textContent"
+```
+
+**Check:** Once the planner finishes, the total page count is displayed correctly.
+
+**Expected result:**
+- The progress display shows a format like "X / Y" where Y is the total planned pages
+- The total (Y) matches the number of pages in the plan
+- The current count (X) increments as pages are generated
+
+---
+
+### 17.3 Progress counter does not overflow
+
+**Commands:**
+
+Poll the progress counter during generation:
+```shell
+agent-browser javascript "const progress = document.querySelector('.progress-text, [data-progress-text]')?.textContent; const match = progress?.match(/(\\d+)\\s*\\/\\s*(\\d+)/); match ? {current: parseInt(match[1]), total: parseInt(match[2]), overflow: parseInt(match[1]) > parseInt(match[2])} : 'no progress display found'"
+```
+
+Repeat every 5 seconds during generation until status is `ready`:
+```shell
+agent-browser wait 5000
+agent-browser javascript "const progress = document.querySelector('.progress-text, [data-progress-text]')?.textContent; const match = progress?.match(/(\\d+)\\s*\\/\\s*(\\d+)/); match ? {current: parseInt(match[1]), total: parseInt(match[2]), overflow: parseInt(match[1]) > parseInt(match[2])} : 'no progress display found'"
+```
+
+**Check:** The current page count never exceeds the total page count.
+
+**Expected result:**
+- The `overflow` field is always `false`
+- No "15/12" or similar overflow scenarios occur
+- When generation is complete, current equals total (e.g., "12/12")
+
+Wait for generation to complete before continuing.
+
+---
+
+### 17.4 Cleanup
+
+**Note:** Test 17 triggers a forced regeneration of the existing `for-testing-only` variant owned by `testuser-e2e`. This overwrites the variant in-place (no new variant is created). No cleanup needed.
+
+---
+
+## Test 18: Username Dropdown Menu
+
+### 18.1 Dashboard dropdown shows correct items for admin
+
+**Precondition:** Log in as `admin`.
+
+```shell
+agent-browser navigate http://localhost:8800/logout
+agent-browser wait-for-navigation
+agent-browser type "#username" "admin"
+agent-browser type "#api_key" "12345678901234567890"
+agent-browser click ".btn-login"
+agent-browser wait-for-navigation
+```
+
+**Commands:**
+```shell
+agent-browser navigate http://localhost:8800/
+agent-browser click ".username-dropdown, .user-menu-toggle, [data-dropdown-toggle]"
+agent-browser wait 500
+agent-browser screenshot
+```
+
+**Check:** The dropdown menu appears with admin-specific items.
+
+**Expected result:**
+- The dropdown menu is visible
+- It contains "Admin Panel" (visible only for admin users)
+- It contains "Change Password"
+- It contains "Logout"
+- Items are listed in order: Admin Panel, Change Password, Logout
+
+---
+
+### 18.2 Dashboard dropdown shows correct items for non-admin user
+
+**Precondition:** Log in as `testuser-e2e`.
+
+```shell
+agent-browser navigate http://localhost:8800/logout
+agent-browser wait-for-navigation
+agent-browser type "#username" "testuser-e2e"
+agent-browser type "#api_key" "<TEST_USER_PASSWORD>"
+agent-browser click ".btn-login"
+agent-browser wait-for-navigation
+```
+
+**Commands:**
+```shell
+agent-browser navigate http://localhost:8800/
+agent-browser click ".username-dropdown, .user-menu-toggle, [data-dropdown-toggle]"
+agent-browser wait 500
+agent-browser screenshot
+```
+
+**Check:** The dropdown menu appears without admin-specific items.
+
+**Expected result:**
+- The dropdown menu is visible
+- It does NOT contain "Admin Panel"
+- It contains "Change Password"
+- It contains "Logout"
+
+---
+
+### 18.3 Admin panel dropdown shows correct items
+
+**Precondition:** Log in as `admin` and navigate to the admin panel.
+
+```shell
+agent-browser navigate http://localhost:8800/logout
+agent-browser wait-for-navigation
 agent-browser type "#username" "admin"
 agent-browser type "#api_key" "12345678901234567890"
 agent-browser click ".btn-login"
@@ -2436,40 +3085,440 @@ agent-browser wait-for-navigation
 agent-browser navigate http://localhost:8800/admin
 ```
 
-**Delete testuser-e2e:**
+**Commands:**
+```shell
+agent-browser click ".username-dropdown, .user-menu-toggle, [data-dropdown-toggle]"
+agent-browser wait 500
+agent-browser screenshot
 ```
+
+**Check:** The dropdown on the admin panel shows different items from the dashboard.
+
+**Expected result:**
+- The dropdown menu is visible
+- It contains "Dashboard" (link back to main page)
+- It contains "Logout"
+- It does NOT show "Admin Panel" (already on admin page)
+
+---
+
+### 18.4 Click-outside closes dropdown
+
+**Precondition:** The dropdown is open from the previous test step. If not, open it first.
+
+**Commands:**
+```shell
+agent-browser navigate http://localhost:8800/
+agent-browser click ".username-dropdown, .user-menu-toggle, [data-dropdown-toggle]"
+agent-browser wait 500
+agent-browser screenshot
+```
+
+**Check:** The dropdown is open.
+
+**Now click outside the dropdown:**
+```shell
+agent-browser click "body"
+agent-browser wait 500
+agent-browser screenshot
+```
+
+**Check:** The dropdown closes when clicking outside.
+
+**Expected result:**
+- The dropdown menu is no longer visible
+- The dropdown has lost its `active` or `open` class
+
+---
+
+### 18.5 Escape key closes dropdown
+
+**Commands:**
+```shell
+agent-browser navigate http://localhost:8800/
+agent-browser click ".username-dropdown, .user-menu-toggle, [data-dropdown-toggle]"
+agent-browser wait 500
+```
+
+**Check:** The dropdown is open.
+
+**Press Escape:**
+```shell
+agent-browser press "Escape"
+agent-browser wait 500
+agent-browser screenshot
+```
+
+**Check:** The dropdown closes on Escape key.
+
+**Expected result:**
+- The dropdown menu is no longer visible
+- The Escape key only closes the dropdown; it does not interfere with other page elements
+- If a modal is also open, the Escape key should close the modal first (not steal focus from modals)
+
+---
+
+### 18.6 Escape key does not steal focus from modals
+
+**Precondition:** Navigate to admin panel, open a modal, then verify Escape closes the modal (not the dropdown behind it).
+
+```shell
+agent-browser navigate http://localhost:8800/admin
+agent-browser click "[data-delete-user='testuser-e2e']"
+agent-browser wait 1000
+agent-browser screenshot
+```
+
+**Check:** The modal is open.
+
+**Press Escape:**
+```shell
+agent-browser press "Escape"
+agent-browser wait 500
+agent-browser javascript "document.getElementById('custom-modal').style.display"
+```
+
+**Check:** The modal closes.
+
+**Expected result:**
+- The modal display is `"none"` (modal closed)
+- The dropdown (if it was open behind the modal) remains unaffected
+- Escape key targets the topmost overlay (modal) first
+
+---
+
+### 18.7 Theme toggle works independently (borderless text style)
+
+**Commands:**
+```shell
+agent-browser navigate http://localhost:8800/
+agent-browser screenshot
+```
+
+**Check:** The theme toggle button exists and is styled independently from the dropdown.
+
+```shell
+agent-browser javascript "document.querySelector('#theme-toggle') !== null"
+agent-browser javascript "window.getComputedStyle(document.querySelector('#theme-toggle')).borderWidth"
+```
+
+**Expected result:**
+- The theme toggle exists (returns `true`)
+- The theme toggle has a borderless text style (border-width is `0px` or the element has no visible border)
+- The theme toggle is not inside the dropdown menu -- it operates independently
+
+**Toggle theme:**
+```shell
+agent-browser click "#theme-toggle"
+agent-browser javascript "document.documentElement.getAttribute('data-theme')"
+```
+
+**Expected result:**
+- The theme changes (e.g., from `"dark"` to `"light"` or vice versa)
+- The theme toggle works without opening or interacting with the dropdown menu
+
+---
+
+### 18.8 Cleanup
+
+**Note:** Test 18 does not create any data. It only verifies dropdown UI behavior and theme toggling. No cleanup needed.
+
+---
+
+## Test 19: Variant Card Visual Hierarchy
+
+### 19.1 Variant cards are indented under project headers
+
+**Precondition:** Log in as `admin` to see multiple projects and variants.
+
+```shell
+agent-browser navigate http://localhost:8800/logout
+agent-browser wait-for-navigation
+agent-browser type "#username" "admin"
+agent-browser type "#api_key" "12345678901234567890"
+agent-browser click ".btn-login"
+agent-browser wait-for-navigation
+agent-browser navigate http://localhost:8800/
+```
+
+**Commands:**
+```shell
+agent-browser screenshot
+agent-browser javascript "const header = document.querySelector('.project-header, .project-group-header'); const card = document.querySelector('.variant-card'); if (header && card) { const headerRect = header.getBoundingClientRect(); const cardRect = card.getBoundingClientRect(); ({headerLeft: headerRect.left, cardLeft: cardRect.left, indented: cardRect.left > headerRect.left}); } else { 'elements not found'; }"
+```
+
+**Check:** Variant cards are visually indented relative to the project header.
+
+**Expected result:**
+- The `indented` field is `true` -- the variant card's left edge is further right than the project header's left edge
+- This creates a clear parent-child visual relationship between projects and their variants
+- Alternatively, the variant cards may have a `margin-left` or `padding-left` CSS value that creates indentation
+
+**Verify via CSS:**
+```shell
+agent-browser javascript "const card = document.querySelector('.variant-card'); card ? window.getComputedStyle(card).marginLeft : 'no variant card found'"
+```
+
+**Expected result:**
+- The `margin-left` value is greater than `0px` (e.g., `16px`, `24px`, `1rem`, etc.) indicating visual indentation
+
+---
+
+### 19.2 Variant cards have slightly different background from project header
+
+**Commands:**
+```shell
+agent-browser javascript "const header = document.querySelector('.project-header, .project-group-header'); const card = document.querySelector('.variant-card'); if (header && card) { ({headerBg: window.getComputedStyle(header).backgroundColor, cardBg: window.getComputedStyle(card).backgroundColor, different: window.getComputedStyle(header).backgroundColor !== window.getComputedStyle(card).backgroundColor}); } else { 'elements not found'; }"
+```
+
+**Check:** Variant cards have a distinct background color from the project header.
+
+**Expected result:**
+- The `different` field is `true` -- the background colors of the project header and variant card are not identical
+- This visual distinction helps users differentiate between the project-level header and individual variant cards
+- The difference should be subtle (e.g., a slightly lighter or darker shade) to maintain visual cohesion
+
+**Screenshot for visual verification:**
+```shell
+agent-browser screenshot
+```
+
+**Expected result:**
+- The project header has one background color
+- The variant cards underneath have a slightly different background color
+- The visual hierarchy is clear: project header sits above/contains the variant cards
+
+---
+
+### 19.3 Project groups are collapsible
+
+**Precondition:** Logged in as `admin` on the dashboard with at least one project group visible.
+
+**Commands:**
+```shell
+agent-browser navigate http://localhost:8800/
+agent-browser screenshot
+```
+
+**Check:** Project groups have clickable headers that toggle visibility of their variant cards.
+
+**Verify the project header is clickable:**
+```shell
+agent-browser javascript "const header = document.querySelector('.project-header, .project-group-header'); header ? header.style.cursor || window.getComputedStyle(header).cursor : 'no header found'"
+```
+
+**Expected result:**
+- The cursor style is `pointer` (indicating the header is clickable)
+
+**Click the project header to collapse:**
+```shell
+agent-browser click ".project-header, .project-group-header"
+agent-browser wait 500
+agent-browser screenshot
+```
+
+**Check:** The variant cards under the clicked project group are hidden.
+
+**Expected result:**
+- The variant cards within the project group are no longer visible (hidden via CSS class toggle, `display: none`, or `max-height: 0`)
+- The project header remains visible
+- A collapse indicator (chevron, arrow, or similar) changes direction to indicate collapsed state
+
+**Verify cards are hidden:**
+```shell
+agent-browser javascript "const group = document.querySelector('.project-group'); const cards = group?.querySelectorAll('.variant-card'); cards ? Array.from(cards).every(c => c.offsetHeight === 0 || window.getComputedStyle(c).display === 'none' || c.closest('.collapsed, [data-collapsed]') !== null) : 'no cards found'"
+```
+
+**Expected result:** Returns `true` -- all variant cards in the group are hidden.
+
+**Click again to expand:**
+```shell
+agent-browser click ".project-header, .project-group-header"
+agent-browser wait 500
+agent-browser screenshot
+```
+
+**Expected result:**
+- The variant cards are visible again
+- The collapse indicator returns to the expanded state
+- The cards render with their full content (status, buttons, etc.)
+
+---
+
+### 19.4 Project header shows ready/error variant counts
+
+**Precondition:** Logged in as `admin` on the dashboard. At least one project group exists with variants.
+
+**Commands:**
+```shell
+agent-browser navigate http://localhost:8800/
+agent-browser screenshot
+```
+
+**Check:** The project header displays counts of ready and error variants.
+
+```shell
+agent-browser javascript "const header = document.querySelector('.project-header, .project-group-header'); header ? header.textContent : 'no header found'"
+```
+
+**Expected result:**
+- The header text includes count indicators for variant statuses (e.g., "2 ready", "1 error", or similar badge/count display)
+- Ready count reflects the number of variants with `ready` status
+- Error count reflects the number of variants with `error` or `aborted` status
+
+**Verify counts match actual variant statuses:**
+```shell
+agent-browser javascript "const group = document.querySelector('.project-group'); if (group) { const readyCards = group.querySelectorAll('.variant-card[data-status=\"ready\"]').length; const errorCards = group.querySelectorAll('.variant-card[data-status=\"error\"], .variant-card[data-status=\"aborted\"]').length; ({readyCards, errorCards}); } else { 'no project group found'; }"
+```
+
+**Expected result:**
+- The `readyCards` count matches the ready count displayed in the header
+- The `errorCards` count matches the error count displayed in the header
+- If all variants are ready and none are in error, the error count may be hidden (0 errors is not displayed)
+
+---
+
+### 19.5 Cleanup
+
+**Note:** Test 19 does not create any data. It only verifies visual hierarchy, collapsible groups, and variant count display. No cleanup needed.
+
+---
+
+## Test 20: Cleanup and Teardown
+
+This test provides a comprehensive cleanup of ALL test-created artifacts across the entire test suite. Run this as the final test to leave the system in a clean state.
+
+> **Important:** Delete ONLY test-created data. Do NOT delete pre-existing projects or users.
+
+### Test-Created Artifacts Inventory
+
+| Test | Artifact Type | Name / Identifier | Notes |
+|---|---|---|---|
+| Test 2.2 | User | `testuser-e2e` (role: user) | Core test user |
+| Test 2.3 | User | `testadmin-e2e` (role: admin) | Core test admin |
+| Test 2.4 | User | `testviewer-e2e` (role: viewer) | Core test viewer |
+| Test 2.5 | User | `delete-me-e2e` | Deleted within Test 2.5 itself |
+| Test 2.7 | User | `session-test-e2e` | Deleted within Test 2.7 itself |
+| Test 3.5 | Project variant | `for-testing-only/gemini/gemini-2.5-flash` (owner: `testuser-e2e`) | May be deleted/regenerated by later tests |
+| Test 6 | Project variant | `for-testing-only/gemini/gemini-2.5-flash` (owner: `testuser-e2e`) | Same variant as Test 3.5, regenerated |
+| Test 11.2 | User | `userb-e2e` (role: user) | Created for cross-user isolation tests |
+| Test 11.4 | Access grant | `testviewer-e2e` granted access to `testuser-e2e`'s `for-testing-only` | Revoked in Test 11.7 |
+| Test 11.9 | Project variant | `for-testing-only/gemini/gemini-2.5-flash` (owner: `userb-e2e`) | May be deleted in Test 15 |
+| Test 13.7 | Access grant | `userb-e2e` granted access to `testuser-e2e`'s `for-testing-only` | Not explicitly revoked |
+| Test 14 | Project variant | `for-testing-only/gemini/gemini-2.5-flash` (owner: `testuser-e2e`) | Regenerated in-place |
+| Test 15.6 | Project variant | `for-testing-only/gemini/gemini-2.5-flash` (owner: `testuser-e2e`) | Regenerated in precondition |
+
+### 20.1 Revoke remaining access grants
+
+**Precondition:** Log in as `admin`.
+
+```shell
+agent-browser navigate http://localhost:8800/logout
+agent-browser wait-for-navigation
+agent-browser type "#username" "admin"
+agent-browser type "#api_key" "12345678901234567890"
+agent-browser click ".btn-login"
+agent-browser wait-for-navigation
+```
+
+**Revoke `userb-e2e` access to `testuser-e2e`'s project (granted in Test 13.7, may already be revoked):**
+```shell
+agent-browser eval "fetch('/api/admin/projects/for-testing-only/access/userb-e2e?owner=testuser-e2e', {method:'DELETE', credentials:'same-origin'}).then(r => r.status)"
+```
+
+**Expected result:** Returns `200` (success) or `404` (already revoked). Both are acceptable.
+
+---
+
+### 20.2 Delete test project variants
+
+**Delete `testuser-e2e`'s `for-testing-only` variant (if it exists):**
+```shell
+agent-browser eval "fetch('/api/projects/for-testing-only/gemini/gemini-2.5-flash?owner=testuser-e2e', {method:'DELETE', credentials:'same-origin'}).then(r => r.status)"
+agent-browser wait 2000
+```
+
+**Expected result:** Returns `200` (deleted) or `404` (already deleted). Both are acceptable.
+
+**Delete `userb-e2e`'s `for-testing-only` variant (if it exists):**
+```shell
+agent-browser eval "fetch('/api/projects/for-testing-only/gemini/gemini-2.5-flash?owner=userb-e2e', {method:'DELETE', credentials:'same-origin'}).then(r => r.status)"
+agent-browser wait 2000
+```
+
+**Expected result:** Returns `200` (deleted) or `404` (already deleted). Both are acceptable.
+
+---
+
+### 20.3 Delete test users
+
+**Navigate to admin panel:**
+```shell
+agent-browser navigate http://localhost:8800/admin
+agent-browser wait 2000
+```
+
+**Delete each test user (skip if already deleted):**
+
+For each user in [`testuser-e2e`, `testadmin-e2e`, `testviewer-e2e`, `userb-e2e`]:
+
+```shell
+agent-browser javascript "document.getElementById('user-row-testuser-e2e') !== null"
+```
+
+If `true`:
+```shell
 agent-browser click "[data-delete-user='testuser-e2e']"
 agent-browser wait 1000
 agent-browser click "#modal-ok"
 agent-browser wait 2000
 ```
 
-**Delete testadmin-e2e:**
+Repeat for `testadmin-e2e`:
+```shell
+agent-browser javascript "document.getElementById('user-row-testadmin-e2e') !== null"
 ```
+
+If `true`:
+```shell
 agent-browser click "[data-delete-user='testadmin-e2e']"
 agent-browser wait 1000
 agent-browser click "#modal-ok"
 agent-browser wait 2000
 ```
 
-**Delete testviewer-e2e:**
+Repeat for `testviewer-e2e`:
+```shell
+agent-browser javascript "document.getElementById('user-row-testviewer-e2e') !== null"
 ```
+
+If `true`:
+```shell
 agent-browser click "[data-delete-user='testviewer-e2e']"
 agent-browser wait 1000
 agent-browser click "#modal-ok"
 agent-browser wait 2000
 ```
 
-**Delete userb-e2e (if created in Test 11.2):**
+Repeat for `userb-e2e`:
+```shell
+agent-browser javascript "document.getElementById('user-row-userb-e2e') !== null"
 ```
+
+If `true`:
+```shell
 agent-browser click "[data-delete-user='userb-e2e']"
 agent-browser wait 1000
 agent-browser click "#modal-ok"
 agent-browser wait 2000
 ```
 
-**Verify all test users are deleted:**
-```
+---
+
+### 20.4 Verify complete cleanup
+
+**Verify no test users remain:**
+```shell
 agent-browser javascript "['testuser-e2e', 'testadmin-e2e', 'testviewer-e2e', 'userb-e2e'].filter(u => document.getElementById('user-row-' + u) !== null)"
 agent-browser screenshot
 ```
@@ -2478,8 +3527,20 @@ agent-browser screenshot
 - Returns an empty array `[]`
 - No test user rows remain in the users table
 
-**Close browser:**
+**Verify no test project variants remain:**
+```shell
+agent-browser navigate http://localhost:8800/
+agent-browser javascript "Array.from(document.querySelectorAll('.variant-card')).filter(c => ['testuser-e2e', 'userb-e2e'].includes(c.getAttribute('data-owner'))).length"
 ```
+
+**Expected result:**
+- Returns `0` -- no variant cards owned by test users remain
+- Pre-existing projects owned by other users (e.g., `admin`) are untouched
+
+---
+
+**Close browser:**
+```shell
 agent-browser close
 ```
 
@@ -2502,4 +3563,11 @@ agent-browser close
 | Test 11: Cross-User Isolation | 10 | User isolation, admin visibility, access grants, revoke, collision test, direct URL after revoke |
 | Test 12: Logout | 2 | Logout redirect, session invalidation |
 | Test 13: Direct URL Authorization | 7 | Non-owner URL access blocked, granted user access, owner-agnostic routes |
-| **Total** | **83** | |
+| Test 14: Incremental Documentation Updates | 7 | Force-generate baseline, incremental regen, planner verification, cache validation, page count consistency, cleanup |
+| Test 15: Delete with Owner Scoping | 7 | Owner-scoped delete, owner parameter, isolation verification, legacy variants, Delete All, confirmation dialog, cleanup |
+| Test 16: Incremental Page JSON Patch | 5 | JSON patch verification, patch application, fallback on patch failure, fallback on diff failure, cleanup |
+| Test 17: Progress Page During Incremental Update | 4 | Page count reset, total count display, overflow prevention, cleanup |
+| Test 18: Username Dropdown Menu | 8 | Admin/user dropdown items, admin panel dropdown, click-outside close, Escape close, modal focus, theme toggle, cleanup |
+| Test 19: Variant Card Visual Hierarchy | 5 | Card indentation under headers, background color differentiation, collapsible groups, ready/error variant counts, cleanup |
+| Test 20: Cleanup and Teardown | 4 | Revoke access grants, delete test variants, delete test users, verify complete cleanup |
+| **Total** | **122** | |

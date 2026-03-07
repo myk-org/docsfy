@@ -46,6 +46,7 @@
         --bg-code: #f5f5f5;
         --bg-code-block: #1e1e2e;
         --bg-card: #ffffff;
+        --bg-variant-card: #f6f7f9;
         --bg-hero: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         --bg-search-result: #ffffff;
 
@@ -112,6 +113,7 @@
         --bg-code: #1e2030;
         --bg-code-block: #1e2030;
         --bg-card: #161822;
+        --bg-variant-card: #121420;
         --bg-hero: linear-gradient(135deg, #3730a3 0%, #6d28d9 100%);
         --bg-search-result: #1e2030;
 
@@ -232,21 +234,22 @@
     {% include '_user_menu.css' %}
 
     .theme-toggle {
-        background: none;
-        border: none;
-        color: var(--text-secondary);
-        cursor: pointer;
-        padding: 6px;
-        border-radius: 6px;
-        display: flex;
+        display: inline-flex;
         align-items: center;
         justify-content: center;
-        transition: color var(--transition-fast), background-color var(--transition-fast);
+        width: 36px;
+        height: 36px;
+        border: 1px solid var(--border-primary);
+        border-radius: 8px;
+        background: var(--bg-primary);
+        color: var(--text-secondary);
+        cursor: pointer;
+        transition: color var(--transition-fast), border-color var(--transition-fast);
     }
 
     .theme-toggle:hover {
         color: var(--text-primary);
-        background: var(--bg-tertiary);
+        border-color: var(--border-focus);
     }
 
     [data-theme="dark"] .icon-sun { display: none; }
@@ -642,21 +645,6 @@
         gap: 0.75rem;
     }
 
-    .card-header {
-        display: flex;
-        align-items: flex-start;
-        justify-content: space-between;
-        gap: 0.75rem;
-        margin-bottom: 0.75rem;
-    }
-
-    .card-title-row {
-        display: flex;
-        align-items: center;
-        gap: 0.625rem;
-        flex-wrap: wrap;
-    }
-
     .status-dot {
         width: 10px;
         height: 10px;
@@ -686,21 +674,6 @@
         50% { opacity: 0.5; transform: scale(1.2); }
     }
 
-    .card-name {
-        font-size: 1.125rem;
-        font-weight: 600;
-        color: var(--text-primary);
-    }
-
-    .card-status-badge {
-        font-size: 0.75rem;
-        font-weight: 500;
-        padding: 0.125rem 0.5rem;
-        border-radius: 9999px;
-        text-transform: uppercase;
-        letter-spacing: 0.025em;
-    }
-
     .badge-ready {
         background: var(--status-ready-bg);
         color: var(--status-ready);
@@ -721,65 +694,16 @@
         color: var(--status-aborted);
     }
 
-    .card-page-count {
-        font-size: 0.8125rem;
-        color: var(--text-tertiary);
-    }
-
-    .card-meta {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.5rem 1.25rem;
-        font-size: 0.8125rem;
-        color: var(--text-secondary);
-        margin-bottom: 0.75rem;
-    }
-
-    .card-meta a {
-        color: var(--text-link);
-        text-decoration: none;
-    }
-
-    .card-meta a:hover {
-        color: var(--text-link-hover);
-        text-decoration: underline;
-    }
-
-    .meta-item {
-        display: flex;
-        align-items: center;
-        gap: 0.25rem;
-    }
-
-    .meta-label {
-        color: var(--text-tertiary);
-    }
-
-    .card-error {
-        background: var(--status-error-bg);
-        color: var(--status-error);
-        padding: 0.625rem 0.875rem;
-        border-radius: 8px;
-        font-size: 0.8125rem;
-        margin-bottom: 0.75rem;
-        word-break: break-word;
-    }
-
-    .card-aborted {
-        background: var(--status-aborted-bg);
-        color: var(--status-aborted);
-        padding: 0.625rem 0.875rem;
-        border-radius: 8px;
-        font-size: 0.8125rem;
-        margin-bottom: 0.75rem;
-        word-break: break-word;
-    }
-
     /* --------------------------------------------------------------------------
        Progress Bar
        -------------------------------------------------------------------------- */
-    .progress-container {
-        margin-bottom: 0.75rem;
+    .progress-bar-container {
+        flex: 1 1 180px;
+        min-width: 180px;
+    }
+
+    .progress-bar-container .progress-bar-wrapper {
+        margin-top: 0;
     }
 
     .progress-bar-wrapper {
@@ -821,22 +745,6 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
-    }
-
-    /* --------------------------------------------------------------------------
-       Card Actions
-       -------------------------------------------------------------------------- */
-    .card-actions {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        flex-wrap: wrap;
-        padding-top: 0.75rem;
-        border-top: 1px solid var(--border-secondary);
-    }
-
-    .card-actions-spacer {
-        flex: 1;
     }
 
     .regenerate-inline {
@@ -965,6 +873,19 @@
         padding: 1rem 1.25rem;
         border-bottom: 1px solid var(--border-primary);
         background: var(--bg-secondary);
+        cursor: pointer;
+    }
+
+    .group-toggle-icon {
+        transition: transform var(--transition-fast);
+        color: var(--text-tertiary);
+        flex-shrink: 0;
+    }
+    .project-group.collapsed .group-toggle-icon {
+        transform: rotate(-90deg);
+    }
+    .project-group.collapsed .variant-card {
+        display: none;
     }
 
     .group-name {
@@ -981,6 +902,10 @@
         border-radius: 10px;
     }
 
+    .count-ready { color: var(--status-ready); font-size: 0.75rem; }
+    .count-error { color: var(--status-error); font-size: 0.75rem; }
+    .count-generating { color: var(--accent); font-size: 0.75rem; }
+
     .group-repo-link {
         font-size: 0.8rem;
         color: var(--text-link);
@@ -988,8 +913,19 @@
         margin-left: auto;
     }
 
+    .group-delete-all {
+        margin-left: auto;
+        flex-shrink: 0;
+    }
+
+    /* When repo link is present, it takes margin-left:auto so the button should not */
+    .group-repo-link ~ .group-delete-all {
+        margin-left: 0;
+    }
+
     .variant-card {
-        padding: 1rem 1.25rem;
+        padding: 1rem 1.25rem 1rem 2.75rem;
+        background: var(--bg-variant-card);
         border-bottom: 1px solid var(--border-secondary);
     }
 
@@ -1064,14 +1000,33 @@
     }
 
     .variant-error {
-        padding: 0.5rem;
-        background: rgba(248, 81, 73, 0.1);
-        border-radius: 4px;
+        padding: 0.625rem 0.75rem;
+        border: 1px solid transparent;
+        border-left-width: 3px;
+        border-radius: 8px;
         margin-top: 0.5rem;
+        word-break: break-word;
+    }
+
+    .variant-error-error {
+        background: var(--status-error-bg);
+        border-color: var(--status-error);
+    }
+
+    .variant-error-aborted {
+        background: var(--status-aborted-bg);
+        border-color: var(--status-aborted);
+    }
+
+    .variant-error-error .error-text {
+        color: var(--status-error);
+    }
+
+    .variant-error-aborted .error-text {
+        color: var(--status-aborted);
     }
 
     .error-text {
-        color: var(--status-error);
         font-size: 0.85rem;
     }
 
@@ -1128,7 +1083,7 @@
         border: 1px solid var(--border-primary);
         border-top: none;
         border-radius: 0 0 6px 6px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        box-shadow: var(--shadow-md);
         max-height: 200px;
         overflow-y: auto;
         z-index: 100;
@@ -1212,23 +1167,6 @@
             width: 100%;
         }
 
-        .card-header {
-            flex-direction: column;
-        }
-
-        .card-actions {
-            flex-direction: column;
-            align-items: stretch;
-        }
-
-        .card-actions .btn {
-            justify-content: center;
-        }
-
-        .card-actions-spacer {
-            display: none;
-        }
-
         .regenerate-inline {
             flex-direction: column;
             align-items: stretch;
@@ -1246,6 +1184,11 @@
 
         .group-repo-link {
             margin-left: 0;
+        }
+
+        .group-delete-all {
+            margin-left: 0;
+            align-self: flex-start;
         }
 
         .variant-header {
@@ -1420,14 +1363,32 @@
                 {% else %}
                 {% for repo_name, variants in grouped_projects.items() %}
                 <article class="project-group" data-repo="{{ repo_name }}">
-                    <div class="group-header">
+                    <div class="group-header" role="button" tabindex="0" aria-expanded="true">
+                        <svg class="group-toggle-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="6 9 12 15 18 9"/>
+                        </svg>
                         <span class="group-name">{{ repo_name }}</span>
-                        <span class="group-variant-count">{{ variants|length }} variant{{ 's' if variants|length > 1 else '' }}</span>
+                        <span class="group-variant-count">
+                            {{ variants|length }} variant{{ 's' if variants|length != 1 else '' }}
+                            {% set ready_count = [] %}{% set error_count = [] %}{% set generating_count = [] %}
+                            {% for v in variants %}
+                                {% if v.status == 'ready' %}{% if ready_count.append(1) %}{% endif %}
+                                {% elif v.status == 'error' or v.status == 'aborted' %}{% if error_count.append(1) %}{% endif %}
+                                {% elif v.status == 'generating' %}{% if generating_count.append(1) %}{% endif %}
+                                {% endif %}
+                            {% endfor %}
+                            {% if ready_count %}<span class="count-ready">{{ ready_count|length }} ready</span>{% endif %}
+                            {% if error_count %}<span class="count-error">{{ error_count|length }} failed</span>{% endif %}
+                            {% if generating_count %}<span class="count-generating">{{ generating_count|length }} generating</span>{% endif %}
+                        </span>
                         {% if variants[0].repo_url %}
                         {% if variants[0].repo_url.startswith('http') or variants[0].repo_url.startswith('git@') %}
                         {% set gh_url = variants[0].repo_url | replace('git@github.com:', 'https://github.com/') | replace('.git', '') %}
                         <a href="{{ gh_url }}" target="_blank" rel="noopener noreferrer" class="group-repo-link">{{ gh_url }}</a>
                         {% endif %}
+                        {% endif %}
+                        {% if role != 'viewer' %}
+                        <button class="btn btn-danger btn-sm group-delete-all" data-delete-project="{{ repo_name }}">Delete All</button>
                         {% endif %}
                     </div>
 
@@ -1436,6 +1397,7 @@
                          data-project="{{ repo_name }}"
                          data-provider="{{ variant.ai_provider }}"
                          data-model="{{ variant.ai_model }}"
+                         data-owner="{{ variant.owner or '' }}"
                          data-status="{{ variant.status }}">
 
                         <div class="variant-header">
@@ -1464,7 +1426,7 @@
                             <a href="/docs/{{ repo_name }}/{{ variant.ai_provider | urlencode }}/{{ variant.ai_model | urlencode }}/" target="_blank" class="btn btn-primary btn-sm">View Docs</a>
                             <a href="/api/projects/{{ repo_name }}/{{ variant.ai_provider | urlencode }}/{{ variant.ai_model | urlencode }}/download" class="btn btn-secondary btn-sm">Download</a>
                             {% if role != 'viewer' %}
-                            <button class="btn btn-danger btn-sm" data-delete-variant="{{ repo_name }}/{{ variant.ai_provider }}/{{ variant.ai_model }}">Delete</button>
+                            <button class="btn btn-danger btn-sm" data-delete-variant="{{ repo_name }}/{{ variant.ai_provider }}/{{ variant.ai_model }}" data-delete-owner="{{ variant.owner or '' }}">Delete</button>
                             {% endif %}
                         </div>
                         {% if role != 'viewer' %}
@@ -1487,13 +1449,13 @@
                         </div>
 
                         {% elif variant.status == 'error' or variant.status == 'aborted' %}
-                        <div class="variant-error">
+                        <div class="variant-error variant-error-{{ variant.status }}">
                             <span class="error-text">{{ variant.error_message }}</span>
                         </div>
                         <div class="variant-actions">
                             {% if role != 'viewer' %}
                             {{ regen_controls(variant, repo_name, default_provider, default_model, known_models) }}
-                            <button class="btn btn-danger btn-sm" data-delete-variant="{{ repo_name }}/{{ variant.ai_provider }}/{{ variant.ai_model }}">Delete</button>
+                            <button class="btn btn-danger btn-sm" data-delete-variant="{{ repo_name }}/{{ variant.ai_provider }}/{{ variant.ai_model }}" data-delete-owner="{{ variant.owner or '' }}">Delete</button>
                             {% endif %}
                         </div>
                         {% endif %}
@@ -1782,8 +1744,8 @@
         }
 
         /* ----- Helper: build composite key for a variant ----- */
-        function variantKey(name, provider, model) {
-            return name + '/' + provider + '/' + model;
+        function variantKey(name, provider, model, owner) {
+            return (owner || '') + '/' + name + '/' + provider + '/' + model;
         }
 
         /* ----- Auth redirect detection ----- */
@@ -1842,7 +1804,8 @@
                 var name = card.getAttribute('data-project');
                 var provider = card.getAttribute('data-provider');
                 var model = card.getAttribute('data-model');
-                var key = variantKey(name, provider, model);
+                var owner = card.getAttribute('data-owner');
+                var key = variantKey(name, provider, model, owner);
                 map[key] = card;
             });
             return map;
@@ -1877,7 +1840,7 @@
 
                     projectsList.forEach(function(proj) {
                         if (proj.status === 'generating') anyGenerating = true;
-                        var key = variantKey(proj.name, proj.ai_provider || '', proj.ai_model || '');
+                        var key = variantKey(proj.name, proj.ai_provider || '', proj.ai_model || '', proj.owner || '');
                         var card = existingCards[key];
                         if (!card) {
                             // New variant appeared: reload to get server-rendered card
@@ -1941,7 +1904,7 @@
                     var existingCards = getExistingVariantCards();
 
                     projectsList.forEach(function(proj) {
-                        var key = variantKey(proj.name, proj.ai_provider || '', proj.ai_model || '');
+                        var key = variantKey(proj.name, proj.ai_provider || '', proj.ai_model || '', proj.owner || '');
                         var card = existingCards[key];
                         if (card) {
                             updateVariantProgressDOM(card, proj);
@@ -2173,8 +2136,9 @@
         });
 
         /* ----- Delete Variant with modalConfirm ----- */
-        async function deleteVariant(variantPath) {
-            var confirmed = await modalConfirm('Delete Variant', 'Are you sure you want to delete "' + variantPath + '"? This will remove the generated documentation for this variant and cannot be undone.', true);
+        async function deleteVariant(variantPath, owner) {
+            var ownerLabel = owner ? ' (owner: ' + owner + ')' : '';
+            var confirmed = await modalConfirm('Delete Variant', 'Are you sure you want to delete "' + variantPath + '"' + ownerLabel + '? This will remove the generated documentation for this variant and cannot be undone.', true);
             if (!confirmed) return;
 
             // variantPath is "name/provider/model"
@@ -2183,7 +2147,9 @@
             var provider = parts[1];
             var model = parts.slice(2).join('/');
 
-            fetch('/api/projects/' + encodeURIComponent(name) + '/' + encodeURIComponent(provider) + '/' + encodeURIComponent(model), {
+            var url = '/api/projects/' + encodeURIComponent(name) + '/' + encodeURIComponent(provider) + '/' + encodeURIComponent(model);
+            url += '?owner=' + encodeURIComponent(owner || '');
+            fetch(url, {
                 method: 'DELETE',
                 credentials: 'same-origin',
                 redirect: 'manual'
@@ -2206,7 +2172,8 @@
                     var cardName = card.getAttribute('data-project');
                     var cardProvider = card.getAttribute('data-provider');
                     var cardModel = card.getAttribute('data-model');
-                    if (cardName === name && cardProvider === provider && cardModel === model) {
+                    var cardOwner = card.getAttribute('data-owner');
+                    if (cardName === name && cardProvider === provider && cardModel === model && (cardOwner || '') === (owner || '')) {
                         var group = card.closest('.project-group');
                         card.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
                         card.style.opacity = '0';
@@ -2231,11 +2198,7 @@
                                 }, 300);
                             } else if (group) {
                                 // Update variant count in group header
-                                var vcEl = group.querySelector('.group-variant-count');
-                                if (vcEl) {
-                                    var count = group.querySelectorAll('.variant-card').length;
-                                    vcEl.textContent = count + ' variant' + (count > 1 ? 's' : '');
-                                }
+                                updateGroupVariantCount(group);
                             }
                         }, 300);
                     }
@@ -2245,6 +2208,43 @@
                 var msg = (err && err.detail) || (err && err.message) || 'Delete failed';
                 showToast(msg, 'error', 6000);
             });
+        }
+
+        /* ----- Update group variant count with status indicators ----- */
+        function updateGroupVariantCount(group) {
+            var vcEl = group.querySelector('.group-variant-count');
+            if (!vcEl) return;
+            var cards = group.querySelectorAll('.variant-card');
+            var count = cards.length;
+            var readyCount = 0, errorCount = 0, generatingCount = 0;
+            cards.forEach(function(c) {
+                var s = c.getAttribute('data-status');
+                if (s === 'ready') readyCount++;
+                else if (s === 'error' || s === 'aborted') errorCount++;
+                else if (s === 'generating') generatingCount++;
+            });
+            while (vcEl.firstChild) vcEl.removeChild(vcEl.firstChild);
+            vcEl.appendChild(document.createTextNode(count + ' variant' + (count !== 1 ? 's' : '') + ' '));
+            if (readyCount) {
+                var span = document.createElement('span');
+                span.className = 'count-ready';
+                span.textContent = readyCount + ' ready';
+                vcEl.appendChild(span);
+                vcEl.appendChild(document.createTextNode(' '));
+            }
+            if (errorCount) {
+                var span = document.createElement('span');
+                span.className = 'count-error';
+                span.textContent = errorCount + ' failed';
+                vcEl.appendChild(span);
+                vcEl.appendChild(document.createTextNode(' '));
+            }
+            if (generatingCount) {
+                var span = document.createElement('span');
+                span.className = 'count-generating';
+                span.textContent = generatingCount + ' generating';
+                vcEl.appendChild(span);
+            }
         }
 
         /* Build empty state using safe DOM methods */
@@ -2298,7 +2298,100 @@
         document.addEventListener('click', function(e) {
             var deleteBtn = e.target.closest('[data-delete-variant]');
             if (!deleteBtn) return;
-            deleteVariant(deleteBtn.getAttribute('data-delete-variant'));
+            var owner = deleteBtn.getAttribute('data-delete-owner') || '';
+            deleteVariant(deleteBtn.getAttribute('data-delete-variant'), owner);
+        });
+
+        /* ----- Delete All Variants of a Project ----- */
+        async function deleteAllVariants(projectName) {
+            var group = document.querySelector('.project-group[data-repo="' + projectName + '"]');
+            if (!group) return;
+
+            var variantButtons = group.querySelectorAll('[data-delete-variant]');
+            if (variantButtons.length === 0) {
+                showToast('No deletable variants found for ' + projectName, 'error');
+                return;
+            }
+
+            var confirmed = await modalConfirm(
+                'Delete All Variants',
+                'Are you sure you want to delete all ' + variantButtons.length + ' variant' + (variantButtons.length > 1 ? 's' : '') + ' of "' + projectName + '"? This cannot be undone.',
+                true
+            );
+            if (!confirmed) return;
+
+            var deletePromises = [];
+            variantButtons.forEach(function(btn) {
+                var variantPath = btn.getAttribute('data-delete-variant');
+                var owner = btn.getAttribute('data-delete-owner');
+                var parts = variantPath.split('/');
+                var name = parts[0];
+                var provider = parts[1];
+                var model = parts.slice(2).join('/');
+
+                var url = '/api/projects/' + encodeURIComponent(name) + '/' + encodeURIComponent(provider) + '/' + encodeURIComponent(model);
+                url += '?owner=' + encodeURIComponent(owner || '');
+
+                deletePromises.push(
+                    fetch(url, {
+                        method: 'DELETE',
+                        credentials: 'same-origin',
+                        redirect: 'manual'
+                    }).then(function(res) {
+                        if (res.redirected || res.status === 302 || res.type === 'opaqueredirect') {
+                            throw { detail: 'Session expired. Please login again.', sessionExpired: true };
+                        }
+                        if (!res.ok) return res.json().then(function(data) { throw data; });
+                        return res.json();
+                    })
+                );
+            });
+
+            try {
+                var results = await Promise.allSettled(deletePromises);
+                var succeeded = results.filter(function(r) { return r.status === 'fulfilled'; }).length;
+                var failed = results.filter(function(r) { return r.status === 'rejected'; }).length;
+
+                /* Check for session expiry in any rejection */
+                var sessionExpired = results.some(function(r) {
+                    return r.status === 'rejected' && r.reason && r.reason.sessionExpired;
+                });
+                if (sessionExpired) {
+                    showToast('Session expired. Please login again.', 'error', 6000);
+                    setTimeout(function() { window.location.href = '/login'; }, 2000);
+                    return;
+                }
+
+                if (failed === 0) {
+                    showToast('All ' + succeeded + ' variant' + (succeeded > 1 ? 's' : '') + ' of ' + projectName + ' deleted', 'success');
+
+                    /* Remove the entire project group with animation only when ALL succeeded */
+                    group.style.transition = 'opacity 0.3s ease';
+                    group.style.opacity = '0';
+                    setTimeout(function() {
+                        group.remove();
+                        var remaining = document.querySelectorAll('.project-group').length;
+                        var countEl = document.getElementById('projects-count');
+                        if (countEl) countEl.textContent = '(' + remaining + ')';
+                        if (remaining === 0) {
+                            buildEmptyState();
+                        }
+                        applyPagination();
+                    }, 300);
+                } else {
+                    showToast(succeeded + ' deleted, ' + failed + ' failed for ' + projectName + '. Refresh to see current state.', 'error', 6000);
+                }
+            } catch (err) {
+                var msg = (err && err.detail) || (err && err.message) || 'Delete all failed';
+                showToast(msg, 'error', 6000);
+            }
+        }
+
+        /* Delete All button delegated click */
+        document.addEventListener('click', function(e) {
+            var deleteAllBtn = e.target.closest('[data-delete-project]');
+            if (!deleteAllBtn) return;
+            deleteAllVariants(deleteAllBtn.getAttribute('data-delete-project'));
         });
 
         /* ----- Pagination State ----- */
@@ -2395,6 +2488,28 @@
         if (hasGeneratingVariants()) {
             startProgressPolling();
         }
+
+        /* ----- Collapsible Project Groups ----- */
+        function toggleGroup(group) {
+            var isCollapsed = group.classList.toggle('collapsed');
+            var header = group.querySelector('.group-header');
+            if (header) header.setAttribute('aria-expanded', !isCollapsed);
+        }
+
+        document.addEventListener('click', function(e) {
+            var header = e.target.closest('.group-header');
+            if (!header) return;
+            if (e.target.closest('a, button, input, select')) return;
+            toggleGroup(header.closest('.project-group'));
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key !== 'Enter' && e.key !== ' ') return;
+            var header = e.target.closest('.group-header');
+            if (!header || e.target.closest('a, button, input, select')) return;
+            e.preventDefault();
+            toggleGroup(header.closest('.project-group'));
+        });
 
         /* ----- Restore Form State ----- */
         restoreFormState();

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import json
 import os
 from pathlib import Path
 from unittest.mock import patch
@@ -122,8 +123,15 @@ async def test_abort_no_active_generation(client: AsyncClient) -> None:
 
 
 async def test_delete_project_not_found(client: AsyncClient) -> None:
-    response = await client.delete("/api/projects/nonexistent")
+    response = await client.delete("/api/projects/nonexistent?owner=someuser")
     assert response.status_code == 404
+
+
+async def test_delete_project_admin_requires_owner(client: AsyncClient) -> None:
+    """Admin must provide ?owner= when deleting a project."""
+    response = await client.delete("/api/projects/anyproject")
+    assert response.status_code == 400
+    assert "owner" in response.json()["detail"].lower()
 
 
 async def test_generate_duplicate_variant(client: AsyncClient) -> None:
@@ -186,11 +194,11 @@ async def test_variant_specific_endpoints(client: AsyncClient) -> None:
     assert response.status_code == 404
 
     # Delete nonexistent variant
-    response = await client.delete("/api/projects/test-repo/gemini/flash")
+    response = await client.delete("/api/projects/test-repo/gemini/flash?owner=admin")
     assert response.status_code == 404
 
     # Delete existing variant
-    response = await client.delete("/api/projects/test-repo/claude/opus")
+    response = await client.delete("/api/projects/test-repo/claude/opus?owner=admin")
     assert response.status_code == 200
     assert response.json()["deleted"] == "test-repo/claude/opus"
 
@@ -273,3 +281,286 @@ async def test_generate_rejects_private_url(client: AsyncClient) -> None:
     )
     # Should be rejected by URL validation (either Pydantic or SSRF check)
     assert response.status_code in (400, 422)
+
+
+async def test_generate_from_path_falls_back_to_full_regeneration_when_diff_fails(
+    client: AsyncClient, tmp_path: Path
+) -> None:
+    import docsfy.storage as storage
+    from docsfy.main import _generate_from_path
+    from docsfy.storage import get_project_dir
+
+    sample_plan = {
+        "project_name": "test-repo",
+        "tagline": "A test project",
+        "navigation": [
+            {
+                "group": "Getting Started",
+                "pages": [
+                    {
+                        "slug": "introduction",
+                        "title": "Introduction",
+                        "description": "Overview",
+                    }
+                ],
+            }
+        ],
+    }
+
+    repo_dir = tmp_path / "repo"
+    repo_dir.mkdir()
+    get_project_dir("test-repo", "claude", "opus", "admin").mkdir(
+        parents=True, exist_ok=True
+    )
+
+    await storage.save_project(
+        name="test-repo",
+        repo_url="https://github.com/org/test-repo.git",
+        status="generating",
+        ai_provider="claude",
+        ai_model="opus",
+        owner="admin",
+    )
+    await storage.update_project_status(
+        "test-repo",
+        "claude",
+        "opus",
+        status="ready",
+        owner="admin",
+        last_commit_sha="abc123",
+        plan_json=json.dumps(sample_plan),
+    )
+
+    with (
+        patch("docsfy.main.deepen_clone_for_diff", return_value=True),
+        patch("docsfy.main.get_diff", return_value=None),
+        patch("docsfy.main.run_planner", return_value=sample_plan) as mock_run_planner,
+        patch(
+            "docsfy.main.generate_all_pages",
+            return_value={"introduction": "# Intro\n\nWelcome!"},
+        ) as mock_generate_all_pages,
+        patch("docsfy.main.render_site") as mock_render_site,
+    ):
+        await _generate_from_path(
+            repo_dir=repo_dir,
+            commit_sha="def456",
+            source_url="https://github.com/org/test-repo.git",
+            project_name="test-repo",
+            ai_provider="claude",
+            ai_model="opus",
+            ai_cli_timeout=60,
+            force=False,
+            owner="admin",
+        )
+
+    project = await storage.get_project(
+        "test-repo", ai_provider="claude", ai_model="opus", owner="admin"
+    )
+    assert project is not None
+    assert mock_run_planner.called
+    assert mock_generate_all_pages.called
+    assert mock_render_site.called
+    assert project["status"] == "ready"
+    assert project["last_commit_sha"] == "def456"
+
+
+async def test_generate_from_path_reuses_existing_plan_for_incremental_updates(
+    client: AsyncClient, tmp_path: Path
+) -> None:
+    import docsfy.storage as storage
+    from docsfy.main import _generate_from_path
+    from docsfy.storage import get_project_cache_dir, get_project_dir
+
+    sample_plan = {
+        "project_name": "test-repo",
+        "tagline": "A test project",
+        "navigation": [
+            {
+                "group": "Getting Started",
+                "pages": [
+                    {
+                        "slug": "introduction",
+                        "title": "Introduction",
+                        "description": "Overview",
+                    },
+                    {
+                        "slug": "quickstart",
+                        "title": "Quick Start",
+                        "description": "Fast start",
+                    },
+                ],
+            }
+        ],
+    }
+
+    repo_dir = tmp_path / "repo"
+    repo_dir.mkdir()
+    get_project_dir("test-repo", "claude", "opus", "admin").mkdir(
+        parents=True, exist_ok=True
+    )
+    cache_dir = get_project_cache_dir("test-repo", "claude", "opus", "admin")
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    (cache_dir / "introduction.md").write_text("# Introduction\n\nOld intro\n")
+    (cache_dir / "quickstart.md").write_text("# Quick Start\n\nCached quickstart\n")
+
+    await storage.save_project(
+        name="test-repo",
+        repo_url="https://github.com/org/test-repo.git",
+        status="generating",
+        ai_provider="claude",
+        ai_model="opus",
+        owner="admin",
+    )
+    await storage.update_project_status(
+        "test-repo",
+        "claude",
+        "opus",
+        status="ready",
+        owner="admin",
+        last_commit_sha="abc123",
+        plan_json=json.dumps(sample_plan),
+    )
+
+    with (
+        patch("docsfy.main.deepen_clone_for_diff", return_value=True),
+        patch(
+            "docsfy.main.get_diff",
+            return_value=(["src/intro.py"], "diff --git a/src/intro.py\n+new intro"),
+        ),
+        patch(
+            "docsfy.main.run_incremental_planner",
+            return_value=["introduction"],
+        ) as mock_incremental_planner,
+        patch(
+            "docsfy.main.run_planner",
+            side_effect=AssertionError("full planner should not run"),
+        ) as mock_run_planner,
+        patch(
+            "docsfy.main.generate_all_pages",
+            return_value={
+                "introduction": "# Introduction\n\nNew intro\n",
+                "quickstart": "# Quick Start\n\nCached quickstart\n",
+            },
+        ) as mock_generate_all_pages,
+        patch("docsfy.main.render_site"),
+    ):
+        await _generate_from_path(
+            repo_dir=repo_dir,
+            commit_sha="def456",
+            source_url="https://github.com/org/test-repo.git",
+            project_name="test-repo",
+            ai_provider="claude",
+            ai_model="opus",
+            ai_cli_timeout=60,
+            force=False,
+            owner="admin",
+        )
+
+    project = await storage.get_project(
+        "test-repo", ai_provider="claude", ai_model="opus", owner="admin"
+    )
+    assert project is not None
+    assert mock_incremental_planner.called
+    assert not mock_run_planner.called
+    assert mock_generate_all_pages.call_args.kwargs["use_cache"] is True
+    assert mock_generate_all_pages.call_args.kwargs["existing_pages"] == {
+        "introduction": "# Introduction\n\nOld intro\n"
+    }
+    assert project["status"] == "ready"
+    assert project["last_commit_sha"] == "def456"
+
+
+async def test_generate_from_path_clears_stale_cache_for_full_regeneration(
+    client: AsyncClient, tmp_path: Path
+) -> None:
+    import docsfy.storage as storage
+    from docsfy.main import _generate_from_path
+    from docsfy.storage import get_project_cache_dir, get_project_dir
+
+    sample_plan = {
+        "project_name": "test-repo",
+        "tagline": "A test project",
+        "navigation": [
+            {
+                "group": "Getting Started",
+                "pages": [
+                    {
+                        "slug": "introduction",
+                        "title": "Introduction",
+                        "description": "Overview",
+                    }
+                ],
+            }
+        ],
+    }
+
+    repo_dir = tmp_path / "repo"
+    repo_dir.mkdir()
+    get_project_dir("test-repo", "claude", "opus", "admin").mkdir(
+        parents=True, exist_ok=True
+    )
+    cache_dir = get_project_cache_dir("test-repo", "claude", "opus", "admin")
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    stale_cache_file = cache_dir / "stale.md"
+    stale_cache_file.write_text("# Stale\n\nOld output\n")
+
+    await storage.save_project(
+        name="test-repo",
+        repo_url="https://github.com/org/test-repo.git",
+        status="generating",
+        ai_provider="claude",
+        ai_model="opus",
+        owner="admin",
+    )
+    await storage.update_project_status(
+        "test-repo",
+        "claude",
+        "opus",
+        status="ready",
+        owner="admin",
+        last_commit_sha="abc123",
+    )
+
+    recorded_calls: list[dict[str, object]] = []
+    real_update_project_status = storage.update_project_status
+
+    async def record_update_project_status(*args: object, **kwargs: object) -> None:
+        recorded_calls.append({"args": args, "kwargs": dict(kwargs)})
+        await real_update_project_status(*args, **kwargs)
+
+    with (
+        patch("docsfy.main.deepen_clone_for_diff", return_value=True),
+        patch(
+            "docsfy.main.get_diff",
+            return_value=(["src/intro.py"], "diff --git a/src/intro.py\n+new intro"),
+        ),
+        patch("docsfy.main.run_planner", return_value=sample_plan),
+        patch(
+            "docsfy.main.generate_all_pages",
+            return_value={"introduction": "# Introduction\n\nNew intro\n"},
+        ),
+        patch("docsfy.main.render_site"),
+        patch(
+            "docsfy.main.update_project_status",
+            side_effect=record_update_project_status,
+        ),
+    ):
+        await _generate_from_path(
+            repo_dir=repo_dir,
+            commit_sha="def456",
+            source_url="https://github.com/org/test-repo.git",
+            project_name="test-repo",
+            ai_provider="claude",
+            ai_model="opus",
+            ai_cli_timeout=60,
+            force=False,
+            owner="admin",
+        )
+
+    generating_pages_call = next(
+        call
+        for call in recorded_calls
+        if call["kwargs"].get("current_stage") == "generating_pages"
+    )
+    assert generating_pages_call["kwargs"]["page_count"] == 0
+    assert not stale_cache_file.exists()
