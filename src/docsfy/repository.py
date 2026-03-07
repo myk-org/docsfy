@@ -45,7 +45,16 @@ def clone_repo(repo_url: str, base_dir: Path) -> tuple[Path, str]:
     return repo_path, commit_sha
 
 
-_DIFF_FILE_RE = re.compile(r"^diff --git a/.+ b/(.+)$", re.MULTILINE)
+_DIFF_HEADER_RE = re.compile(r"^diff --git a/(.+) b/(.+)$", re.MULTILINE)
+
+
+def _extract_changed_files(diff_content: str) -> list[str]:
+    changed_files: list[str] = []
+    for match in _DIFF_HEADER_RE.finditer(diff_content):
+        old_path, new_path = match.groups()
+        # Git uses /dev/null on one side for adds/deletes; keep the real path.
+        changed_files.append(old_path if new_path == "dev/null" else new_path)
+    return changed_files
 
 
 def get_diff(
@@ -78,7 +87,7 @@ def get_diff(
         return None
 
     diff_content = result.stdout
-    changed_files = [m.group(1) for m in _DIFF_FILE_RE.finditer(diff_content)]
+    changed_files = _extract_changed_files(diff_content)
     return changed_files, diff_content
 
 

@@ -90,5 +90,5 @@ async def test_dashboard_empty_state(client: AsyncClient) -> None:
     response = await client.get("/")
     assert response.status_code == 200
     assert "docsfy" in response.text
-    # No project cards should be present
-    assert "project-card" not in response.text or "No projects" in response.text
+    assert "No projects yet" in response.text
+    assert '<div class="variant-card"' not in response.text

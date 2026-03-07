@@ -468,3 +468,99 @@ async def test_generate_from_path_reuses_existing_plan_for_incremental_updates(
     }
     assert project["status"] == "ready"
     assert project["last_commit_sha"] == "def456"
+
+
+async def test_generate_from_path_clears_stale_cache_for_full_regeneration(
+    client: AsyncClient, tmp_path: Path
+) -> None:
+    import docsfy.storage as storage
+    from docsfy.main import _generate_from_path
+    from docsfy.storage import get_project_cache_dir, get_project_dir
+
+    sample_plan = {
+        "project_name": "test-repo",
+        "tagline": "A test project",
+        "navigation": [
+            {
+                "group": "Getting Started",
+                "pages": [
+                    {
+                        "slug": "introduction",
+                        "title": "Introduction",
+                        "description": "Overview",
+                    }
+                ],
+            }
+        ],
+    }
+
+    repo_dir = tmp_path / "repo"
+    repo_dir.mkdir()
+    get_project_dir("test-repo", "claude", "opus", "admin").mkdir(
+        parents=True, exist_ok=True
+    )
+    cache_dir = get_project_cache_dir("test-repo", "claude", "opus", "admin")
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    stale_cache_file = cache_dir / "stale.md"
+    stale_cache_file.write_text("# Stale\n\nOld output\n")
+
+    await storage.save_project(
+        name="test-repo",
+        repo_url="https://github.com/org/test-repo.git",
+        status="generating",
+        ai_provider="claude",
+        ai_model="opus",
+        owner="admin",
+    )
+    await storage.update_project_status(
+        "test-repo",
+        "claude",
+        "opus",
+        status="ready",
+        owner="admin",
+        last_commit_sha="abc123",
+    )
+
+    recorded_calls: list[dict[str, object]] = []
+    real_update_project_status = storage.update_project_status
+
+    async def record_update_project_status(*args: object, **kwargs: object) -> None:
+        recorded_calls.append({"args": args, "kwargs": dict(kwargs)})
+        await real_update_project_status(*args, **kwargs)
+
+    with (
+        patch("docsfy.main.deepen_clone_for_diff", return_value=True),
+        patch(
+            "docsfy.main.get_diff",
+            return_value=(["src/intro.py"], "diff --git a/src/intro.py\n+new intro"),
+        ),
+        patch("docsfy.main.run_planner", return_value=sample_plan),
+        patch(
+            "docsfy.main.generate_all_pages",
+            return_value={"introduction": "# Introduction\n\nNew intro\n"},
+        ),
+        patch("docsfy.main.render_site"),
+        patch(
+            "docsfy.main.update_project_status",
+            side_effect=record_update_project_status,
+        ),
+    ):
+        await _generate_from_path(
+            repo_dir=repo_dir,
+            commit_sha="def456",
+            source_url="https://github.com/org/test-repo.git",
+            project_name="test-repo",
+            ai_provider="claude",
+            ai_model="opus",
+            ai_cli_timeout=60,
+            force=False,
+            owner="admin",
+        )
+
+    generating_pages_call = next(
+        call
+        for call in recorded_calls
+        if call["kwargs"].get("current_stage") == "generating_pages"
+    )
+    assert generating_pages_call["kwargs"]["page_count"] == 0
+    assert not stale_cache_file.exists()

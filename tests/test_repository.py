@@ -178,6 +178,32 @@ def test_get_diff_with_special_filenames(tmp_path: Path) -> None:
     ]
 
 
+def test_get_diff_uses_deleted_path_instead_of_dev_null(tmp_path: Path) -> None:
+    from docsfy.repository import get_diff
+
+    diff_output = (
+        "diff --git a/src/deleted.py b/dev/null\n"
+        "deleted file mode 100644\n"
+        "index abc1234..0000000\n"
+        "--- a/src/deleted.py\n"
+        "+++ /dev/null\n"
+        "@@ -1 +0,0 @@\n"
+        "-print('old file')\n"
+    )
+
+    with patch("docsfy.repository.subprocess.run") as mock_run:
+        mock_run.return_value = MagicMock(
+            returncode=0,
+            stdout=diff_output,
+            stderr="",
+        )
+        result = get_diff(tmp_path, "abc123", "def456")
+
+    assert result is not None
+    changed_files, _ = result
+    assert changed_files == ["src/deleted.py"]
+
+
 def test_get_diff_failure(tmp_path: Path) -> None:
     from docsfy.repository import get_diff
 

@@ -978,6 +978,7 @@ async def _generate_from_path(
                             f"all pages to regenerate, reusing existing plan"
                         )
                     else:
+                        valid_pages_to_regen: list[str] = []
                         # Read existing content before deleting cached pages
                         for slug in pages_to_regen:
                             # Validate slug to prevent path traversal
@@ -995,6 +996,7 @@ async def _generate_from_path(
                                     f"[{project_name}] Path traversal attempt in slug: {slug}"
                                 )
                                 continue
+                            valid_pages_to_regen.append(slug)
                             if cache_file.exists():
                                 existing_pages[slug] = cache_file.read_text(
                                     encoding="utf-8"
@@ -1004,7 +1006,7 @@ async def _generate_from_path(
                         use_cache = True
                         logger.info(
                             f"[{project_name}] Incremental update: {len(changed_files)} files changed, "
-                            f"{len(pages_to_regen)} pages to regenerate"
+                            f"{len(valid_pages_to_regen)} pages to regenerate"
                         )
                 except (json.JSONDecodeError, TypeError):
                     logger.warning(
@@ -1033,9 +1035,14 @@ async def _generate_from_path(
     assert plan is not None, "Plan was not generated"
     plan["repo_url"] = source_url
 
-    # Count total pages from the plan so the progress bar has the correct denominator
-    planned_page_count = sum(
-        len(group.get("pages", [])) for group in plan.get("navigation", [])
+    if not use_cache and cache_dir.exists():
+        # A full regeneration should start from a clean cache so progress reflects
+        # pages generated in this run and removed pages do not linger on disk.
+        for cache_file in cache_dir.glob("*.md"):
+            cache_file.unlink()
+
+    current_page_count = (
+        len(list(cache_dir.glob("*.md"))) if use_cache and cache_dir.exists() else 0
     )
 
     # Store plan so API consumers can see doc structure while pages generate
@@ -1047,7 +1054,7 @@ async def _generate_from_path(
         owner=owner,
         current_stage="generating_pages",
         plan_json=json.dumps(plan),
-        page_count=planned_page_count,
+        page_count=current_page_count,
     )
 
     pages = await generate_all_pages(

@@ -234,21 +234,22 @@
     {% include '_user_menu.css' %}
 
     .theme-toggle {
-        background: none;
-        border: none;
-        color: var(--text-secondary);
-        cursor: pointer;
-        padding: 6px;
-        border-radius: 6px;
-        display: flex;
+        display: inline-flex;
         align-items: center;
         justify-content: center;
-        transition: color var(--transition-fast), background-color var(--transition-fast);
+        width: 36px;
+        height: 36px;
+        border: 1px solid var(--border-primary);
+        border-radius: 8px;
+        background: var(--bg-primary);
+        color: var(--text-secondary);
+        cursor: pointer;
+        transition: color var(--transition-fast), border-color var(--transition-fast);
     }
 
     .theme-toggle:hover {
         color: var(--text-primary);
-        background: var(--bg-tertiary);
+        border-color: var(--border-focus);
     }
 
     [data-theme="dark"] .icon-sun { display: none; }
@@ -644,21 +645,6 @@
         gap: 0.75rem;
     }
 
-    .card-header {
-        display: flex;
-        align-items: flex-start;
-        justify-content: space-between;
-        gap: 0.75rem;
-        margin-bottom: 0.75rem;
-    }
-
-    .card-title-row {
-        display: flex;
-        align-items: center;
-        gap: 0.625rem;
-        flex-wrap: wrap;
-    }
-
     .status-dot {
         width: 10px;
         height: 10px;
@@ -688,21 +674,6 @@
         50% { opacity: 0.5; transform: scale(1.2); }
     }
 
-    .card-name {
-        font-size: 1.125rem;
-        font-weight: 600;
-        color: var(--text-primary);
-    }
-
-    .card-status-badge {
-        font-size: 0.75rem;
-        font-weight: 500;
-        padding: 0.125rem 0.5rem;
-        border-radius: 9999px;
-        text-transform: uppercase;
-        letter-spacing: 0.025em;
-    }
-
     .badge-ready {
         background: var(--status-ready-bg);
         color: var(--status-ready);
@@ -723,65 +694,16 @@
         color: var(--status-aborted);
     }
 
-    .card-page-count {
-        font-size: 0.8125rem;
-        color: var(--text-tertiary);
-    }
-
-    .card-meta {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.5rem 1.25rem;
-        font-size: 0.8125rem;
-        color: var(--text-secondary);
-        margin-bottom: 0.75rem;
-    }
-
-    .card-meta a {
-        color: var(--text-link);
-        text-decoration: none;
-    }
-
-    .card-meta a:hover {
-        color: var(--text-link-hover);
-        text-decoration: underline;
-    }
-
-    .meta-item {
-        display: flex;
-        align-items: center;
-        gap: 0.25rem;
-    }
-
-    .meta-label {
-        color: var(--text-tertiary);
-    }
-
-    .card-error {
-        background: var(--status-error-bg);
-        color: var(--status-error);
-        padding: 0.625rem 0.875rem;
-        border-radius: 8px;
-        font-size: 0.8125rem;
-        margin-bottom: 0.75rem;
-        word-break: break-word;
-    }
-
-    .card-aborted {
-        background: var(--status-aborted-bg);
-        color: var(--status-aborted);
-        padding: 0.625rem 0.875rem;
-        border-radius: 8px;
-        font-size: 0.8125rem;
-        margin-bottom: 0.75rem;
-        word-break: break-word;
-    }
-
     /* --------------------------------------------------------------------------
        Progress Bar
        -------------------------------------------------------------------------- */
-    .progress-container {
-        margin-bottom: 0.75rem;
+    .progress-bar-container {
+        flex: 1 1 180px;
+        min-width: 180px;
+    }
+
+    .progress-bar-container .progress-bar-wrapper {
+        margin-top: 0;
     }
 
     .progress-bar-wrapper {
@@ -823,22 +745,6 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
-    }
-
-    /* --------------------------------------------------------------------------
-       Card Actions
-       -------------------------------------------------------------------------- */
-    .card-actions {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        flex-wrap: wrap;
-        padding-top: 0.75rem;
-        border-top: 1px solid var(--border-secondary);
-    }
-
-    .card-actions-spacer {
-        flex: 1;
     }
 
     .regenerate-inline {
@@ -1094,14 +1000,33 @@
     }
 
     .variant-error {
-        padding: 0.5rem;
-        background: rgba(248, 81, 73, 0.1);
-        border-radius: 4px;
+        padding: 0.625rem 0.75rem;
+        border: 1px solid transparent;
+        border-left-width: 3px;
+        border-radius: 8px;
         margin-top: 0.5rem;
+        word-break: break-word;
+    }
+
+    .variant-error-error {
+        background: var(--status-error-bg);
+        border-color: var(--status-error);
+    }
+
+    .variant-error-aborted {
+        background: var(--status-aborted-bg);
+        border-color: var(--status-aborted);
+    }
+
+    .variant-error-error .error-text {
+        color: var(--status-error);
+    }
+
+    .variant-error-aborted .error-text {
+        color: var(--status-aborted);
     }
 
     .error-text {
-        color: var(--status-error);
         font-size: 0.85rem;
     }
 
@@ -1158,7 +1083,7 @@
         border: 1px solid var(--border-primary);
         border-top: none;
         border-radius: 0 0 6px 6px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        box-shadow: var(--shadow-md);
         max-height: 200px;
         overflow-y: auto;
         z-index: 100;
@@ -1240,23 +1165,6 @@
 
         .search-filter {
             width: 100%;
-        }
-
-        .card-header {
-            flex-direction: column;
-        }
-
-        .card-actions {
-            flex-direction: column;
-            align-items: stretch;
-        }
-
-        .card-actions .btn {
-            justify-content: center;
-        }
-
-        .card-actions-spacer {
-            display: none;
         }
 
         .regenerate-inline {
@@ -1541,7 +1449,7 @@
                         </div>
 
                         {% elif variant.status == 'error' or variant.status == 'aborted' %}
-                        <div class="variant-error">
+                        <div class="variant-error variant-error-{{ variant.status }}">
                             <span class="error-text">{{ variant.error_message }}</span>
                         </div>
                         <div class="variant-actions">

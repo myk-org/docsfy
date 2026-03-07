@@ -36,14 +36,6 @@ def parse_json_array_response(raw_text: str) -> list[Any] | None:
     return None
 
 
-def parse_json_list_response(raw_text: str) -> list[str] | None:
-    """Parse AI response as a JSON list of strings."""
-    result = parse_json_array_response(raw_text)
-    if result is None:
-        return None
-    return [item for item in result if isinstance(item, str)]
-
-
 def _parse_json_payload(
     raw_text: str,
     *,
