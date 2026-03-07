@@ -31,7 +31,12 @@ from docsfy.generator import (
     run_planner,
 )
 from docsfy.models import GenerateRequest
-from docsfy.repository import clone_repo, get_diff, get_local_repo_info
+from docsfy.repository import (
+    clone_repo,
+    deepen_clone_for_diff,
+    get_diff,
+    get_local_repo_info,
+)
 from docsfy.renderer import render_site
 from docsfy.storage import (
     SESSION_TTL_SECONDS,
@@ -863,6 +868,7 @@ async def _generate_from_path(
     use_cache = False
     old_sha: str | None = None
     existing: dict[str, Any] | None = None
+    plan: dict[str, Any] | None = None
     changed_files: list[str] | None = None
     diff_content: str | None = None
     existing_pages: dict[str, str] = {}
@@ -913,18 +919,27 @@ async def _generate_from_path(
     # paying the full planning cost for up-to-date or metadata-only commits
     cache_dir = get_project_cache_dir(project_name, ai_provider, ai_model, owner)
     if old_sha and old_sha != commit_sha and not force and existing:
+        # Shallow clones (--depth 1) only contain the latest commit.
+        # Fetch the old commit so that git-diff can compare the two.
+        if not deepen_clone_for_diff(repo_dir, old_sha):
+            logger.warning(
+                f"[{project_name}] Could not fetch old commit {old_sha}, "
+                "falling back to full regeneration"
+            )
+            old_sha = None  # skip the diff branch entirely
+
+    if old_sha and old_sha != commit_sha and not force and existing:
         diff_result = get_diff(repo_dir, old_sha, commit_sha)
         if diff_result is None:
             logger.warning(
-                f"[{project_name}] Failed to get diff, skipping regeneration (will retry on next trigger)"
+                f"[{project_name}] Failed to get diff, falling back to full regeneration"
             )
-            return
-        changed_files, diff_content = diff_result
-        if not changed_files:
-            # Commits differ but tree is identical — nothing to regenerate
-            await _mark_up_to_date()
-            return
-        elif changed_files:
+        else:
+            changed_files, diff_content = diff_result
+            if not changed_files:
+                # Commits differ but tree is identical — nothing to regenerate
+                await _mark_up_to_date()
+                return
             existing_plan_json = existing.get("plan_json")
             if existing_plan_json:
                 try:
@@ -936,6 +951,7 @@ async def _generate_from_path(
                         status="generating",
                         owner=owner,
                         current_stage="incremental_planning",
+                        page_count=0,
                     )
                     pages_to_regen = await run_incremental_planner(
                         repo_dir,
@@ -946,7 +962,22 @@ async def _generate_from_path(
                         existing_plan,
                         ai_cli_timeout,
                     )
-                    if pages_to_regen != ["all"]:
+                    if pages_to_regen == ["all"]:
+                        # All pages need regeneration but keep the existing plan
+                        # Delete all cached pages so they get regenerated
+                        if cache_dir.exists():
+                            for cache_file in cache_dir.glob("*.md"):
+                                existing_pages[cache_file.stem] = cache_file.read_text(
+                                    encoding="utf-8"
+                                )
+                                cache_file.unlink()
+                        plan = existing_plan
+                        use_cache = False
+                        logger.info(
+                            f"[{project_name}] Full incremental update: "
+                            f"all pages to regenerate, reusing existing plan"
+                        )
+                    else:
                         # Read existing content before deleting cached pages
                         for slug in pages_to_regen:
                             # Validate slug to prevent path traversal
@@ -969,6 +1000,7 @@ async def _generate_from_path(
                                     encoding="utf-8"
                                 )
                                 cache_file.unlink()
+                        plan = existing_plan
                         use_cache = True
                         logger.info(
                             f"[{project_name}] Incremental update: {len(changed_files)} files changed, "
@@ -979,24 +1011,32 @@ async def _generate_from_path(
                         f"[{project_name}] Failed to parse existing plan, doing full regeneration"
                     )
 
-    await update_project_status(
-        project_name,
-        ai_provider,
-        ai_model,
-        status="generating",
-        owner=owner,
-        current_stage="planning",
-    )
+    if plan is None:
+        await update_project_status(
+            project_name,
+            ai_provider,
+            ai_model,
+            status="generating",
+            owner=owner,
+            current_stage="planning",
+            page_count=0,
+        )
 
-    plan = await run_planner(
-        repo_path=repo_dir,
-        project_name=project_name,
-        ai_provider=ai_provider,
-        ai_model=ai_model,
-        ai_cli_timeout=ai_cli_timeout,
-    )
+        plan = await run_planner(
+            repo_path=repo_dir,
+            project_name=project_name,
+            ai_provider=ai_provider,
+            ai_model=ai_model,
+            ai_cli_timeout=ai_cli_timeout,
+        )
 
+    assert plan is not None, "Plan was not generated"
     plan["repo_url"] = source_url
+
+    # Count total pages from the plan so the progress bar has the correct denominator
+    planned_page_count = sum(
+        len(group.get("pages", [])) for group in plan.get("navigation", [])
+    )
 
     # Store plan so API consumers can see doc structure while pages generate
     await update_project_status(
@@ -1007,6 +1047,7 @@ async def _generate_from_path(
         owner=owner,
         current_stage="generating_pages",
         plan_json=json.dumps(plan),
+        page_count=planned_page_count,
     )
 
     pages = await generate_all_pages(
@@ -1080,14 +1121,27 @@ async def delete_variant(
     _require_write_access(request)
     name = _validate_project_name(name)
 
-    project = await _resolve_project(
-        request, name, ai_provider=provider, ai_model=model
-    )
+    if request.state.is_admin:
+        project_owner = request.query_params.get("owner")
+        if project_owner is None:
+            raise HTTPException(
+                status_code=400,
+                detail="Project owner is required for admin deletion. Use ?owner=username (or ?owner= for legacy projects)",
+            )
+    else:
+        project_owner = request.state.username
 
-    project_owner = str(project.get("owner", ""))
+    project = await get_project(
+        name, ai_provider=provider, ai_model=model, owner=project_owner
+    )
+    if not project:
+        raise HTTPException(status_code=404, detail="Variant not found")
 
     # Non-admins can only delete variants they own
-    if not request.state.is_admin and project_owner != request.state.username:
+    if (
+        not request.state.is_admin
+        and str(project.get("owner", "")) != request.state.username
+    ):
         raise HTTPException(status_code=404, detail="Variant not found")
 
     # Hold _gen_lock for the entire check+delete to prevent TOCTOU race
@@ -1210,9 +1264,15 @@ async def delete_project_endpoint(request: Request, name: str) -> dict[str, str]
     _require_write_access(request)
     name = _validate_project_name(name)
     if request.state.is_admin:
-        variants = await list_variants(name)
+        owner = request.query_params.get("owner")
+        if owner is None:
+            raise HTTPException(
+                status_code=400,
+                detail="Project owner is required for admin deletion. Use ?owner=username (or ?owner= for legacy projects)",
+            )
     else:
-        variants = await list_variants(name, owner=request.state.username)
+        owner = request.state.username
+    variants = await list_variants(name, owner=owner)
     if not variants:
         raise HTTPException(status_code=404, detail=f"Project '{name}' not found")
 

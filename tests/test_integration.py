@@ -146,7 +146,7 @@ async def test_full_flow_mock(client: AsyncClient, tmp_path: Path) -> None:
     assert response.headers["content-type"] == "application/gzip"
 
     # Delete variant
-    response = await client.delete("/api/projects/test-repo/claude/opus")
+    response = await client.delete("/api/projects/test-repo/claude/opus?owner=admin")
     assert response.status_code == 200
 
     response = await client.get("/api/projects/test-repo")

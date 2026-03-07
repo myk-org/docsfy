@@ -82,6 +82,42 @@ def get_diff(
     return changed_files, diff_content
 
 
+def deepen_clone_for_diff(repo_path: Path, old_sha: str) -> bool:
+    """Fetch enough history to make old_sha available for diffing.
+
+    When a repo is cloned with ``--depth 1`` only the latest commit is
+    present.  If the caller needs to diff against a previous commit we
+    must fetch it first.
+
+    Returns True if *old_sha* is now available, False on failure.
+    """
+    try:
+        # Fast-path: commit already reachable (e.g. full clone or
+        # previously deepened).
+        check = subprocess.run(
+            ["git", "cat-file", "-t", old_sha],
+            cwd=repo_path,
+            capture_output=True,
+            text=True,
+            timeout=10,
+        )
+        if check.returncode == 0:
+            return True
+
+        # Fetch the specific commit into the shallow clone.
+        result = subprocess.run(
+            ["git", "fetch", "--depth=1", "origin", old_sha],
+            cwd=repo_path,
+            capture_output=True,
+            text=True,
+            timeout=120,
+        )
+        return result.returncode == 0
+    except (subprocess.TimeoutExpired, OSError) as exc:
+        logger.warning(f"Failed to deepen clone for diff: {exc}")
+        return False
+
+
 def get_local_repo_info(repo_path: Path) -> tuple[Path, str]:
     """Get commit SHA from a local git repository."""
     sha_result = subprocess.run(

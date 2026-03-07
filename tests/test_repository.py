@@ -219,3 +219,66 @@ def test_get_diff_invalid_sha(tmp_path: Path) -> None:
 
     result = get_diff(tmp_path, "not-a-sha!", "def456")
     assert result is None
+
+
+def test_deepen_clone_for_diff_already_available(tmp_path: Path) -> None:
+    from docsfy.repository import deepen_clone_for_diff
+
+    with patch("docsfy.repository.subprocess.run") as mock_run:
+        # cat-file succeeds -> commit already present
+        mock_run.return_value = MagicMock(returncode=0, stdout="commit\n", stderr="")
+        assert deepen_clone_for_diff(tmp_path, "abc123") is True
+
+    # Only one call (cat-file), no fetch needed
+    assert mock_run.call_count == 1
+    cmd = mock_run.call_args.args[0]
+    assert "cat-file" in cmd
+
+
+def test_deepen_clone_for_diff_fetch_success(tmp_path: Path) -> None:
+    from docsfy.repository import deepen_clone_for_diff
+
+    with patch("docsfy.repository.subprocess.run") as mock_run:
+        mock_run.side_effect = [
+            # cat-file fails -> commit not present
+            MagicMock(returncode=1, stdout="", stderr="fatal: bad object"),
+            # fetch succeeds
+            MagicMock(returncode=0, stdout="", stderr=""),
+        ]
+        assert deepen_clone_for_diff(tmp_path, "abc123") is True
+
+    assert mock_run.call_count == 2
+    fetch_cmd = mock_run.call_args_list[1].args[0]
+    assert "fetch" in fetch_cmd
+    assert "abc123" in fetch_cmd
+
+
+def test_deepen_clone_for_diff_fetch_failure(tmp_path: Path) -> None:
+    from docsfy.repository import deepen_clone_for_diff
+
+    with patch("docsfy.repository.subprocess.run") as mock_run:
+        mock_run.side_effect = [
+            # cat-file fails
+            MagicMock(returncode=1, stdout="", stderr=""),
+            # fetch also fails
+            MagicMock(returncode=128, stdout="", stderr="fatal: remote error"),
+        ]
+        assert deepen_clone_for_diff(tmp_path, "abc123") is False
+
+
+def test_deepen_clone_for_diff_timeout(tmp_path: Path) -> None:
+    import subprocess
+
+    from docsfy.repository import deepen_clone_for_diff
+
+    with patch("docsfy.repository.subprocess.run") as mock_run:
+        mock_run.side_effect = subprocess.TimeoutExpired(cmd="git", timeout=10)
+        assert deepen_clone_for_diff(tmp_path, "abc123") is False
+
+
+def test_deepen_clone_for_diff_os_error(tmp_path: Path) -> None:
+    from docsfy.repository import deepen_clone_for_diff
+
+    with patch("docsfy.repository.subprocess.run") as mock_run:
+        mock_run.side_effect = OSError("No such file or directory")
+        assert deepen_clone_for_diff(tmp_path, "abc123") is False

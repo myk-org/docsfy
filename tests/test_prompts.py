@@ -55,6 +55,8 @@ def test_build_incremental_planner_prompt() -> None:
     assert "introduction" in prompt
     assert "configuration" in prompt
     assert "JSON array" in prompt
+    assert "must be the only item" in prompt.lower()
+    assert "do not output empty strings" in prompt.lower()
 
 
 def test_build_incremental_page_prompt() -> None:
@@ -78,11 +80,24 @@ def test_build_incremental_page_prompt() -> None:
     assert "src/main.py" in prompt
     assert existing_content in prompt
     assert diff_content in prompt
+    assert "<repository_diff>" in prompt
+    assert "<existing_page_markdown>" in prompt
 
     # Verify critical guardrail language is present
-    assert "byte-for-byte" in prompt.lower() or "exactly as-is" in prompt.lower()
-    assert "ignore" in prompt.lower()  # ignore unrelated changes
-    assert "do not" in prompt.lower() or "do NOT" in prompt  # prohibition language
+    assert "json object" in prompt.lower()
+    assert '"updates"' in prompt
+    assert '"old_text"' in prompt
+    assert '"new_text"' in prompt
+    assert '{"updates": []}' in prompt
+    assert "do not return the full page" in prompt.lower()
+    assert "entire existing page as a single" in prompt.lower()
+    assert "smallest contiguous block" in prompt.lower()
+    assert "byte-for-byte" in prompt.lower()
+    assert "ignore" in prompt.lower()
+    assert "escaped newlines" in prompt.lower()
+    assert "\\\\n" in prompt
+    assert "actual codebase" in prompt.lower()
+    assert "> **note:** text" in prompt.lower()
 
 
 def test_build_incremental_page_prompt_truncates_large_diff() -> None:
@@ -98,4 +113,5 @@ def test_build_incremental_page_prompt_truncates_large_diff() -> None:
         diff_content=large_diff,
     )
     assert "truncated" in prompt.lower()
+    assert "do not guess" in prompt.lower()
     assert len(prompt) < len(large_diff)  # prompt must be shorter than raw diff

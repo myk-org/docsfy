@@ -46,6 +46,7 @@
         --bg-code: #f5f5f5;
         --bg-code-block: #1e1e2e;
         --bg-card: #ffffff;
+        --bg-variant-card: #f6f7f9;
         --bg-hero: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         --bg-search-result: #ffffff;
 
@@ -112,6 +113,7 @@
         --bg-code: #1e2030;
         --bg-code-block: #1e2030;
         --bg-card: #161822;
+        --bg-variant-card: #121420;
         --bg-hero: linear-gradient(135deg, #3730a3 0%, #6d28d9 100%);
         --bg-search-result: #1e2030;
 
@@ -965,6 +967,19 @@
         padding: 1rem 1.25rem;
         border-bottom: 1px solid var(--border-primary);
         background: var(--bg-secondary);
+        cursor: pointer;
+    }
+
+    .group-toggle-icon {
+        transition: transform var(--transition-fast);
+        color: var(--text-tertiary);
+        flex-shrink: 0;
+    }
+    .project-group.collapsed .group-toggle-icon {
+        transform: rotate(-90deg);
+    }
+    .project-group.collapsed .variant-card {
+        display: none;
     }
 
     .group-name {
@@ -981,6 +996,10 @@
         border-radius: 10px;
     }
 
+    .count-ready { color: var(--status-ready); font-size: 0.75rem; }
+    .count-error { color: var(--status-error); font-size: 0.75rem; }
+    .count-generating { color: var(--accent); font-size: 0.75rem; }
+
     .group-repo-link {
         font-size: 0.8rem;
         color: var(--text-link);
@@ -988,8 +1007,19 @@
         margin-left: auto;
     }
 
+    .group-delete-all {
+        margin-left: auto;
+        flex-shrink: 0;
+    }
+
+    /* When repo link is present, it takes margin-left:auto so the button should not */
+    .group-repo-link ~ .group-delete-all {
+        margin-left: 0;
+    }
+
     .variant-card {
-        padding: 1rem 1.25rem;
+        padding: 1rem 1.25rem 1rem 2.75rem;
+        background: var(--bg-variant-card);
         border-bottom: 1px solid var(--border-secondary);
     }
 
@@ -1248,6 +1278,11 @@
             margin-left: 0;
         }
 
+        .group-delete-all {
+            margin-left: 0;
+            align-self: flex-start;
+        }
+
         .variant-header {
             flex-wrap: wrap;
         }
@@ -1421,13 +1456,31 @@
                 {% for repo_name, variants in grouped_projects.items() %}
                 <article class="project-group" data-repo="{{ repo_name }}">
                     <div class="group-header">
+                        <svg class="group-toggle-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="6 9 12 15 18 9"/>
+                        </svg>
                         <span class="group-name">{{ repo_name }}</span>
-                        <span class="group-variant-count">{{ variants|length }} variant{{ 's' if variants|length > 1 else '' }}</span>
+                        <span class="group-variant-count">
+                            {{ variants|length }} variant{{ 's' if variants|length != 1 else '' }}
+                            {% set ready_count = [] %}{% set error_count = [] %}{% set generating_count = [] %}
+                            {% for v in variants %}
+                                {% if v.status == 'ready' %}{% if ready_count.append(1) %}{% endif %}
+                                {% elif v.status == 'error' or v.status == 'aborted' %}{% if error_count.append(1) %}{% endif %}
+                                {% elif v.status == 'generating' %}{% if generating_count.append(1) %}{% endif %}
+                                {% endif %}
+                            {% endfor %}
+                            {% if ready_count %}<span class="count-ready">{{ ready_count|length }} ready</span>{% endif %}
+                            {% if error_count %}<span class="count-error">{{ error_count|length }} failed</span>{% endif %}
+                            {% if generating_count %}<span class="count-generating">{{ generating_count|length }} generating</span>{% endif %}
+                        </span>
                         {% if variants[0].repo_url %}
                         {% if variants[0].repo_url.startswith('http') or variants[0].repo_url.startswith('git@') %}
                         {% set gh_url = variants[0].repo_url | replace('git@github.com:', 'https://github.com/') | replace('.git', '') %}
                         <a href="{{ gh_url }}" target="_blank" rel="noopener noreferrer" class="group-repo-link">{{ gh_url }}</a>
                         {% endif %}
+                        {% endif %}
+                        {% if role != 'viewer' %}
+                        <button class="btn btn-danger btn-sm group-delete-all" data-delete-project="{{ repo_name }}">Delete All</button>
                         {% endif %}
                     </div>
 
@@ -1436,6 +1489,7 @@
                          data-project="{{ repo_name }}"
                          data-provider="{{ variant.ai_provider }}"
                          data-model="{{ variant.ai_model }}"
+                         data-owner="{{ variant.owner or '' }}"
                          data-status="{{ variant.status }}">
 
                         <div class="variant-header">
@@ -1464,7 +1518,7 @@
                             <a href="/docs/{{ repo_name }}/{{ variant.ai_provider | urlencode }}/{{ variant.ai_model | urlencode }}/" target="_blank" class="btn btn-primary btn-sm">View Docs</a>
                             <a href="/api/projects/{{ repo_name }}/{{ variant.ai_provider | urlencode }}/{{ variant.ai_model | urlencode }}/download" class="btn btn-secondary btn-sm">Download</a>
                             {% if role != 'viewer' %}
-                            <button class="btn btn-danger btn-sm" data-delete-variant="{{ repo_name }}/{{ variant.ai_provider }}/{{ variant.ai_model }}">Delete</button>
+                            <button class="btn btn-danger btn-sm" data-delete-variant="{{ repo_name }}/{{ variant.ai_provider }}/{{ variant.ai_model }}" data-delete-owner="{{ variant.owner or '' }}">Delete</button>
                             {% endif %}
                         </div>
                         {% if role != 'viewer' %}
@@ -1493,7 +1547,7 @@
                         <div class="variant-actions">
                             {% if role != 'viewer' %}
                             {{ regen_controls(variant, repo_name, default_provider, default_model, known_models) }}
-                            <button class="btn btn-danger btn-sm" data-delete-variant="{{ repo_name }}/{{ variant.ai_provider }}/{{ variant.ai_model }}">Delete</button>
+                            <button class="btn btn-danger btn-sm" data-delete-variant="{{ repo_name }}/{{ variant.ai_provider }}/{{ variant.ai_model }}" data-delete-owner="{{ variant.owner or '' }}">Delete</button>
                             {% endif %}
                         </div>
                         {% endif %}
@@ -2173,8 +2227,9 @@
         });
 
         /* ----- Delete Variant with modalConfirm ----- */
-        async function deleteVariant(variantPath) {
-            var confirmed = await modalConfirm('Delete Variant', 'Are you sure you want to delete "' + variantPath + '"? This will remove the generated documentation for this variant and cannot be undone.', true);
+        async function deleteVariant(variantPath, owner) {
+            var ownerLabel = owner ? ' (owner: ' + owner + ')' : '';
+            var confirmed = await modalConfirm('Delete Variant', 'Are you sure you want to delete "' + variantPath + '"' + ownerLabel + '? This will remove the generated documentation for this variant and cannot be undone.', true);
             if (!confirmed) return;
 
             // variantPath is "name/provider/model"
@@ -2183,7 +2238,11 @@
             var provider = parts[1];
             var model = parts.slice(2).join('/');
 
-            fetch('/api/projects/' + encodeURIComponent(name) + '/' + encodeURIComponent(provider) + '/' + encodeURIComponent(model), {
+            var url = '/api/projects/' + encodeURIComponent(name) + '/' + encodeURIComponent(provider) + '/' + encodeURIComponent(model);
+            if (owner != null) {
+                url += '?owner=' + encodeURIComponent(owner);
+            }
+            fetch(url, {
                 method: 'DELETE',
                 credentials: 'same-origin',
                 redirect: 'manual'
@@ -2206,7 +2265,8 @@
                     var cardName = card.getAttribute('data-project');
                     var cardProvider = card.getAttribute('data-provider');
                     var cardModel = card.getAttribute('data-model');
-                    if (cardName === name && cardProvider === provider && cardModel === model) {
+                    var cardOwner = card.getAttribute('data-owner');
+                    if (cardName === name && cardProvider === provider && cardModel === model && (cardOwner || '') === (owner || '')) {
                         var group = card.closest('.project-group');
                         card.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
                         card.style.opacity = '0';
@@ -2231,11 +2291,7 @@
                                 }, 300);
                             } else if (group) {
                                 // Update variant count in group header
-                                var vcEl = group.querySelector('.group-variant-count');
-                                if (vcEl) {
-                                    var count = group.querySelectorAll('.variant-card').length;
-                                    vcEl.textContent = count + ' variant' + (count > 1 ? 's' : '');
-                                }
+                                updateGroupVariantCount(group);
                             }
                         }, 300);
                     }
@@ -2245,6 +2301,43 @@
                 var msg = (err && err.detail) || (err && err.message) || 'Delete failed';
                 showToast(msg, 'error', 6000);
             });
+        }
+
+        /* ----- Update group variant count with status indicators ----- */
+        function updateGroupVariantCount(group) {
+            var vcEl = group.querySelector('.group-variant-count');
+            if (!vcEl) return;
+            var cards = group.querySelectorAll('.variant-card');
+            var count = cards.length;
+            var readyCount = 0, errorCount = 0, generatingCount = 0;
+            cards.forEach(function(c) {
+                var s = c.getAttribute('data-status');
+                if (s === 'ready') readyCount++;
+                else if (s === 'error' || s === 'aborted') errorCount++;
+                else if (s === 'generating') generatingCount++;
+            });
+            while (vcEl.firstChild) vcEl.removeChild(vcEl.firstChild);
+            vcEl.appendChild(document.createTextNode(count + ' variant' + (count !== 1 ? 's' : '') + ' '));
+            if (readyCount) {
+                var span = document.createElement('span');
+                span.className = 'count-ready';
+                span.textContent = readyCount + ' ready';
+                vcEl.appendChild(span);
+                vcEl.appendChild(document.createTextNode(' '));
+            }
+            if (errorCount) {
+                var span = document.createElement('span');
+                span.className = 'count-error';
+                span.textContent = errorCount + ' failed';
+                vcEl.appendChild(span);
+                vcEl.appendChild(document.createTextNode(' '));
+            }
+            if (generatingCount) {
+                var span = document.createElement('span');
+                span.className = 'count-generating';
+                span.textContent = generatingCount + ' generating';
+                vcEl.appendChild(span);
+            }
         }
 
         /* Build empty state using safe DOM methods */
@@ -2298,7 +2391,102 @@
         document.addEventListener('click', function(e) {
             var deleteBtn = e.target.closest('[data-delete-variant]');
             if (!deleteBtn) return;
-            deleteVariant(deleteBtn.getAttribute('data-delete-variant'));
+            var owner = deleteBtn.getAttribute('data-delete-owner') || '';
+            deleteVariant(deleteBtn.getAttribute('data-delete-variant'), owner);
+        });
+
+        /* ----- Delete All Variants of a Project ----- */
+        async function deleteAllVariants(projectName) {
+            var group = document.querySelector('.project-group[data-repo="' + projectName + '"]');
+            if (!group) return;
+
+            var variantButtons = group.querySelectorAll('[data-delete-variant]');
+            if (variantButtons.length === 0) {
+                showToast('No deletable variants found for ' + projectName, 'error');
+                return;
+            }
+
+            var confirmed = await modalConfirm(
+                'Delete All Variants',
+                'Are you sure you want to delete all ' + variantButtons.length + ' variant' + (variantButtons.length > 1 ? 's' : '') + ' of "' + projectName + '"? This cannot be undone.',
+                true
+            );
+            if (!confirmed) return;
+
+            var deletePromises = [];
+            variantButtons.forEach(function(btn) {
+                var variantPath = btn.getAttribute('data-delete-variant');
+                var owner = btn.getAttribute('data-delete-owner') || '';
+                var parts = variantPath.split('/');
+                var name = parts[0];
+                var provider = parts[1];
+                var model = parts.slice(2).join('/');
+
+                var url = '/api/projects/' + encodeURIComponent(name) + '/' + encodeURIComponent(provider) + '/' + encodeURIComponent(model);
+                if (owner) {
+                    url += '?owner=' + encodeURIComponent(owner);
+                }
+
+                deletePromises.push(
+                    fetch(url, {
+                        method: 'DELETE',
+                        credentials: 'same-origin',
+                        redirect: 'manual'
+                    }).then(function(res) {
+                        if (res.redirected || res.status === 302 || res.type === 'opaqueredirect') {
+                            throw { detail: 'Session expired. Please login again.', sessionExpired: true };
+                        }
+                        if (!res.ok) return res.json().then(function(data) { throw data; });
+                        return res.json();
+                    })
+                );
+            });
+
+            try {
+                var results = await Promise.allSettled(deletePromises);
+                var succeeded = results.filter(function(r) { return r.status === 'fulfilled'; }).length;
+                var failed = results.filter(function(r) { return r.status === 'rejected'; }).length;
+
+                /* Check for session expiry in any rejection */
+                var sessionExpired = results.some(function(r) {
+                    return r.status === 'rejected' && r.reason && r.reason.sessionExpired;
+                });
+                if (sessionExpired) {
+                    showToast('Session expired. Please login again.', 'error', 6000);
+                    setTimeout(function() { window.location.href = '/login'; }, 2000);
+                    return;
+                }
+
+                if (failed === 0) {
+                    showToast('All ' + succeeded + ' variant' + (succeeded > 1 ? 's' : '') + ' of ' + projectName + ' deleted', 'success');
+                } else {
+                    showToast(succeeded + ' deleted, ' + failed + ' failed for ' + projectName, 'error', 6000);
+                }
+
+                /* Remove the entire project group with animation */
+                group.style.transition = 'opacity 0.3s ease';
+                group.style.opacity = '0';
+                setTimeout(function() {
+                    group.remove();
+                    var remaining = document.querySelectorAll('.project-group').length;
+                    var countEl = document.getElementById('projects-count');
+                    if (countEl) countEl.textContent = '(' + remaining + ')';
+                    if (remaining === 0) {
+                        buildEmptyState();
+                    }
+                    applyPagination();
+                }, 300);
+            } catch (err) {
+                var msg = (err && err.detail) || (err && err.message) || 'Delete all failed';
+                showToast(msg, 'error', 6000);
+            }
+        }
+
+        /* Delete All button delegated click */
+        document.addEventListener('click', function(e) {
+            var deleteAllBtn = e.target.closest('[data-delete-project]');
+            if (!deleteAllBtn) return;
+            deleteAllVariants(deleteAllBtn.getAttribute('data-delete-project'));
         });
 
         /* ----- Pagination State ----- */
@@ -2395,6 +2583,14 @@
         if (hasGeneratingVariants()) {
             startProgressPolling();
         }
+
+        /* ----- Collapsible Project Groups ----- */
+        document.addEventListener('click', function(e) {
+            var header = e.target.closest('.group-header');
+            if (!header) return;
+            if (e.target.closest('a, button, input, select')) return;
+            header.closest('.project-group').classList.toggle('collapsed');
+        });
 
         /* ----- Restore Form State ----- */
         restoreFormState();

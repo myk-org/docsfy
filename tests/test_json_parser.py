@@ -124,3 +124,17 @@ def test_parse_json_list_non_string_items() -> None:
     # Should handle gracefully - only strings are returned
     assert result is not None
     assert result == ["valid"]
+
+
+def test_parse_json_array_preserves_non_string_items() -> None:
+    from docsfy.json_parser import parse_json_array_response
+
+    result = parse_json_array_response('[1, "valid", null, true]')
+    assert result == [1, "valid", None, True]
+
+
+def test_parse_json_array_with_surrounding_text() -> None:
+    from docsfy.json_parser import parse_json_array_response
+
+    result = parse_json_array_response('Planner output:\n["intro", "api"]\nDone')
+    assert result == ["intro", "api"]
