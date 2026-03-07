@@ -756,6 +756,100 @@ async def abort_variant(
     return {"aborted": f"{name}/{provider}/{model}"}
 
 
+async def _copy_variant_artifacts(
+    project_name: str,
+    source_provider: str,
+    source_model: str,
+    target_provider: str,
+    target_model: str,
+    owner: str,
+    include_site: bool = False,
+) -> bool:
+    """Copy an existing variant directory into a new provider/model variant."""
+    source_dir = get_project_dir(project_name, source_provider, source_model, owner)
+    target_dir = get_project_dir(project_name, target_provider, target_model, owner)
+
+    if not source_dir.exists():
+        logger.warning(
+            f"[{project_name}] Source artifacts missing for {source_provider}/{source_model}; "
+            f"cannot prefill {target_provider}/{target_model}"
+        )
+        return False
+
+    if target_dir.exists():
+        await asyncio.to_thread(shutil.rmtree, target_dir)
+
+    target_dir.parent.mkdir(parents=True, exist_ok=True)
+    if include_site:
+        await asyncio.to_thread(
+            shutil.copytree,
+            source_dir,
+            target_dir,
+            dirs_exist_ok=True,
+        )
+    else:
+        await asyncio.to_thread(
+            shutil.copytree,
+            source_dir,
+            target_dir,
+            dirs_exist_ok=True,
+            ignore=shutil.ignore_patterns("site"),
+        )
+    return True
+
+
+async def _replace_variant(
+    project_name: str,
+    source_provider: str,
+    source_model: str,
+    target_provider: str,
+    target_model: str,
+    owner: str,
+) -> None:
+    """Delete the old variant after its replacement is ready."""
+    if source_provider == target_provider and source_model == target_model:
+        return
+
+    async with _gen_lock:
+        # Check if source variant is actively generating
+        gen_key_prefix = f"{owner}/{project_name}/{source_provider}/{source_model}"
+        for key in _generating:
+            if key == gen_key_prefix:
+                logger.warning(
+                    f"[{project_name}] Source variant {source_provider}/{source_model} "
+                    f"is actively generating, skipping replacement"
+                )
+                return
+
+        try:
+            await delete_project(
+                project_name,
+                ai_provider=source_provider,
+                ai_model=source_model,
+                owner=owner,
+            )
+        except Exception as exc:
+            logger.warning(
+                f"[{project_name}] Failed to delete old variant DB row: {exc}"
+            )
+            return
+
+    # Filesystem cleanup outside lock (best-effort)
+    try:
+        old_dir = get_project_dir(project_name, source_provider, source_model, owner)
+        if old_dir.exists():
+            await asyncio.to_thread(shutil.rmtree, old_dir)
+    except Exception as exc:
+        logger.warning(
+            f"[{project_name}] Failed to clean up old variant directory: {exc}"
+        )
+
+    logger.info(
+        f"[{project_name}] Replaced {source_provider}/{source_model} variant with "
+        f"{target_provider}/{target_model}"
+    )
+
+
 async def _run_generation(
     repo_url: str | None,
     repo_path: str | None,
@@ -865,15 +959,30 @@ async def _generate_from_path(
     force: bool,
     owner: str = "",
 ) -> None:
+    cache_dir = get_project_cache_dir(project_name, ai_provider, ai_model, owner)
     use_cache = False
     old_sha: str | None = None
-    existing: dict[str, Any] | None = None
+    base_variant: dict[str, Any] | None = None
     plan: dict[str, Any] | None = None
     changed_files: list[str] | None = None
     diff_content: str | None = None
     existing_pages: dict[str, str] = {}
+    base_provider = ai_provider
+    base_model = ai_model
+    copied_base_artifacts = False
+    replaces_base_variant = False
 
-    async def _mark_up_to_date() -> None:
+    async def _mark_up_to_date(base_project: dict[str, Any] | None = None) -> None:
+        page_count = (
+            int(base_project["page_count"])
+            if base_project and base_project.get("page_count") is not None
+            else None
+        )
+        plan_json = (
+            str(base_project["plan_json"])
+            if base_project and base_project.get("plan_json") is not None
+            else None
+        )
         await update_project_status(
             project_name,
             ai_provider,
@@ -882,12 +991,26 @@ async def _generate_from_path(
             owner=owner,
             current_stage="up_to_date",
             last_commit_sha=commit_sha,
+            page_count=page_count,
+            plan_json=plan_json,
+        )
+
+    async def _replace_base_variant() -> None:
+        if not replaces_base_variant:
+            return
+
+        await _replace_variant(
+            project_name=project_name,
+            source_provider=base_provider,
+            source_model=base_model,
+            target_provider=ai_provider,
+            target_model=ai_model,
+            owner=owner,
         )
 
     if force:
-        cache_dir = get_project_cache_dir(project_name, ai_provider, ai_model, owner)
         if cache_dir.exists():
-            shutil.rmtree(cache_dir)
+            await asyncio.to_thread(shutil.rmtree, cache_dir)
             logger.info(f"[{project_name}] Cleared cache (force=True)")
         # Reset page count so API shows 0 during regeneration
         await update_project_status(
@@ -899,37 +1022,103 @@ async def _generate_from_path(
             page_count=0,
         )
     else:
-        existing = await get_project(
+        current_variant = await get_project(
             project_name, ai_provider=ai_provider, ai_model=ai_model, owner=owner
         )
-        if existing and existing.get("last_generated"):
+        ready_current_variant = (
+            current_variant
+            if current_variant and current_variant.get("last_generated")
+            else None
+        )
+
+        # Check if a cross-provider variant is newer
+        latest_any = await get_latest_variant(project_name, owner=owner)
+        if ready_current_variant and latest_any:
+            current_gen = str(ready_current_variant.get("last_generated") or "")
+            latest_gen = str(latest_any.get("last_generated") or "")
+            if latest_gen > current_gen and (
+                latest_any.get("ai_provider") != ai_provider
+                or latest_any.get("ai_model") != ai_model
+            ):
+                base_variant = latest_any
+            else:
+                base_variant = ready_current_variant
+        elif ready_current_variant:
+            base_variant = ready_current_variant
+        elif latest_any:
+            base_variant = latest_any
+        else:
+            base_variant = None
+
+        if base_variant:
+            base_provider = str(base_variant.get("ai_provider", ""))
+            base_model = str(base_variant.get("ai_model", ""))
+            replaces_base_variant = (
+                base_provider != ai_provider or base_model != ai_model
+            )
+            if replaces_base_variant:
+                logger.info(
+                    f"[{project_name}] Cross-provider update: reusing {base_provider}/{base_model} "
+                    f"content for {ai_provider}/{ai_model} generation"
+                )
+                same_commit = base_variant.get("last_commit_sha") == commit_sha
+                copied_base_artifacts = await _copy_variant_artifacts(
+                    project_name=project_name,
+                    source_provider=base_provider,
+                    source_model=base_model,
+                    target_provider=ai_provider,
+                    target_model=ai_model,
+                    owner=owner,
+                    include_site=same_commit,
+                )
+        elif current_variant:
+            base_variant = current_variant
+
+        if base_variant and base_variant.get("last_generated"):
             old_sha = (
-                str(existing["last_commit_sha"])
-                if existing.get("last_commit_sha")
+                str(base_variant["last_commit_sha"])
+                if base_variant.get("last_commit_sha")
                 else None
             )
-            if old_sha == commit_sha:
+            if old_sha == commit_sha and (
+                not replaces_base_variant or copied_base_artifacts
+            ):
                 logger.info(
                     f"[{project_name}] Project is up to date at {commit_sha[:8]}"
                 )
-                await _mark_up_to_date()
+                await _mark_up_to_date(base_variant)
+                await _replace_base_variant()
                 return
 
     # Check if we can do incremental update BEFORE planning to avoid
     # paying the full planning cost for up-to-date or metadata-only commits
-    cache_dir = get_project_cache_dir(project_name, ai_provider, ai_model, owner)
-    if old_sha and old_sha != commit_sha and not force and existing:
+    can_run_incremental_update = bool(
+        old_sha
+        and old_sha != commit_sha
+        and not force
+        and base_variant
+        and (not replaces_base_variant or copied_base_artifacts)
+    )
+    if replaces_base_variant and not copied_base_artifacts and not force:
+        logger.warning(
+            f"[{project_name}] Base artifacts copy failed, falling back to full regeneration"
+        )
+    if can_run_incremental_update:
         # Shallow clones (--depth 1) only contain the latest commit.
         # Fetch the old commit so that git-diff can compare the two.
-        if not deepen_clone_for_diff(repo_dir, old_sha):
+        if old_sha is not None and not deepen_clone_for_diff(repo_dir, old_sha):
             logger.warning(
                 f"[{project_name}] Could not fetch old commit {old_sha}, "
                 "falling back to full regeneration"
             )
             old_sha = None  # skip the diff branch entirely
+            can_run_incremental_update = False
 
-    if old_sha and old_sha != commit_sha and not force and existing:
-        diff_result = get_diff(repo_dir, old_sha, commit_sha)
+    if can_run_incremental_update:
+        if old_sha is not None:
+            diff_result = get_diff(repo_dir, old_sha, commit_sha)
+        else:
+            diff_result = None
         if diff_result is None:
             logger.warning(
                 f"[{project_name}] Failed to get diff, falling back to full regeneration"
@@ -938,9 +1127,13 @@ async def _generate_from_path(
             changed_files, diff_content = diff_result
             if not changed_files:
                 # Commits differ but tree is identical — nothing to regenerate
-                await _mark_up_to_date()
+                await _mark_up_to_date(base_variant)
+                await _replace_base_variant()
                 return
-            existing_plan_json = existing.get("plan_json")
+            if base_variant is not None:
+                existing_plan_json = base_variant.get("plan_json")
+            else:
+                existing_plan_json = None
             if existing_plan_json:
                 try:
                     existing_plan = json.loads(str(existing_plan_json))
@@ -1101,6 +1294,8 @@ async def _generate_from_path(
         plan_json=json.dumps(plan),
     )
     logger.info(f"[{project_name}] Documentation ready ({page_count} pages)")
+
+    await _replace_base_variant()
 
 
 @app.get("/api/projects/{name}/{provider}/{model}")
