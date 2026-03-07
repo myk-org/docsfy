@@ -511,10 +511,17 @@ agent-browser javascript "document.getElementById('gen-force').checked"
 
 ### 7.9 Self-service password rotation full flow
 
-**Precondition:** Logged in as `testuser-e2e`.
+**Precondition:** Logged in as `testuser-e2e`. Since Test 7 runs as `admin`, re-login as `testuser-e2e` first.
 
 **Commands:**
 ```
+agent-browser navigate http://localhost:8800/logout
+agent-browser wait-for-navigation
+agent-browser type "#username" "testuser-e2e"
+agent-browser type "#api_key" "<TEST_USER_PASSWORD>"
+agent-browser click ".btn-login"
+agent-browser wait-for-navigation
+agent-browser wait 2000
 agent-browser navigate http://localhost:8800/
 agent-browser click ".btn-change-password"
 agent-browser wait 1000

@@ -1030,33 +1030,49 @@ async def _generate_from_path(
             if current_variant and current_variant.get("last_generated")
             else None
         )
-        if ready_current_variant:
+
+        # Check if a cross-provider variant is newer
+        latest_any = await get_latest_variant(project_name, owner=owner)
+        if ready_current_variant and latest_any:
+            current_gen = str(ready_current_variant.get("last_generated") or "")
+            latest_gen = str(latest_any.get("last_generated") or "")
+            if latest_gen > current_gen and (
+                latest_any.get("ai_provider") != ai_provider
+                or latest_any.get("ai_model") != ai_model
+            ):
+                base_variant = latest_any
+            else:
+                base_variant = ready_current_variant
+        elif ready_current_variant:
             base_variant = ready_current_variant
+        elif latest_any:
+            base_variant = latest_any
         else:
-            base_variant = await get_latest_variant(project_name, owner=owner)
-            if base_variant:
-                base_provider = str(base_variant.get("ai_provider", ""))
-                base_model = str(base_variant.get("ai_model", ""))
-                replaces_base_variant = (
-                    base_provider != ai_provider or base_model != ai_model
+            base_variant = None
+
+        if base_variant:
+            base_provider = str(base_variant.get("ai_provider", ""))
+            base_model = str(base_variant.get("ai_model", ""))
+            replaces_base_variant = (
+                base_provider != ai_provider or base_model != ai_model
+            )
+            if replaces_base_variant:
+                logger.info(
+                    f"[{project_name}] Cross-provider update: reusing {base_provider}/{base_model} "
+                    f"content for {ai_provider}/{ai_model} generation"
                 )
-                if replaces_base_variant:
-                    logger.info(
-                        f"[{project_name}] Cross-provider update: reusing {base_provider}/{base_model} "
-                        f"content for {ai_provider}/{ai_model} generation"
-                    )
-                    same_commit = base_variant.get("last_commit_sha") == commit_sha
-                    copied_base_artifacts = await _copy_variant_artifacts(
-                        project_name=project_name,
-                        source_provider=base_provider,
-                        source_model=base_model,
-                        target_provider=ai_provider,
-                        target_model=ai_model,
-                        owner=owner,
-                        include_site=same_commit,
-                    )
-            elif current_variant:
-                base_variant = current_variant
+                same_commit = base_variant.get("last_commit_sha") == commit_sha
+                copied_base_artifacts = await _copy_variant_artifacts(
+                    project_name=project_name,
+                    source_provider=base_provider,
+                    source_model=base_model,
+                    target_provider=ai_provider,
+                    target_model=ai_model,
+                    owner=owner,
+                    include_site=same_commit,
+                )
+        elif current_variant:
+            base_variant = current_variant
 
         if base_variant and base_variant.get("last_generated"):
             old_sha = (
@@ -1077,8 +1093,16 @@ async def _generate_from_path(
     # Check if we can do incremental update BEFORE planning to avoid
     # paying the full planning cost for up-to-date or metadata-only commits
     can_run_incremental_update = bool(
-        old_sha and old_sha != commit_sha and not force and base_variant
+        old_sha
+        and old_sha != commit_sha
+        and not force
+        and base_variant
+        and (not replaces_base_variant or copied_base_artifacts)
     )
+    if replaces_base_variant and not copied_base_artifacts and not force:
+        logger.warning(
+            f"[{project_name}] Base artifacts copy failed, falling back to full regeneration"
+        )
     if can_run_incremental_update:
         # Shallow clones (--depth 1) only contain the latest commit.
         # Fetch the old commit so that git-diff can compare the two.

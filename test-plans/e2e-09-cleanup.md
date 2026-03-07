@@ -32,6 +32,8 @@ This test provides a comprehensive cleanup of ALL test-created artifacts across 
 | Test 20.2 | Project variant | `for-testing-only/gemini/gemini-2.0-flash` (owner: `admin`) | Same-commit model switch; replaces the `gemini-2.5-flash` baseline variant |
 | Test 20.3 | Project variant | `for-testing-only/gemini/gemini-2.5-flash` (owner: `admin`) | Recreated after a local README commit; replaces the `gemini-2.0-flash` variant |
 | Test 20.4 | Project variant | `for-testing-only/gemini/gemini-2.0-flash` (owner: `admin`) | Force-regenerated after Test 20.3; should coexist with the `gemini-2.5-flash` variant until Test 20.5 cleanup |
+| Test 21.2 | Cleanup target | `for-testing-only/gemini/gemini-2.5-flash` (owner: `admin`) | Deleted during cleanup (from Test 20.1/20.3) |
+| Test 21.2 | Cleanup target | `for-testing-only/gemini/gemini-2.0-flash` (owner: `admin`) | Deleted during cleanup (from Test 20.2/20.4) |
 
 ### 21.1 Revoke remaining access grants
 
@@ -60,6 +62,22 @@ agent-browser javascript "fetch('/api/admin/projects/for-testing-only/access/tes
 **Delete `testuser-e2e`'s `for-testing-only` variant (if it exists):**
 ```shell
 agent-browser javascript "fetch('/api/projects/for-testing-only/gemini/gemini-2.5-flash?owner=testuser-e2e', {method:'DELETE', credentials:'same-origin'}).then(r => r.status)"
+agent-browser wait 2000
+```
+
+**Expected result:** Returns `200` (deleted) or `404` (already deleted). Both are acceptable.
+
+**Delete `admin`'s `for-testing-only/gemini/gemini-2.5-flash` variant (Test 20.1/20.3, if it exists):**
+```shell
+agent-browser javascript "fetch('/api/projects/for-testing-only/gemini/gemini-2.5-flash?owner=admin', {method:'DELETE', credentials:'same-origin'}).then(r => r.status)"
+agent-browser wait 2000
+```
+
+**Expected result:** Returns `200` (deleted) or `404` (already deleted). Both are acceptable.
+
+**Delete `admin`'s `for-testing-only/gemini/gemini-2.0-flash` variant (Test 20.2/20.4, if it exists):**
+```shell
+agent-browser javascript "fetch('/api/projects/for-testing-only/gemini/gemini-2.0-flash?owner=admin', {method:'DELETE', credentials:'same-origin'}).then(r => r.status)"
 agent-browser wait 2000
 ```
 
@@ -160,7 +178,7 @@ agent-browser screenshot
 - Returns an empty array `[]`
 - No test user rows remain in the users table
 
-**Verify no test project variants remain:**
+**Verify no test project variants remain (including admin-owned Test 20 variants):**
 ```shell
 agent-browser navigate http://localhost:8800/
 agent-browser javascript "Array.from(document.querySelectorAll('.variant-card')).filter(c => ['testuser-e2e', 'userb-e2e'].includes(c.getAttribute('data-owner'))).length"
@@ -168,4 +186,13 @@ agent-browser javascript "Array.from(document.querySelectorAll('.variant-card'))
 
 **Expected result:**
 - Returns `0` -- no variant cards owned by test users remain
-- Pre-existing projects owned by other users (e.g., `admin`) are untouched
+
+**Verify admin-owned Test 20 variants are also cleaned up:**
+```shell
+agent-browser javascript "fetch('/api/projects/for-testing-only/gemini/gemini-2.5-flash/status?owner=admin', {credentials:'same-origin'}).then(r => r.status)"
+agent-browser javascript "fetch('/api/projects/for-testing-only/gemini/gemini-2.0-flash/status?owner=admin', {credentials:'same-origin'}).then(r => r.status)"
+```
+
+**Expected result:**
+- Both requests return `404` -- the admin-owned Test 20 variants no longer exist
+- Pre-existing projects owned by `admin` that were NOT created by the test suite are untouched

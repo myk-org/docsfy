@@ -809,7 +809,12 @@ async def test_force_generation_does_not_replace_existing_variant(
     """force=True should do full generation without cross-provider reuse."""
     import docsfy.storage as storage
     from docsfy.main import _generate_from_path
-    from docsfy.storage import get_project, get_project_cache_dir, get_project_dir
+    from docsfy.storage import (
+        get_project,
+        get_project_cache_dir,
+        get_project_dir,
+        get_project_site_dir,
+    )
 
     sample_plan = {
         "project_name": "test-repo",
@@ -838,6 +843,11 @@ async def test_force_generation_does_not_replace_existing_variant(
     old_cache_dir = get_project_cache_dir("test-repo", "gemini", "flash", "admin")
     old_cache_dir.mkdir(parents=True, exist_ok=True)
     (old_cache_dir / "introduction.md").write_text("# Introduction\n\nGemini intro\n")
+    (old_cache_dir / "stale.md").write_text("# Stale\n\nShould not leak\n")
+
+    old_site_dir = get_project_site_dir("test-repo", "gemini", "flash", "admin")
+    old_site_dir.mkdir(parents=True, exist_ok=True)
+    (old_site_dir / "index.html").write_text("<html>Gemini site</html>")
 
     await storage.save_project(
         name="test-repo",
@@ -910,4 +920,14 @@ async def test_force_generation_does_not_replace_existing_variant(
     assert mock_run_planner.called, "force=True should run the full planner"
     assert mock_generate_all_pages.called, (
         "force=True should generate pages from scratch"
+    )
+
+    # Verify stale artifacts from the old variant did NOT leak into the new variant
+    new_cache_dir = get_project_cache_dir("test-repo", "claude", "opus", "admin")
+    new_site_dir = get_project_site_dir("test-repo", "claude", "opus", "admin")
+    assert not (new_cache_dir / "stale.md").exists(), (
+        "stale cache artifact from old variant must not appear in new variant"
+    )
+    assert not (new_site_dir / "index.html").exists(), (
+        "site artifact from old variant must not appear in new variant"
     )
