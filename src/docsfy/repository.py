@@ -45,11 +45,17 @@ def clone_repo(repo_url: str, base_dir: Path) -> tuple[Path, str]:
     return repo_path, commit_sha
 
 
-def get_changed_files(repo_path: Path, old_sha: str, new_sha: str) -> list[str] | None:
-    """Get list of files changed between two commits.
+_DIFF_FILE_RE = re.compile(r"^diff --git a/.+ b/(.+)$", re.MULTILINE)
 
-    Returns None on error (caller should fall back to full regeneration),
-    or an empty list when there are no changes.
+
+def get_diff(
+    repo_path: Path, old_sha: str, new_sha: str
+) -> tuple[list[str], str] | None:
+    """Get changed files and diff content between two commits.
+
+    Returns a tuple of (changed_files, diff_content), or None on error.
+    changed_files is a list of file paths that changed.
+    diff_content is the full diff including stat and patch.
     """
     if not re.match(r"^[0-9a-fA-F]{4,64}$", old_sha) or not re.match(
         r"^[0-9a-fA-F]{4,64}$", new_sha
@@ -58,11 +64,11 @@ def get_changed_files(repo_path: Path, old_sha: str, new_sha: str) -> list[str] 
         return None
     try:
         result = subprocess.run(
-            ["git", "diff", "--name-only", "-z", old_sha, new_sha],
+            ["git", "diff", "--stat", "--patch", old_sha, new_sha],
             cwd=repo_path,
             capture_output=True,
             text=True,
-            timeout=30,
+            timeout=60,
         )
     except (subprocess.TimeoutExpired, OSError) as exc:
         logger.warning(f"Failed to get diff: {exc}")
@@ -70,7 +76,10 @@ def get_changed_files(repo_path: Path, old_sha: str, new_sha: str) -> list[str] 
     if result.returncode != 0:
         logger.warning(f"Failed to get diff: {result.stderr}")
         return None
-    return [path for path in result.stdout.split("\0") if path]
+
+    diff_content = result.stdout
+    changed_files = [m.group(1) for m in _DIFF_FILE_RE.finditer(diff_content)]
+    return changed_files, diff_content
 
 
 def get_local_repo_info(repo_path: Path) -> tuple[Path, str]:

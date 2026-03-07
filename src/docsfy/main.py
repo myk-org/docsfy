@@ -24,9 +24,14 @@ from starlette.responses import JSONResponse, RedirectResponse, Response
 
 from docsfy.ai_client import check_ai_cli_available
 from docsfy.config import get_settings
-from docsfy.generator import generate_all_pages, run_incremental_planner, run_planner
+from docsfy.generator import (
+    is_unsafe_slug,
+    generate_all_pages,
+    run_incremental_planner,
+    run_planner,
+)
 from docsfy.models import GenerateRequest
-from docsfy.repository import clone_repo, get_changed_files, get_local_repo_info
+from docsfy.repository import clone_repo, get_diff, get_local_repo_info
 from docsfy.renderer import render_site
 from docsfy.storage import (
     SESSION_TTL_SECONDS,
@@ -858,6 +863,20 @@ async def _generate_from_path(
     use_cache = False
     old_sha: str | None = None
     existing: dict[str, Any] | None = None
+    changed_files: list[str] | None = None
+    diff_content: str | None = None
+    existing_pages: dict[str, str] = {}
+
+    async def _mark_up_to_date() -> None:
+        await update_project_status(
+            project_name,
+            ai_provider,
+            ai_model,
+            status="ready",
+            owner=owner,
+            current_stage="up_to_date",
+            last_commit_sha=commit_sha,
+        )
 
     if force:
         cache_dir = get_project_cache_dir(project_name, ai_provider, ai_model, owner)
@@ -887,35 +906,23 @@ async def _generate_from_path(
                 logger.info(
                     f"[{project_name}] Project is up to date at {commit_sha[:8]}"
                 )
-                await update_project_status(
-                    project_name,
-                    ai_provider,
-                    ai_model,
-                    status="ready",
-                    owner=owner,
-                    current_stage="up_to_date",
-                )
+                await _mark_up_to_date()
                 return
 
     # Check if we can do incremental update BEFORE planning to avoid
     # paying the full planning cost for up-to-date or metadata-only commits
     cache_dir = get_project_cache_dir(project_name, ai_provider, ai_model, owner)
     if old_sha and old_sha != commit_sha and not force and existing:
-        changed_files = get_changed_files(repo_dir, old_sha, commit_sha)
-        if changed_files is None:
-            # Error getting diff — fall back to full regeneration
-            use_cache = False
-        elif not changed_files:
-            # Commits differ but tree is identical — nothing to regenerate
-            await update_project_status(
-                project_name,
-                ai_provider,
-                ai_model,
-                status="ready",
-                owner=owner,
-                current_stage="up_to_date",
-                last_commit_sha=commit_sha,
+        diff_result = get_diff(repo_dir, old_sha, commit_sha)
+        if diff_result is None:
+            logger.warning(
+                f"[{project_name}] Failed to get diff, skipping regeneration (will retry on next trigger)"
             )
+            return
+        changed_files, diff_content = diff_result
+        if not changed_files:
+            # Commits differ but tree is identical — nothing to regenerate
+            await _mark_up_to_date()
             return
         elif changed_files:
             existing_plan_json = existing.get("plan_json")
@@ -940,15 +947,10 @@ async def _generate_from_path(
                         ai_cli_timeout,
                     )
                     if pages_to_regen != ["all"]:
-                        # Delete only the cached pages that need regeneration
+                        # Read existing content before deleting cached pages
                         for slug in pages_to_regen:
                             # Validate slug to prevent path traversal
-                            if (
-                                "/" in slug
-                                or "\\" in slug
-                                or ".." in slug
-                                or slug.startswith(".")
-                            ):
+                            if is_unsafe_slug(slug):
                                 logger.warning(
                                     f"[{project_name}] Skipping invalid slug from incremental planner: {slug}"
                                 )
@@ -963,6 +965,9 @@ async def _generate_from_path(
                                 )
                                 continue
                             if cache_file.exists():
+                                existing_pages[slug] = cache_file.read_text(
+                                    encoding="utf-8"
+                                )
                                 cache_file.unlink()
                         use_cache = True
                         logger.info(
@@ -1014,6 +1019,9 @@ async def _generate_from_path(
         use_cache=use_cache,
         project_name=project_name,
         owner=owner,
+        changed_files=changed_files,
+        existing_pages=existing_pages if existing_pages else None,
+        diff_content=diff_content,
     )
 
     await update_project_status(

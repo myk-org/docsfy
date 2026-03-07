@@ -63,6 +63,17 @@ If no pages need regeneration, output: []
 """
 
 
+_PAGE_WRITING_RULES = """Write in markdown format. Include:
+- Clear explanations
+- Code examples from the actual codebase (not made up)
+- Configuration snippets where relevant
+
+Use these callout formats for special content:
+- Notes: > **Note:** text
+- Warnings: > **Warning:** text
+- Tips: > **Tip:** text"""
+
+
 def build_page_prompt(project_name: str, page_title: str, page_description: str) -> str:
     return f"""You are a technical documentation writer. Explore this repository to write
 the "{page_title}" page for the {project_name} documentation.
@@ -72,14 +83,60 @@ Page description: {page_description}
 Explore the codebase as needed. Read source files, configs, tests, and CI/CD pipelines
 to write comprehensive, accurate documentation. Do NOT rely on the README.
 
-Write in markdown format. Include:
-- Clear explanations
-- Code examples from the actual codebase (not made up)
-- Configuration snippets where relevant
-
-Use these callout formats for special content:
-- Notes: > **Note:** text
-- Warnings: > **Warning:** text
-- Tips: > **Tip:** text
+{_PAGE_WRITING_RULES}
 
 Output ONLY the markdown content for this page. No wrapping, no explanation."""
+
+
+def build_incremental_page_prompt(
+    project_name: str,
+    page_title: str,
+    page_description: str,
+    existing_content: str,
+    changed_files: list[str],
+    diff_content: str,
+) -> str:
+    _MAX_DIFF_CHARS = 30000
+    if len(diff_content) > _MAX_DIFF_CHARS:
+        truncated_diff = (
+            diff_content[:_MAX_DIFF_CHARS]
+            + "\n\n... (diff truncated due to size. Focus on the hunks shown and the changed file list above.) ..."
+        )
+    else:
+        truncated_diff = diff_content
+
+    return f"""You are a technical documentation writer. The repository "{project_name}" has been updated.
+Your task is to UPDATE the existing "{page_title}" documentation page — NOT rewrite it from scratch.
+
+Page description: {page_description}
+
+Changed files in the repository:
+{chr(10).join(f"- {f}" for f in changed_files)}
+
+Changes made to the repository:
+---
+{truncated_diff}
+---
+
+Existing page content:
+---
+{existing_content}
+---
+
+Focus ONLY on changes in the diff that are relevant to the "{page_title}" page topic.
+Ignore all other changes — they will be handled by other page updates.
+
+{_PAGE_WRITING_RULES}
+
+Instructions:
+- If none of the changes are relevant to this page, output the existing content exactly as-is with zero modifications
+- ONLY modify sections directly affected by the changes shown above
+- Unchanged sections MUST be preserved byte-for-byte — do NOT rephrase, reformat, or rewrite text that is not affected by the diff
+- Ignore diff hunks and changed files that are unrelated to this specific page's topic
+- If a code example references changed code, update ONLY that code example
+- If a new feature was added that belongs on this page, add a minimal new section for it
+- Do NOT remove, reorganize, or reword sections that are still accurate
+- Do NOT add explanatory text, improve wording, or "enhance" sections not touched by the diff
+- The output must be the complete page with unchanged sections copied exactly as-is and only affected sections modified
+
+Output the complete updated page content in markdown format. No wrapping, no explanation."""

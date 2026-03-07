@@ -55,3 +55,47 @@ def test_build_incremental_planner_prompt() -> None:
     assert "introduction" in prompt
     assert "configuration" in prompt
     assert "JSON array" in prompt
+
+
+def test_build_incremental_page_prompt() -> None:
+    from docsfy.prompts import build_incremental_page_prompt
+
+    existing_content = "# Introduction\n\nThis is the intro page."
+    changed_files = ["src/main.py", "src/config.py"]
+    diff_content = "diff --git a/src/main.py\n+added line"
+
+    prompt = build_incremental_page_prompt(
+        project_name="my-repo",
+        page_title="Introduction",
+        page_description="Overview of the project",
+        existing_content=existing_content,
+        changed_files=changed_files,
+        diff_content=diff_content,
+    )
+    assert "my-repo" in prompt
+    assert "Introduction" in prompt
+    assert "UPDATE" in prompt or "update" in prompt.lower()
+    assert "src/main.py" in prompt
+    assert existing_content in prompt
+    assert diff_content in prompt
+
+    # Verify critical guardrail language is present
+    assert "byte-for-byte" in prompt.lower() or "exactly as-is" in prompt.lower()
+    assert "ignore" in prompt.lower()  # ignore unrelated changes
+    assert "do not" in prompt.lower() or "do NOT" in prompt  # prohibition language
+
+
+def test_build_incremental_page_prompt_truncates_large_diff() -> None:
+    from docsfy.prompts import build_incremental_page_prompt
+
+    large_diff = "x" * 40000  # exceeds _MAX_DIFF_CHARS (30000)
+    prompt = build_incremental_page_prompt(
+        project_name="my-repo",
+        page_title="API",
+        page_description="API docs",
+        existing_content="# API\n\nAPI page.",
+        changed_files=["src/api.py"],
+        diff_content=large_diff,
+    )
+    assert "truncated" in prompt.lower()
+    assert len(prompt) < len(large_diff)  # prompt must be shorter than raw diff

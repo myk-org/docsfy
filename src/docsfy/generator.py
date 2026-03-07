@@ -8,6 +8,7 @@ from simple_logger.logger import get_logger
 from docsfy.ai_client import call_ai_cli, run_parallel_with_limit
 from docsfy.json_parser import parse_json_list_response, parse_json_response
 from docsfy.prompts import (
+    build_incremental_page_prompt,
     build_incremental_planner_prompt,
     build_page_prompt,
     build_planner_prompt,
@@ -16,6 +17,11 @@ from docsfy.prompts import (
 logger = get_logger(name=__name__)
 
 MAX_CONCURRENT_PAGES = 5
+
+
+def is_unsafe_slug(slug: str) -> bool:
+    """Check if a slug contains path traversal characters."""
+    return "/" in slug or "\\" in slug or slug.startswith(".") or ".." in slug
 
 
 def _strip_ai_preamble(text: str) -> str:
@@ -75,6 +81,9 @@ async def generate_page(
     use_cache: bool = False,
     project_name: str = "",
     owner: str = "",
+    existing_content: str | None = None,
+    changed_files: list[str] | None = None,
+    diff_content: str | None = None,
 ) -> str:
     _label = project_name or repo_path.name
 
@@ -82,7 +91,7 @@ async def generate_page(
         logger.warning(f"[{_label}] owner missing for page count update, skipping")
 
     # Validate slug to prevent path traversal
-    if "/" in slug or "\\" in slug or slug.startswith(".") or ".." in slug:
+    if is_unsafe_slug(slug):
         msg = f"Invalid page slug: '{slug}'"
         raise ValueError(msg)
 
@@ -91,9 +100,19 @@ async def generate_page(
         logger.debug(f"[{_label}] Using cached page: {slug}")
         return cache_file.read_text(encoding="utf-8")
 
-    prompt = build_page_prompt(
-        project_name=repo_path.name, page_title=title, page_description=description
-    )
+    if existing_content and changed_files:
+        prompt = build_incremental_page_prompt(
+            project_name=repo_path.name,
+            page_title=title,
+            page_description=description,
+            existing_content=existing_content,
+            changed_files=changed_files,
+            diff_content=diff_content or "",
+        )
+    else:
+        prompt = build_page_prompt(
+            project_name=repo_path.name, page_title=title, page_description=description
+        )
     # Build CLI flags based on provider
     cli_flags = ["--trust"] if ai_provider == "cursor" else None
     success, output = await call_ai_cli(
@@ -141,6 +160,9 @@ async def generate_all_pages(
     use_cache: bool = False,
     project_name: str = "",
     owner: str = "",
+    changed_files: list[str] | None = None,
+    existing_pages: dict[str, str] | None = None,
+    diff_content: str | None = None,
 ) -> dict[str, str]:
     _label = project_name or repo_path.name
 
@@ -154,7 +176,7 @@ async def generate_all_pages(
                     f"[{_label}] Skipping page with no slug in group '{group.get('group', 'unknown')}'"
                 )
                 continue
-            if "/" in slug or "\\" in slug or slug.startswith(".") or ".." in slug:
+            if is_unsafe_slug(slug):
                 logger.warning(f"[{_label}] Skipping path-unsafe slug: '{slug}'")
                 continue
             all_pages.append(
@@ -165,6 +187,7 @@ async def generate_all_pages(
                 }
             )
 
+    _existing_pages = existing_pages or {}
     coroutines = [
         generate_page(
             repo_path=repo_path,
@@ -178,6 +201,9 @@ async def generate_all_pages(
             use_cache=use_cache,
             project_name=project_name,
             owner=owner,
+            existing_content=_existing_pages.get(p["slug"]),
+            changed_files=changed_files,
+            diff_content=diff_content,
         )
         for p in all_pages
     ]

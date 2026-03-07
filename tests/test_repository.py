@@ -82,78 +82,140 @@ def test_get_local_repo_info_failure(tmp_path: Path) -> None:
             get_local_repo_info(tmp_path)
 
 
-def test_get_changed_files_success(tmp_path: Path) -> None:
-    from docsfy.repository import get_changed_files
+def test_get_diff_success(tmp_path: Path) -> None:
+    from docsfy.repository import get_diff
+
+    diff_output = (
+        " file.py | 1 +\n"
+        " 1 file changed, 1 insertion(+)\n"
+        "\n"
+        "diff --git a/src/main.py b/src/main.py\n"
+        "index 1234567..abcdef0 100644\n"
+        "--- a/src/main.py\n"
+        "+++ b/src/main.py\n"
+        "@@ -1 +1,2 @@\n"
+        " existing\n"
+        "+new line\n"
+        "diff --git a/src/utils.py b/src/utils.py\n"
+        "index 1111111..2222222 100644\n"
+        "--- a/src/utils.py\n"
+        "+++ b/src/utils.py\n"
+        "@@ -1 +1 @@\n"
+        "-old\n"
+        "+new\n"
+        "diff --git a/README.md b/README.md\n"
+        "index 3333333..4444444 100644\n"
+        "--- a/README.md\n"
+        "+++ b/README.md\n"
+        "@@ -1 +1 @@\n"
+        "-old readme\n"
+        "+new readme\n"
+    )
 
     with patch("docsfy.repository.subprocess.run") as mock_run:
         mock_run.return_value = MagicMock(
             returncode=0,
-            stdout="src/main.py\0src/utils.py\0README.md\0",
+            stdout=diff_output,
             stderr="",
         )
-        files = get_changed_files(tmp_path, "abc123", "def456")
+        result = get_diff(tmp_path, "abc123", "def456")
 
-    assert files == ["src/main.py", "src/utils.py", "README.md"]
+    assert result is not None
+    changed_files, diff_content = result
+    assert changed_files == ["src/main.py", "src/utils.py", "README.md"]
+    assert diff_content == diff_output
     call_args = mock_run.call_args
-    assert "diff" in call_args.args[0]
-    assert "--name-only" in call_args.args[0]
-    assert "-z" in call_args.args[0]
-    assert "abc123" in call_args.args[0]
-    assert "def456" in call_args.args[0]
+    cmd = call_args.args[0]
+    assert "diff" in cmd
+    assert "--stat" in cmd
+    assert "--patch" in cmd
+    assert "abc123" in cmd
+    assert "def456" in cmd
 
 
-def test_get_changed_files_with_special_names(tmp_path: Path) -> None:
-    """Test that filenames with spaces and embedded newlines are parsed correctly with -z flag.
+def test_get_diff_with_special_filenames(tmp_path: Path) -> None:
+    """Test that filenames with spaces are extracted from diff --git headers."""
+    from docsfy.repository import get_diff
 
-    A naive newline-based split would break on filenames that contain spaces
-    (combined with the surrounding entries) or literal newlines.  The -z flag
-    makes ``git diff`` use NUL as the delimiter, so the parser must split on
-    ``\\0`` rather than ``\\n``.
-    """
-    from docsfy.repository import get_changed_files
+    diff_output = (
+        "diff --git a/src/my file.py b/src/my file.py\n"
+        "index 1234567..abcdef0 100644\n"
+        "--- a/src/my file.py\n"
+        "+++ b/src/my file.py\n"
+        "@@ -1 +1 @@\n"
+        "-old\n"
+        "+new\n"
+        "diff --git a/dir/sub dir/test.js b/dir/sub dir/test.js\n"
+        "index 2222222..3333333 100644\n"
+        "--- a/dir/sub dir/test.js\n"
+        "+++ b/dir/sub dir/test.js\n"
+        "@@ -1 +1 @@\n"
+        "-old\n"
+        "+new\n"
+        "diff --git a/README.md b/README.md\n"
+        "index 4444444..5555555 100644\n"
+        "--- a/README.md\n"
+        "+++ b/README.md\n"
+        "@@ -1 +1 @@\n"
+        "-old\n"
+        "+new\n"
+    )
 
     with patch("docsfy.repository.subprocess.run") as mock_run:
-        # Simulate NUL-delimited output that includes:
-        #   - a filename with a space ("src/my file.py")
-        #   - a path whose directory contains a space ("dir/sub dir/test.js")
-        #   - a filename with an embedded newline ("dir/file\nname.py")
-        #   - a plain filename ("README.md")
         mock_run.return_value = MagicMock(
             returncode=0,
-            stdout="src/my file.py\0dir/sub dir/test.js\0dir/file\nname.py\0README.md\0",
+            stdout=diff_output,
             stderr="",
         )
-        files = get_changed_files(tmp_path, "abc123", "def456")
+        result = get_diff(tmp_path, "abc123", "def456")
 
-    assert files == [
+    assert result is not None
+    changed_files, _ = result
+    assert changed_files == [
         "src/my file.py",
         "dir/sub dir/test.js",
-        "dir/file\nname.py",
         "README.md",
     ]
 
-    # Confirm -z flag is passed so git uses NUL delimiters
-    call_args = mock_run.call_args
-    assert "-z" in call_args.args[0]
 
-
-def test_get_changed_files_failure(tmp_path: Path) -> None:
-    from docsfy.repository import get_changed_files
+def test_get_diff_failure(tmp_path: Path) -> None:
+    from docsfy.repository import get_diff
 
     with patch("docsfy.repository.subprocess.run") as mock_run:
         mock_run.return_value = MagicMock(
             returncode=1, stdout="", stderr="fatal: bad object"
         )
-        files = get_changed_files(tmp_path, "abc123", "def456")
+        result = get_diff(tmp_path, "abc123", "def456")
 
-    assert files is None
+    assert result is None
 
 
-def test_get_changed_files_empty_output(tmp_path: Path) -> None:
-    from docsfy.repository import get_changed_files
+def test_get_diff_empty_output(tmp_path: Path) -> None:
+    from docsfy.repository import get_diff
 
     with patch("docsfy.repository.subprocess.run") as mock_run:
         mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
-        files = get_changed_files(tmp_path, "abc123", "def456")
+        result = get_diff(tmp_path, "abc123", "def456")
 
-    assert files == []
+    assert result is not None
+    changed_files, diff_content = result
+    assert changed_files == []
+    assert diff_content == ""
+
+
+def test_get_diff_timeout(tmp_path: Path) -> None:
+    import subprocess
+
+    from docsfy.repository import get_diff
+
+    with patch("docsfy.repository.subprocess.run") as mock_run:
+        mock_run.side_effect = subprocess.TimeoutExpired(cmd="git", timeout=60)
+        result = get_diff(tmp_path, "abc123", "def456")
+        assert result is None
+
+
+def test_get_diff_invalid_sha(tmp_path: Path) -> None:
+    from docsfy.repository import get_diff
+
+    result = get_diff(tmp_path, "not-a-sha!", "def456")
+    assert result is None
