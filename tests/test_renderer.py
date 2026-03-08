@@ -137,6 +137,226 @@ def test_sanitize_html_keeps_safe_urls() -> None:
     assert "#section" in result3
 
 
+def test_ensure_blank_lines_preprocessing() -> None:
+    from docsfy.renderer import _ensure_blank_lines
+
+    # Unordered list without preceding blank line
+    result = _ensure_blank_lines("Some text\n- item one\n- item two")
+    assert result == "Some text\n\n- item one\n- item two"
+
+    # Ordered list without preceding blank line
+    result = _ensure_blank_lines("Some text\n1. first\n2. second")
+    assert result == "Some text\n\n1. first\n2. second"
+
+    # Blockquote without preceding blank line
+    result = _ensure_blank_lines("Some text\n> a quote\n> continued")
+    assert result == "Some text\n\n> a quote\n> continued"
+
+    # Code fence without preceding blank line (no blank lines inside fence)
+    result = _ensure_blank_lines("Some text\n```python\ncode\n```")
+    assert result == "Some text\n\n```python\ncode\n```"
+
+    # Already has blank line - no double blank
+    result = _ensure_blank_lines("Some text\n\n- item one")
+    assert result == "Some text\n\n- item one"
+
+    # Asterisk list items
+    result = _ensure_blank_lines("Some text\n* item one\n* item two")
+    assert result == "Some text\n\n* item one\n* item two"
+
+
+def test_ensure_blank_lines_nested_fences() -> None:
+    from docsfy.renderer import _ensure_blank_lines
+
+    # Nested fences: inner ``` inside outer ```` must not toggle state
+    text = "````markdown\nSome text\n```yaml\n- run: build\n```\n````"
+    result = _ensure_blank_lines(text)
+    # Should NOT insert blank lines inside the outer fence
+    assert "\n\n- run:" not in result
+    assert "- run: build" in result
+
+    # Ensure the outer fence still closes properly and blank lines
+    # are inserted after it when needed
+    text2 = "````markdown\nSome text\n```yaml\ncode\n```\n````\n- item"
+    result2 = _ensure_blank_lines(text2)
+    assert "\n\n- item" in result2
+
+
+def test_md_to_html_renders_lists_without_blank_lines() -> None:
+    from docsfy.renderer import _md_to_html
+
+    # Simulate AI output missing blank lines before list
+    md_text = "Here are items:\n- First\n- Second\n- Third"
+    content_html, _ = _md_to_html(md_text)
+    assert "<li>" in content_html
+    assert "<ul>" in content_html
+
+
+def test_md_to_html_renders_blockquote_without_blank_lines() -> None:
+    from docsfy.renderer import _md_to_html
+
+    md_text = "Some context:\n> **Note:** Important info."
+    content_html, _ = _md_to_html(md_text)
+    assert "<blockquote>" in content_html
+
+
+def test_clean_code_fence_annotations_line_range_filepath() -> None:
+    from docsfy.renderer import _clean_code_fence_annotations
+
+    # Pattern: ```135:150:src/jenkins_job_insight/main.py
+    md = "Some text\n```135:150:src/jenkins_job_insight/main.py\ndef foo():\n    pass\n```"
+    result = _clean_code_fence_annotations(md)
+    assert "```python" in result
+    assert "135:150" not in result
+
+    # Pattern: ```96:104:examples/analyze_build.py
+    md = "Some text\n```96:104:examples/analyze_build.py\ncode\n```"
+    result = _clean_code_fence_annotations(md)
+    assert "```python" in result
+    assert "96:104" not in result
+
+
+def test_clean_code_fence_annotations_unknown_extension() -> None:
+    from docsfy.renderer import _clean_code_fence_annotations
+
+    md = "```10:20:src/data.xyz\nstuff\n```"
+    result = _clean_code_fence_annotations(md)
+    # Unknown extension should produce plain ``` with no language
+    assert result.startswith("```\n")
+    assert "10:20" not in result
+
+
+def test_clean_code_fence_annotations_filepath_as_language() -> None:
+    from docsfy.renderer import _clean_code_fence_annotations
+
+    # Pattern: ```src/utils/helper.js
+    md = "```src/utils/helper.js\nconsole.log('hi');\n```"
+    result = _clean_code_fence_annotations(md)
+    assert "```javascript" in result
+    assert "src/utils" not in result
+
+
+def test_clean_code_fence_annotations_bare_filename() -> None:
+    from docsfy.renderer import _clean_code_fence_annotations
+
+    # Pattern: ```config.yaml
+    md = "```config.yaml\nkey: value\n```"
+    result = _clean_code_fence_annotations(md)
+    assert "```yaml" in result
+    assert "config.yaml" not in result
+
+    # Pattern: ```Dockerfile.dockerfile  (unlikely but tests the map)
+    md2 = "```script.sh\n#!/bin/bash\necho hi\n```"
+    result2 = _clean_code_fence_annotations(md2)
+    assert "```bash" in result2
+
+
+def test_clean_code_fence_annotations_preserves_normal_fences() -> None:
+    from docsfy.renderer import _clean_code_fence_annotations
+
+    # Normal language specifier should NOT be altered
+    md = "```python\ndef foo():\n    pass\n```"
+    result = _clean_code_fence_annotations(md)
+    assert result == md
+
+    # Plain fence without language
+    md2 = "```\nsome code\n```"
+    result2 = _clean_code_fence_annotations(md2)
+    assert result2 == md2
+
+
+def test_clean_code_fence_annotations_quad_backticks() -> None:
+    from docsfy.renderer import _clean_code_fence_annotations
+
+    md = "````10:20:src/main.go\nfunc main() {}\n````"
+    result = _clean_code_fence_annotations(md)
+    assert "````go" in result
+    assert "10:20" not in result
+
+
+def test_clean_code_fence_annotations_multiple_blocks() -> None:
+    from docsfy.renderer import _clean_code_fence_annotations
+
+    md = (
+        "Text before\n"
+        "```1:10:app.py\nprint('hello')\n```\n"
+        "Middle text\n"
+        "```20:30:utils.js\nconsole.log('hi');\n```\n"
+        "End text"
+    )
+    result = _clean_code_fence_annotations(md)
+    assert "```python" in result
+    assert "```javascript" in result
+    assert "1:10" not in result
+    assert "20:30" not in result
+
+
+def test_clean_code_fence_annotations_nested_outer_fence() -> None:
+    from docsfy.renderer import _clean_code_fence_annotations
+
+    text = "````markdown\n```\n```10:20:src/file.py\nprint('x')\n```\n````"
+    result = _clean_code_fence_annotations(text)
+    # Inner annotated fence should NOT be rewritten
+    assert "```10:20:src/file.py" in result
+
+
+def test_md_to_html_with_annotated_code_fence() -> None:
+    from docsfy.renderer import _md_to_html
+
+    # This is the actual rendering bug: annotated fences break the parser
+    md_text = (
+        "## Example\n\n"
+        "Here is some code:\n"
+        "```135:150:src/jenkins_job_insight/main.py\n"
+        "def analyze():\n"
+        "    return True\n"
+        "```\n\n"
+        "This text should still render normally.\n\n"
+        "## Another Section\n\n"
+        "More content here."
+    )
+    content_html, _ = _md_to_html(md_text)
+    # The key assertion: the text AFTER the code block must not be swallowed
+    assert "This text should still render normally" in content_html
+    assert "Another Section" in content_html
+    assert "More content here" in content_html
+
+
+def test_lang_from_filepath() -> None:
+    from docsfy.renderer import _lang_from_filepath
+
+    assert _lang_from_filepath("src/main.py") == "python"
+    assert _lang_from_filepath("lib/utils.ts") == "typescript"
+    assert _lang_from_filepath("Makefile") == "makefile"
+    assert _lang_from_filepath("src/Dockerfile") == "dockerfile"
+    assert _lang_from_filepath("build/Makefile") == "makefile"
+    assert _lang_from_filepath("ci/Jenkinsfile") == "groovy"
+    assert _lang_from_filepath("unknown_no_ext") == ""
+    assert _lang_from_filepath("config.yaml") == "yaml"
+    assert _lang_from_filepath("  app.go  ") == "go"
+
+
+def test_clean_code_fence_annotations_extensionless_path() -> None:
+    from docsfy.renderer import _clean_code_fence_annotations
+
+    result = _clean_code_fence_annotations("```src/Dockerfile\nFROM python\n```")
+    assert result == "```dockerfile\nFROM python\n```"
+
+
+def test_clean_code_fence_annotations_makefile_path() -> None:
+    from docsfy.renderer import _clean_code_fence_annotations
+
+    result = _clean_code_fence_annotations("```build/Makefile\nall:\n```")
+    assert result == "```makefile\nall:\n```"
+
+
+def test_clean_code_fence_annotations_unknown_extensionless_path() -> None:
+    from docsfy.renderer import _clean_code_fence_annotations
+
+    result = _clean_code_fence_annotations("```src/somefile\ndata\n```")
+    assert result == "```\ndata\n```"
+
+
 def test_search_index_generated(tmp_path: Path) -> None:
     from docsfy.renderer import render_site
 

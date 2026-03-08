@@ -88,6 +88,210 @@ def _sanitize_html(html: str) -> str:
     return html
 
 
+_CODE_FENCE_ANNOTATION_RE = re.compile(r"^(```+)\d+:\d+:(.+)$", re.MULTILINE)
+_CODE_FENCE_FILEPATH_RE = re.compile(r"^(```+)((?:\S+/)+\S+)\s*$", re.MULTILINE)
+_CODE_FENCE_BARE_FILE_RE = re.compile(r"^(```+)(\w+\.\w+)\s*$", re.MULTILINE)
+
+_EXT_TO_LANG: dict[str, str] = {
+    ".py": "python",
+    ".js": "javascript",
+    ".ts": "typescript",
+    ".go": "go",
+    ".java": "java",
+    ".rb": "ruby",
+    ".rs": "rust",
+    ".sh": "bash",
+    ".bash": "bash",
+    ".zsh": "bash",
+    ".yml": "yaml",
+    ".yaml": "yaml",
+    ".json": "json",
+    ".toml": "toml",
+    ".html": "html",
+    ".css": "css",
+    ".sql": "sql",
+    ".md": "markdown",
+    ".xml": "xml",
+    ".ini": "ini",
+    ".cfg": "ini",
+    ".dockerfile": "dockerfile",
+    ".groovy": "groovy",
+    ".kt": "kotlin",
+    ".swift": "swift",
+    ".c": "c",
+    ".cpp": "cpp",
+    ".h": "c",
+    ".hpp": "cpp",
+    ".cs": "csharp",
+    ".r": "r",
+    ".pl": "perl",
+    ".lua": "lua",
+    ".ex": "elixir",
+    ".exs": "elixir",
+    ".tf": "hcl",
+    ".proto": "protobuf",
+    ".graphql": "graphql",
+    ".scss": "scss",
+    ".less": "less",
+}
+
+
+_FILENAME_TO_LANG: dict[str, str] = {
+    "Dockerfile": "dockerfile",
+    "Makefile": "makefile",
+    "Jenkinsfile": "groovy",
+    "Vagrantfile": "ruby",
+    "Gemfile": "ruby",
+    "Rakefile": "ruby",
+    "Procfile": "",
+    "Brewfile": "ruby",
+}
+
+
+def _lang_from_filepath(filepath: str) -> str:
+    """Extract a language identifier from a file path's extension or filename."""
+    filepath = filepath.strip()
+    basename = filepath.rsplit("/", 1)[-1] if "/" in filepath else filepath
+    if "." not in basename:
+        return _FILENAME_TO_LANG.get(basename, "")
+    ext = "." + basename.rsplit(".", 1)[-1].lower()
+    return _EXT_TO_LANG.get(ext, "")
+
+
+def _clean_code_fence_annotations(md_text: str) -> str:
+    """Strip file reference annotations from code fence opening lines.
+
+    AI-generated code blocks sometimes use formats like:
+        ```135:150:src/file.py
+        ```src/utils/helper.js
+        ```config.yaml
+    which the markdown library cannot parse. Convert them to:
+        ```python
+        ```javascript
+        ```yaml
+
+    Only applies replacements at the outermost fence level (depth 0) so that
+    inner fences inside nested code blocks (e.g. documentation examples) are
+    left untouched.
+    """
+
+    def _replace_annotated_fence(match: re.Match[str]) -> str:
+        fence = match.group(1)
+        filepath = match.group(2).strip()
+        lang = _lang_from_filepath(filepath)
+        return f"{fence}{lang}"
+
+    def _replace_filepath_fence(match: re.Match[str]) -> str:
+        fence = match.group(1)
+        filepath = match.group(2)
+        lang = _lang_from_filepath(filepath)
+        return f"{fence}{lang}"
+
+    def _replace_bare_file_fence(match: re.Match[str]) -> str:
+        fence = match.group(1)
+        filename = match.group(2)
+        lang = _lang_from_filepath(filename)
+        return f"{fence}{lang}"
+
+    lines = md_text.split("\n")
+    result: list[str] = []
+    fence_depth = 0
+    opening_fence_len = 0
+
+    for line in lines:
+        stripped = line.lstrip()
+
+        if stripped.startswith("```"):
+            backtick_count = len(stripped) - len(stripped.lstrip("`"))
+            rest = stripped[backtick_count:].strip()
+
+            if fence_depth == 0:
+                # Outermost fence opening: apply annotation cleaning
+                line = _CODE_FENCE_ANNOTATION_RE.sub(_replace_annotated_fence, line)
+                line = _CODE_FENCE_FILEPATH_RE.sub(_replace_filepath_fence, line)
+                line = _CODE_FENCE_BARE_FILE_RE.sub(_replace_bare_file_fence, line)
+                fence_depth = 1
+                opening_fence_len = backtick_count
+            elif backtick_count >= opening_fence_len and not rest:
+                # Closing the outermost fence
+                fence_depth = 0
+                opening_fence_len = 0
+            # else: inner fence marker, ignore
+
+        result.append(line)
+
+    return "\n".join(result)
+
+
+def _ensure_blank_lines(md_text: str) -> str:
+    """Ensure blank lines before markdown block elements.
+
+    The Python markdown library requires blank lines before lists,
+    blockquotes, and code fences. AI-generated content often omits these.
+
+    Blank lines are never inserted inside fenced code blocks.
+    """
+    lines = md_text.split("\n")
+    result: list[str] = []
+    fence_depth = 0
+    opening_fence_len = 0
+    for i, line in enumerate(lines):
+        stripped = line.lstrip()
+
+        # Track fence state using backtick-count matching so that
+        # inner fences inside an outer block don't toggle the state.
+        was_in_fence = fence_depth > 0
+        if stripped.startswith("```"):
+            backtick_count = len(stripped) - len(stripped.lstrip("`"))
+            rest = stripped[backtick_count:].strip()
+            if fence_depth == 0:
+                # Opening a new fence
+                fence_depth = 1
+                opening_fence_len = backtick_count
+            elif backtick_count >= opening_fence_len and not rest:
+                # Closing the current fence (same or more backticks, nothing after)
+                fence_depth = 0
+                opening_fence_len = 0
+            # else: inner fence marker inside outer block, ignore
+
+        # Only insert blank lines outside fenced code blocks.
+        # Use was_in_fence so that closing fences (which just toggled
+        # in_fence to False) are still considered "inside" the block.
+        if not was_in_fence and i > 0 and result and result[-1].strip() != "":
+            # Check if this line starts a block element
+            needs_blank = False
+            prev_stripped = result[-1].lstrip()
+
+            # List item not preceded by another list item
+            if (
+                (stripped.startswith("- ") or stripped.startswith("* "))
+                and not prev_stripped.startswith("- ")
+                and not prev_stripped.startswith("* ")
+            ):
+                needs_blank = True
+
+            # Ordered list item not preceded by another ordered item
+            elif re.match(r"^\d+\. ", stripped) and not re.match(
+                r"^\d+\. ", prev_stripped
+            ):
+                needs_blank = True
+
+            # Blockquote not preceded by another blockquote
+            elif stripped.startswith("> ") and not prev_stripped.startswith("> "):
+                needs_blank = True
+
+            # Code fence not preceded by blank
+            elif stripped.startswith("```") and not prev_stripped.startswith("```"):
+                needs_blank = True
+
+            if needs_blank:
+                result.append("")
+
+        result.append(line)
+
+    return "\n".join(result)
+
+
 def _md_to_html(md_text: str) -> tuple[str, str]:
     """Convert markdown to HTML. Returns (content_html, toc_html)."""
     md = markdown.Markdown(
@@ -97,6 +301,8 @@ def _md_to_html(md_text: str) -> tuple[str, str]:
             "toc": {"toc_depth": "2-3"},
         },
     )
+    md_text = _clean_code_fence_annotations(md_text)
+    md_text = _ensure_blank_lines(md_text)
     content_html = _sanitize_html(md.convert(md_text))
     toc_html = getattr(md, "toc", "")
     return content_html, toc_html

@@ -73,7 +73,14 @@ _PAGE_WRITING_RULES = """Write in markdown format. Include:
 Use these callout formats for special content:
 - Notes: > **Note:** text
 - Warnings: > **Warning:** text
-- Tips: > **Tip:** text"""
+- Tips: > **Tip:** text
+
+Write documentation that is user-facing and user-friendly:
+- Write for humans who want to use this project, not for AI systems
+- Use clear, approachable language — avoid overly technical jargon where possible
+- Structure content for easy scanning: use headings, short paragraphs, and lists
+- Lead with what the user needs to know, not internal implementation details
+- Prefer practical examples over theoretical explanations"""
 
 INCREMENTAL_PAGE_UPDATE_SCHEMA = """{
   "updates": [
@@ -109,6 +116,9 @@ Explore the codebase as needed. Read source files, configs, tests, and CI/CD pip
 to write comprehensive, accurate documentation. Do NOT rely on the README.
 
 {_PAGE_WRITING_RULES}
+
+This documentation will be read by end users of the project. Write it to be approachable,
+practical, and easy to follow. Separate llms.txt files are generated for AI consumption.
 
 Output ONLY the markdown content for this page. No wrapping, no explanation."""
 
