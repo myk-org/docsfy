@@ -1144,14 +1144,38 @@
 
         .generate-section {
             padding: 1rem;
+            text-align: left;
         }
 
         .form-row {
             flex-direction: column;
+            align-items: stretch;
+            width: 100%;
         }
 
         .form-group-grow {
             min-width: 0;
+        }
+
+        .generate-section .form-group {
+            width: 100%;
+        }
+
+        .generate-section .form-input,
+        .generate-section .form-select,
+        .generate-section select,
+        .generate-section input[type="text"],
+        .generate-section input[type="url"] {
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .generate-section .form-checkbox-group {
+            width: 100%;
+        }
+
+        .generate-section .btn-primary {
+            width: 100%;
         }
 
         .projects-header {
@@ -1189,6 +1213,7 @@
         .group-delete-all {
             margin-left: 0;
             align-self: flex-start;
+            width: 100%;
         }
 
         .variant-header {
@@ -1208,6 +1233,44 @@
         .variant-progress {
             flex-direction: column;
             align-items: stretch;
+        }
+
+        .pagination-controls-top,
+        .pagination-controls-bottom {
+            flex-direction: column;
+            gap: 0.5rem;
+            align-items: center;
+        }
+        .pagination-controls-top .pagination-btn,
+        .pagination-controls-bottom .pagination-btn {
+            width: 100%;
+            text-align: center;
+        }
+        .page-info {
+            min-width: 0;
+        }
+
+        .progress-bar-container {
+            min-width: 0;
+            flex: 1 1 auto;
+        }
+
+        .toast-container {
+            right: 0.5rem;
+            left: 0.5rem;
+            max-width: none;
+        }
+        .toast {
+            max-width: none;
+        }
+
+        .variant-meta {
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .model-dropdown {
+            max-width: calc(100vw - 2rem);
         }
     }
 
