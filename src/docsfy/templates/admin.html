@@ -314,6 +314,24 @@
     }
 
     /* Modal CSS is in _modal.html (shared include) */
+
+    /* Responsive: mobile-friendly layout */
+    @media (max-width: 640px) {
+        .header { flex-direction: column; gap: 0.5rem; height: auto; padding: 0.75rem 1rem; }
+        .header-left { width: 100%; }
+        .header-right { width: 100%; justify-content: flex-end; flex-wrap: wrap; gap: 0.5rem; }
+
+        .table-responsive { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+        .form-row { flex-direction: column; }
+        .form-group { min-width: 0 !important; width: 100%; }
+
+        .api-key-result-actions { flex-direction: column; gap: 0.5rem; }
+        .api-key-result-actions .btn { width: 100%; }
+
+        .section { padding: 1rem; }
+        .section-title { font-size: 1.1rem; }
+    }
     </style>
 </head>
 <body>
@@ -422,6 +440,7 @@
             <div class="card-header">Users</div>
             <div class="card-body" style="padding: 0;">
                 {% if users %}
+                <div class="table-responsive">
                 <table>
                     <thead>
                         <tr>
@@ -447,6 +466,7 @@
                         {% endfor %}
                     </tbody>
                 </table>
+                </div>
                 {% else %}
                 <div class="empty-state">No users created yet.</div>
                 {% endif %}
