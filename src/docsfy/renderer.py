@@ -90,7 +90,10 @@ def _sanitize_html(html: str) -> str:
 
 _CODE_FENCE_ANNOTATION_RE = re.compile(r"^(```+)\d+:\d+:(.+)$", re.MULTILINE)
 _CODE_FENCE_FILEPATH_RE = re.compile(r"^(```+)((?:\S+/)+\S+)\s*$", re.MULTILINE)
-_CODE_FENCE_BARE_FILE_RE = re.compile(r"^(```+)(\w+\.\w+)\s*$", re.MULTILINE)
+_CODE_FENCE_BARE_FILE_RE = re.compile(
+    r"^(```+)([A-Za-z0-9_.-]+\.[A-Za-z0-9_.-]+)\s*$",
+    re.MULTILINE,
+)
 
 _EXT_TO_LANG: dict[str, str] = {
     ".py": "python",

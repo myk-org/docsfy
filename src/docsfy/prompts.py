@@ -120,6 +120,9 @@ to write comprehensive, accurate documentation. Do NOT rely on the README.
 This documentation will be read by end users of the project. Write it to be approachable,
 practical, and easy to follow. Separate llms.txt files are generated for AI consumption.
 
+Start the page with exactly this first line:
+# {page_title}
+
 Output ONLY the markdown content for this page. No wrapping, no explanation."""
 
 
