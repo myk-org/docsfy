@@ -205,6 +205,7 @@ def _clean_code_fence_annotations(md_text: str) -> str:
         stripped = line.lstrip()
 
         if stripped.startswith("```"):
+            original_line = line
             backtick_count = len(stripped) - len(stripped.lstrip("`"))
             rest = stripped[backtick_count:].strip()
 
@@ -213,6 +214,9 @@ def _clean_code_fence_annotations(md_text: str) -> str:
                 line = _CODE_FENCE_ANNOTATION_RE.sub(_replace_annotated_fence, line)
                 line = _CODE_FENCE_FILEPATH_RE.sub(_replace_filepath_fence, line)
                 line = _CODE_FENCE_BARE_FILE_RE.sub(_replace_bare_file_fence, line)
+                if line == original_line and rest in _FILENAME_TO_LANG:
+                    indent = line[: len(line) - len(stripped)]
+                    line = f"{indent}{'`' * backtick_count}{_FILENAME_TO_LANG[rest]}"
                 fence_depth = 1
                 opening_fence_len = backtick_count
             elif backtick_count >= opening_fence_len and not rest:
@@ -240,6 +244,7 @@ def _ensure_blank_lines(md_text: str) -> str:
     opening_fence_len = 0
     for i, line in enumerate(lines):
         stripped = line.lstrip()
+        indent = len(line) - len(stripped)
 
         # Track fence state using backtick-count matching so that
         # inner fences inside an outer block don't toggle the state.
@@ -260,7 +265,13 @@ def _ensure_blank_lines(md_text: str) -> str:
         # Only insert blank lines outside fenced code blocks.
         # Use was_in_fence so that closing fences (which just toggled
         # in_fence to False) are still considered "inside" the block.
-        if not was_in_fence and i > 0 and result and result[-1].strip() != "":
+        if (
+            not was_in_fence
+            and indent == 0
+            and i > 0
+            and result
+            and result[-1].strip() != ""
+        ):
             # Check if this line starts a block element
             needs_blank = False
             prev_stripped = result[-1].lstrip()
