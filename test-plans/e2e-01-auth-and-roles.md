@@ -111,7 +111,7 @@ agent-browser screenshot
 - The browser is redirected to `/` (the dashboard)
 - The page title is "docsfy - Dashboard"
 - The header shows the username "admin"
-- The "Admin" link is visible in the header (because the admin role is active)
+- The "Admin Panel" link is visible in the header (because the admin role is active)
 - The "Generate Documentation" form section is visible
 - The "Logout" link is visible in the header
 - The "Change Password" button is visible in the header
@@ -160,25 +160,30 @@ agent-browser screenshot
 
 **Commands:**
 ```
-agent-browser javascript "document.querySelector('.top-bar-admin-link') !== null"
-agent-browser javascript "document.querySelector('.top-bar-admin-link').textContent.trim()"
+agent-browser eval 'document.querySelector(".user-menu-item[href=\"/admin\"]") !== null'
+agent-browser eval 'document.querySelector(".user-menu-item[href=\"/admin\"]").textContent.trim()'
 agent-browser screenshot
 ```
 
 **Check:** The Admin link exists in the header.
 
+**Verify the href:**
+```shell
+agent-browser eval 'document.querySelector(".user-menu-item[href=\"/admin\"]").getAttribute("href")'
+```
+
 **Expected result:**
 - The first query returns `true`
-- The second query returns `"Admin"`
-- The link points to `/admin`
+- The second query returns `"Admin Panel"`
+- The link href is "/admin"
 
 ---
 
 ### 2.2 Create user (user role)
 
 **Commands:**
-```
-agent-browser click ".top-bar-admin-link"
+```shell
+agent-browser click ".user-menu-item[href='/admin']"
 agent-browser wait-for-navigation
 agent-browser screenshot
 ```
@@ -195,6 +200,7 @@ agent-browser screenshot
 ```
 agent-browser type "#new-username" "testuser-e2e"
 agent-browser select "#new-role" "user"
+agent-browser wait 500
 agent-browser click "#create-user-form button[type='submit']"
 agent-browser wait 2000
 agent-browser screenshot
@@ -232,6 +238,7 @@ agent-browser wait 2000
 agent-browser navigate http://localhost:8800/admin
 agent-browser type "#new-username" "testadmin-e2e"
 agent-browser select "#new-role" "admin"
+agent-browser wait 500
 agent-browser click "#create-user-form button[type='submit']"
 agent-browser wait 2000
 agent-browser screenshot
@@ -267,6 +274,7 @@ agent-browser wait 2000
 agent-browser navigate http://localhost:8800/admin
 agent-browser type "#new-username" "testviewer-e2e"
 agent-browser select "#new-role" "viewer"
+agent-browser wait 500
 agent-browser click "#create-user-form button[type='submit']"
 agent-browser wait 2000
 agent-browser screenshot
@@ -302,6 +310,7 @@ agent-browser wait 2000
 agent-browser navigate http://localhost:8800/admin
 agent-browser type "#new-username" "delete-me-e2e"
 agent-browser select "#new-role" "user"
+agent-browser wait 500
 agent-browser click "#create-user-form button[type='submit']"
 agent-browser wait 2000
 agent-browser click "#new-key-display .btn-primary"
@@ -409,6 +418,7 @@ agent-browser wait 2000
 agent-browser navigate http://localhost:8800/admin
 agent-browser type "#new-username" "session-test-e2e"
 agent-browser select "#new-role" "user"
+agent-browser wait 500
 agent-browser click "#create-user-form button[type='submit']"
 agent-browser wait 2000
 agent-browser screenshot
@@ -498,6 +508,7 @@ agent-browser close-context
 agent-browser navigate http://localhost:8800/admin
 agent-browser type "#new-username" "admin"
 agent-browser select "#new-role" "user"
+agent-browser wait 500
 agent-browser click "#create-user-form button[type='submit']"
 agent-browser wait 2000
 agent-browser screenshot
@@ -511,11 +522,12 @@ agent-browser screenshot
 - The `#new-key-display` section does NOT become visible
 
 **Attempt with mixed case "Admin":**
-```
+```shell
 agent-browser navigate http://localhost:8800/admin
 agent-browser clear "#new-username"
 agent-browser type "#new-username" "Admin"
 agent-browser select "#new-role" "user"
+agent-browser wait 500
 agent-browser click "#create-user-form button[type='submit']"
 agent-browser wait 2000
 agent-browser screenshot
@@ -532,6 +544,7 @@ agent-browser navigate http://localhost:8800/admin
 agent-browser clear "#new-username"
 agent-browser type "#new-username" "ADMIN"
 agent-browser select "#new-role" "user"
+agent-browser wait 500
 agent-browser click "#create-user-form button[type='submit']"
 agent-browser wait 2000
 agent-browser screenshot
@@ -613,13 +626,20 @@ agent-browser screenshot
 - The second query returns `"Generate Documentation"`
 - The form contains: Repository URL input, Provider select, Model input, Force checkbox, and Generate button
 
+**Verify branch input is visible:**
+```shell
+agent-browser javascript "document.getElementById('gen-branch') !== null"
+```
+
+**Expected result:** `true` --- branch input is visible.
+
 ---
 
 ### 3.3 User does NOT see Admin link
 
 **Commands:**
-```
-agent-browser javascript "document.querySelector('.top-bar-admin-link')"
+```shell
+agent-browser eval 'document.querySelector(".user-menu-item[href=\"/admin\"]")'
 ```
 
 **Check:** The Admin link is absent from the header.
@@ -653,6 +673,7 @@ agent-browser javascript "document.body.innerText"
 agent-browser navigate http://localhost:8800/
 agent-browser type "#gen-repo-url" "https://github.com/myk-org/for-testing-only"
 agent-browser select "#gen-provider" "gemini"
+agent-browser wait 500
 agent-browser clear "#gen-model"
 agent-browser type "#gen-model" "gemini-2.5-flash"
 agent-browser click "#gen-submit"
@@ -732,7 +753,7 @@ agent-browser javascript "document.querySelector('.generate-section')"
 
 **Commands:**
 ```
-agent-browser javascript "document.querySelector('.top-bar-admin-link')"
+agent-browser eval 'document.querySelector(".user-menu-item[href=\"/admin\"]")'
 ```
 
 **Check:** The Admin link is absent from the header.
@@ -867,23 +888,23 @@ agent-browser screenshot
 
 **Commands:**
 ```
-agent-browser javascript "document.querySelector('.top-bar-admin-link') !== null"
-agent-browser javascript "document.querySelector('.top-bar-admin-link').textContent.trim()"
+agent-browser eval 'document.querySelector(".user-menu-item[href=\"/admin\"]") !== null'
+agent-browser eval 'document.querySelector(".user-menu-item[href=\"/admin\"]").textContent.trim()'
 ```
 
 **Check:** The Admin link is visible for DB users with admin role.
 
 **Expected result:**
 - The first query returns `true`
-- The second query returns `"Admin"`
+- The second query returns `"Admin Panel"`
 
 ---
 
 ### 5.3 Admin user can access /admin
 
 **Commands:**
-```
-agent-browser click ".top-bar-admin-link"
+```shell
+agent-browser click ".user-menu-item[href='/admin']"
 agent-browser wait-for-navigation
 agent-browser screenshot
 ```

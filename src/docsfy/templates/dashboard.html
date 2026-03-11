@@ -1,9 +1,9 @@
-{% macro regen_controls(variant, repo_name, default_provider, default_model, known_models) %}
+{% macro regen_controls(variant, repo_name, branch_name, default_provider, default_model, known_models, known_branches, valid_providers) %}
 <div class="variant-regen">
     <select class="form-select form-select-sm" data-regen-provider="{{ repo_name }}">
-        <option value="claude" {{ 'selected' if variant.ai_provider == 'claude' }}>claude</option>
-        <option value="gemini" {{ 'selected' if variant.ai_provider == 'gemini' }}>gemini</option>
-        <option value="cursor" {{ 'selected' if variant.ai_provider == 'cursor' }}>cursor</option>
+        {% for p in valid_providers %}
+        <option value="{{ p }}"{% if variant.ai_provider == p %} selected{% endif %}>{{ p }}</option>
+        {% endfor %}
     </select>
     <div class="model-combobox-sm">
         <input type="text" class="form-input form-input-sm" value="{{ variant.ai_model or default_model }}" data-regen-model="{{ repo_name }}" autocomplete="off">
@@ -18,6 +18,18 @@
             {% endfor %}
         </div>
     </div>
+    <div class="branch-combobox-sm">
+        <input type="text" class="form-input form-input-sm" value="{{ branch_name or variant.branch or default_branch }}" data-regen-branch="{{ repo_name }}" autocomplete="off" placeholder="branch">
+        <div class="branch-dropdown" data-regen-branch-dropdown>
+            {% if known_branches.get(repo_name) %}
+            {% for branch in known_branches[repo_name] %}
+            <div class="branch-option" data-value="{{ branch }}">
+                <span class="branch-option-name">{{ branch }}</span>
+            </div>
+            {% endfor %}
+            {% endif %}
+        </div>
+    </div>
     <label class="form-checkbox-sm"><input type="checkbox" data-regen-force="{{ repo_name }}"> Force</label>
     <button class="btn btn-primary btn-sm" data-regenerate-variant="{{ repo_name }}" data-repo-url="{{ variant.repo_url }}">Regenerate</button>
 </div>
@@ -29,231 +41,31 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>docsfy - Dashboard</title>
     <meta name="description" content="AI-powered documentation generator dashboard">
+    {% include '_app_styles.html' %}
     <style>
     /* ==========================================================================
-       docsfy Dashboard - Inline CSS
+       docsfy Dashboard - Template-Specific CSS
        ========================================================================== */
 
-    /* --------------------------------------------------------------------------
-       CSS Custom Properties (Light Theme - Default)
-       -------------------------------------------------------------------------- */
+    /* --- Dashboard-specific CSS variable extensions --- */
     :root {
-        /* Backgrounds */
-        --bg-primary: #ffffff;
-        --bg-secondary: #f9fafb;
-        --bg-tertiary: #f3f4f6;
-        --bg-sidebar: #f9fafb;
-        --bg-code: #f5f5f5;
-        --bg-code-block: #1e1e2e;
-        --bg-card: #ffffff;
         --bg-variant-card: #f6f7f9;
-        --bg-hero: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        --bg-search-result: #ffffff;
-
-        /* Text */
-        --text-primary: #111827;
-        --text-secondary: #4b5563;
-        --text-tertiary: #6b7280;
-        --text-inverse: #ffffff;
-        --text-link: #4f46e5;
-        --text-link-hover: #4338ca;
-        --text-code: #e11d48;
-        --text-code-block: #d4d4d8;
-
-        /* Borders */
-        --border-primary: #e5e7eb;
-        --border-secondary: #f3f4f6;
-        --border-focus: #4f46e5;
-
-        /* Accent */
-        --accent: #4f46e5;
-        --accent-light: #eef2ff;
-        --accent-hover: #4338ca;
-
-        /* Shadows */
-        --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
-        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
-
-        /* Layout */
         --content-max-width: 960px;
-        --header-height: 56px;
-
-        /* Typography */
-        --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
-        --font-mono: "SF Mono", SFMono-Regular, ui-monospace, "DejaVu Sans Mono", Menlo, Consolas, monospace;
-
-        /* Transitions */
-        --transition-fast: 150ms ease;
-        --transition-normal: 250ms ease;
-
-        /* Table */
         --table-row-alt: #f9fafb;
         --table-border: #e5e7eb;
-
-        /* Status colors */
-        --status-ready: #10b981;
-        --status-generating: #3b82f6;
-        --status-error: #ef4444;
-        --status-aborted: #f59e0b;
-        --status-ready-bg: #ecfdf5;
-        --status-generating-bg: #eff6ff;
-        --status-error-bg: #fef2f2;
-        --status-aborted-bg: #fffbeb;
     }
 
-    /* --------------------------------------------------------------------------
-       Dark Theme
-       -------------------------------------------------------------------------- */
     [data-theme="dark"] {
-        --bg-primary: #0f1117;
-        --bg-secondary: #161822;
-        --bg-tertiary: #1e2030;
-        --bg-sidebar: #161822;
-        --bg-code: #1e2030;
-        --bg-code-block: #1e2030;
-        --bg-card: #161822;
         --bg-variant-card: #121420;
-        --bg-hero: linear-gradient(135deg, #3730a3 0%, #6d28d9 100%);
-        --bg-search-result: #1e2030;
-
-        --text-primary: #e5e7eb;
-        --text-secondary: #9ca3af;
-        --text-tertiary: #6b7280;
-        --text-inverse: #ffffff;
-        --text-link: #818cf8;
-        --text-link-hover: #a5b4fc;
-        --text-code: #fb7185;
-        --text-code-block: #d4d4d8;
-
-        --border-primary: #2e3248;
-        --border-secondary: #252838;
-        --border-focus: #818cf8;
-
-        --accent: #818cf8;
-        --accent-light: #1e1b4b;
-        --accent-hover: #a5b4fc;
-
-        --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
-        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
-        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -4px rgba(0, 0, 0, 0.3);
-
         --table-row-alt: #1a1c2e;
         --table-border: #2e3248;
-
-        --status-ready-bg: #052e16;
-        --status-generating-bg: #172554;
-        --status-error-bg: #450a0a;
-        --status-aborted-bg: #451a03;
-    }
-
-    /* --------------------------------------------------------------------------
-       Reset & Base
-       -------------------------------------------------------------------------- */
-    *, *::before, *::after {
-        box-sizing: border-box;
-        margin: 0;
-        padding: 0;
-    }
-
-    html {
-        font-size: 16px;
-        -webkit-text-size-adjust: 100%;
-    }
-
-    body {
-        font-family: var(--font-sans);
-        background: var(--bg-primary);
-        color: var(--text-primary);
-        line-height: 1.6;
-        min-height: 100vh;
-        display: flex;
-        flex-direction: column;
-    }
-
-    /* --------------------------------------------------------------------------
-       Header
-       -------------------------------------------------------------------------- */
-    .dashboard-header {
-        height: var(--header-height);
-        background: var(--bg-secondary);
-        border-bottom: 1px solid var(--border-primary);
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 0 1.5rem;
-        position: sticky;
-        top: 0;
-        z-index: 100;
     }
 
     .header-left {
-        display: flex;
-        align-items: center;
         gap: 8px;
     }
 
-    .dashboard-logo {
-        font-size: 1.25rem;
-        font-weight: 700;
-        color: var(--text-primary);
-        text-decoration: none;
-        letter-spacing: -0.02em;
-    }
-
-    .dashboard-logo span {
-        color: var(--accent);
-    }
-
-    .docs-badge {
-        font-size: 0.7rem;
-        font-weight: 600;
-        padding: 2px 8px;
-        background: var(--accent);
-        color: white;
-        border-radius: 4px;
-        text-decoration: none;
-        margin-left: 8px;
-        transition: opacity 0.15s ease;
-    }
-
-    .docs-badge:hover {
-        opacity: 0.8;
-    }
-
-    .brand-accent {
-        color: var(--accent);
-    }
-
-    .header-actions {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-
     {% include '_user_menu.css' %}
-
-    .theme-toggle {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 36px;
-        height: 36px;
-        border: 1px solid var(--border-primary);
-        border-radius: 8px;
-        background: var(--bg-primary);
-        color: var(--text-secondary);
-        cursor: pointer;
-        transition: color var(--transition-fast), border-color var(--transition-fast);
-    }
-
-    .theme-toggle:hover {
-        color: var(--text-primary);
-        border-color: var(--border-focus);
-    }
-
-    [data-theme="dark"] .icon-sun { display: none; }
-    [data-theme="light"] .icon-moon { display: none; }
 
     /* --------------------------------------------------------------------------
        Main Content
@@ -286,21 +98,11 @@
     }
 
     .form-row {
-        display: flex;
-        gap: 0.75rem;
         margin-bottom: 0.75rem;
-        flex-wrap: wrap;
-        align-items: flex-end;
     }
 
     .form-row:last-child {
         margin-bottom: 0;
-    }
-
-    .form-group {
-        display: flex;
-        flex-direction: column;
-        gap: 0.25rem;
     }
 
     .form-group-grow {
@@ -317,21 +119,13 @@
     .form-input,
     .form-select {
         height: 38px;
-        padding: 0 0.75rem;
-        border: 1px solid var(--border-primary);
         border-radius: 8px;
-        background: var(--bg-primary);
-        color: var(--text-primary);
-        font-size: 0.875rem;
         font-family: var(--font-sans);
-        transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
     }
 
     .form-input:focus,
     .form-select:focus {
-        outline: none;
-        border-color: var(--border-focus);
-        box-shadow: 0 0 0 3px var(--accent-light);
+        box-shadow: var(--shadow-focus);
     }
 
     .form-input::placeholder {
@@ -366,68 +160,6 @@
         color: var(--text-secondary);
         cursor: pointer;
         user-select: none;
-    }
-
-    .btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 0.375rem;
-        height: 38px;
-        padding: 0 1.25rem;
-        border: none;
-        border-radius: 8px;
-        font-size: 0.875rem;
-        font-weight: 500;
-        font-family: var(--font-sans);
-        cursor: pointer;
-        transition: background var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast);
-        white-space: nowrap;
-    }
-
-    .btn:active {
-        transform: scale(0.98);
-    }
-
-    .btn-primary {
-        background: var(--accent);
-        color: var(--text-inverse);
-    }
-
-    .btn-primary:hover {
-        background: var(--accent-hover);
-    }
-
-    .btn-primary:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-        transform: none;
-    }
-
-    .btn-secondary {
-        background: var(--bg-tertiary);
-        color: var(--text-primary);
-        border: 1px solid var(--border-primary);
-    }
-
-    .btn-secondary:hover {
-        background: var(--border-primary);
-    }
-
-    .btn-danger {
-        background: transparent;
-        color: var(--status-error);
-        border: 1px solid var(--status-error);
-    }
-
-    .btn-danger:hover {
-        background: var(--status-error-bg);
-    }
-
-    .btn-sm {
-        height: 32px;
-        padding: 0 0.875rem;
-        font-size: 0.8125rem;
     }
 
     .btn-icon {
@@ -534,7 +266,7 @@
     .search-filter input:focus {
         outline: none;
         border-color: var(--border-focus);
-        box-shadow: 0 0 0 3px var(--accent-light);
+        box-shadow: var(--shadow-focus);
     }
 
     .search-filter input::placeholder {
@@ -613,9 +345,7 @@
        Empty State
        -------------------------------------------------------------------------- */
     .empty-state {
-        text-align: center;
         padding: 3rem 1.5rem;
-        color: var(--text-tertiary);
     }
 
     .empty-state-icon {
@@ -643,35 +373,6 @@
         display: flex;
         flex-direction: column;
         gap: 0.75rem;
-    }
-
-    .status-dot {
-        width: 10px;
-        height: 10px;
-        border-radius: 50%;
-        flex-shrink: 0;
-    }
-
-    .status-dot-ready {
-        background: var(--status-ready);
-    }
-
-    .status-dot-generating {
-        background: var(--status-generating);
-        animation: pulse 2s ease-in-out infinite;
-    }
-
-    .status-dot-error {
-        background: var(--status-error);
-    }
-
-    .status-dot-aborted {
-        background: var(--status-aborted);
-    }
-
-    @keyframes pulse {
-        0%, 100% { opacity: 1; transform: scale(1); }
-        50% { opacity: 0.5; transform: scale(1.2); }
     }
 
     .badge-ready {
@@ -707,36 +408,7 @@
     }
 
     .progress-bar-wrapper {
-        width: 100%;
-        height: 6px;
-        background: var(--bg-tertiary);
-        border-radius: 3px;
-        overflow: hidden;
         margin-top: 0.375rem;
-    }
-
-    .progress-bar-fill {
-        height: 100%;
-        background: var(--status-generating);
-        border-radius: 3px;
-        transition: width 0.5s ease;
-        position: relative;
-    }
-
-    .progress-bar-fill::after {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.2) 50%, transparent 100%);
-        animation: shimmer 1.5s infinite;
-    }
-
-    @keyframes shimmer {
-        from { transform: translateX(-100%); }
-        to { transform: translateX(100%); }
     }
 
     .progress-text {
@@ -745,43 +417,6 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
-    }
-
-    .regenerate-inline {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        flex-wrap: wrap;
-        padding-top: 0.625rem;
-        margin-top: 0.5rem;
-        border-top: 1px dashed var(--border-secondary);
-    }
-
-    .regenerate-inline .form-select,
-    .regenerate-inline .form-input {
-        height: 32px;
-        font-size: 0.8125rem;
-    }
-
-    .regenerate-inline .form-select {
-        width: 110px;
-    }
-
-    .regenerate-inline .form-input {
-        width: 180px;
-    }
-
-    .regenerate-inline .form-checkbox-group {
-        height: 32px;
-    }
-
-    .regenerate-inline .form-checkbox-group input[type="checkbox"] {
-        width: 14px;
-        height: 14px;
-    }
-
-    .regenerate-inline .form-checkbox-group label {
-        font-size: 0.8125rem;
     }
 
     /* --------------------------------------------------------------------------
@@ -796,19 +431,6 @@
         font-weight: 500;
         padding-top: 0.75rem;
         border-top: 1px solid var(--border-secondary);
-    }
-
-    .spinner {
-        width: 16px;
-        height: 16px;
-        border: 2px solid var(--border-primary);
-        border-top-color: var(--status-generating);
-        border-radius: 50%;
-        animation: spin 0.8s linear infinite;
-    }
-
-    @keyframes spin {
-        to { transform: rotate(360deg); }
     }
 
     /* --------------------------------------------------------------------------
@@ -833,26 +455,6 @@
     @keyframes fadeIn {
         from { opacity: 0; }
         to { opacity: 1; }
-    }
-
-    /* --------------------------------------------------------------------------
-       Footer
-       -------------------------------------------------------------------------- */
-    .dashboard-footer {
-        text-align: center;
-        padding: 1.5rem;
-        font-size: 0.8125rem;
-        color: var(--text-tertiary);
-        border-top: 1px solid var(--border-secondary);
-    }
-
-    .dashboard-footer a {
-        color: var(--text-link);
-        text-decoration: none;
-    }
-
-    .dashboard-footer a:hover {
-        text-decoration: underline;
     }
 
     /* --------------------------------------------------------------------------
@@ -884,8 +486,35 @@
     .project-group.collapsed .group-toggle-icon {
         transform: rotate(-90deg);
     }
-    .project-group.collapsed .variant-card {
+    .project-group.collapsed .variant-card,
+    .project-group.collapsed .branch-section {
         display: none;
+    }
+
+    .branch-section {
+        /* visual grouping under a branch */
+    }
+
+    .branch-header {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        border-bottom: 1px solid var(--border-primary);
+    }
+    .branch-badge {
+        background: var(--accent-light);
+        color: var(--accent);
+        padding: 0.15rem 0.5rem;
+        border-radius: 0.75rem;
+        font-weight: 600;
+        font-size: 0.8rem;
+        font-family: var(--font-mono);
+    }
+    .branch-variant-count {
+        font-size: 0.8rem;
     }
 
     .group-name {
@@ -1134,6 +763,67 @@
         font-size: 0.7rem;
     }
 
+    .branch-combobox-sm {
+        position: relative;
+        min-width: 100px;
+    }
+    .branch-combobox-sm .branch-dropdown {
+        max-height: 150px;
+    }
+    .branch-combobox-sm .branch-option {
+        padding: 0.35rem 0.5rem;
+        font-size: 0.85rem;
+    }
+
+    /* Branch Combobox */
+    .branch-combobox {
+        position: relative;
+    }
+
+    .branch-dropdown {
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: var(--bg-card);
+        border: 1px solid var(--border-primary);
+        border-top: none;
+        border-radius: 0 0 6px 6px;
+        box-shadow: var(--shadow-md);
+        max-height: 200px;
+        overflow-y: auto;
+        z-index: 100;
+    }
+
+    .branch-dropdown.active {
+        display: block;
+    }
+
+    .branch-option {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 12px;
+        cursor: pointer;
+        font-size: 0.85rem;
+    }
+
+    .branch-option:hover {
+        background: var(--bg-secondary);
+    }
+
+    .branch-option-name {
+        color: var(--text-primary);
+        font-weight: 500;
+    }
+
+    .branch-option-repo {
+        color: var(--text-secondary);
+        font-size: 0.75rem;
+        opacity: 0.7;
+    }
+
     /* --------------------------------------------------------------------------
        Responsive
        -------------------------------------------------------------------------- */
@@ -1272,17 +962,21 @@
         .model-dropdown {
             max-width: calc(100vw - 2rem);
         }
+
+        .branch-dropdown {
+            max-width: calc(100vw - 2rem);
+        }
     }
 
     /* Modal CSS is in _modal.html (shared include) */
     </style>
 </head>
-<body>
+<body class="app-body">
     <!-- Header -->
     <header class="dashboard-header">
         <div class="header-left">
             <a href="/" class="dashboard-logo">docs<span>fy</span></a>
-            <a href="https://myk-org.github.io/docsfy/" target="_blank" rel="noopener noreferrer" class="docs-badge" title="Documentation">Docs</a>
+            <a href="{{ docsfy_docs_url }}" target="_blank" rel="noopener noreferrer" class="docs-badge" title="Documentation">Docs</a>
         </div>
         <div class="header-actions">
             <div class="user-menu" id="user-menu">
@@ -1346,14 +1040,30 @@
                         <label for="gen-repo-url">Repository URL</label>
                         <input type="url" id="gen-repo-url" class="form-input" placeholder="https://github.com/org/repo" required>
                     </div>
+                    <div class="form-group">
+                        <label for="gen-branch">Branch <span class="form-hint">(optional, defaults to {{ default_branch }})</span></label>
+                        <div class="branch-combobox">
+                            <input type="text" class="form-input" id="gen-branch" value="" placeholder="e.g. main, v2.0, release-1.x" autocomplete="off">
+                            <div class="branch-dropdown" id="branch-dropdown">
+                                {% for repo_name, branches in known_branches.items() %}
+                                {% for branch in branches %}
+                                <div class="branch-option" data-repo="{{ repo_name }}" data-value="{{ branch }}">
+                                    <span class="branch-option-name">{{ branch }}</span>
+                                    <span class="branch-option-repo">{{ repo_name }}</span>
+                                </div>
+                                {% endfor %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div class="form-row">
                     <div class="form-group">
                         <label for="gen-provider">Provider</label>
                         <select id="gen-provider" class="form-select">
-                            <option value="claude"{% if default_provider == 'claude' %} selected{% endif %}>claude</option>
-                            <option value="gemini"{% if default_provider == 'gemini' %} selected{% endif %}>gemini</option>
-                            <option value="cursor"{% if default_provider == 'cursor' %} selected{% endif %}>cursor</option>
+                            {% for p in valid_providers %}
+                            <option value="{{ p }}"{% if p == default_provider %} selected{% endif %}>{{ p }}</option>
+                            {% endfor %}
                         </select>
                     </div>
                     <div class="form-group form-group-grow">
@@ -1424,7 +1134,10 @@
                     <p>Enter a GitHub repository URL above to generate your first documentation site.</p>
                 </div>
                 {% else %}
-                {% for repo_name, variants in grouped_projects.items() %}
+                {% for repo_name, branches in grouped_projects.items() %}
+                {% set all_variants = [] %}
+                {% for b, bvars in branches.items() %}{% for v in bvars %}{% if all_variants.append(v) %}{% endif %}{% endfor %}{% endfor %}
+                {% set first_variant = (branches.values()|list)[0][0] %}
                 <article class="project-group" data-repo="{{ repo_name }}">
                     <div class="group-header" role="button" tabindex="0" aria-expanded="true">
                         <svg class="group-toggle-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1432,9 +1145,9 @@
                         </svg>
                         <span class="group-name">{{ repo_name }}</span>
                         <span class="group-variant-count">
-                            {{ variants|length }} variant{{ 's' if variants|length != 1 else '' }}
+                            {{ all_variants|length }} variant{{ 's' if all_variants|length != 1 else '' }}
                             {% set ready_count = [] %}{% set error_count = [] %}{% set generating_count = [] %}
-                            {% for v in variants %}
+                            {% for v in all_variants %}
                                 {% if v.status == 'ready' %}{% if ready_count.append(1) %}{% endif %}
                                 {% elif v.status == 'error' or v.status == 'aborted' %}{% if error_count.append(1) %}{% endif %}
                                 {% elif v.status == 'generating' %}{% if generating_count.append(1) %}{% endif %}
@@ -1444,9 +1157,9 @@
                             {% if error_count %}<span class="count-error">{{ error_count|length }} failed</span>{% endif %}
                             {% if generating_count %}<span class="count-generating">{{ generating_count|length }} generating</span>{% endif %}
                         </span>
-                        {% if variants[0].repo_url %}
-                        {% if variants[0].repo_url.startswith('http') or variants[0].repo_url.startswith('git@') %}
-                        {% set gh_url = variants[0].repo_url | replace('git@github.com:', 'https://github.com/') | replace('.git', '') %}
+                        {% if first_variant.repo_url %}
+                        {% if first_variant.repo_url.startswith('http') or first_variant.repo_url.startswith('git@') %}
+                        {% set gh_url = first_variant.repo_url | replace('git@github.com:', 'https://github.com/') | replace('.git', '') %}
                         <a href="{{ gh_url }}" target="_blank" rel="noopener noreferrer" class="group-repo-link">{{ gh_url }}</a>
                         {% endif %}
                         {% endif %}
@@ -1455,73 +1168,83 @@
                         {% endif %}
                     </div>
 
-                    {% for variant in variants %}
-                    <div class="variant-card"
-                         data-project="{{ repo_name }}"
-                         data-provider="{{ variant.ai_provider }}"
-                         data-model="{{ variant.ai_model }}"
-                         data-owner="{{ variant.owner or '' }}"
-                         data-status="{{ variant.status }}">
-
-                        <div class="variant-header">
-                            <span class="status-dot status-dot-{{ variant.status }}"></span>
-                            <span class="variant-provider-model">{{ variant.ai_provider }}/{{ variant.ai_model }}</span>
-                            {% if role == 'admin' and variant.owner %}
-                            <span class="variant-owner">{{ variant.owner }}</span>
-                            {% endif %}
-                            <span class="variant-status badge-{{ variant.status }}">{{ variant.status | upper }}</span>
-                            {% if variant.page_count > 0 %}
-                            <span class="variant-pages">{{ variant.page_count }} pages</span>
-                            {% endif %}
+                    {% for branch_name, variants in branches.items() %}
+                    <div class="branch-section" data-branch="{{ branch_name }}">
+                        <div class="branch-header">
+                            <span class="branch-badge">@{{ branch_name }}</span>
+                            <span class="branch-variant-count">{{ variants|length }} variant{{ 's' if variants|length != 1 else '' }}</span>
                         </div>
 
-                        <div class="variant-meta">
-                            {% if variant.last_generated %}
-                            <span>{{ variant.last_generated }}</span>
-                            {% endif %}
-                            {% if variant.last_commit_sha %}
-                            <span>{{ variant.last_commit_sha[:7] }}</span>
-                            {% endif %}
-                        </div>
+                        {% for variant in variants %}
+                        <div class="variant-card"
+                             data-project="{{ repo_name }}"
+                             data-branch="{{ branch_name }}"
+                             data-provider="{{ variant.ai_provider }}"
+                             data-model="{{ variant.ai_model }}"
+                             data-owner="{{ variant.owner or '' }}"
+                             data-status="{{ variant.status }}">
 
-                        {% if variant.status == 'ready' %}
-                        <div class="variant-actions">
-                            <a href="/docs/{{ repo_name }}/{{ variant.ai_provider | urlencode }}/{{ variant.ai_model | urlencode }}/" target="_blank" class="btn btn-primary btn-sm">View Docs</a>
-                            <a href="/api/projects/{{ repo_name }}/{{ variant.ai_provider | urlencode }}/{{ variant.ai_model | urlencode }}/download" class="btn btn-secondary btn-sm">Download</a>
-                            {% if role != 'viewer' %}
-                            <button class="btn btn-danger btn-sm" data-delete-variant="{{ repo_name }}/{{ variant.ai_provider }}/{{ variant.ai_model }}" data-delete-owner="{{ variant.owner or '' }}">Delete</button>
-                            {% endif %}
-                        </div>
-                        {% if role != 'viewer' %}
-                        <!-- Regenerate controls -->
-                        {{ regen_controls(variant, repo_name, default_provider, default_model, known_models) }}
-                        {% endif %}
-
-                        {% elif variant.status == 'generating' %}
-                        <div class="variant-progress">
-                            <div class="progress-bar-container">
-                                <div class="progress-bar-wrapper">
-                                    <div class="progress-bar-fill" data-field="progress-bar" style="width: 0%"></div>
-                                </div>
+                            <div class="variant-header">
+                                <span class="status-dot status-dot-{{ variant.status }}"></span>
+                                <span class="variant-provider-model">{{ variant.ai_provider }}/{{ variant.ai_model }}</span>
+                                {% if role == 'admin' and variant.owner %}
+                                <span class="variant-owner">{{ variant.owner }}</span>
+                                {% endif %}
+                                <span class="variant-status badge-{{ variant.status }}">{{ variant.status | upper }}</span>
+                                {% if variant.page_count > 0 %}
+                                <span class="variant-pages">{{ variant.page_count }} pages</span>
+                                {% endif %}
                             </div>
-                            <span class="progress-text">Generating...</span>
-                            <a href="/status/{{ repo_name }}/{{ variant.ai_provider | urlencode }}/{{ variant.ai_model | urlencode }}" target="_blank" class="status-link">View progress &rarr;</a>
-                            {% if role != 'viewer' %}
-                            <button class="btn btn-danger btn-sm" data-abort-variant="{{ repo_name }}/{{ variant.ai_provider }}/{{ variant.ai_model }}">Abort</button>
-                            {% endif %}
-                        </div>
 
-                        {% elif variant.status == 'error' or variant.status == 'aborted' %}
-                        <div class="variant-error variant-error-{{ variant.status }}">
-                            <span class="error-text">{{ variant.error_message }}</span>
-                        </div>
-                        <div class="variant-actions">
+                            <div class="variant-meta">
+                                {% if variant.last_generated %}
+                                <span>{{ variant.last_generated }}</span>
+                                {% endif %}
+                                {% if variant.last_commit_sha %}
+                                <span>{{ variant.last_commit_sha[:7] }}</span>
+                                {% endif %}
+                            </div>
+
+                            {% if variant.status == 'ready' %}
+                            <div class="variant-actions">
+                                <a href="/docs/{{ repo_name }}/{{ branch_name | urlencode }}/{{ variant.ai_provider | urlencode }}/{{ variant.ai_model | urlencode }}/{% if role == 'admin' %}?owner={{ variant.owner | default('') | urlencode }}{% endif %}" target="_blank" class="btn btn-primary btn-sm">View Docs</a>
+                                <a href="/api/projects/{{ repo_name }}/{{ branch_name | urlencode }}/{{ variant.ai_provider | urlencode }}/{{ variant.ai_model | urlencode }}/download{% if role == 'admin' %}?owner={{ variant.owner | default('') | urlencode }}{% endif %}" class="btn btn-secondary btn-sm">Download</a>
+                                {% if role != 'viewer' %}
+                                <button class="btn btn-danger btn-sm" data-delete-variant="{{ repo_name }}/{{ branch_name }}/{{ variant.ai_provider }}/{{ variant.ai_model }}" data-delete-owner="{{ variant.owner or '' }}">Delete</button>
+                                {% endif %}
+                            </div>
                             {% if role != 'viewer' %}
-                            {{ regen_controls(variant, repo_name, default_provider, default_model, known_models) }}
-                            <button class="btn btn-danger btn-sm" data-delete-variant="{{ repo_name }}/{{ variant.ai_provider }}/{{ variant.ai_model }}" data-delete-owner="{{ variant.owner or '' }}">Delete</button>
+                            <!-- Regenerate controls -->
+                            {{ regen_controls(variant, repo_name, branch_name, default_provider, default_model, known_models, known_branches, valid_providers) }}
+                            {% endif %}
+
+                            {% elif variant.status == 'generating' %}
+                            <div class="variant-progress">
+                                <div class="progress-bar-container">
+                                    <div class="progress-bar-wrapper">
+                                        <div class="progress-bar-fill" data-field="progress-bar" style="width: 0%"></div>
+                                    </div>
+                                </div>
+                                <span class="progress-text">Generating...</span>
+                                <a href="/status/{{ repo_name }}/{{ branch_name | urlencode }}/{{ variant.ai_provider | urlencode }}/{{ variant.ai_model | urlencode }}{% if role == 'admin' %}?owner={{ variant.owner | default('') | urlencode }}{% endif %}" target="_blank" class="status-link">View progress &rarr;</a>
+                                {% if role != 'viewer' %}
+                                <button class="btn btn-danger btn-sm" data-abort-variant="{{ repo_name }}/{{ branch_name }}/{{ variant.ai_provider }}/{{ variant.ai_model }}">Abort</button>
+                                {% endif %}
+                            </div>
+
+                            {% elif variant.status == 'error' or variant.status == 'aborted' %}
+                            <div class="variant-error variant-error-{{ variant.status }}">
+                                <span class="error-text">{{ variant.error_message }}</span>
+                            </div>
+                            <div class="variant-actions">
+                                {% if role != 'viewer' %}
+                                {{ regen_controls(variant, repo_name, branch_name, default_provider, default_model, known_models, known_branches, valid_providers) }}
+                                <button class="btn btn-danger btn-sm" data-delete-variant="{{ repo_name }}/{{ branch_name }}/{{ variant.ai_provider }}/{{ variant.ai_model }}" data-delete-owner="{{ variant.owner or '' }}">Delete</button>
+                                {% endif %}
+                            </div>
                             {% endif %}
                         </div>
-                        {% endif %}
+                        {% endfor %}
                     </div>
                     {% endfor %}
                 </article>
@@ -1540,7 +1263,7 @@
 
     <!-- Footer -->
     <footer class="dashboard-footer">
-        <p>Powered by <a href="https://github.com/myk-org/docsfy" target="_blank" rel="noopener noreferrer">docs<span class="brand-accent">fy</span></a></p>
+        <p>Powered by <a href="{{ docsfy_repo_url }}" target="_blank" rel="noopener noreferrer">docs<span class="brand-accent">fy</span></a></p>
     </footer>
 
 
@@ -1553,16 +1276,22 @@
     (function() {
         'use strict';
 
+        /* ----- Timing Constants ----- */
+        var TOAST_DEFAULT_MS = 4000;
+        var TOAST_ERROR_MS = 6000;
+        var REDIRECT_DELAY_MS = 2000;
+        var RELOAD_DELAY_MS = 1000;
+        var STATUS_POLL_INTERVAL_MS = 10000;
+        var PROGRESS_POLL_INTERVAL_MS = 5000;
+
         /* ----- Form State Persistence ----- */
         function saveFormState() {
             var repoInput = document.getElementById('gen-repo-url');
-            var providerSelect = document.getElementById('gen-provider');
-            var modelInput = document.getElementById('gen-model');
+            var branchInput = document.getElementById('gen-branch');
             var forceCheck = document.getElementById('gen-force');
 
             if (repoInput) sessionStorage.setItem('docsfy-repo', repoInput.value);
-            if (providerSelect) sessionStorage.setItem('docsfy-provider', providerSelect.value);
-            if (modelInput) sessionStorage.setItem('docsfy-model', modelInput.value);
+            if (branchInput) sessionStorage.setItem('docsfy-branch', branchInput.value);
             if (forceCheck) sessionStorage.setItem('docsfy-force', forceCheck.checked ? '1' : '0');
         }
 
@@ -1572,22 +1301,16 @@
             _restoring = true;
             try {
                 var repo = sessionStorage.getItem('docsfy-repo');
-                var provider = sessionStorage.getItem('docsfy-provider');
-                var model = sessionStorage.getItem('docsfy-model');
+                var branchVal = sessionStorage.getItem('docsfy-branch');
                 var force = sessionStorage.getItem('docsfy-force');
 
                 if (repo) {
                     var repoInput = document.getElementById('gen-repo-url');
                     if (repoInput) repoInput.value = repo;
                 }
-                if (provider) {
-                    var sel = document.getElementById('gen-provider');
-                    if (sel) sel.value = provider;
-                    // Don't dispatch change event — we'll set the model explicitly next
-                }
-                if (model) {
-                    var inp = document.getElementById('gen-model');
-                    if (inp) inp.value = model;
+                if (branchVal) {
+                    var branchInp = document.getElementById('gen-branch');
+                    if (branchInp) branchInp.value = branchVal;
                 }
                 if (force === '1') {
                     var forceCheck = document.getElementById('gen-force');
@@ -1600,13 +1323,14 @@
 
         function clearFormState() {
             sessionStorage.removeItem('docsfy-repo');
-            sessionStorage.removeItem('docsfy-provider');
-            sessionStorage.removeItem('docsfy-model');
+            sessionStorage.removeItem('docsfy-branch');
             sessionStorage.removeItem('docsfy-force');
         }
 
         /* ----- Model Combobox (custom dropdown) ----- */
         var knownModels = {{ known_models | tojson }};
+        var knownBranches = {{ known_branches | tojson }};
+        var DEFAULT_BRANCH = '{{ default_branch }}';
 
         // --- Generate form combobox ---
         var modelInput = document.getElementById('gen-model');
@@ -1739,6 +1463,45 @@
             setupRegenCombobox(input);
         });
 
+        // --- Per-variant regen branch comboboxes ---
+        function setupRegenBranchCombobox(input) {
+            var combobox = input.closest('.branch-combobox-sm');
+            if (!combobox) return;
+            var dropdown = combobox.querySelector('[data-regen-branch-dropdown]');
+            if (!dropdown) return;
+
+            function filterBranchOpts(query) {
+                var options = dropdown.querySelectorAll('.branch-option');
+                var q = (query || '').toLowerCase();
+                options.forEach(function(opt) {
+                    var val = opt.getAttribute('data-value') || '';
+                    opt.style.display = val.toLowerCase().indexOf(q) !== -1 ? '' : 'none';
+                });
+            }
+
+            input.addEventListener('focus', function() {
+                filterBranchOpts('');
+                dropdown.classList.add('active');
+            });
+
+            input.addEventListener('input', function() {
+                filterBranchOpts(this.value);
+                dropdown.classList.add('active');
+            });
+
+            dropdown.addEventListener('click', function(e) {
+                var option = e.target.closest('.branch-option');
+                if (option) {
+                    input.value = option.getAttribute('data-value');
+                    dropdown.classList.remove('active');
+                }
+            });
+        }
+
+        document.querySelectorAll('[data-regen-branch]').forEach(function(input) {
+            setupRegenBranchCombobox(input);
+        });
+
         // Re-filter regen dropdowns when provider changes and auto-switch model
         document.addEventListener('change', function(e) {
             var sel = e.target.closest('[data-regen-provider]');
@@ -1768,10 +1531,103 @@
             filterModelOptions(dropdown, input.value, newProvider);
         });
 
+        /* ----- Branch Combobox (custom dropdown) ----- */
+        var branchInput = document.getElementById('gen-branch');
+        var branchDropdown = document.getElementById('branch-dropdown');
+        var repoUrlInput = document.getElementById('gen-repo-url');
+
+        function filterBranchOptions(dropdown, query, repoUrl) {
+            var q = (query || '').toLowerCase();
+            var repoName = '';
+            if (repoUrl) {
+                repoName = repoUrl.replace(/\/+$/, '').replace(/\.git$/, '').split('/').pop() || '';
+            }
+            var hasVisible = false;
+            dropdown.querySelectorAll('.branch-option').forEach(function(opt) {
+                var matchesQuery = !q || opt.getAttribute('data-value').toLowerCase().indexOf(q) !== -1;
+                var matchesRepo = !repoName || opt.getAttribute('data-repo') === repoName;
+                var visible = matchesQuery && matchesRepo;
+                opt.style.display = visible ? '' : 'none';
+                if (visible) hasVisible = true;
+            });
+            return hasVisible;
+        }
+
+        function rebuildBranchDropdownOptions() {
+            if (!branchDropdown) return;
+            while (branchDropdown.firstChild) {
+                branchDropdown.removeChild(branchDropdown.firstChild);
+            }
+            Object.keys(knownBranches).forEach(function(repoName) {
+                var branches = knownBranches[repoName] || [];
+                branches.forEach(function(branch) {
+                    var div = document.createElement('div');
+                    div.className = 'branch-option';
+                    div.setAttribute('data-repo', repoName);
+                    div.setAttribute('data-value', branch);
+
+                    var nameSpan = document.createElement('span');
+                    nameSpan.className = 'branch-option-name';
+                    nameSpan.textContent = branch;
+                    div.appendChild(nameSpan);
+
+                    var repoSpan = document.createElement('span');
+                    repoSpan.className = 'branch-option-repo';
+                    repoSpan.textContent = repoName;
+                    div.appendChild(repoSpan);
+
+                    branchDropdown.appendChild(div);
+                });
+            });
+        }
+
+        if (branchInput && branchDropdown) {
+            branchInput.addEventListener('focus', function() {
+                var repoUrl = repoUrlInput ? repoUrlInput.value.trim() : '';
+                if (!repoUrl) return;
+                filterBranchOptions(branchDropdown, '', repoUrl);
+                branchDropdown.classList.add('active');
+            });
+
+            branchInput.addEventListener('input', function() {
+                var repoUrl = repoUrlInput ? repoUrlInput.value.trim() : '';
+                if (!repoUrl) {
+                    branchDropdown.classList.remove('active');
+                    return;
+                }
+                filterBranchOptions(branchDropdown, this.value, repoUrl);
+                branchDropdown.classList.add('active');
+            });
+
+            branchDropdown.addEventListener('click', function(e) {
+                var option = e.target.closest('.branch-option');
+                if (option) {
+                    branchInput.value = option.getAttribute('data-value');
+                    branchDropdown.classList.remove('active');
+                    saveFormState();
+                }
+            });
+        }
+
+        if (repoUrlInput && branchDropdown) {
+            repoUrlInput.addEventListener('input', function() {
+                filterBranchOptions(branchDropdown, branchInput ? branchInput.value : '', this.value);
+                if (!this.value.trim()) {
+                    branchDropdown.classList.remove('active');
+                }
+            });
+        }
+
         // Single document-level listener for closing all combobox dropdowns
         document.addEventListener('click', function(e) {
             document.querySelectorAll('.model-dropdown.active').forEach(function(dropdown) {
                 var combobox = dropdown.closest('.model-combobox, .model-combobox-sm');
+                if (combobox && !combobox.contains(e.target)) {
+                    dropdown.classList.remove('active');
+                }
+            });
+            document.querySelectorAll('.branch-dropdown.active').forEach(function(dropdown) {
+                var combobox = dropdown.closest('.branch-combobox') || dropdown.closest('.branch-combobox-sm');
                 if (combobox && !combobox.contains(e.target)) {
                     dropdown.classList.remove('active');
                 }
@@ -1783,7 +1639,7 @@
 
         function showToast(message, type, duration, link) {
             type = type || 'info';
-            duration = duration || 4000;
+            duration = duration || TOAST_DEFAULT_MS;
             var toast = document.createElement('div');
             toast.className = 'toast toast-' + type;
             toast.textContent = message;
@@ -1807,15 +1663,15 @@
         }
 
         /* ----- Helper: build composite key for a variant ----- */
-        function variantKey(name, provider, model, owner) {
-            return (owner || '') + '/' + name + '/' + provider + '/' + model;
+        function variantKey(name, branch, provider, model, owner) {
+            return (owner || '') + '/' + name + '/' + (branch || DEFAULT_BRANCH) + '/' + provider + '/' + model;
         }
 
         /* ----- Auth redirect detection ----- */
         function checkAuthRedirect(res) {
             if (res.redirected || res.status === 302) {
-                showToast('Session expired. Please login again.', 'error', 6000);
-                setTimeout(function() { window.location.href = '/login'; }, 2000);
+                showToast('Session expired. Please login again.', 'error', TOAST_ERROR_MS);
+                setTimeout(function() { window.location.href = '/login'; }, REDIRECT_DELAY_MS);
                 return true;
             }
             return false;
@@ -1835,7 +1691,7 @@
         function startStatusPolling() {
             if (isStatusPolling) return;
             isStatusPolling = true;
-            statusPollInterval = setInterval(pollStatusChanges, 10000);
+            statusPollInterval = setInterval(pollStatusChanges, STATUS_POLL_INTERVAL_MS);
         }
 
         function stopStatusPolling() {
@@ -1849,7 +1705,7 @@
         function startProgressPolling() {
             if (isProgressPolling) return;
             isProgressPolling = true;
-            progressPollInterval = setInterval(pollProgressUpdates, 5000);
+            progressPollInterval = setInterval(pollProgressUpdates, PROGRESS_POLL_INTERVAL_MS);
         }
 
         function stopProgressPolling() {
@@ -1865,10 +1721,11 @@
             var map = {};
             document.querySelectorAll('.variant-card').forEach(function(card) {
                 var name = card.getAttribute('data-project');
+                var branch = card.getAttribute('data-branch');
                 var provider = card.getAttribute('data-provider');
                 var model = card.getAttribute('data-model');
                 var owner = card.getAttribute('data-owner');
-                var key = variantKey(name, provider, model, owner);
+                var key = variantKey(name, branch, provider, model, owner);
                 map[key] = card;
             });
             return map;
@@ -1897,13 +1754,18 @@
                         rebuildModelDropdownOptions();
                     }
 
+                    if (data.known_branches) {
+                        knownBranches = data.known_branches;
+                        rebuildBranchDropdownOptions();
+                    }
+
                     var anyGenerating = false;
                     var needsReload = false;
                     var existingCards = getExistingVariantCards();
 
                     projectsList.forEach(function(proj) {
                         if (proj.status === 'generating') anyGenerating = true;
-                        var key = variantKey(proj.name, proj.ai_provider || '', proj.ai_model || '', proj.owner || '');
+                        var key = variantKey(proj.name, proj.branch || DEFAULT_BRANCH, proj.ai_provider || '', proj.ai_model || '', proj.owner || '');
                         var card = existingCards[key];
                         if (!card) {
                             // New variant appeared: reload to get server-rendered card
@@ -1967,7 +1829,7 @@
                     var existingCards = getExistingVariantCards();
 
                     projectsList.forEach(function(proj) {
-                        var key = variantKey(proj.name, proj.ai_provider || '', proj.ai_model || '', proj.owner || '');
+                        var key = variantKey(proj.name, proj.branch || DEFAULT_BRANCH, proj.ai_provider || '', proj.ai_model || '', proj.owner || '');
                         var card = existingCards[key];
                         if (card) {
                             updateVariantProgressDOM(card, proj);
@@ -2034,6 +1896,7 @@
             form.addEventListener('submit', function(e) {
                 e.preventDefault();
                 var repoUrl = document.getElementById('gen-repo-url').value.trim();
+                var branch = document.getElementById('gen-branch').value.trim();
                 var provider = document.getElementById('gen-provider').value;
                 var model = document.getElementById('gen-model').value.trim();
                 var force = document.getElementById('gen-force').checked;
@@ -2053,6 +1916,7 @@
                     force: force
                 };
                 if (model) body.ai_model = model;
+                if (branch) body.branch = branch;
 
                 fetch('/api/generate', {
                     method: 'POST',
@@ -2063,8 +1927,8 @@
                 })
                 .then(function(res) {
                     if (res.redirected || res.status === 302 || res.type === 'opaqueredirect') {
-                        showToast('Session expired. Please login again.', 'error', 6000);
-                        setTimeout(function() { window.location.href = '/login'; }, 2000);
+                        showToast('Session expired. Please login again.', 'error', TOAST_ERROR_MS);
+                        setTimeout(function() { window.location.href = '/login'; }, REDIRECT_DELAY_MS);
                         return null;
                     }
                     if (!res.ok) return res.json().then(function(data) { throw data; });
@@ -2075,21 +1939,28 @@
                     var projectName = data.project || repoUrl;
                     var effectiveModel = model || data.ai_model || '{{ default_model }}';
                     var effectiveProvider = provider || data.ai_provider || '{{ default_provider }}';
-                    var statusUrl = '/status/' + encodeURIComponent(projectName) + '/' + encodeURIComponent(effectiveProvider) + '/' + encodeURIComponent(effectiveModel);
-                    showToast('Generation started for ' + projectName + '.', 'success', 6000, {
+                    var statusUrl;
+                    if (data.branch) {
+                        statusUrl = '/status/' + encodeURIComponent(projectName) + '/' + encodeURIComponent(data.branch) + '/' + encodeURIComponent(effectiveProvider) + '/' + encodeURIComponent(effectiveModel);
+                    } else {
+                        // Branch unknown yet — use branch-agnostic redirect
+                        statusUrl = '/status/' + encodeURIComponent(projectName) + '/' + encodeURIComponent(effectiveProvider) + '/' + encodeURIComponent(effectiveModel);
+                    }
+                    showToast('Generation started for ' + projectName + '.', 'success', TOAST_ERROR_MS, {
                         href: statusUrl,
                         text: 'View progress \u2192'
                     });
                     document.getElementById('gen-repo-url').value = '';
+                    document.getElementById('gen-branch').value = '';
                     document.getElementById('gen-force').checked = false;
                     clearFormState(); // Clear saved state after successful generation
                     startProgressPolling();
                     // Reload to show the new card
-                    setTimeout(function() { location.reload(); }, 1000);
+                    setTimeout(function() { location.reload(); }, RELOAD_DELAY_MS);
                 })
                 .catch(function(err) {
                     var msg = (err && err.detail) || (err && err.message) || 'Generation request failed';
-                    showToast(msg, 'error', 6000);
+                    showToast(msg, 'error', TOAST_ERROR_MS);
                 })
                 .finally(function() {
                     submitBtn.disabled = false;
@@ -2105,8 +1976,12 @@
 
             var name = regenBtn.getAttribute('data-regenerate-variant');
             var repoUrl = regenBtn.getAttribute('data-repo-url');
+            var card = regenBtn.closest('.variant-card');
+            var regenOwner = card ? (card.getAttribute('data-owner') || '') : '';
             var row = regenBtn.closest('.variant-regen');
             if (!row) return;
+            var branchInput = row.querySelector('[data-regen-branch="' + name + '"]');
+            var regenBranch = branchInput ? (branchInput.value.trim() || DEFAULT_BRANCH) : DEFAULT_BRANCH;
 
             var providerSel = row.querySelector('[data-regen-provider="' + name + '"]');
             var modelInput = row.querySelector('[data-regen-model="' + name + '"]');
@@ -2122,7 +1997,8 @@
             var body = {
                 repo_url: repoUrl,
                 ai_provider: provider,
-                force: force
+                force: force,
+                branch: regenBranch
             };
             if (model) body.ai_model = model;
 
@@ -2135,8 +2011,8 @@
             })
             .then(function(res) {
                 if (res.redirected || res.status === 302 || res.type === 'opaqueredirect') {
-                    showToast('Session expired. Please login again.', 'error', 6000);
-                    setTimeout(function() { window.location.href = '/login'; }, 2000);
+                    showToast('Session expired. Please login again.', 'error', TOAST_ERROR_MS);
+                    setTimeout(function() { window.location.href = '/login'; }, REDIRECT_DELAY_MS);
                     return null;
                 }
                 if (!res.ok) return res.json().then(function(data) { throw data; });
@@ -2146,18 +2022,25 @@
                 if (!data) return;
                 var effectiveModel = model || data.ai_model || '{{ default_model }}';
                 var effectiveProvider = provider || data.ai_provider || '{{ default_provider }}';
-                var statusUrl = '/status/' + encodeURIComponent(name) + '/' + encodeURIComponent(effectiveProvider) + '/' + encodeURIComponent(effectiveModel);
-                showToast('Regeneration started for ' + name + '.', 'success', 6000, {
+                var statusUrl;
+                if (data.branch) {
+                    statusUrl = '/status/' + encodeURIComponent(name) + '/' + encodeURIComponent(data.branch) + '/' + encodeURIComponent(effectiveProvider) + '/' + encodeURIComponent(effectiveModel);
+                } else {
+                    // Branch unknown yet — use branch-agnostic redirect
+                    statusUrl = '/status/' + encodeURIComponent(name) + '/' + encodeURIComponent(effectiveProvider) + '/' + encodeURIComponent(effectiveModel);
+                }
+                if (regenOwner) statusUrl += '?owner=' + encodeURIComponent(regenOwner);
+                showToast('Regeneration started for ' + name + '.', 'success', TOAST_ERROR_MS, {
                     href: statusUrl,
                     text: 'View progress \u2192'
                 });
                 startProgressPolling();
                 saveFormState();
-                setTimeout(function() { location.reload(); }, 1000);
+                setTimeout(function() { location.reload(); }, RELOAD_DELAY_MS);
             })
             .catch(function(err) {
                 var msg = (err && err.detail) || (err && err.message) || 'Regeneration request failed';
-                showToast(msg, 'error', 6000);
+                showToast(msg, 'error', TOAST_ERROR_MS);
             })
             .finally(function() {
                 regenBtn.disabled = false;
@@ -2169,21 +2052,26 @@
         document.addEventListener('click', async function(e) {
             var abortBtn = e.target.closest('[data-abort-variant]');
             if (!abortBtn) return;
+            var abortCard = abortBtn.closest('.variant-card');
+            var abortOwner = abortCard ? (abortCard.getAttribute('data-owner') || '') : '';
             var composite = abortBtn.getAttribute('data-abort-variant');
-            // composite is "name/provider/model"
+            // composite is "name/branch/provider/model"
             var parts = composite.split('/');
             var name = parts[0];
-            var provider = parts[1];
-            var model = parts.slice(2).join('/');
-            var confirmed = await modalConfirm('Abort Generation', 'Abort generation for ' + name + ' (' + provider + '/' + model + ')?', true);
+            var branch = parts[1];
+            var provider = parts[2];
+            var model = parts.slice(3).join('/');
+            var confirmed = await modalConfirm('Abort Generation', 'Abort generation for ' + name + ' @' + branch + ' (' + provider + '/' + model + ')?', true);
             if (!confirmed) return;
             abortBtn.disabled = true;
             abortBtn.textContent = 'Aborting...';
-            fetch('/api/projects/' + encodeURIComponent(name) + '/' + encodeURIComponent(provider) + '/' + encodeURIComponent(model) + '/abort', { method: 'POST', credentials: 'same-origin', redirect: 'manual' })
+            var abortFetchUrl = '/api/projects/' + encodeURIComponent(name) + '/' + encodeURIComponent(branch) + '/' + encodeURIComponent(provider) + '/' + encodeURIComponent(model) + '/abort';
+            if (abortOwner) abortFetchUrl += '?owner=' + encodeURIComponent(abortOwner);
+            fetch(abortFetchUrl, { method: 'POST', credentials: 'same-origin', redirect: 'manual' })
                 .then(function(r) {
                     if (r.redirected || r.status === 302 || r.type === 'opaqueredirect') {
-                        showToast('Session expired. Please login again.', 'error', 6000);
-                        setTimeout(function() { window.location.href = '/login'; }, 2000);
+                        showToast('Session expired. Please login again.', 'error', TOAST_ERROR_MS);
+                        setTimeout(function() { window.location.href = '/login'; }, REDIRECT_DELAY_MS);
                         return null;
                     }
                     if (!r.ok) return r.json().then(function(data) { throw data; });
@@ -2204,13 +2092,14 @@
             var confirmed = await modalConfirm('Delete Variant', 'Are you sure you want to delete "' + variantPath + '"' + ownerLabel + '? This will remove the generated documentation for this variant and cannot be undone.', true);
             if (!confirmed) return;
 
-            // variantPath is "name/provider/model"
+            // variantPath is "name/branch/provider/model"
             var parts = variantPath.split('/');
             var name = parts[0];
-            var provider = parts[1];
-            var model = parts.slice(2).join('/');
+            var branch = parts[1];
+            var provider = parts[2];
+            var model = parts.slice(3).join('/');
 
-            var url = '/api/projects/' + encodeURIComponent(name) + '/' + encodeURIComponent(provider) + '/' + encodeURIComponent(model);
+            var url = '/api/projects/' + encodeURIComponent(name) + '/' + encodeURIComponent(branch) + '/' + encodeURIComponent(provider) + '/' + encodeURIComponent(model);
             url += '?owner=' + encodeURIComponent(owner || '');
             fetch(url, {
                 method: 'DELETE',
@@ -2219,8 +2108,8 @@
             })
             .then(function(res) {
                 if (res.redirected || res.status === 302 || res.type === 'opaqueredirect') {
-                    showToast('Session expired. Please login again.', 'error', 6000);
-                    setTimeout(function() { window.location.href = '/login'; }, 2000);
+                    showToast('Session expired. Please login again.', 'error', TOAST_ERROR_MS);
+                    setTimeout(function() { window.location.href = '/login'; }, REDIRECT_DELAY_MS);
                     return null;
                 }
                 if (!res.ok) return res.json().then(function(data) { throw data; });
@@ -2233,16 +2122,30 @@
                 var allCards = document.querySelectorAll('.variant-card');
                 allCards.forEach(function(card) {
                     var cardName = card.getAttribute('data-project');
+                    var cardBranch = card.getAttribute('data-branch');
                     var cardProvider = card.getAttribute('data-provider');
                     var cardModel = card.getAttribute('data-model');
                     var cardOwner = card.getAttribute('data-owner');
-                    if (cardName === name && cardProvider === provider && cardModel === model && (cardOwner || '') === (owner || '')) {
+                    if (cardName === name && cardBranch === branch && cardProvider === provider && cardModel === model && (cardOwner || '') === (owner || '')) {
                         var group = card.closest('.project-group');
+                        var branchSection = card.closest('.branch-section');
                         card.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
                         card.style.opacity = '0';
                         card.style.transform = 'translateX(-1rem)';
                         setTimeout(function() {
                             card.remove();
+                            // If branch section has no more variant cards, remove the entire branch section
+                            if (branchSection) {
+                                var remaining = branchSection.querySelectorAll('.variant-card').length;
+                                if (remaining === 0) {
+                                    branchSection.remove();
+                                } else {
+                                    var countEl = branchSection.querySelector('.branch-variant-count');
+                                    if (countEl) {
+                                        countEl.textContent = remaining + ' variant' + (remaining !== 1 ? 's' : '');
+                                    }
+                                }
+                            }
                             // If group has no more variant cards, remove the entire group
                             if (group && group.querySelectorAll('.variant-card').length === 0) {
                                 group.style.transition = 'opacity 0.3s ease';
@@ -2269,7 +2172,7 @@
             })
             .catch(function(err) {
                 var msg = (err && err.detail) || (err && err.message) || 'Delete failed';
-                showToast(msg, 'error', 6000);
+                showToast(msg, 'error', TOAST_ERROR_MS);
             });
         }
 
@@ -2389,10 +2292,11 @@
                 var owner = btn.getAttribute('data-delete-owner');
                 var parts = variantPath.split('/');
                 var name = parts[0];
-                var provider = parts[1];
-                var model = parts.slice(2).join('/');
+                var branch = parts[1];
+                var provider = parts[2];
+                var model = parts.slice(3).join('/');
 
-                var url = '/api/projects/' + encodeURIComponent(name) + '/' + encodeURIComponent(provider) + '/' + encodeURIComponent(model);
+                var url = '/api/projects/' + encodeURIComponent(name) + '/' + encodeURIComponent(branch) + '/' + encodeURIComponent(provider) + '/' + encodeURIComponent(model);
                 url += '?owner=' + encodeURIComponent(owner || '');
 
                 deletePromises.push(
@@ -2420,8 +2324,8 @@
                     return r.status === 'rejected' && r.reason && r.reason.sessionExpired;
                 });
                 if (sessionExpired) {
-                    showToast('Session expired. Please login again.', 'error', 6000);
-                    setTimeout(function() { window.location.href = '/login'; }, 2000);
+                    showToast('Session expired. Please login again.', 'error', TOAST_ERROR_MS);
+                    setTimeout(function() { window.location.href = '/login'; }, REDIRECT_DELAY_MS);
                     return;
                 }
 
@@ -2442,11 +2346,11 @@
                         applyPagination();
                     }, 300);
                 } else {
-                    showToast(succeeded + ' deleted, ' + failed + ' failed for ' + projectName + '. Refresh to see current state.', 'error', 6000);
+                    showToast(succeeded + ' deleted, ' + failed + ' failed for ' + projectName + '. Refresh to see current state.', 'error', TOAST_ERROR_MS);
                 }
             } catch (err) {
                 var msg = (err && err.detail) || (err && err.message) || 'Delete all failed';
-                showToast(msg, 'error', 6000);
+                showToast(msg, 'error', TOAST_ERROR_MS);
             }
         }
 
@@ -2579,9 +2483,11 @@
 
         /* ----- Attach Event Listeners to Save Form State on Every Change ----- */
         var repoInput = document.getElementById('gen-repo-url');
+        var branchInput = document.getElementById('gen-branch');
         var forceCheck = document.getElementById('gen-force');
 
         if (repoInput) repoInput.addEventListener('input', saveFormState);
+        if (branchInput) branchInput.addEventListener('input', saveFormState);
         if (providerSelect) providerSelect.addEventListener('change', saveFormState);
         if (modelInput) modelInput.addEventListener('input', saveFormState);
         if (forceCheck) forceCheck.addEventListener('change', saveFormState);

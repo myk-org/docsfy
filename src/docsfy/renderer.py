@@ -10,6 +10,8 @@ import markdown
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 from simple_logger.logger import get_logger
 
+from docsfy.models import DOCSFY_REPO_URL
+
 logger = get_logger(name=__name__)
 
 TEMPLATES_DIR = Path(__file__).parent / "templates"
@@ -347,6 +349,7 @@ def render_page(
         prev_page=prev_page,
         next_page=next_page,
         repo_url=repo_url,
+        docsfy_repo_url=DOCSFY_REPO_URL,
     )
 
 
@@ -364,6 +367,8 @@ def render_index(
         tagline=tagline,
         navigation=navigation,
         repo_url=repo_url,
+        current_slug="",
+        docsfy_repo_url=DOCSFY_REPO_URL,
     )
 
 
@@ -386,14 +391,25 @@ def _build_search_index(
     return index
 
 
-def _build_llms_txt(plan: dict[str, Any]) -> str:
-    """Build llms.txt index file."""
+def _build_llms_txt(
+    plan: dict[str, Any],
+    navigation: list[dict[str, Any]] | None = None,
+) -> str:
+    """Build llms.txt index file.
+
+    Args:
+        plan: The documentation plan dict.
+        navigation: Optional filtered navigation list. When provided, this is
+            used instead of ``plan["navigation"]`` so that only pages present
+            in ``valid_pages`` are included.
+    """
     project_name = plan.get("project_name", "Documentation")
     tagline = plan.get("tagline", "")
+    nav = navigation if navigation is not None else plan.get("navigation", [])
     lines = [f"# {project_name}", ""]
     if tagline:
         lines.extend([f"> {tagline}", ""])
-    for group in plan.get("navigation", []):
+    for group in nav:
         lines.extend([f"## {group.get('group', '')}", ""])
         for page in group.get("pages", []):
             desc = page.get("description", "")
@@ -407,15 +423,28 @@ def _build_llms_txt(plan: dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
-def _build_llms_full_txt(plan: dict[str, Any], pages: dict[str, str]) -> str:
-    """Build llms-full.txt with all content concatenated."""
+def _build_llms_full_txt(
+    plan: dict[str, Any],
+    pages: dict[str, str],
+    navigation: list[dict[str, Any]] | None = None,
+) -> str:
+    """Build llms-full.txt with all content concatenated.
+
+    Args:
+        plan: The documentation plan dict.
+        pages: Mapping of slug to markdown content.
+        navigation: Optional filtered navigation list. When provided, this is
+            used instead of ``plan["navigation"]`` so that only pages present
+            in ``valid_pages`` are included.
+    """
     project_name = plan.get("project_name", "Documentation")
     tagline = plan.get("tagline", "")
+    nav = navigation if navigation is not None else plan.get("navigation", [])
     lines = [f"# {project_name}", ""]
     if tagline:
         lines.extend([f"> {tagline}", ""])
     lines.extend(["---", ""])
-    for group in plan.get("navigation", []):
+    for group in nav:
         for page in group.get("pages", []):
             slug = page.get("slug", "")
             content = pages.get(slug, "")
@@ -460,18 +489,28 @@ def render_site(plan: dict[str, Any], pages: dict[str, str], output_dir: Path) -
         else:
             valid_pages[slug] = content
 
-    index_html = render_index(project_name, tagline, navigation, repo_url=repo_url)
+    # Filter navigation to only include pages that exist in valid_pages
+    filtered_navigation: list[dict[str, Any]] = []
+    for group in navigation:
+        filtered_pages = [
+            page
+            for page in group.get("pages", [])
+            if page.get("slug", "") in valid_pages
+        ]
+        if filtered_pages:
+            filtered_navigation.append({**group, "pages": filtered_pages})
+
+    index_html = render_index(
+        project_name, tagline, filtered_navigation, repo_url=repo_url
+    )
     (output_dir / "index.html").write_text(index_html, encoding="utf-8")
 
     # Build ordered list of valid slugs for prev/next navigation
     valid_slug_order: list[dict[str, str]] = []
-    for group in navigation:
+    for group in filtered_navigation:
         for page in group.get("pages", []):
             slug = page.get("slug", "")
-            if slug in valid_pages:
-                valid_slug_order.append(
-                    {"slug": slug, "title": page.get("title", slug)}
-                )
+            valid_slug_order.append({"slug": slug, "title": page.get("title", slug)})
 
     for idx, slug_info in enumerate(valid_slug_order):
         slug = slug_info["slug"]
@@ -488,7 +527,7 @@ def render_site(plan: dict[str, Any], pages: dict[str, str], output_dir: Path) -
             page_title=title,
             project_name=project_name,
             tagline=tagline,
-            navigation=navigation,
+            navigation=filtered_navigation,
             current_slug=slug,
             prev_page=prev_page,
             next_page=next_page,
@@ -502,11 +541,13 @@ def render_site(plan: dict[str, Any], pages: dict[str, str], output_dir: Path) -
         json.dumps(search_index), encoding="utf-8"
     )
 
-    # Generate llms.txt files
-    llms_txt = _build_llms_txt(plan)
+    # Generate llms.txt files using filtered navigation so only rendered pages appear
+    llms_txt = _build_llms_txt(plan, navigation=filtered_navigation)
     (output_dir / "llms.txt").write_text(llms_txt, encoding="utf-8")
 
-    llms_full_txt = _build_llms_full_txt(plan, valid_pages)
+    llms_full_txt = _build_llms_full_txt(
+        plan, valid_pages, navigation=filtered_navigation
+    )
     (output_dir / "llms-full.txt").write_text(llms_full_txt, encoding="utf-8")
 
     logger.info(f"Rendered site: {len(valid_pages)} pages to {output_dir}")

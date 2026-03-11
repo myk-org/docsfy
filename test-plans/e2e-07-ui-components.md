@@ -29,12 +29,17 @@ agent-browser screenshot
 
 **Check:** The dropdown menu appears with admin-specific items.
 
+**Verify exact item order:**
+```shell
+agent-browser javascript "var items = Array.from(document.querySelectorAll('.user-menu-dropdown .user-menu-item')).filter(el => el.offsetParent !== null).map(el => el.textContent.trim()); JSON.stringify(items)"
+```
+
 **Expected result:**
 - The dropdown menu is visible
 - It contains "Admin Panel" (visible only for admin users)
 - It contains "Change Password"
 - It contains "Logout"
-- Items are listed in order: Admin Panel, Change Password, Logout
+- The items appear in exact order: `["Admin Panel", "Change Password", "Logout"]`
 
 ---
 
@@ -61,11 +66,17 @@ agent-browser screenshot
 
 **Check:** The dropdown menu appears without admin-specific items.
 
+**Verify exact item order:**
+```shell
+agent-browser javascript "var items = Array.from(document.querySelectorAll('.user-menu-dropdown .user-menu-item')).filter(el => el.offsetParent !== null).map(el => el.textContent.trim()); JSON.stringify(items)"
+```
+
 **Expected result:**
 - The dropdown menu is visible
 - It does NOT contain "Admin Panel"
 - It contains "Change Password"
 - It contains "Logout"
+- The items appear in exact order: `["Change Password", "Logout"]`
 
 ---
 
@@ -242,23 +253,20 @@ agent-browser navigate http://localhost:8800/
 **Commands:**
 ```shell
 agent-browser screenshot
-agent-browser javascript "const header = document.querySelector('.project-header, .project-group-header'); const card = document.querySelector('.variant-card'); if (header && card) { const headerRect = header.getBoundingClientRect(); const cardRect = card.getBoundingClientRect(); ({headerLeft: headerRect.left, cardLeft: cardRect.left, indented: cardRect.left > headerRect.left}); } else { 'elements not found'; }"
+agent-browser javascript "var header = document.querySelector('.group-header'); var card = document.querySelector('.variant-card'); header && card ? card.getBoundingClientRect().left > header.getBoundingClientRect().left : false"
 ```
 
 **Check:** Variant cards are visually indented relative to the project header.
 
 **Expected result:**
-- The `indented` field is `true` -- the variant card's left edge is further right than the project header's left edge
-- This creates a clear parent-child visual relationship between projects and their variants
-- Alternatively, the variant cards may have a `margin-left` or `padding-left` CSS value that creates indentation
+- Returns true --- variant card is indented relative to group header
 
-**Verify via CSS:**
+**Verify via bounding rect comparison:**
 ```shell
-agent-browser javascript "const card = document.querySelector('.variant-card'); card ? window.getComputedStyle(card).marginLeft : 'no variant card found'"
+agent-browser javascript "var h=document.querySelector('.group-header'); var c=document.querySelector('.variant-card'); h && c ? c.getBoundingClientRect().left >= h.getBoundingClientRect().left : false"
 ```
 
-**Expected result:**
-- The `margin-left` value is greater than `0px` (e.g., `16px`, `24px`, `1rem`, etc.) indicating visual indentation
+**Expected result:** returns `true`.
 
 ---
 
@@ -266,7 +274,7 @@ agent-browser javascript "const card = document.querySelector('.variant-card'); 
 
 **Commands:**
 ```shell
-agent-browser javascript "const header = document.querySelector('.project-header, .project-group-header'); const card = document.querySelector('.variant-card'); if (header && card) { ({headerBg: window.getComputedStyle(header).backgroundColor, cardBg: window.getComputedStyle(card).backgroundColor, different: window.getComputedStyle(header).backgroundColor !== window.getComputedStyle(card).backgroundColor}); } else { 'elements not found'; }"
+agent-browser javascript "const header = document.querySelector('.group-header'); const card = document.querySelector('.variant-card'); if (header && card) { ({headerBg: window.getComputedStyle(header).backgroundColor, cardBg: window.getComputedStyle(card).backgroundColor, different: window.getComputedStyle(header).backgroundColor !== window.getComputedStyle(card).backgroundColor}); } else { 'elements not found'; }"
 ```
 
 **Check:** Variant cards have a distinct background color from the project header.
@@ -302,7 +310,7 @@ agent-browser screenshot
 
 **Verify the project header is clickable:**
 ```shell
-agent-browser javascript "const header = document.querySelector('.project-header, .project-group-header'); header ? header.style.cursor || window.getComputedStyle(header).cursor : 'no header found'"
+agent-browser javascript "const header = document.querySelector('.group-header'); header ? header.style.cursor || window.getComputedStyle(header).cursor : 'no header found'"
 ```
 
 **Expected result:**
@@ -310,7 +318,7 @@ agent-browser javascript "const header = document.querySelector('.project-header
 
 **Click the project header to collapse:**
 ```shell
-agent-browser click ".project-header, .project-group-header"
+agent-browser click ".group-header"
 agent-browser wait 500
 agent-browser screenshot
 ```
@@ -331,7 +339,7 @@ agent-browser javascript "const group = document.querySelector('.project-group')
 
 **Click again to expand:**
 ```shell
-agent-browser click ".project-header, .project-group-header"
+agent-browser click ".group-header"
 agent-browser wait 500
 agent-browser screenshot
 ```
@@ -356,7 +364,7 @@ agent-browser screenshot
 **Check:** The project header displays counts of ready and error variants.
 
 ```shell
-agent-browser javascript "const header = document.querySelector('.project-header, .project-group-header'); header ? header.textContent : 'no header found'"
+agent-browser javascript "const header = document.querySelector('.group-header'); header ? header.textContent : 'no header found'"
 ```
 
 **Expected result:**
