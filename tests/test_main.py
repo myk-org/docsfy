@@ -138,8 +138,8 @@ async def test_generate_duplicate_variant(client: AsyncClient) -> None:
     """Test that generating the same variant twice returns 409."""
     from docsfy.main import _generating
 
-    # gen_key format now includes owner: "owner/name/provider/model"
-    _generating["admin/repo/claude/opus"] = asyncio.create_task(asyncio.sleep(100))
+    # gen_key format: "owner/name/branch/provider/model"
+    _generating["admin/repo/main/claude/opus"] = asyncio.create_task(asyncio.sleep(100))
     try:
         response = await client.post(
             "/api/generate",
@@ -151,7 +151,7 @@ async def test_generate_duplicate_variant(client: AsyncClient) -> None:
         )
         assert response.status_code == 409
     finally:
-        task = _generating.pop("admin/repo/claude/opus", None)
+        task = _generating.pop("admin/repo/main/claude/opus", None)
         if task:
             task.cancel()
             try:
@@ -182,7 +182,7 @@ async def test_variant_specific_endpoints(client: AsyncClient) -> None:
     )
 
     # Get variant details
-    response = await client.get("/api/projects/test-repo/claude/opus")
+    response = await client.get("/api/projects/test-repo/main/claude/opus")
     assert response.status_code == 200
     data = response.json()
     assert data["name"] == "test-repo"
@@ -190,17 +190,21 @@ async def test_variant_specific_endpoints(client: AsyncClient) -> None:
     assert data["ai_model"] == "opus"
 
     # Get nonexistent variant
-    response = await client.get("/api/projects/test-repo/gemini/flash")
+    response = await client.get("/api/projects/test-repo/main/gemini/flash")
     assert response.status_code == 404
 
     # Delete nonexistent variant
-    response = await client.delete("/api/projects/test-repo/gemini/flash?owner=admin")
+    response = await client.delete(
+        "/api/projects/test-repo/main/gemini/flash?owner=admin"
+    )
     assert response.status_code == 404
 
     # Delete existing variant
-    response = await client.delete("/api/projects/test-repo/claude/opus?owner=admin")
+    response = await client.delete(
+        "/api/projects/test-repo/main/claude/opus?owner=admin"
+    )
     assert response.status_code == 200
-    assert response.json()["deleted"] == "test-repo/claude/opus"
+    assert response.json()["deleted"] == "test-repo/main/claude/opus"
 
 
 async def test_get_project_returns_variants(client: AsyncClient) -> None:
@@ -249,7 +253,7 @@ async def test_get_project_returns_variants(client: AsyncClient) -> None:
 
 async def test_abort_variant_endpoint(client: AsyncClient) -> None:
     """Test variant-specific abort endpoint returns 404 when no active gen."""
-    response = await client.post("/api/projects/repo/claude/opus/abort")
+    response = await client.post("/api/projects/repo/main/claude/opus/abort")
     assert response.status_code == 404
 
 

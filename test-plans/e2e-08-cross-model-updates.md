@@ -64,7 +64,7 @@ curl -s -H "Authorization: Bearer $ADMIN_KEY" \
 
 ```shell
 curl -s -H "Authorization: Bearer $ADMIN_KEY" \
-  "$SERVER/api/projects/for-testing-only/$BASELINE_PROVIDER/$BASELINE_MODEL"
+  "$SERVER/api/projects/for-testing-only/main/$BASELINE_PROVIDER/$BASELINE_MODEL"
 ```
 
 Store the value of `last_commit_sha` from the response as `BASELINE_COMMIT`.
@@ -77,7 +77,7 @@ Store the value of `last_commit_sha` from the response as `BASELINE_COMMIT`.
 
 ```shell
 curl -s -L -H "Authorization: Bearer $ADMIN_KEY" \
-  "$SERVER/api/projects/for-testing-only/$BASELINE_PROVIDER/$BASELINE_MODEL/download" \
+  "$SERVER/api/projects/for-testing-only/main/$BASELINE_PROVIDER/$BASELINE_MODEL/download" \
   -o "$CROSS_PROVIDER_ROOT/baseline.tar.gz"
 mkdir -p "$CROSS_PROVIDER_ROOT/baseline"
 tar -xzf "$CROSS_PROVIDER_ROOT/baseline.tar.gz" --strip-components=1 -C "$CROSS_PROVIDER_ROOT/baseline"
@@ -107,7 +107,7 @@ curl -s -H "Authorization: Bearer $ADMIN_KEY" \
 
 ```shell
 curl -s -H "Authorization: Bearer $ADMIN_KEY" \
-  "$SERVER/api/projects/for-testing-only/$SWITCH_PROVIDER/$SWITCH_MODEL_URL"
+  "$SERVER/api/projects/for-testing-only/main/$SWITCH_PROVIDER/$SWITCH_MODEL_URL"
 ```
 
 **Expected result:**
@@ -119,7 +119,7 @@ curl -s -H "Authorization: Bearer $ADMIN_KEY" \
 ```shell
 curl -s -H "Authorization: Bearer $ADMIN_KEY" \
   -w "\nHTTP_STATUS:%{http_code}\n" \
-  "$SERVER/api/projects/for-testing-only/$BASELINE_PROVIDER/$BASELINE_MODEL"
+  "$SERVER/api/projects/for-testing-only/main/$BASELINE_PROVIDER/$BASELINE_MODEL"
 ```
 
 **Expected result:**
@@ -130,7 +130,7 @@ curl -s -H "Authorization: Bearer $ADMIN_KEY" \
 
 ```shell
 curl -s -L -H "Authorization: Bearer $ADMIN_KEY" \
-  "$SERVER/api/projects/for-testing-only/$SWITCH_PROVIDER/$SWITCH_MODEL_URL/download" \
+  "$SERVER/api/projects/for-testing-only/main/$SWITCH_PROVIDER/$SWITCH_MODEL_URL/download" \
   -o "$CROSS_PROVIDER_ROOT/same-commit-switch.tar.gz"
 mkdir -p "$CROSS_PROVIDER_ROOT/same-commit-switch"
 tar -xzf "$CROSS_PROVIDER_ROOT/same-commit-switch.tar.gz" --strip-components=1 -C "$CROSS_PROVIDER_ROOT/same-commit-switch"
@@ -173,7 +173,7 @@ curl -s -H "Authorization: Bearer $ADMIN_KEY" \
 
 ```shell
 curl -s -H "Authorization: Bearer $ADMIN_KEY" \
-  "$SERVER/api/projects/for-testing-only/$BASELINE_PROVIDER/$BASELINE_MODEL"
+  "$SERVER/api/projects/for-testing-only/main/$BASELINE_PROVIDER/$BASELINE_MODEL"
 ```
 
 **Expected result:**
@@ -185,7 +185,7 @@ curl -s -H "Authorization: Bearer $ADMIN_KEY" \
 ```shell
 curl -s -H "Authorization: Bearer $ADMIN_KEY" \
   -w "\nHTTP_STATUS:%{http_code}\n" \
-  "$SERVER/api/projects/for-testing-only/$SWITCH_PROVIDER/$SWITCH_MODEL_URL"
+  "$SERVER/api/projects/for-testing-only/main/$SWITCH_PROVIDER/$SWITCH_MODEL_URL"
 ```
 
 **Expected result:**
@@ -206,7 +206,7 @@ docker logs "$DOCSFY_CONTAINER" --since 10m 2>&1 | rg -i "cross-provider update"
 
 ```shell
 curl -s -L -H "Authorization: Bearer $ADMIN_KEY" \
-  "$SERVER/api/projects/for-testing-only/$BASELINE_PROVIDER/$BASELINE_MODEL/download" \
+  "$SERVER/api/projects/for-testing-only/main/$BASELINE_PROVIDER/$BASELINE_MODEL/download" \
   -o "$CROSS_PROVIDER_ROOT/updated-gemini.tar.gz"
 mkdir -p "$CROSS_PROVIDER_ROOT/updated-gemini"
 tar -xzf "$CROSS_PROVIDER_ROOT/updated-gemini.tar.gz" --strip-components=1 -C "$CROSS_PROVIDER_ROOT/updated-gemini"
@@ -273,7 +273,7 @@ curl -s -H "Authorization: Bearer $ADMIN_KEY" \
 
 ```shell
 curl -s -H "Authorization: Bearer $ADMIN_KEY" \
-  "$SERVER/api/projects/for-testing-only/$SWITCH_PROVIDER/$SWITCH_MODEL_URL"
+  "$SERVER/api/projects/for-testing-only/main/$SWITCH_PROVIDER/$SWITCH_MODEL_URL"
 ```
 
 **Expected result:**
@@ -284,11 +284,11 @@ curl -s -H "Authorization: Bearer $ADMIN_KEY" \
 ```shell
 curl -s -H "Authorization: Bearer $ADMIN_KEY" \
   -w "\nHTTP_STATUS:%{http_code}\n" \
-  "$SERVER/api/projects/for-testing-only/$BASELINE_PROVIDER/$BASELINE_MODEL"
+  "$SERVER/api/projects/for-testing-only/main/$BASELINE_PROVIDER/$BASELINE_MODEL"
 
 curl -s -H "Authorization: Bearer $ADMIN_KEY" \
   -w "\nHTTP_STATUS:%{http_code}\n" \
-  "$SERVER/api/projects/for-testing-only/$SWITCH_PROVIDER/$SWITCH_MODEL_URL"
+  "$SERVER/api/projects/for-testing-only/main/$SWITCH_PROVIDER/$SWITCH_MODEL_URL"
 ```
 
 **Expected result:**
@@ -302,10 +302,10 @@ curl -s -H "Authorization: Bearer $ADMIN_KEY" \
 
 ```shell
 curl -s -H "Authorization: Bearer $ADMIN_KEY" \
-  -X DELETE "$SERVER/api/projects/for-testing-only/$BASELINE_PROVIDER/$BASELINE_MODEL?owner=admin"
+  -X DELETE "$SERVER/api/projects/for-testing-only/main/$BASELINE_PROVIDER/$BASELINE_MODEL?owner=admin"
 
 curl -s -H "Authorization: Bearer $ADMIN_KEY" \
-  -X DELETE "$SERVER/api/projects/for-testing-only/$SWITCH_PROVIDER/$SWITCH_MODEL_URL?owner=admin"
+  -X DELETE "$SERVER/api/projects/for-testing-only/main/$SWITCH_PROVIDER/$SWITCH_MODEL_URL?owner=admin"
 
 rm -rf "$CROSS_PROVIDER_ROOT"
 ```

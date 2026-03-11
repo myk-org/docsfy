@@ -21,15 +21,16 @@ agent-browser navigate http://localhost:8800/
 ```
 
 Check if the project exists and is ready:
-```
-agent-browser javascript "document.querySelectorAll('.variant-card[data-status=\"ready\"]').length"
+```shell
+agent-browser javascript "document.querySelector('.variant-card[data-project=\"for-testing-only\"][data-branch=\"main\"][data-provider=\"gemini\"][data-model=\"gemini-2.5-flash\"][data-status=\"ready\"]') !== null"
 ```
 
-If 0, regenerate:
-```
+If `false`, regenerate:
+```shell
 agent-browser clear "#gen-repo-url"
 agent-browser type "#gen-repo-url" "https://github.com/myk-org/for-testing-only"
 agent-browser select "#gen-provider" "gemini"
+agent-browser wait 500
 agent-browser clear "#gen-model"
 agent-browser type "#gen-model" "gemini-2.5-flash"
 agent-browser click "#gen-submit"
@@ -66,6 +67,7 @@ If the previous command returned `false`, create `userb-e2e` and capture the gen
 agent-browser clear "#new-username"
 agent-browser type "#new-username" "userb-e2e"
 agent-browser select "#new-role" "user"
+agent-browser wait 500
 agent-browser click "#create-user-form button[type='submit']"
 agent-browser wait 2000
 agent-browser javascript "document.getElementById('new-key-value').textContent.trim()"
@@ -259,6 +261,7 @@ agent-browser navigate http://localhost:8800/
 agent-browser clear "#gen-repo-url"
 agent-browser type "#gen-repo-url" "https://github.com/myk-org/for-testing-only"
 agent-browser select "#gen-provider" "gemini"
+agent-browser wait 500
 agent-browser clear "#gen-model"
 agent-browser type "#gen-model" "gemini-2.5-flash"
 agent-browser click "#gen-submit"
@@ -278,6 +281,7 @@ agent-browser navigate http://localhost:8800/
 agent-browser clear "#gen-repo-url"
 agent-browser type "#gen-repo-url" "https://github.com/myk-org/for-testing-only"
 agent-browser select "#gen-provider" "gemini"
+agent-browser wait 500
 agent-browser clear "#gen-model"
 agent-browser type "#gen-model" "gemini-2.5-flash"
 agent-browser click "#gen-submit"
@@ -350,18 +354,18 @@ agent-browser wait-for-navigation
 ```
 
 **Try accessing docs directly:**
-```
-agent-browser javascript "fetch('/docs/for-testing-only/gemini/gemini-2.5-flash/index.html', {credentials:'same-origin'}).then(r => r.status)"
+```shell
+agent-browser javascript "fetch('/docs/for-testing-only/main/gemini/gemini-2.5-flash/index.html', {credentials:'same-origin'}).then(r => r.status)"
 ```
 
 **Try accessing status page directly:**
-```
-agent-browser javascript "fetch('/status/for-testing-only/gemini/gemini-2.5-flash', {credentials:'same-origin'}).then(r => r.status)"
+```shell
+agent-browser javascript "fetch('/status/for-testing-only/main/gemini/gemini-2.5-flash', {credentials:'same-origin'}).then(r => r.status)"
 ```
 
 **Try accessing download API directly:**
-```
-agent-browser javascript "fetch('/api/projects/for-testing-only/gemini/gemini-2.5-flash/download', {credentials:'same-origin'}).then(r => r.status)"
+```shell
+agent-browser javascript "fetch('/api/projects/for-testing-only/main/gemini/gemini-2.5-flash/download', {credentials:'same-origin'}).then(r => r.status)"
 ```
 
 **Check:** All direct URL accesses return 404, not just hidden from the dashboard.
@@ -434,51 +438,51 @@ agent-browser wait-for-navigation
 
 **Commands:**
 ```
-agent-browser javascript "fetch('/status/for-testing-only/gemini/gemini-2.5-flash', {credentials:'same-origin'}).then(r => r.status)"
+agent-browser javascript "fetch('/status/for-testing-only/main/gemini/gemini-2.5-flash', {credentials:'same-origin'}).then(r => r.status)"
 ```
 
 **Check:** The server returns a 404 (not 403, to avoid leaking information about the resource).
 
-**Expected result:** Returns `404`.
+**Expected result:** Returns `404` (not 403 --- the server must not leak whether the resource exists).
 
 ---
 
 ### 13.2 Non-owner cannot access docs
 
 **Commands:**
-```
-agent-browser javascript "fetch('/docs/for-testing-only/gemini/gemini-2.5-flash/index.html', {credentials:'same-origin'}).then(r => r.status)"
+```shell
+agent-browser javascript "fetch('/docs/for-testing-only/main/gemini/gemini-2.5-flash/index.html', {credentials:'same-origin'}).then(r => r.status)"
 ```
 
 **Check:** The server returns a 404.
 
-**Expected result:** Returns `404`.
+**Expected result:** Returns `404` (not 403 --- the server must not leak whether the resource exists).
 
 ---
 
 ### 13.3 Non-owner cannot access variant details
 
 **Commands:**
-```
-agent-browser javascript "fetch('/api/projects/for-testing-only/gemini/gemini-2.5-flash', {credentials:'same-origin'}).then(r => r.status)"
+```shell
+agent-browser javascript "fetch('/api/projects/for-testing-only/main/gemini/gemini-2.5-flash', {credentials:'same-origin'}).then(r => r.status)"
 ```
 
 **Check:** The API returns 404.
 
-**Expected result:** Returns `404`.
+**Expected result:** Returns `404` (not 403 --- the server must not leak whether the resource exists).
 
 ---
 
 ### 13.4 Non-owner cannot download
 
 **Commands:**
-```
-agent-browser javascript "fetch('/api/projects/for-testing-only/gemini/gemini-2.5-flash/download', {credentials:'same-origin'}).then(r => r.status)"
+```shell
+agent-browser javascript "fetch('/api/projects/for-testing-only/main/gemini/gemini-2.5-flash/download', {credentials:'same-origin'}).then(r => r.status)"
 ```
 
 **Check:** The API returns 404.
 
-**Expected result:** Returns `404`.
+**Expected result:** Returns `404` (not 403 --- the server must not leak whether the resource exists).
 
 ---
 
@@ -493,7 +497,7 @@ agent-browser javascript "fetch('/api/projects/for-testing-only/download', {cred
 
 **Check:** The owner-agnostic download route returns 404 for non-owners.
 
-**Expected result:** Returns `404`.
+**Expected result:** Returns `404` (not 403 --- the server must not leak whether the resource exists).
 
 ---
 
@@ -506,7 +510,7 @@ agent-browser javascript "fetch('/docs/for-testing-only/index.html', {credential
 
 **Check:** The owner-agnostic docs route returns 404 for non-owners.
 
-**Expected result:** Returns `404`.
+**Expected result:** Returns `404` (not 403 --- the server must not leak whether the resource exists).
 
 ---
 
@@ -538,7 +542,7 @@ agent-browser type "#username" "testviewer-e2e"
 agent-browser type "#api_key" "<TEST_VIEWER_PASSWORD>"
 agent-browser click ".btn-login"
 agent-browser wait-for-navigation
-agent-browser navigate http://localhost:8800/docs/for-testing-only/gemini/gemini-2.5-flash/
+agent-browser navigate http://localhost:8800/docs/for-testing-only/main/gemini/gemini-2.5-flash/
 agent-browser screenshot
 ```
 

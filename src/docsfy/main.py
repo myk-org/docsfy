@@ -4,7 +4,6 @@ import asyncio
 import ipaddress
 import json
 import os
-import re as _re
 import shutil
 import socket
 import tarfile
@@ -30,7 +29,13 @@ from docsfy.generator import (
     run_incremental_planner,
     run_planner,
 )
-from docsfy.models import GenerateRequest
+from docsfy.models import (
+    DEFAULT_BRANCH,
+    DOCSFY_DOCS_URL,
+    DOCSFY_REPO_URL,
+    VALID_PROVIDERS,
+    GenerateRequest,
+)
 from docsfy.repository import (
     clone_repo,
     deepen_clone_for_diff,
@@ -40,12 +45,14 @@ from docsfy.repository import (
 from docsfy.renderer import render_site
 from docsfy.storage import (
     SESSION_TTL_SECONDS,
+    _validate_name,
     cleanup_expired_sessions,
     create_session,
     create_user,
     delete_project,
     delete_session,
     delete_user,
+    get_known_branches,
     get_known_models,
     get_latest_variant,
     get_project,
@@ -70,6 +77,10 @@ from docsfy.storage import (
 
 logger = get_logger(name=__name__)
 
+_ABORT_TIMEOUT = 5.0
+_STREAM_CHUNK_SIZE = 8192
+
+
 _generating: dict[str, asyncio.Task[None]] = {}
 # Fix 6: asyncio.Lock to prevent race between checking and adding to _generating
 _gen_lock = asyncio.Lock()
@@ -83,9 +94,10 @@ _jinja_env = Environment(
 
 def _validate_project_name(name: str) -> str:
     """Validate project name to prevent path traversal."""
-    if not _re.match(r"^[a-zA-Z0-9][a-zA-Z0-9._-]*$", name):
-        raise HTTPException(status_code=400, detail=f"Invalid project name: '{name}'")
-    return name
+    try:
+        return _validate_name(name)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
 
 
 @asynccontextmanager
@@ -223,17 +235,25 @@ async def _resolve_project(
     name: str,
     ai_provider: str,
     ai_model: str,
+    branch: str = DEFAULT_BRANCH,
 ) -> dict[str, Any]:
     """Find a project variant, preferring the requesting user's owned copy.
 
     Raises 404 if not found or not accessible.
     """
-    # 1. Try owned by requesting user (including admin)
+    # 0. If ?owner= is provided, use that owner for the initial lookup
+    requested_owner = request.query_params.get("owner")
+    lookup_owner = (
+        requested_owner if requested_owner is not None else request.state.username
+    )
+
+    # 1. Try owned by requesting/specified user (including admin)
     proj = await get_project(
         name,
         ai_provider=ai_provider,
         ai_model=ai_model,
-        owner=request.state.username,
+        owner=lookup_owner,
+        branch=branch,
     )
     if proj:
         return proj
@@ -244,10 +264,19 @@ async def _resolve_project(
         matching = [
             v
             for v in all_variants
-            if v.get("ai_provider") == ai_provider and v.get("ai_model") == ai_model
+            if str(v.get("ai_provider", "")) == ai_provider
+            and str(v.get("ai_model", "")) == ai_model
+            and str(v.get("branch", DEFAULT_BRANCH)) == branch
         ]
         if not matching:
             raise HTTPException(status_code=404, detail="Not found")
+        # If admin and multiple owners, check ?owner= query param
+        if requested_owner is not None:
+            matching = [
+                v for v in matching if str(v.get("owner", "")) == requested_owner
+            ]
+            if not matching:
+                raise HTTPException(status_code=404, detail="Not found")
         distinct_owners = {str(v.get("owner", "")) for v in matching}
         if len(distinct_owners) > 1:
             raise HTTPException(
@@ -263,7 +292,11 @@ async def _resolve_project(
         if proj_name == name and proj_owner:
             # Found a grant — look up this specific owner's variant
             proj = await get_project(
-                name, ai_provider=ai_provider, ai_model=ai_model, owner=proj_owner
+                name,
+                ai_provider=ai_provider,
+                ai_model=ai_model,
+                owner=proj_owner,
+                branch=branch,
             )
             if proj:
                 matched_projects.append(proj)
@@ -364,35 +397,95 @@ async def dashboard(request: Request) -> HTMLResponse:
         projects = await list_projects(owner=username, accessible=accessible)
 
     known_models = await get_known_models()
+    known_branches = await get_known_branches(owner=None if is_admin else username)
 
-    # Group by repo name
-    grouped: dict[str, list[dict[str, Any]]] = {}
+    # Group by repo name and branch
+    grouped: dict[str, dict[str, list[dict[str, Any]]]] = {}
     for p in projects:
         name = str(p["name"])
+        branch = str(p.get("branch", DEFAULT_BRANCH))
         if name not in grouped:
-            grouped[name] = []
-        grouped[name].append(p)
+            grouped[name] = {}
+        if branch not in grouped[name]:
+            grouped[name][branch] = []
+        grouped[name][branch].append(p)
 
     template = _jinja_env.get_template("dashboard.html")
     html = template.render(
         grouped_projects=grouped,
-        projects=projects,  # keep for backward compat
         default_provider=settings.ai_provider,
         default_model=settings.ai_model,
         known_models=known_models,
+        known_branches=known_branches,
+        valid_providers=VALID_PROVIDERS,
         role=request.state.role,
         username=request.state.username,
+        default_branch=DEFAULT_BRANCH,
+        docsfy_docs_url=DOCSFY_DOCS_URL,
+        docsfy_repo_url=DOCSFY_REPO_URL,
     )
     return HTMLResponse(content=html)
 
 
-@app.get("/status/{name}/{provider}/{model}", response_class=HTMLResponse)
-async def project_status_page(
+@app.get("/status/{name}/{provider}/{model}", response_class=RedirectResponse)
+async def project_status_redirect(
     request: Request, name: str, provider: str, model: str
+) -> RedirectResponse:
+    """Redirect to the branch-specific status page using the latest variant."""
+    name = _validate_project_name(name)
+    owner = request.state.username
+    is_admin = request.state.is_admin
+
+    if is_admin:
+        variants = await list_variants(name)
+    else:
+        # Include both owned and accessible variants
+        accessible = await get_user_accessible_projects(owner)
+        owned_variants = await list_variants(name, owner=owner)
+        accessible_variants = []
+        for proj_name, proj_owner in accessible:
+            if proj_name == name:
+                accessible_variants.extend(await list_variants(name, owner=proj_owner))
+        variants = owned_variants + [
+            v for v in accessible_variants if v not in owned_variants
+        ]
+
+    matching = [
+        v
+        for v in variants
+        if str(v.get("ai_provider", "")) == provider
+        and str(v.get("ai_model", "")) == model
+    ]
+
+    requested_owner = request.query_params.get("owner")
+    if requested_owner is not None:
+        matching = [v for v in matching if str(v.get("owner", "")) == requested_owner]
+
+    if not matching:
+        raise HTTPException(status_code=404, detail="Variant not found")
+    matching.sort(key=lambda v: str(v.get("updated_at", "")), reverse=True)
+    best = matching[0]
+    branch = str(best.get("branch", DEFAULT_BRANCH))
+
+    # Preserve ?owner= query parameter
+    redirect_url = f"/status/{name}/{branch}/{provider}/{model}"
+    if requested_owner is not None:
+        redirect_url += f"?owner={requested_owner}"
+
+    return RedirectResponse(url=redirect_url, status_code=302)
+
+
+@app.get("/status/{name}/{branch}/{provider}/{model}", response_class=HTMLResponse)
+async def project_status_page(
+    request: Request, name: str, branch: str, provider: str, model: str
 ) -> HTMLResponse:
     name = _validate_project_name(name)
     project = await _resolve_project(
-        request, name, ai_provider=provider, ai_model=model
+        request,
+        name,
+        ai_provider=provider,
+        ai_model=model,
+        branch=branch,
     )
 
     # Parse plan_json string into a dict for template consumption
@@ -415,8 +508,12 @@ async def project_status_page(
         plan_json=plan_json,
         total_pages=total_pages,
         known_models=known_models,
+        valid_providers=VALID_PROVIDERS,
         default_provider=settings.ai_provider,
         default_model=settings.ai_model,
+        default_branch=DEFAULT_BRANCH,
+        docsfy_docs_url=DOCSFY_DOCS_URL,
+        docsfy_repo_url=DOCSFY_REPO_URL,
     )
     return HTMLResponse(content=html)
 
@@ -436,11 +533,20 @@ async def status(request: Request) -> dict[str, Any]:
             owner=request.state.username, accessible=accessible
         )
     known_models = await get_known_models()
-    return {"projects": projects, "known_models": known_models}
+    known_branches = await get_known_branches(
+        owner=None if request.state.is_admin else request.state.username
+    )
+    return {
+        "projects": projects,
+        "known_models": known_models,
+        "known_branches": known_branches,
+    }
 
 
 @app.post("/api/generate", status_code=202)
-async def generate(request: Request, gen_request: GenerateRequest) -> dict[str, str]:
+async def generate(
+    request: Request, gen_request: GenerateRequest
+) -> dict[str, str | None]:
     _require_write_access(request)
     # Fix 9: Local repo path access requires admin privileges
     if gen_request.repo_path and not request.state.is_admin:
@@ -477,16 +583,17 @@ async def generate(request: Request, gen_request: GenerateRequest) -> dict[str, 
     project_name = gen_request.project_name
     owner = request.state.username
 
-    if ai_provider not in ("claude", "gemini", "cursor"):
+    if ai_provider not in VALID_PROVIDERS:
         raise HTTPException(
             status_code=400,
-            detail=f"Invalid AI provider: '{ai_provider}'. Must be claude, gemini, or cursor.",
+            detail=f"Invalid AI provider: '{ai_provider}'. Must be one of {', '.join(VALID_PROVIDERS)}.",
         )
     if not ai_model:
         raise HTTPException(status_code=400, detail="AI model must be specified.")
 
     # Fix 6: Use lock to prevent race condition between check and add
-    gen_key = f"{owner}/{project_name}/{ai_provider}/{ai_model}"
+    branch = gen_request.branch
+    gen_key = f"{owner}/{project_name}/{branch}/{ai_provider}/{ai_model}"
     async with _gen_lock:
         if gen_key in _generating:
             raise HTTPException(
@@ -501,6 +608,7 @@ async def generate(request: Request, gen_request: GenerateRequest) -> dict[str, 
             ai_provider=ai_provider,
             ai_model=ai_model,
             owner=owner,
+            branch=branch,
         )
 
         try:
@@ -515,6 +623,7 @@ async def generate(request: Request, gen_request: GenerateRequest) -> dict[str, 
                     or settings.ai_cli_timeout,
                     force=gen_request.force,
                     owner=owner,
+                    branch=branch,
                 )
             )
             _generating[gen_key] = task
@@ -522,7 +631,7 @@ async def generate(request: Request, gen_request: GenerateRequest) -> dict[str, 
             _generating.pop(gen_key, None)
             raise
 
-    return {"project": project_name, "status": "generating"}
+    return {"project": project_name, "status": "generating", "branch": branch}
 
 
 async def _reject_private_url(url: str) -> None:
@@ -596,11 +705,12 @@ async def abort_generation(request: Request, name: str) -> dict[str, str]:
     _require_write_access(request)
     name = _validate_project_name(name)
     # Find active generation keys matching this project name
+    # Key format: "owner/name/branch/provider/model"
     async with _gen_lock:
         matching_keys = [
             key
             for key in _generating
-            if len(key.split("/", 3)) == 4 and key.split("/", 3)[1] == name
+            if len(key.split("/", 4)) == 5 and key.split("/", 4)[1] == name
         ]
 
         if not request.state.is_admin:
@@ -608,7 +718,7 @@ async def abort_generation(request: Request, name: str) -> dict[str, str]:
             matching_keys = [
                 key
                 for key in matching_keys
-                if key.split("/", 3)[0] == request.state.username
+                if key.split("/", 4)[0] == request.state.username
             ]
             if not matching_keys:
                 raise HTTPException(
@@ -616,12 +726,16 @@ async def abort_generation(request: Request, name: str) -> dict[str, str]:
                 )
         else:
             if len(matching_keys) > 1:
-                distinct_owners = {key.split("/", 3)[0] for key in matching_keys}
-                if len(distinct_owners) > 1:
-                    raise HTTPException(
-                        status_code=409,
-                        detail="Multiple owners found for this variant, please specify owner",
-                    )
+                raise HTTPException(
+                    status_code=409,
+                    detail="Multiple active variants found; use the branch-specific abort endpoint.",
+                )
+
+        if not request.state.is_admin and len(matching_keys) > 1:
+            raise HTTPException(
+                status_code=409,
+                detail="Multiple active variants found; use the branch-specific abort endpoint.",
+            )
 
         matching_key = matching_keys[0] if matching_keys else None
         task = _generating.get(matching_key) if matching_key else None
@@ -630,15 +744,20 @@ async def abort_generation(request: Request, name: str) -> dict[str, str]:
             status_code=404, detail=f"No active generation for '{name}'"
         )
 
-    # Extract owner/provider/model from the key (format: "owner/name/provider/model")
-    parts = matching_key.split("/", 3)
-    if len(parts) != 4:
+    # Extract owner/name/branch/provider/model from the key
+    parts = matching_key.split("/", 4)
+    if len(parts) != 5:
         raise HTTPException(status_code=500, detail="Invalid generation key format")
-    key_owner, _, ai_provider, ai_model = parts
+    key_owner, _, key_branch, ai_provider, ai_model = parts
+    resolved_branch = key_branch
 
     # Check ownership before allowing abort
     project = await get_project(
-        name, ai_provider=ai_provider, ai_model=ai_model, owner=key_owner
+        name,
+        ai_provider=ai_provider,
+        ai_model=ai_model,
+        owner=key_owner,
+        branch=resolved_branch,
     )
     if project:
         await _check_ownership(request, name, project)
@@ -649,7 +768,7 @@ async def abort_generation(request: Request, name: str) -> dict[str, str]:
             detail=f"Generation for '{name}' already finished. Refresh status and retry only if needed.",
         )
     try:
-        await asyncio.wait_for(task, timeout=5.0)
+        await asyncio.wait_for(task, timeout=_ABORT_TIMEOUT)
     except asyncio.CancelledError:
         pass  # expected cancellation acknowledgment
     except asyncio.TimeoutError as exc:
@@ -670,6 +789,7 @@ async def abort_generation(request: Request, name: str) -> dict[str, str]:
         ai_model,
         status="aborted",
         owner=key_owner,
+        branch=resolved_branch,
         error_message="Generation aborted by user",
         current_stage=None,
     )
@@ -678,14 +798,14 @@ async def abort_generation(request: Request, name: str) -> dict[str, str]:
     return {"aborted": name}
 
 
-@app.post("/api/projects/{name}/{provider}/{model}/abort")
+@app.post("/api/projects/{name}/{branch}/{provider}/{model}/abort")
 async def abort_variant(
-    request: Request, name: str, provider: str, model: str
+    request: Request, name: str, branch: str, provider: str, model: str
 ) -> dict[str, str]:
     _require_write_access(request)
     name = _validate_project_name(name)
     owner = request.state.username
-    gen_key = f"{owner}/{name}/{provider}/{model}"
+    gen_key = f"{owner}/{name}/{branch}/{provider}/{model}"
     task = _generating.get(gen_key)
     if not task:
         # Also check if an admin is aborting someone else's generation
@@ -693,13 +813,19 @@ async def abort_variant(
             admin_matches = [
                 key
                 for key in _generating
-                if len(key.split("/", 3)) == 4
-                and key.split("/", 3)[1] == name
-                and key.split("/", 3)[2] == provider
-                and key.split("/", 3)[3] == model
+                if len(key.split("/", 4)) == 5
+                and key.split("/", 4)[1] == name
+                and key.split("/", 4)[2] == branch
+                and key.split("/", 4)[3] == provider
+                and key.split("/", 4)[4] == model
             ]
+            requested_owner = request.query_params.get("owner")
+            if requested_owner is not None:
+                admin_matches = [
+                    k for k in admin_matches if k.split("/", 4)[0] == requested_owner
+                ]
             if len(admin_matches) > 1:
-                distinct_owners = {k.split("/", 3)[0] for k in admin_matches}
+                distinct_owners = {k.split("/", 4)[0] for k in admin_matches}
                 if len(distinct_owners) > 1:
                     raise HTTPException(
                         status_code=409,
@@ -715,17 +841,25 @@ async def abort_variant(
             )
 
     # Check ownership before allowing abort
-    key_parts = gen_key.split("/", 3)
-    key_owner = key_parts[0] if len(key_parts) == 4 else owner
+    key_parts = gen_key.split("/", 4)
+    key_owner = key_parts[0] if len(key_parts) == 5 else owner
     project = await get_project(
-        name, ai_provider=provider, ai_model=model, owner=key_owner
+        name,
+        ai_provider=provider,
+        ai_model=model,
+        owner=key_owner,
+        branch=branch,
     )
     if project:
         await _check_ownership(request, name, project)
 
-    task.cancel()
+    if not task.cancel():
+        raise HTTPException(
+            status_code=409,
+            detail=f"Generation for '{gen_key}' already finished. Refresh status and retry only if needed.",
+        )
     try:
-        await asyncio.wait_for(task, timeout=5.0)
+        await asyncio.wait_for(task, timeout=_ABORT_TIMEOUT)
     except asyncio.CancelledError:
         pass
     except asyncio.TimeoutError as exc:
@@ -748,12 +882,13 @@ async def abort_variant(
         model,
         status="aborted",
         owner=key_owner,
+        branch=branch,
         error_message="Generation aborted by user",
         current_stage=None,
     )
     _generating.pop(gen_key, None)
 
-    return {"aborted": f"{name}/{provider}/{model}"}
+    return {"aborted": f"{name}/{branch}/{provider}/{model}"}
 
 
 async def _copy_variant_artifacts(
@@ -764,10 +899,15 @@ async def _copy_variant_artifacts(
     target_model: str,
     owner: str,
     include_site: bool = False,
+    branch: str = DEFAULT_BRANCH,
 ) -> bool:
     """Copy an existing variant directory into a new provider/model variant."""
-    source_dir = get_project_dir(project_name, source_provider, source_model, owner)
-    target_dir = get_project_dir(project_name, target_provider, target_model, owner)
+    source_dir = get_project_dir(
+        project_name, source_provider, source_model, owner, branch=branch
+    )
+    target_dir = get_project_dir(
+        project_name, target_provider, target_model, owner, branch=branch
+    )
 
     if not source_dir.exists():
         logger.warning(
@@ -805,6 +945,7 @@ async def _replace_variant(
     target_provider: str,
     target_model: str,
     owner: str,
+    branch: str = DEFAULT_BRANCH,
 ) -> None:
     """Delete the old variant after its replacement is ready."""
     if source_provider == target_provider and source_model == target_model:
@@ -812,7 +953,9 @@ async def _replace_variant(
 
     async with _gen_lock:
         # Check if source variant is actively generating
-        gen_key_prefix = f"{owner}/{project_name}/{source_provider}/{source_model}"
+        gen_key_prefix = (
+            f"{owner}/{project_name}/{branch}/{source_provider}/{source_model}"
+        )
         for key in _generating:
             if key == gen_key_prefix:
                 logger.warning(
@@ -827,6 +970,7 @@ async def _replace_variant(
                 ai_provider=source_provider,
                 ai_model=source_model,
                 owner=owner,
+                branch=branch,
             )
         except Exception as exc:
             logger.warning(
@@ -836,7 +980,9 @@ async def _replace_variant(
 
     # Filesystem cleanup outside lock (best-effort)
     try:
-        old_dir = get_project_dir(project_name, source_provider, source_model, owner)
+        old_dir = get_project_dir(
+            project_name, source_provider, source_model, owner, branch=branch
+        )
         if old_dir.exists():
             await asyncio.to_thread(shutil.rmtree, old_dir)
     except Exception as exc:
@@ -859,8 +1005,9 @@ async def _run_generation(
     ai_cli_timeout: int,
     force: bool = False,
     owner: str = "",
+    branch: str = DEFAULT_BRANCH,
 ) -> None:
-    gen_key = f"{owner}/{project_name}/{ai_provider}/{ai_model}"
+    gen_key = f"{owner}/{project_name}/{branch}/{ai_provider}/{ai_model}"
     try:
         cli_flags = ["--trust"] if ai_provider == "cursor" else None
         available, msg = await check_ai_cli_available(
@@ -873,6 +1020,7 @@ async def _run_generation(
                 ai_model,
                 status="error",
                 owner=owner,
+                branch=branch,
                 error_message=msg,
             )
             return
@@ -883,12 +1031,15 @@ async def _run_generation(
             ai_model,
             status="generating",
             owner=owner,
+            branch=branch,
             current_stage="cloning",
         )
 
         if repo_path:
             # Local repository - use directly, no cloning needed
-            local_path, commit_sha = get_local_repo_info(Path(repo_path))
+            local_path, commit_sha, _ = get_local_repo_info(
+                Path(repo_path), expected_branch=branch
+            )
             await _generate_from_path(
                 local_path,
                 commit_sha,
@@ -899,6 +1050,7 @@ async def _run_generation(
                 ai_cli_timeout,
                 force,
                 owner,
+                branch=branch,
             )
         else:
             # Remote repository - clone to temp dir
@@ -906,8 +1058,8 @@ async def _run_generation(
                 msg = "repo_url must be provided for remote repositories"
                 raise ValueError(msg)
             with tempfile.TemporaryDirectory() as tmp_dir:
-                repo_dir, commit_sha = await asyncio.to_thread(
-                    clone_repo, repo_url, Path(tmp_dir)
+                repo_dir, commit_sha, _ = await asyncio.to_thread(
+                    clone_repo, repo_url, Path(tmp_dir), branch=branch
                 )
                 await _generate_from_path(
                     repo_dir,
@@ -919,6 +1071,7 @@ async def _run_generation(
                     ai_cli_timeout,
                     force,
                     owner,
+                    branch=branch,
                 )
 
     except asyncio.CancelledError:
@@ -929,6 +1082,7 @@ async def _run_generation(
             ai_model,
             status="aborted",
             owner=owner,
+            branch=branch,
             error_message="Generation was cancelled",
             current_stage=None,
         )
@@ -941,6 +1095,7 @@ async def _run_generation(
             ai_model,
             status="error",
             owner=owner,
+            branch=branch,
             error_message=str(exc),
         )
     finally:
@@ -958,8 +1113,11 @@ async def _generate_from_path(
     ai_cli_timeout: int,
     force: bool,
     owner: str = "",
+    branch: str = DEFAULT_BRANCH,
 ) -> None:
-    cache_dir = get_project_cache_dir(project_name, ai_provider, ai_model, owner)
+    cache_dir = get_project_cache_dir(
+        project_name, ai_provider, ai_model, owner, branch=branch
+    )
     use_cache = False
     old_sha: str | None = None
     base_variant: dict[str, Any] | None = None
@@ -989,6 +1147,7 @@ async def _generate_from_path(
             ai_model,
             status="ready",
             owner=owner,
+            branch=branch,
             current_stage="up_to_date",
             last_commit_sha=commit_sha,
             page_count=page_count,
@@ -1006,6 +1165,7 @@ async def _generate_from_path(
             target_provider=ai_provider,
             target_model=ai_model,
             owner=owner,
+            branch=branch,
         )
 
     if force:
@@ -1019,11 +1179,16 @@ async def _generate_from_path(
             ai_model,
             status="generating",
             owner=owner,
+            branch=branch,
             page_count=0,
         )
     else:
         current_variant = await get_project(
-            project_name, ai_provider=ai_provider, ai_model=ai_model, owner=owner
+            project_name,
+            ai_provider=ai_provider,
+            ai_model=ai_model,
+            owner=owner,
+            branch=branch,
         )
         ready_current_variant = (
             current_variant
@@ -1032,7 +1197,7 @@ async def _generate_from_path(
         )
 
         # Check if a cross-provider variant is newer
-        latest_any = await get_latest_variant(project_name, owner=owner)
+        latest_any = await get_latest_variant(project_name, owner=owner, branch=branch)
         if ready_current_variant and latest_any:
             current_gen = str(ready_current_variant.get("last_generated") or "")
             latest_gen = str(latest_any.get("last_generated") or "")
@@ -1070,6 +1235,7 @@ async def _generate_from_path(
                     target_model=ai_model,
                     owner=owner,
                     include_site=same_commit,
+                    branch=branch,
                 )
         elif current_variant:
             base_variant = current_variant
@@ -1143,6 +1309,7 @@ async def _generate_from_path(
                         ai_model,
                         status="generating",
                         owner=owner,
+                        branch=branch,
                         current_stage="incremental_planning",
                         page_count=0,
                     )
@@ -1213,6 +1380,7 @@ async def _generate_from_path(
             ai_model,
             status="generating",
             owner=owner,
+            branch=branch,
             current_stage="planning",
             page_count=0,
         )
@@ -1245,6 +1413,7 @@ async def _generate_from_path(
         ai_model,
         status="generating",
         owner=owner,
+        branch=branch,
         current_stage="generating_pages",
         plan_json=json.dumps(plan),
         page_count=current_page_count,
@@ -1263,6 +1432,7 @@ async def _generate_from_path(
         changed_files=changed_files,
         existing_pages=existing_pages if existing_pages else None,
         diff_content=diff_content,
+        branch=branch,
     )
 
     await update_project_status(
@@ -1271,14 +1441,19 @@ async def _generate_from_path(
         ai_model,
         status="generating",
         owner=owner,
+        branch=branch,
         current_stage="rendering",
         page_count=len(pages),
     )
 
-    site_dir = get_project_site_dir(project_name, ai_provider, ai_model, owner)
+    site_dir = get_project_site_dir(
+        project_name, ai_provider, ai_model, owner, branch=branch
+    )
     render_site(plan=plan, pages=pages, output_dir=site_dir)
 
-    project_dir = get_project_dir(project_name, ai_provider, ai_model, owner)
+    project_dir = get_project_dir(
+        project_name, ai_provider, ai_model, owner, branch=branch
+    )
     (project_dir / "plan.json").write_text(json.dumps(plan, indent=2), encoding="utf-8")
 
     page_count = len(pages)
@@ -1288,6 +1463,7 @@ async def _generate_from_path(
         ai_model,
         status="ready",
         owner=owner,
+        branch=branch,
         current_stage=None,
         last_commit_sha=commit_sha,
         page_count=page_count,
@@ -1298,25 +1474,31 @@ async def _generate_from_path(
     await _replace_base_variant()
 
 
-@app.get("/api/projects/{name}/{provider}/{model}")
+@app.get("/api/projects/{name}/{branch}/{provider}/{model}")
 async def get_variant_details(
     request: Request,
     name: str,
+    branch: str,
     provider: str,
     model: str,
 ) -> dict[str, str | int | None]:
     name = _validate_project_name(name)
     project = await _resolve_project(
-        request, name, ai_provider=provider, ai_model=model
+        request,
+        name,
+        ai_provider=provider,
+        ai_model=model,
+        branch=branch,
     )
 
     return project
 
 
-@app.delete("/api/projects/{name}/{provider}/{model}")
+@app.delete("/api/projects/{name}/{branch}/{provider}/{model}")
 async def delete_variant(
     request: Request,
     name: str,
+    branch: str,
     provider: str,
     model: str,
 ) -> dict[str, str]:
@@ -1334,7 +1516,11 @@ async def delete_variant(
         project_owner = request.state.username
 
     project = await get_project(
-        name, ai_provider=provider, ai_model=model, owner=project_owner
+        name,
+        ai_provider=provider,
+        ai_model=model,
+        owner=project_owner,
+        branch=branch,
     )
     if not project:
         raise HTTPException(status_code=404, detail="Variant not found")
@@ -1350,14 +1536,16 @@ async def delete_variant(
     dir_to_delete: Path | None = None
     async with _gen_lock:
         # Check for active generation scoped to the target owner
+        # Key format: "owner/name/branch/provider/model"
         for key in _generating:
-            parts = key.split("/", 3)
+            parts = key.split("/", 4)
             if (
-                len(parts) == 4
+                len(parts) == 5
                 and parts[0] == project_owner
                 and parts[1] == name
-                and parts[2] == provider
-                and parts[3] == model
+                and parts[2] == branch
+                and parts[3] == provider
+                and parts[4] == model
             ):
                 raise HTTPException(
                     status_code=409,
@@ -1365,14 +1553,20 @@ async def delete_variant(
                 )
 
         deleted = await delete_project(
-            name, ai_provider=provider, ai_model=model, owner=project_owner
+            name,
+            ai_provider=provider,
+            ai_model=model,
+            owner=project_owner,
+            branch=branch,
         )
         if not deleted:
             raise HTTPException(status_code=404, detail="Variant not found")
 
         # Rename to tombstone while still holding the lock so a new
         # generation cannot recreate the directory before we delete it.
-        project_dir = get_project_dir(name, provider, model, project_owner)
+        project_dir = get_project_dir(
+            name, provider, model, project_owner, branch=branch
+        )
         if project_dir.exists():
             tombstone = project_dir.with_name(
                 f"{project_dir.name}.deleting-{uuid4().hex}"
@@ -1383,37 +1577,29 @@ async def delete_variant(
     # Filesystem cleanup outside lock to reduce contention
     if dir_to_delete is not None:
         await asyncio.to_thread(shutil.rmtree, dir_to_delete)
-    return {"deleted": f"{name}/{provider}/{model}"}
+    return {"deleted": f"{name}/{branch}/{provider}/{model}"}
 
 
-@app.get("/api/projects/{name}/{provider}/{model}/download")
-async def download_variant(
-    request: Request,
-    name: str,
-    provider: str,
-    model: str,
-) -> StreamingResponse:
-    name = _validate_project_name(name)
-    project = await _resolve_project(
-        request, name, ai_provider=provider, ai_model=model
-    )
-
-    if project["status"] != "ready":
-        raise HTTPException(status_code=400, detail="Variant not ready")
-    project_owner = str(project.get("owner", ""))
-    site_dir = get_project_site_dir(name, provider, model, project_owner)
-    if not site_dir.exists():
-        raise HTTPException(status_code=404, detail="Site not found")
+async def _stream_tarball(site_dir: Path, archive_name: str) -> StreamingResponse:
+    """Create a tar.gz archive and stream it as a response."""
     tmp = tempfile.NamedTemporaryFile(suffix=".tar.gz", delete=False)
     tar_path = Path(tmp.name)
     tmp.close()
-    with tarfile.open(tar_path, mode="w:gz") as tar:
-        tar.add(str(site_dir), arcname=f"{name}-{provider}-{model}")
+
+    def _create_archive() -> None:
+        with tarfile.open(tar_path, mode="w:gz") as tar:
+            tar.add(str(site_dir), arcname=archive_name)
+
+    try:
+        await asyncio.to_thread(_create_archive)
+    except Exception:
+        tar_path.unlink(missing_ok=True)
+        raise
 
     async def _stream_and_cleanup() -> AsyncIterator[bytes]:
         try:
             with open(tar_path, "rb") as f:
-                while chunk := f.read(8192):
+                while chunk := f.read(_STREAM_CHUNK_SIZE):
                     yield chunk
         finally:
             tar_path.unlink(missing_ok=True)
@@ -1422,9 +1608,35 @@ async def download_variant(
         _stream_and_cleanup(),
         media_type="application/gzip",
         headers={
-            "Content-Disposition": f'attachment; filename="{name}-{provider}-{model}-docs.tar.gz"'
+            "Content-Disposition": f'attachment; filename="{archive_name}-docs.tar.gz"'
         },
     )
+
+
+@app.get("/api/projects/{name}/{branch}/{provider}/{model}/download")
+async def download_variant(
+    request: Request,
+    name: str,
+    branch: str,
+    provider: str,
+    model: str,
+) -> StreamingResponse:
+    name = _validate_project_name(name)
+    project = await _resolve_project(
+        request,
+        name,
+        ai_provider=provider,
+        ai_model=model,
+        branch=branch,
+    )
+
+    if project["status"] != "ready":
+        raise HTTPException(status_code=400, detail="Variant not ready")
+    project_owner = str(project.get("owner", ""))
+    site_dir = get_project_site_dir(name, provider, model, project_owner, branch=branch)
+    if not site_dir.exists():
+        raise HTTPException(status_code=404, detail="Site not found")
+    return await _stream_tarball(site_dir, f"{name}-{branch}-{provider}-{model}")
 
 
 @app.get("/api/projects/{name}")
@@ -1484,8 +1696,8 @@ async def delete_project_endpoint(request: Request, name: str) -> dict[str, str]
         # Check if any variant owned by the target owner(s) is generating
         target_owners = {str(v.get("owner", "")) for v in variants}
         for gen_key in _generating:
-            parts = gen_key.split("/", 3)
-            if len(parts) == 4 and parts[0] in target_owners and parts[1] == name:
+            parts = gen_key.split("/", 4)
+            if len(parts) == 5 and parts[0] in target_owners and parts[1] == name:
                 raise HTTPException(
                     status_code=409,
                     detail=f"Cannot delete '{name}' while generation is in progress. Abort running variants first.",
@@ -1494,12 +1706,19 @@ async def delete_project_endpoint(request: Request, name: str) -> dict[str, str]
             v_provider = str(v.get("ai_provider", ""))
             v_model = str(v.get("ai_model", ""))
             v_owner = str(v.get("owner", ""))
+            v_branch = str(v.get("branch", DEFAULT_BRANCH))
             await delete_project(
-                name, ai_provider=v_provider, ai_model=v_model, owner=v_owner
+                name,
+                ai_provider=v_provider,
+                ai_model=v_model,
+                owner=v_owner,
+                branch=v_branch,
             )
             # Rename to tombstone while still holding the lock so a new
             # generation cannot recreate the directory before we delete it.
-            project_dir = get_project_dir(name, v_provider, v_model, v_owner)
+            project_dir = get_project_dir(
+                name, v_provider, v_model, v_owner, branch=v_branch
+            )
             if project_dir.exists():
                 tombstone = project_dir.with_name(
                     f"{project_dir.name}.deleting-{uuid4().hex}"
@@ -1574,30 +1793,15 @@ async def download_project(request: Request, name: str) -> StreamingResponse:
     provider = str(latest.get("ai_provider", ""))
     model = str(latest.get("ai_model", ""))
     latest_owner = str(latest.get("owner", ""))
-    site_dir = get_project_site_dir(name, provider, model, latest_owner)
+    latest_branch = str(latest.get("branch", DEFAULT_BRANCH))
+    site_dir = get_project_site_dir(
+        name, provider, model, latest_owner, branch=latest_branch
+    )
     if not site_dir.exists():
         raise HTTPException(
             status_code=404, detail=f"Site directory not found for '{name}'"
         )
-    tmp = tempfile.NamedTemporaryFile(suffix=".tar.gz", delete=False)
-    tar_path = Path(tmp.name)
-    tmp.close()
-    with tarfile.open(tar_path, mode="w:gz") as tar:
-        tar.add(str(site_dir), arcname=name)
-
-    async def _stream_and_cleanup() -> AsyncIterator[bytes]:
-        try:
-            with open(tar_path, "rb") as f:
-                while chunk := f.read(8192):
-                    yield chunk
-        finally:
-            tar_path.unlink(missing_ok=True)
-
-    return StreamingResponse(
-        _stream_and_cleanup(),
-        media_type="application/gzip",
-        headers={"Content-Disposition": f'attachment; filename="{name}-docs.tar.gz"'},
-    )
+    return await _stream_tarball(site_dir, name)
 
 
 # ---------------------------------------------------------------------------
@@ -1618,7 +1822,11 @@ async def admin_panel(request: Request) -> HTMLResponse:
     _require_admin(request)
     users = await list_users()
     template = _jinja_env.get_template("admin.html")
-    html = template.render(users=users, username=request.state.username)
+    html = template.render(
+        users=users,
+        username=request.state.username,
+        docsfy_docs_url=DOCSFY_DOCS_URL,
+    )
     return HTMLResponse(content=html)
 
 
@@ -1795,10 +2003,11 @@ async def admin_rotate_key(request: Request, username: str) -> JSONResponse:
 
 # IMPORTANT: variant-specific route MUST be defined BEFORE the generic route
 # so FastAPI matches it first.
-@app.get("/docs/{project}/{provider}/{model}/{path:path}")
+@app.get("/docs/{project}/{branch}/{provider}/{model}/{path:path}")
 async def serve_variant_docs(
     request: Request,
     project: str,
+    branch: str,
     provider: str,
     model: str,
     path: str = "index.html",
@@ -1807,11 +2016,15 @@ async def serve_variant_docs(
         path = "index.html"
     project = _validate_project_name(project)
     proj = await _resolve_project(
-        request, project, ai_provider=provider, ai_model=model
+        request,
+        project,
+        ai_provider=provider,
+        ai_model=model,
+        branch=branch,
     )
 
     proj_owner = str(proj.get("owner", ""))
-    site_dir = get_project_site_dir(project, provider, model, proj_owner)
+    site_dir = get_project_site_dir(project, provider, model, proj_owner, branch=branch)
     file_path = site_dir / path
     try:
         file_path.resolve().relative_to(site_dir.resolve())
@@ -1840,11 +2053,13 @@ async def serve_docs(
         raise HTTPException(status_code=404, detail="No docs available")
     await _check_ownership(request, project, latest)
     latest_owner = str(latest.get("owner", ""))
+    latest_branch = str(latest.get("branch", DEFAULT_BRANCH))
     site_dir = get_project_site_dir(
         project,
         str(latest["ai_provider"]),
         str(latest["ai_model"]),
         latest_owner,
+        branch=latest_branch,
     )
     file_path = site_dir / path
     try:

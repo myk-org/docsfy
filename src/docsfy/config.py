@@ -14,8 +14,8 @@ class Settings(BaseSettings):
     )
 
     admin_key: str = ""  # Required — validated at startup
-    ai_provider: str = "claude"
-    ai_model: str = "claude-opus-4-6[1m]"  # [1m] = 1 million token context window
+    ai_provider: str = "cursor"
+    ai_model: str = "gpt-5.4-xhigh-fast"
     ai_cli_timeout: int = Field(default=60, gt=0)
     log_level: str = "INFO"
     data_dir: str = "/data"

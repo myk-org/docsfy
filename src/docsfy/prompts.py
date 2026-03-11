@@ -97,7 +97,10 @@ INCREMENTAL_PAGE_UPDATE_EXAMPLE = (
 )
 
 
-def _truncate_diff_content(diff_content: str, max_chars: int = 30000) -> str:
+_MAX_DIFF_LENGTH = 30000
+
+
+def _truncate_diff_content(diff_content: str, max_chars: int = _MAX_DIFF_LENGTH) -> str:
     if len(diff_content) <= max_chars:
         return diff_content
     return (

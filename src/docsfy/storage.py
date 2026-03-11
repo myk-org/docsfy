@@ -14,6 +14,8 @@ from pathlib import Path
 import aiosqlite
 from simple_logger.logger import get_logger
 
+from docsfy.models import DEFAULT_BRANCH
+
 logger = get_logger(name=__name__)
 
 VALID_STATUSES = frozenset({"generating", "ready", "error", "aborted"})
@@ -32,6 +34,8 @@ def validate_api_key(key: str) -> None:
 
 
 _UNSET: object = object()
+
+_SQL_DEFAULT_BRANCH = DEFAULT_BRANCH.replace("'", "''")
 
 # Module-level paths are set at import time from env vars.
 # Tests override these globals directly for isolation.
@@ -55,9 +59,10 @@ async def init_db(data_dir: str = "") -> None:
     DB_PATH.parent.mkdir(parents=True, exist_ok=True)
     PROJECTS_DIR.mkdir(parents=True, exist_ok=True)
     async with aiosqlite.connect(DB_PATH) as db:
-        await db.execute("""
+        await db.execute(f"""
             CREATE TABLE IF NOT EXISTS projects (
                 name TEXT NOT NULL,
+                branch TEXT NOT NULL DEFAULT '{_SQL_DEFAULT_BRANCH}',
                 ai_provider TEXT NOT NULL DEFAULT '',
                 ai_model TEXT NOT NULL DEFAULT '',
                 owner TEXT NOT NULL DEFAULT '',
@@ -71,7 +76,7 @@ async def init_db(data_dir: str = "") -> None:
                 plan_json TEXT,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                PRIMARY KEY (name, ai_provider, ai_model, owner)
+                PRIMARY KEY (name, branch, ai_provider, ai_model, owner)
             )
         """)
 
@@ -82,8 +87,10 @@ async def init_db(data_dir: str = "") -> None:
 
         needs_pk_migration = False
 
-        # Detect old schema: owner not in columns, or owner is nullable
-        if "owner" not in col_names:
+        # Detect old schema: branch/owner not in columns, or owner is nullable
+        if "branch" not in col_names:
+            needs_pk_migration = True
+        elif "owner" not in col_names:
             needs_pk_migration = True
         elif "ai_provider" not in col_names:
             needs_pk_migration = True
@@ -93,6 +100,11 @@ async def init_db(data_dir: str = "") -> None:
                 if col[1] == "ai_provider" and col[3] == 0:  # notnull=0 means nullable
                     needs_pk_migration = True
                     break
+
+        if not needs_pk_migration:
+            branch_is_pk = any(col[1] == "branch" and col[5] > 0 for col in columns)
+            if not branch_is_pk:
+                needs_pk_migration = True
 
         # Also detect when owner exists but is NOT part of the PK
         # by checking if a 3-column PK table was already created
@@ -108,7 +120,7 @@ async def init_db(data_dir: str = "") -> None:
 
         if needs_pk_migration:
             logger.info(
-                "Migrating database to 4-column PK schema (name, ai_provider, ai_model, owner)"
+                "Migrating database to 5-column PK schema (name, branch, ai_provider, ai_model, owner)"
             )
 
             # Check which columns exist in the old table
@@ -116,9 +128,10 @@ async def init_db(data_dir: str = "") -> None:
             old_columns = {row[1] for row in await cursor.fetchall()}
 
             await db.execute("DROP TABLE IF EXISTS projects_new")
-            await db.execute("""
+            await db.execute(f"""
                 CREATE TABLE projects_new (
                     name TEXT NOT NULL,
+                    branch TEXT NOT NULL DEFAULT '{_SQL_DEFAULT_BRANCH}',
                     ai_provider TEXT NOT NULL DEFAULT '',
                     ai_model TEXT NOT NULL DEFAULT '',
                     owner TEXT NOT NULL DEFAULT '',
@@ -132,13 +145,18 @@ async def init_db(data_dir: str = "") -> None:
                     plan_json TEXT,
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    PRIMARY KEY (name, ai_provider, ai_model, owner)
+                    PRIMARY KEY (name, branch, ai_provider, ai_model, owner)
                 )
             """)
 
             # Build SELECT with safe defaults for missing columns
             select_cols = []
             select_cols.append("name")
+            select_cols.append(
+                f"COALESCE(branch, '{_SQL_DEFAULT_BRANCH}') AS branch"
+                if "branch" in old_columns
+                else f"'{_SQL_DEFAULT_BRANCH}' AS branch"
+            )
             select_cols.append(
                 "COALESCE(ai_provider, '') AS ai_provider"
                 if "ai_provider" in old_columns
@@ -171,7 +189,7 @@ async def init_db(data_dir: str = "") -> None:
 
             await db.execute(f"""
                 INSERT OR IGNORE INTO projects_new
-                    (name, ai_provider, ai_model, owner, repo_url, status, current_stage,
+                    (name, branch, ai_provider, ai_model, owner, repo_url, status, current_stage,
                      last_commit_sha, last_generated, page_count, error_message,
                      plan_json, created_at, updated_at)
                 SELECT {", ".join(select_cols)}
@@ -179,7 +197,7 @@ async def init_db(data_dir: str = "") -> None:
             """)
             await db.execute("DROP TABLE projects")
             await db.execute("ALTER TABLE projects_new RENAME TO projects")
-            logger.info("Database migration to 4-column PK complete")
+            logger.info("Database migration to 5-column PK complete")
 
         # Reset orphaned "generating" projects from previous server run
         cursor = await db.execute(
@@ -275,21 +293,22 @@ async def save_project(
     ai_provider: str = "",
     ai_model: str = "",
     owner: str = "",
+    branch: str = DEFAULT_BRANCH,
 ) -> None:
     if status not in VALID_STATUSES:
         msg = f"Invalid project status: '{status}'. Valid: {', '.join(sorted(VALID_STATUSES))}"
         raise ValueError(msg)
     async with aiosqlite.connect(DB_PATH) as db:
         await db.execute(
-            """INSERT INTO projects (name, ai_provider, ai_model, owner, repo_url, status, updated_at)
-               VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
-               ON CONFLICT(name, ai_provider, ai_model, owner) DO UPDATE SET
+            """INSERT INTO projects (name, branch, ai_provider, ai_model, owner, repo_url, status, updated_at)
+               VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+               ON CONFLICT(name, branch, ai_provider, ai_model, owner) DO UPDATE SET
                repo_url = excluded.repo_url,
                status = excluded.status,
                error_message = NULL,
                current_stage = NULL,
                updated_at = CURRENT_TIMESTAMP""",
-            (name, ai_provider, ai_model, owner, repo_url, status),
+            (name, branch, ai_provider, ai_model, owner, repo_url, status),
         )
         await db.commit()
 
@@ -299,6 +318,7 @@ async def update_project_status(
     ai_provider: str,
     ai_model: str,
     status: str,
+    branch: str = DEFAULT_BRANCH,
     owner: str | None = None,
     last_commit_sha: str | None = None,
     page_count: int | None = None,
@@ -330,9 +350,10 @@ async def update_project_status(
         if status == "ready":
             fields.append("last_generated = CURRENT_TIMESTAMP")
         values.append(name)
+        values.append(branch)
         values.append(ai_provider)
         values.append(ai_model)
-        where = "WHERE name = ? AND ai_provider = ? AND ai_model = ?"
+        where = "WHERE name = ? AND branch = ? AND ai_provider = ? AND ai_model = ?"
         if owner is not None:
             where += " AND owner = ?"
             values.append(owner)
@@ -349,13 +370,12 @@ async def get_project(
     ai_provider: str = "",
     ai_model: str = "",
     owner: str | None = None,
+    branch: str = DEFAULT_BRANCH,
 ) -> dict[str, str | int | None] | None:
     async with aiosqlite.connect(DB_PATH) as db:
         db.row_factory = aiosqlite.Row
-        query = (
-            "SELECT * FROM projects WHERE name = ? AND ai_provider = ? AND ai_model = ?"
-        )
-        params: list[str] = [name, ai_provider, ai_model]
+        query = "SELECT * FROM projects WHERE name = ? AND branch = ? AND ai_provider = ? AND ai_model = ?"
+        params: list[str] = [name, branch, ai_provider, ai_model]
         if owner is not None:
             query += " AND owner = ?"
             params.append(owner)
@@ -453,13 +473,15 @@ async def get_user_accessible_projects(username: str) -> list[tuple[str, str]]:
 
 
 async def delete_project(
-    name: str, ai_provider: str = "", ai_model: str = "", owner: str | None = None
+    name: str,
+    ai_provider: str = "",
+    ai_model: str = "",
+    owner: str | None = None,
+    branch: str = DEFAULT_BRANCH,
 ) -> bool:
     async with aiosqlite.connect(DB_PATH) as db:
-        query = (
-            "DELETE FROM projects WHERE name = ? AND ai_provider = ? AND ai_model = ?"
-        )
-        params: list[str] = [name, ai_provider, ai_model]
+        query = "DELETE FROM projects WHERE name = ? AND branch = ? AND ai_provider = ? AND ai_model = ?"
+        params: list[str] = [name, branch, ai_provider, ai_model]
         if owner is not None:
             query += " AND owner = ?"
             params.append(owner)
@@ -501,13 +523,24 @@ def _validate_owner(owner: str) -> str:
 
 
 def get_project_dir(
-    name: str, ai_provider: str = "", ai_model: str = "", owner: str = ""
+    name: str,
+    ai_provider: str = "",
+    ai_model: str = "",
+    owner: str = "",
+    branch: str = DEFAULT_BRANCH,
 ) -> Path:
+    if not branch:
+        msg = "branch is required for project directory paths"
+        raise ValueError(msg)
     if not ai_provider or not ai_model:
         msg = "ai_provider and ai_model are required for project directory paths"
         raise ValueError(msg)
     # Sanitize path segments to prevent traversal
-    for segment_name, segment in [("ai_provider", ai_provider), ("ai_model", ai_model)]:
+    for segment_name, segment in [
+        ("branch", branch),
+        ("ai_provider", ai_provider),
+        ("ai_model", ai_model),
+    ]:
         if (
             "/" in segment
             or "\\" in segment
@@ -517,19 +550,36 @@ def get_project_dir(
             msg = f"Invalid {segment_name}: '{segment}'"
             raise ValueError(msg)
     safe_owner = _validate_owner(owner)
-    return PROJECTS_DIR / safe_owner / _validate_name(name) / ai_provider / ai_model
+    return (
+        PROJECTS_DIR
+        / safe_owner
+        / _validate_name(name)
+        / branch
+        / ai_provider
+        / ai_model
+    )
 
 
 def get_project_site_dir(
-    name: str, ai_provider: str = "", ai_model: str = "", owner: str = ""
+    name: str,
+    ai_provider: str = "",
+    ai_model: str = "",
+    owner: str = "",
+    branch: str = DEFAULT_BRANCH,
 ) -> Path:
-    return get_project_dir(name, ai_provider, ai_model, owner) / "site"
+    return get_project_dir(name, ai_provider, ai_model, owner, branch) / "site"
 
 
 def get_project_cache_dir(
-    name: str, ai_provider: str = "", ai_model: str = "", owner: str = ""
+    name: str,
+    ai_provider: str = "",
+    ai_model: str = "",
+    owner: str = "",
+    branch: str = DEFAULT_BRANCH,
 ) -> Path:
-    return get_project_dir(name, ai_provider, ai_model, owner) / "cache" / "pages"
+    return (
+        get_project_dir(name, ai_provider, ai_model, owner, branch) / "cache" / "pages"
+    )
 
 
 async def list_variants(
@@ -552,21 +602,21 @@ async def list_variants(
 
 
 async def get_latest_variant(
-    name: str, owner: str | None = None
+    name: str, owner: str | None = None, branch: str | None = None
 ) -> dict[str, str | int | None] | None:
     """Get the most recently generated ready variant for a repo."""
     async with aiosqlite.connect(DB_PATH) as db:
         db.row_factory = aiosqlite.Row
+        query = "SELECT * FROM projects WHERE name = ? AND status = 'ready'"
+        params: list[str] = [name]
         if owner is not None:
-            cursor = await db.execute(
-                "SELECT * FROM projects WHERE name = ? AND owner = ? AND status = 'ready' ORDER BY last_generated DESC LIMIT 1",
-                (name, owner),
-            )
-        else:
-            cursor = await db.execute(
-                "SELECT * FROM projects WHERE name = ? AND status = 'ready' ORDER BY last_generated DESC LIMIT 1",
-                (name,),
-            )
+            query += " AND owner = ?"
+            params.append(owner)
+        if branch is not None:
+            query += " AND branch = ?"
+            params.append(branch)
+        query += " ORDER BY last_generated DESC LIMIT 1"
+        cursor = await db.execute(query, params)
         row = await cursor.fetchone()
         return dict(row) if row else None
 
@@ -585,6 +635,28 @@ async def get_known_models() -> dict[str, list[str]]:
             if model not in models[provider]:
                 models[provider].append(model)
         return models
+
+
+async def get_known_branches(owner: str | None = None) -> dict[str, list[str]]:
+    """Get distinct branch values per project name from completed projects."""
+    async with aiosqlite.connect(DB_PATH) as db:
+        if owner is not None:
+            cursor = await db.execute(
+                "SELECT DISTINCT name, branch FROM projects WHERE branch != '' AND status = 'ready' AND owner = ? ORDER BY name, branch",
+                (owner,),
+            )
+        else:
+            cursor = await db.execute(
+                "SELECT DISTINCT name, branch FROM projects WHERE branch != '' AND status = 'ready' ORDER BY name, branch"
+            )
+        rows = await cursor.fetchall()
+        branches: dict[str, list[str]] = {}
+        for name, branch in rows:
+            if name not in branches:
+                branches[name] = []
+            if branch not in branches[name]:
+                branches[name].append(branch)
+        return branches
 
 
 def hash_api_key(key: str, hmac_secret: str = "") -> str:

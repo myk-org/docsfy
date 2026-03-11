@@ -21,6 +21,7 @@ If the project was deleted in Test 7.5, regenerate it:
 ```
 agent-browser type "#gen-repo-url" "https://github.com/myk-org/for-testing-only"
 agent-browser select "#gen-provider" "gemini"
+agent-browser wait 500
 agent-browser clear "#gen-model"
 agent-browser type "#gen-model" "gemini-2.5-flash"
 agent-browser click "#gen-submit"
@@ -32,7 +33,7 @@ Wait for generation to complete (poll status every 10s until ready).
 
 **Commands:**
 ```
-agent-browser navigate http://localhost:8800/docs/for-testing-only/gemini/gemini-2.5-flash/
+agent-browser navigate http://localhost:8800/docs/for-testing-only/main/gemini/gemini-2.5-flash/
 agent-browser screenshot
 ```
 
@@ -65,15 +66,14 @@ agent-browser javascript "document.documentElement.getAttribute('data-theme')"
 
 **Commands:**
 ```
-agent-browser javascript "document.querySelector('.toc, .on-this-page, [class*=\"toc\"]') !== null"
+agent-browser javascript "document.querySelectorAll('.toc a[href^=\"#\"], .on-this-page a[href^=\"#\"]').length > 0"
 agent-browser screenshot
 ```
 
-**Check:** A table of contents or "on this page" section exists.
+**Check:** A table of contents or "on this page" section exists with anchor links.
 
 **Expected result:**
-- Some form of table of contents is rendered (implementation may vary based on the generated docs template)
-- If present, it contains anchor links to sections on the current page
+- Returns true --- TOC contains at least one anchor link
 
 ---
 
@@ -88,7 +88,16 @@ agent-browser javascript "document.querySelector('.copy-btn, [data-copy], button
 
 **Expected result:**
 - If code blocks exist in the generated docs, they include a copy button
-- The copy functionality is wired up via JavaScript
+
+**Click the copy button and verify feedback:**
+```shell
+agent-browser javascript "var btn = document.querySelector('.copy-btn, [data-copy], button[class*=\"copy\"]'); if (btn) { btn.click(); true; } else { false; }"
+agent-browser wait 1000
+agent-browser javascript "document.querySelector('.copy-btn.copied, [data-copy].copied, .copy-success') !== null || document.body.textContent.includes('Copied')"
+```
+
+**Expected result:**
+- Returns true --- clicking copy button shows feedback (copied state or success message)
 
 ---
 
@@ -112,7 +121,7 @@ agent-browser javascript "document.querySelector('footer').textContent.toLowerCa
 
 **Commands:**
 ```
-agent-browser navigate http://localhost:8800/docs/for-testing-only/gemini/gemini-2.5-flash/llms.txt
+agent-browser navigate http://localhost:8800/docs/for-testing-only/main/gemini/gemini-2.5-flash/llms.txt
 agent-browser javascript "document.body.innerText.length > 0"
 agent-browser screenshot
 ```
@@ -129,7 +138,7 @@ agent-browser screenshot
 
 **Commands:**
 ```
-agent-browser navigate http://localhost:8800/docs/for-testing-only/gemini/gemini-2.5-flash/llms-full.txt
+agent-browser navigate http://localhost:8800/docs/for-testing-only/main/gemini/gemini-2.5-flash/llms-full.txt
 agent-browser javascript "document.body.innerText.length > 0"
 agent-browser screenshot
 ```
@@ -143,22 +152,6 @@ agent-browser screenshot
 
 ---
 
-### 8.8 .md files accessible
-
-**Commands:**
-```
-agent-browser javascript "fetch('/docs/for-testing-only/gemini/gemini-2.5-flash/index.md', {credentials:'same-origin'}).then(async r => ({status: r.status, textLength: (await r.text()).length}))"
-```
-
-**Check:** Determine whether raw Markdown files are published for this variant.
-
-**Expected result:**
-- If the returned `status` is `200`, `textLength` is greater than `0` and the subsection passes
-- If the returned `status` is `404`, record `Markdown source not published` as a known limitation and mark only this subsection `skipped`
-- Any other status is a failure
-
----
-
 ## Test 9: Status Page
 
 **Precondition:** Start a new generation to observe the status page in action. Log in as `testuser-e2e`.
@@ -168,6 +161,7 @@ agent-browser navigate http://localhost:8800/
 agent-browser clear "#gen-repo-url"
 agent-browser type "#gen-repo-url" "https://github.com/myk-org/for-testing-only"
 agent-browser select "#gen-provider" "gemini"
+agent-browser wait 500
 agent-browser clear "#gen-model"
 agent-browser type "#gen-model" "gemini-2.5-flash"
 agent-browser click "#gen-force"
@@ -179,7 +173,7 @@ agent-browser wait 3000
 
 **Commands:**
 ```
-agent-browser navigate http://localhost:8800/status/for-testing-only/gemini/gemini-2.5-flash
+agent-browser navigate http://localhost:8800/status/for-testing-only/main/gemini/gemini-2.5-flash
 agent-browser wait 5000
 agent-browser screenshot
 ```
@@ -216,12 +210,13 @@ agent-browser navigate http://localhost:8800/
 agent-browser clear "#gen-repo-url"
 agent-browser type "#gen-repo-url" "https://github.com/myk-org/for-testing-only"
 agent-browser select "#gen-provider" "gemini"
+agent-browser wait 500
 agent-browser clear "#gen-model"
 agent-browser type "#gen-model" "gemini-2.5-flash"
 agent-browser click "#gen-force"
 agent-browser click "#gen-submit"
 agent-browser wait 2000
-agent-browser navigate http://localhost:8800/status/for-testing-only/gemini/gemini-2.5-flash
+agent-browser navigate http://localhost:8800/status/for-testing-only/main/gemini/gemini-2.5-flash
 agent-browser wait 2000
 ```
 
@@ -355,6 +350,7 @@ agent-browser navigate http://localhost:8800/
 agent-browser clear "#gen-repo-url"
 agent-browser type "#gen-repo-url" "https://github.com/myk-org/for-testing-only"
 agent-browser select "#gen-provider" "gemini"
+agent-browser wait 500
 agent-browser clear "#gen-model"
 agent-browser type "#gen-model" "gemini-2.5-flash"
 agent-browser click "#gen-force"

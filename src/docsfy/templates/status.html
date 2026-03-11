@@ -5,191 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>docsfy - {{ project.name }} ({{ project.ai_provider }}/{{ project.ai_model }}) Status</title>
     <meta name="description" content="Generation status for {{ project.name }}">
+    {% include '_app_styles.html' %}
     <style>
     /* ==========================================================================
-       docsfy Status Page - Inline CSS
+       docsfy Status Page - Template-Specific CSS
        ========================================================================== */
 
-    /* --------------------------------------------------------------------------
-       CSS Custom Properties (Light Theme - Default)
-       -------------------------------------------------------------------------- */
+    /* --- Status-specific CSS variable extensions --- */
     :root {
-        /* Backgrounds */
-        --bg-primary: #ffffff;
-        --bg-secondary: #f9fafb;
-        --bg-tertiary: #f3f4f6;
-        --bg-sidebar: #f9fafb;
-        --bg-code: #f5f5f5;
-        --bg-code-block: #1e1e2e;
-        --bg-card: #ffffff;
-        --bg-hero: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        --bg-search-result: #ffffff;
-
-        /* Text */
-        --text-primary: #111827;
-        --text-secondary: #4b5563;
-        --text-tertiary: #6b7280;
-        --text-inverse: #ffffff;
-        --text-link: #4f46e5;
-        --text-link-hover: #4338ca;
-        --text-code: #e11d48;
-        --text-code-block: #d4d4d8;
-
-        /* Borders */
-        --border-primary: #e5e7eb;
-        --border-secondary: #f3f4f6;
-        --border-focus: #4f46e5;
-
-        /* Accent */
-        --accent: #4f46e5;
-        --accent-light: #eef2ff;
-        --accent-hover: #4338ca;
-
-        /* Shadows */
-        --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
-        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
-
-        /* Layout */
         --content-max-width: 700px;
-        --header-height: 56px;
-
-        /* Typography */
-        --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
-        --font-mono: "SF Mono", SFMono-Regular, ui-monospace, "DejaVu Sans Mono", Menlo, Consolas, monospace;
-
-        /* Transitions */
-        --transition-fast: 150ms ease;
-        --transition-normal: 250ms ease;
-
-        /* Status colors */
-        --status-ready: #10b981;
-        --status-generating: #3b82f6;
-        --status-error: #ef4444;
-        --status-aborted: #f59e0b;
-        --status-ready-bg: #ecfdf5;
-        --status-generating-bg: #eff6ff;
-        --status-error-bg: #fef2f2;
-        --status-aborted-bg: #fffbeb;
-    }
-
-    /* --------------------------------------------------------------------------
-       Dark Theme
-       -------------------------------------------------------------------------- */
-    [data-theme="dark"] {
-        --bg-primary: #0f1117;
-        --bg-secondary: #161822;
-        --bg-tertiary: #1e2030;
-        --bg-sidebar: #161822;
-        --bg-code: #1e2030;
-        --bg-code-block: #1e2030;
-        --bg-card: #161822;
-        --bg-hero: linear-gradient(135deg, #3730a3 0%, #6d28d9 100%);
-        --bg-search-result: #1e2030;
-
-        --text-primary: #e5e7eb;
-        --text-secondary: #9ca3af;
-        --text-tertiary: #6b7280;
-        --text-inverse: #ffffff;
-        --text-link: #818cf8;
-        --text-link-hover: #a5b4fc;
-        --text-code: #fb7185;
-        --text-code-block: #d4d4d8;
-
-        --border-primary: #2e3248;
-        --border-secondary: #252838;
-        --border-focus: #818cf8;
-
-        --accent: #818cf8;
-        --accent-light: #1e1b4b;
-        --accent-hover: #a5b4fc;
-
-        --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
-        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
-        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -4px rgba(0, 0, 0, 0.3);
-
-        --status-ready-bg: #052e16;
-        --status-generating-bg: #172554;
-        --status-error-bg: #450a0a;
-        --status-aborted-bg: #451a03;
-    }
-
-    /* --------------------------------------------------------------------------
-       Reset & Base
-       -------------------------------------------------------------------------- */
-    *, *::before, *::after {
-        box-sizing: border-box;
-        margin: 0;
-        padding: 0;
-    }
-
-    html {
-        font-size: 16px;
-        -webkit-text-size-adjust: 100%;
-    }
-
-    body {
-        font-family: var(--font-sans);
-        background: var(--bg-primary);
-        color: var(--text-primary);
-        line-height: 1.6;
-        min-height: 100vh;
-        display: flex;
-        flex-direction: column;
-    }
-
-    /* --------------------------------------------------------------------------
-       Header
-       -------------------------------------------------------------------------- */
-    .dashboard-header {
-        height: var(--header-height);
-        background: var(--bg-secondary);
-        border-bottom: 1px solid var(--border-primary);
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 0 1.5rem;
-        position: sticky;
-        top: 0;
-        z-index: 100;
-    }
-
-    .header-left {
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-    }
-
-    .dashboard-logo {
-        font-size: 1.25rem;
-        font-weight: 700;
-        color: var(--text-primary);
-        text-decoration: none;
-        letter-spacing: -0.02em;
-    }
-
-    .dashboard-logo span {
-        color: var(--accent);
-    }
-
-    .docs-badge {
-        font-size: 0.7rem;
-        font-weight: 600;
-        padding: 2px 8px;
-        background: var(--accent);
-        color: white;
-        border-radius: 4px;
-        text-decoration: none;
-        margin-left: 8px;
-        transition: opacity 0.15s ease;
-    }
-
-    .docs-badge:hover {
-        opacity: 0.8;
-    }
-
-    .brand-accent {
-        color: var(--accent);
     }
 
     .header-separator {
@@ -203,34 +27,6 @@
         font-weight: 500;
         color: var(--text-secondary);
     }
-
-    .header-actions {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-
-    .theme-toggle {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 36px;
-        height: 36px;
-        border: 1px solid var(--border-primary);
-        border-radius: 8px;
-        background: var(--bg-primary);
-        color: var(--text-secondary);
-        cursor: pointer;
-        transition: color var(--transition-fast), border-color var(--transition-fast);
-    }
-
-    .theme-toggle:hover {
-        color: var(--text-primary);
-        border-color: var(--border-focus);
-    }
-
-    [data-theme="dark"] .icon-sun { display: none; }
-    [data-theme="light"] .icon-moon { display: none; }
 
     /* --------------------------------------------------------------------------
        Main Content
@@ -302,35 +98,6 @@
         color: var(--status-aborted);
     }
 
-    .status-dot {
-        width: 10px;
-        height: 10px;
-        border-radius: 50%;
-        flex-shrink: 0;
-    }
-
-    .status-dot-ready {
-        background: var(--status-ready);
-    }
-
-    .status-dot-generating {
-        background: var(--status-generating);
-        animation: pulse 2s ease-in-out infinite;
-    }
-
-    .status-dot-error {
-        background: var(--status-error);
-    }
-
-    .status-dot-aborted {
-        background: var(--status-aborted);
-    }
-
-    @keyframes pulse {
-        0%, 100% { opacity: 1; transform: scale(1); }
-        50% { opacity: 0.5; transform: scale(1.2); }
-    }
-
     /* --------------------------------------------------------------------------
        Info Grid
        -------------------------------------------------------------------------- */
@@ -390,43 +157,12 @@
     }
 
     .progress-bar-wrapper {
-        width: 100%;
         height: 8px;
-        background: var(--bg-tertiary);
         border-radius: 4px;
-        overflow: hidden;
     }
 
     .progress-bar-fill {
-        height: 100%;
-        background: var(--status-generating);
         border-radius: 4px;
-        transition: width 0.5s ease;
-        position: relative;
-    }
-
-    .progress-bar-fill::after {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.2) 50%, transparent 100%);
-        animation: shimmer 1.5s infinite;
-    }
-
-    .progress-bar-fill-ready {
-        background: var(--status-ready);
-    }
-
-    .progress-bar-fill-ready::after {
-        animation: none;
-    }
-
-    @keyframes shimmer {
-        from { transform: translateX(-100%); }
-        to { transform: translateX(100%); }
     }
 
     /* --------------------------------------------------------------------------
@@ -480,90 +216,8 @@
     }
 
     .regenerate-inline {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        flex-wrap: wrap;
         padding-top: 1rem;
         border-top: 1px solid var(--border-secondary);
-    }
-
-    .regenerate-inline .form-select,
-    .regenerate-inline .form-input {
-        height: 32px;
-        font-size: 0.8125rem;
-    }
-
-    .regenerate-inline .form-select {
-        width: 110px;
-    }
-
-    .regenerate-inline .form-input {
-        width: 180px;
-    }
-
-    .regenerate-inline .form-checkbox-group {
-        height: 32px;
-    }
-
-    .regenerate-inline .form-checkbox-group input[type="checkbox"] {
-        width: 14px;
-        height: 14px;
-    }
-
-    .regenerate-inline .form-checkbox-group label {
-        font-size: 0.8125rem;
-    }
-
-    .btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 0.375rem;
-        height: 38px;
-        padding: 0 1.25rem;
-        border: none;
-        border-radius: 8px;
-        font-size: 0.875rem;
-        font-weight: 500;
-        font-family: var(--font-sans);
-        cursor: pointer;
-        transition: background var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast);
-        white-space: nowrap;
-        text-decoration: none;
-    }
-
-    .btn:active {
-        transform: scale(0.98);
-    }
-
-    .btn-primary {
-        background: var(--accent);
-        color: var(--text-inverse);
-    }
-
-    .btn-primary:hover {
-        background: var(--accent-hover);
-    }
-
-    .btn-secondary {
-        background: var(--bg-tertiary);
-        color: var(--text-primary);
-        border: 1px solid var(--border-primary);
-    }
-
-    .btn-secondary:hover {
-        background: var(--border-primary);
-    }
-
-    .btn-danger {
-        background: transparent;
-        color: var(--status-error);
-        border: 1px solid var(--status-error);
-    }
-
-    .btn-danger:hover {
-        background: var(--status-error-bg);
     }
 
     .action-spacer {
@@ -656,44 +310,6 @@
     }
 
     /* --------------------------------------------------------------------------
-       Spinner
-       -------------------------------------------------------------------------- */
-    .spinner-large {
-        width: 20px;
-        height: 20px;
-        border: 2.5px solid var(--border-primary);
-        border-top-color: var(--status-generating);
-        border-radius: 50%;
-        animation: spin 0.8s linear infinite;
-        flex-shrink: 0;
-        display: inline-block;
-    }
-
-    @keyframes spin {
-        to { transform: rotate(360deg); }
-    }
-
-    /* --------------------------------------------------------------------------
-       Footer
-       -------------------------------------------------------------------------- */
-    .dashboard-footer {
-        text-align: center;
-        padding: 1.5rem;
-        font-size: 0.8125rem;
-        color: var(--text-tertiary);
-        border-top: 1px solid var(--border-secondary);
-    }
-
-    .dashboard-footer a {
-        color: var(--text-link);
-        text-decoration: none;
-    }
-
-    .dashboard-footer a:hover {
-        text-decoration: underline;
-    }
-
-    /* --------------------------------------------------------------------------
        Hidden utility
        -------------------------------------------------------------------------- */
     .hidden {
@@ -755,12 +371,12 @@
     /* Modal CSS is in _modal.html (shared include) */
     </style>
 </head>
-<body>
+<body class="app-body">
     <!-- Header -->
     <header class="dashboard-header">
         <div class="header-left">
             <a href="/" class="dashboard-logo">docs<span>fy</span></a>
-            <a href="https://myk-org.github.io/docsfy/" target="_blank" rel="noopener noreferrer" class="docs-badge" title="Documentation">Docs</a>
+            <a href="{{ docsfy_docs_url }}" target="_blank" rel="noopener noreferrer" class="docs-badge" title="Documentation">Docs</a>
             <span class="header-separator">/</span>
             <span class="header-project-name">{{ project.name }} / {{ project.ai_provider }}/{{ project.ai_model }}</span>
         </div>
@@ -824,6 +440,9 @@
                 <span class="info-value" id="info-ai">{{ project.ai_provider }}{% if project.ai_model %} / {{ project.ai_model }}{% endif %}</span>
                 {% endif %}
 
+                <span class="info-label">Branch</span>
+                <span class="info-value">{{ project.branch or default_branch }}</span>
+
                 <span class="info-label">Pages</span>
                 <span class="info-value" id="info-pages">{{ project.page_count or 0 }}</span>
 
@@ -880,8 +499,8 @@
             <!-- Action Links -->
             <div class="action-links" id="action-links">
                 {% if project.status == 'ready' %}
-                <a href="/docs/{{ project.name }}/{{ project.ai_provider }}/{{ project.ai_model }}/" target="_blank" class="btn btn-primary" id="btn-view-docs">View Documentation</a>
-                <a href="/api/projects/{{ project.name }}/{{ project.ai_provider }}/{{ project.ai_model }}/download" class="btn btn-secondary" id="btn-download">Download</a>
+                <a href="/docs/{{ project.name | urlencode }}/{{ (project.branch or default_branch) | urlencode }}/{{ project.ai_provider | urlencode }}/{{ project.ai_model | urlencode }}/" target="_blank" class="btn btn-primary" id="btn-view-docs">View Documentation</a>
+                <a href="/api/projects/{{ project.name | urlencode }}/{{ (project.branch or default_branch) | urlencode }}/{{ project.ai_provider | urlencode }}/{{ project.ai_model | urlencode }}/download" class="btn btn-secondary" id="btn-download">Download</a>
                 {% endif %}
                 {% if project.status == 'generating' %}
                 <button class="btn btn-danger" id="btn-abort">Abort</button>
@@ -889,9 +508,9 @@
                 {% if project.status == 'error' or project.status == 'aborted' %}
                 <div class="regenerate-inline">
                     <select class="form-select" id="retry-provider" aria-label="Provider for regeneration">
-                        <option value="claude"{% if project.ai_provider == 'claude' %} selected{% endif %}>claude</option>
-                        <option value="gemini"{% if project.ai_provider == 'gemini' %} selected{% endif %}>gemini</option>
-                        <option value="cursor"{% if project.ai_provider == 'cursor' %} selected{% endif %}>cursor</option>
+                        {% for p in valid_providers %}
+                        <option value="{{ p }}"{% if project.ai_provider == p %} selected{% endif %}>{{ p }}</option>
+                        {% endfor %}
                     </select>
                     <input type="text" class="form-input" id="retry-model" list="retry-model-suggestions" value="{{ project.ai_model or default_model }}" aria-label="Model for regeneration">
                     <datalist id="retry-model-suggestions">
@@ -933,7 +552,7 @@
 
     <!-- Footer -->
     <footer class="dashboard-footer">
-        <p>Powered by <a href="https://github.com/myk-org/docsfy" target="_blank" rel="noopener noreferrer">docs<span class="brand-accent">fy</span></a></p>
+        <p>Powered by <a href="{{ docsfy_repo_url }}" target="_blank" rel="noopener noreferrer">docs<span class="brand-accent">fy</span></a></p>
     </footer>
 
     {% include '_theme.html' %}
@@ -947,9 +566,12 @@
 
         /* ----- Config ----- */
         var PROJECT_NAME = {{ project.name | tojson }};
+        var PROJECT_BRANCH = '{{ project.branch | default(default_branch) }}';
         var PROJECT_PROVIDER = {{ project.ai_provider | tojson }};
         var PROJECT_MODEL = {{ project.ai_model | tojson }};
+        var PROJECT_OWNER = '{{ project.owner | default("") }}';
         var POLL_INTERVAL_MS = 3000;
+        var REDIRECT_DELAY_MS = 2000;
 
         /* ----- Model Suggestions (combobox) ----- */
         var knownModels = {{ known_models | tojson }};
@@ -1186,7 +808,7 @@
 
             if (status === 'ready') {
                 var viewBtn = document.createElement('a');
-                viewBtn.href = '/docs/' + encodeURIComponent(PROJECT_NAME) + '/' + encodeURIComponent(PROJECT_PROVIDER) + '/' + encodeURIComponent(PROJECT_MODEL) + '/';
+                viewBtn.href = '/docs/' + encodeURIComponent(PROJECT_NAME) + '/' + encodeURIComponent(PROJECT_BRANCH) + '/' + encodeURIComponent(PROJECT_PROVIDER) + '/' + encodeURIComponent(PROJECT_MODEL) + '/' + (PROJECT_OWNER ? '?owner=' + encodeURIComponent(PROJECT_OWNER) : '');
                 viewBtn.target = '_blank';
                 viewBtn.className = 'btn btn-primary';
                 viewBtn.id = 'btn-view-docs';
@@ -1194,7 +816,7 @@
                 actionLinks.appendChild(viewBtn);
 
                 var downloadBtn = document.createElement('a');
-                downloadBtn.href = '/api/projects/' + encodeURIComponent(PROJECT_NAME) + '/' + encodeURIComponent(PROJECT_PROVIDER) + '/' + encodeURIComponent(PROJECT_MODEL) + '/download';
+                downloadBtn.href = '/api/projects/' + encodeURIComponent(PROJECT_NAME) + '/' + encodeURIComponent(PROJECT_BRANCH) + '/' + encodeURIComponent(PROJECT_PROVIDER) + '/' + encodeURIComponent(PROJECT_MODEL) + '/download' + (PROJECT_OWNER ? '?owner=' + encodeURIComponent(PROJECT_OWNER) : '');
                 downloadBtn.className = 'btn btn-secondary';
                 downloadBtn.id = 'btn-download';
                 downloadBtn.textContent = 'Download';
@@ -1218,7 +840,7 @@
                 providerSelect.className = 'form-select';
                 providerSelect.id = 'retry-provider';
                 providerSelect.setAttribute('aria-label', 'Provider for regeneration');
-                ['claude', 'gemini', 'cursor'].forEach(function(p) {
+                {{ valid_providers | tojson }}.forEach(function(p) {
                     var opt = document.createElement('option');
                     opt.value = p;
                     opt.textContent = p;
@@ -1313,7 +935,7 @@
         function handleAuthRedirect() {
             errorText.textContent = 'Session expired. Please login again.';
             errorMessage.style.display = '';
-            setTimeout(function() { window.location.href = '/login'; }, 2000);
+            setTimeout(function() { window.location.href = '/login'; }, REDIRECT_DELAY_MS);
         }
 
         /* ----- Abort Handler ----- */
@@ -1325,7 +947,9 @@
                 abortBtn.disabled = true;
                 abortBtn.textContent = 'Aborting...';
             }
-            fetch('/api/projects/' + encodeURIComponent(PROJECT_NAME) + '/' + encodeURIComponent(PROJECT_PROVIDER) + '/' + encodeURIComponent(PROJECT_MODEL) + '/abort', { method: 'POST', credentials: 'same-origin', redirect: 'manual' })
+            var abortUrl = '/api/projects/' + encodeURIComponent(PROJECT_NAME) + '/' + encodeURIComponent(PROJECT_BRANCH) + '/' + encodeURIComponent(PROJECT_PROVIDER) + '/' + encodeURIComponent(PROJECT_MODEL) + '/abort';
+            if (PROJECT_OWNER) abortUrl += '?owner=' + encodeURIComponent(PROJECT_OWNER);
+            fetch(abortUrl, { method: 'POST', credentials: 'same-origin', redirect: 'manual' })
                 .then(function(r) {
                     if (isAuthRedirect(r)) { handleAuthRedirect(); return null; }
                     if (!r.ok) return r.json().then(function(data) { throw data; });
@@ -1364,7 +988,7 @@
                 retryBtn.textContent = 'Starting...';
             }
 
-            var payload = { repo_url: repoUrl };
+            var payload = { repo_url: repoUrl, branch: PROJECT_BRANCH };
             if (providerSelect) payload.ai_provider = providerSelect.value;
             if (modelInput) payload.ai_model = modelInput.value;
             if (forceCheckbox && forceCheckbox.checked) payload.force = true;
@@ -1387,7 +1011,9 @@
                 var newProvider = providerSelect ? providerSelect.value : PROJECT_PROVIDER;
                 var newModel = modelInput ? modelInput.value : PROJECT_MODEL;
                 if (newProvider !== PROJECT_PROVIDER || newModel !== PROJECT_MODEL) {
-                    window.location.href = '/status/' + encodeURIComponent(PROJECT_NAME) + '/' + encodeURIComponent(newProvider) + '/' + encodeURIComponent(newModel);
+                    var retryRedirectUrl = '/status/' + encodeURIComponent(PROJECT_NAME) + '/' + encodeURIComponent(PROJECT_BRANCH) + '/' + encodeURIComponent(newProvider) + '/' + encodeURIComponent(newModel);
+                    if (PROJECT_OWNER) retryRedirectUrl += '?owner=' + encodeURIComponent(PROJECT_OWNER);
+                    window.location.href = retryRedirectUrl;
                     return;
                 }
                 /* Reset state and start polling */
@@ -1440,7 +1066,9 @@
         function pollProject() {
             if (_polling) return;
             _polling = true;
-            fetch('/api/projects/' + encodeURIComponent(PROJECT_NAME) + '/' + encodeURIComponent(PROJECT_PROVIDER) + '/' + encodeURIComponent(PROJECT_MODEL), { credentials: 'same-origin', redirect: 'manual' })
+            var pollUrl = '/api/projects/' + encodeURIComponent(PROJECT_NAME) + '/' + encodeURIComponent(PROJECT_BRANCH) + '/' + encodeURIComponent(PROJECT_PROVIDER) + '/' + encodeURIComponent(PROJECT_MODEL);
+            if (PROJECT_OWNER) pollUrl += '?owner=' + encodeURIComponent(PROJECT_OWNER);
+            fetch(pollUrl, { credentials: 'same-origin', redirect: 'manual' })
                 .then(function(res) {
                     if (isAuthRedirect(res)) { handleAuthRedirect(); stopPolling(); return null; }
                     if (!res.ok) throw new Error('Not found');

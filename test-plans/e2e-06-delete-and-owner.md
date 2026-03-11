@@ -67,7 +67,7 @@ agent-browser javascript "sessionStorage.getItem('docsfyLastDeleteRequest')"
 **Expected result:**
 - The captured JSON shows `"method":"DELETE"`
 - The captured `url` contains `?owner=userb-e2e`
-- The request targets the `for-testing-only/gemini/gemini-2.5-flash` variant owned by `userb-e2e`
+- The request targets the `for-testing-only/main/gemini/gemini-2.5-flash` variant owned by `userb-e2e`
 
 ---
 
@@ -88,35 +88,7 @@ agent-browser screenshot
 
 ---
 
-### 15.4 Verify legacy variants (empty owner) can be deleted
-
-**Precondition:** If any legacy variants exist (variants created before owner-scoping was introduced, with an empty or null owner), this test applies. If no legacy variants exist, this test can be skipped.
-
-**Commands:**
-```shell
-agent-browser javascript "document.querySelector('.variant-card[data-owner=\"\"]') !== null || document.querySelector('.variant-card:not([data-owner])') !== null"
-```
-
-If returns `true`, proceed to delete the legacy variant:
-```shell
-agent-browser click ".variant-card:not([data-owner]) [data-delete-variant], .variant-card[data-owner=''] [data-delete-variant]"
-agent-browser wait 1000
-agent-browser click "#modal-ok"
-agent-browser wait 3000
-```
-
-**Check:** The legacy variant is deleted without errors.
-
-**Expected result:**
-- The delete request succeeds (no 400 or 500 error)
-- The legacy variant card is removed from the DOM
-- The server handles empty/null owner gracefully
-
-If returns `false` (no legacy variants), this test is **SKIPPED**.
-
----
-
-### 15.5 Verify Delete All button removes all variants of an owner-scoped project group
+### 15.4 Verify Delete All button removes all variants of an owner-scoped project group
 
 **Precondition:** Re-create `userb-e2e`'s `for-testing-only` project group with two variants so Delete All removes multiple variants without touching `testuser-e2e`'s variant needed by later tests.
 
@@ -131,7 +103,9 @@ agent-browser wait-for-navigation
 agent-browser navigate http://localhost:8800/
 agent-browser clear "#gen-repo-url"
 agent-browser type "#gen-repo-url" "https://github.com/myk-org/for-testing-only"
+agent-browser clear "#gen-branch"
 agent-browser select "#gen-provider" "gemini"
+agent-browser wait 500
 agent-browser clear "#gen-model"
 agent-browser type "#gen-model" "gemini-2.5-flash"
 agent-browser click "#gen-submit"
@@ -144,7 +118,9 @@ Generate the second variant `gemini/gemini-2.0-flash` for the same owner/project
 agent-browser navigate http://localhost:8800/
 agent-browser clear "#gen-repo-url"
 agent-browser type "#gen-repo-url" "https://github.com/myk-org/for-testing-only"
+agent-browser clear "#gen-branch"
 agent-browser select "#gen-provider" "gemini"
+agent-browser wait 500
 agent-browser clear "#gen-model"
 agent-browser type "#gen-model" "gemini-2.0-flash"
 agent-browser click "#gen-submit"
@@ -213,23 +189,23 @@ agent-browser javascript "document.querySelector('.project-group[data-repo=\"for
 
 ---
 
-### 15.6 Confirmation dialog shows owner name when admin deletes another user's docs
+### 15.5 Confirmation dialog shows owner name when admin deletes another user's docs
 
-**Precondition:** Stay logged in as `admin`. Reuse `testuser-e2e`'s existing `for-testing-only/gemini/gemini-2.5-flash` variant from Tests 14-15. Do NOT regenerate it here because Tests 16-17 rely on that existing variant history.
+**Precondition:** Stay logged in as `admin`. Reuse `testuser-e2e`'s existing `for-testing-only/main/gemini/gemini-2.5-flash` variant from Tests 14-15. Do NOT regenerate it here because Tests 16-17 rely on that existing variant history.
 
 **Commands:**
 ```shell
 agent-browser navigate http://localhost:8800/
-agent-browser javascript "document.querySelector('.variant-card[data-owner=\"testuser-e2e\"] [data-delete-variant=\"for-testing-only/gemini/gemini-2.5-flash\"]') !== null"
+agent-browser javascript "document.querySelector('.variant-card[data-owner=\"testuser-e2e\"] [data-delete-variant=\"for-testing-only/main/gemini/gemini-2.5-flash\"]') !== null"
 ```
 
 **Expected result:** Returns `true`.
 
-If the previous command returned `false`, mark only Test 15.6 as `blocked`, note that the prerequisite variant is unexpectedly missing, and do not recreate it inside this subsection.
+If the previous command returned `false`, mark only Test 15.5 as `blocked`, note that the prerequisite variant is unexpectedly missing, and do not recreate it inside this subsection.
 
 **If the previous command returned `true`, open the delete confirmation modal:**
 ```shell
-agent-browser click ".variant-card[data-owner='testuser-e2e'] [data-delete-variant='for-testing-only/gemini/gemini-2.5-flash']"
+agent-browser click ".variant-card[data-owner='testuser-e2e'] [data-delete-variant='for-testing-only/main/gemini/gemini-2.5-flash']"
 agent-browser wait 1000
 agent-browser javascript "document.getElementById('modal-body').textContent"
 agent-browser screenshot
@@ -240,7 +216,7 @@ agent-browser screenshot
 **Expected result:**
 - The modal body text includes the owner name `testuser-e2e`
 - This makes it clear to the admin that they are deleting another user's documentation
-- The text might read something like "Delete variant for-testing-only/gemini/gemini-2.5-flash owned by testuser-e2e?"
+- The text might read something like "Delete variant for-testing-only/main/gemini/gemini-2.5-flash owned by testuser-e2e?"
 
 **Cancel:**
 ```shell
@@ -249,9 +225,9 @@ agent-browser click "#modal-cancel"
 
 ---
 
-### 15.7 Cleanup
+### 15.6 Cleanup
 
-Test 15 deletes only `userb-e2e`'s variants. The Delete All coverage in 15.5 should remove the re-created `userb-e2e` project group entirely, so no additional cleanup is required for that owner here.
+Test 15 deletes only `userb-e2e`'s variants. The Delete All coverage in 15.4 should remove the re-created `userb-e2e` project group entirely, so no additional cleanup is required for that owner here.
 
 **Ensure `testuser-e2e`'s variant remains for subsequent tests:**
 

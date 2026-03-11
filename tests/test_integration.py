@@ -72,7 +72,9 @@ async def test_full_flow_mock(client: AsyncClient, tmp_path: Path) -> None:
 
     with (
         patch("docsfy.main.check_ai_cli_available", return_value=(True, "")),
-        patch("docsfy.main.clone_repo", return_value=(tmp_path / "repo", "abc123")),
+        patch(
+            "docsfy.main.clone_repo", return_value=(tmp_path / "repo", "abc123", "main")
+        ),
         patch("docsfy.main.run_planner", return_value=sample_plan),
         patch(
             "docsfy.main.generate_all_pages",
@@ -117,16 +119,16 @@ async def test_full_flow_mock(client: AsyncClient, tmp_path: Path) -> None:
     assert data["variants"][0]["last_commit_sha"] == "abc123"
 
     # Check variant-specific details
-    response = await client.get("/api/projects/test-repo/claude/opus")
+    response = await client.get("/api/projects/test-repo/main/claude/opus")
     assert response.status_code == 200
     assert response.json()["last_commit_sha"] == "abc123"
 
     # Check docs are served via variant-specific route
-    response = await client.get("/docs/test-repo/claude/opus/index.html")
+    response = await client.get("/docs/test-repo/main/claude/opus/index.html")
     assert response.status_code == 200
     assert "test-repo" in response.text
 
-    response = await client.get("/docs/test-repo/claude/opus/introduction.html")
+    response = await client.get("/docs/test-repo/main/claude/opus/introduction.html")
     assert response.status_code == 200
     assert "Welcome!" in response.text
 
@@ -136,7 +138,7 @@ async def test_full_flow_mock(client: AsyncClient, tmp_path: Path) -> None:
     assert "test-repo" in response.text
 
     # Download via variant-specific route
-    response = await client.get("/api/projects/test-repo/claude/opus/download")
+    response = await client.get("/api/projects/test-repo/main/claude/opus/download")
     assert response.status_code == 200
     assert response.headers["content-type"] == "application/gzip"
 
@@ -146,8 +148,100 @@ async def test_full_flow_mock(client: AsyncClient, tmp_path: Path) -> None:
     assert response.headers["content-type"] == "application/gzip"
 
     # Delete variant
-    response = await client.delete("/api/projects/test-repo/claude/opus?owner=admin")
+    response = await client.delete(
+        "/api/projects/test-repo/main/claude/opus?owner=admin"
+    )
     assert response.status_code == 200
 
     response = await client.get("/api/projects/test-repo")
+    assert response.status_code == 404
+
+
+async def test_full_flow_with_branch(client: AsyncClient, tmp_path: Path) -> None:
+    """Test generation with explicit branch parameter."""
+    import docsfy.storage as storage
+
+    sample_plan = {
+        "project_name": "test-repo",
+        "tagline": "A test project",
+        "navigation": [
+            {
+                "group": "Getting Started",
+                "pages": [
+                    {
+                        "slug": "introduction",
+                        "title": "Introduction",
+                        "description": "Overview",
+                    },
+                ],
+            }
+        ],
+    }
+
+    with (
+        patch("docsfy.main.check_ai_cli_available", return_value=(True, "")),
+        patch(
+            "docsfy.main.clone_repo",
+            return_value=(tmp_path / "repo", "def456", "v2.0"),
+        ),
+        patch("docsfy.main.run_planner", return_value=sample_plan),
+        patch(
+            "docsfy.main.generate_all_pages",
+            return_value={"introduction": "# Intro\n\nWelcome v2!"},
+        ),
+    ):
+        from docsfy.main import _run_generation
+
+        await storage.save_project(
+            name="test-repo",
+            repo_url="https://github.com/org/test-repo.git",
+            status="generating",
+            ai_provider="claude",
+            ai_model="opus",
+            owner="admin",
+            branch="v2.0",
+        )
+
+        await _run_generation(
+            repo_url="https://github.com/org/test-repo.git",
+            repo_path=None,
+            project_name="test-repo",
+            ai_provider="claude",
+            ai_model="opus",
+            ai_cli_timeout=60,
+            owner="admin",
+            branch="v2.0",
+        )
+
+    # Check the project was saved with correct branch
+    project = await storage.get_project(
+        "test-repo", ai_provider="claude", ai_model="opus", owner="admin", branch="v2.0"
+    )
+    assert project is not None
+    assert project["branch"] == "v2.0"
+    assert project["status"] == "ready"
+    assert project["last_commit_sha"] == "def456"
+
+    # Check variant-specific endpoint with branch
+    response = await client.get("/api/projects/test-repo/v2.0/claude/opus")
+    assert response.status_code == 200
+    assert response.json()["last_commit_sha"] == "def456"
+
+    # Check docs served via branch-specific route
+    response = await client.get("/docs/test-repo/v2.0/claude/opus/index.html")
+    assert response.status_code == 200
+
+    # Download via branch-specific route
+    response = await client.get("/api/projects/test-repo/v2.0/claude/opus/download")
+    assert response.status_code == 200
+    assert response.headers["content-type"] == "application/gzip"
+
+    # Delete variant with branch
+    response = await client.delete(
+        "/api/projects/test-repo/v2.0/claude/opus?owner=admin"
+    )
+    assert response.status_code == 200
+
+    # Verify deleted
+    response = await client.get("/api/projects/test-repo/v2.0/claude/opus")
     assert response.status_code == 404
