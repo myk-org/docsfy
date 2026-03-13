@@ -7,6 +7,9 @@ from simple_logger.logger import get_logger
 
 from docsfy.ai_client import call_ai_cli, run_parallel_with_limit
 from docsfy.json_parser import parse_json_array_response, parse_json_response
+from pydantic import ValidationError
+
+from docsfy.models import DEFAULT_BRANCH, DocPlan
 from docsfy.prompts import (
     build_incremental_page_prompt,
     build_incremental_planner_prompt,
@@ -221,6 +224,18 @@ async def run_planner(
         msg = "Failed to parse planner output as JSON"
         raise RuntimeError(msg)
 
+    if not isinstance(plan, dict):
+        msg = f"[{project_name}] Planner returned {type(plan).__name__} instead of a JSON object"
+        raise RuntimeError(msg)
+
+    # Validate plan structure
+    try:
+        validated = DocPlan(**plan)
+        plan = validated.model_dump()
+    except ValidationError as exc:
+        msg = f"[{project_name}] Planner returned an invalid plan: {exc}"
+        raise RuntimeError(msg) from exc
+
     logger.info(
         f"[{project_name}] Plan generated: {len(plan.get('navigation', []))} groups"
     )
@@ -242,6 +257,7 @@ async def generate_page(
     existing_content: str | None = None,
     changed_files: list[str] | None = None,
     diff_content: str | None = None,
+    branch: str = DEFAULT_BRANCH,
 ) -> str:
     _label = project_name or repo_path.name
     prompt_project_name = project_name or repo_path.name
@@ -318,6 +334,7 @@ async def generate_page(
             owner=owner,
             status="generating",
             page_count=existing_pages,
+            branch=branch,
         )
 
     return output
@@ -336,6 +353,7 @@ async def generate_all_pages(
     changed_files: list[str] | None = None,
     existing_pages: dict[str, str] | None = None,
     diff_content: str | None = None,
+    branch: str = DEFAULT_BRANCH,
 ) -> dict[str, str]:
     _label = project_name or repo_path.name
 
@@ -377,6 +395,7 @@ async def generate_all_pages(
             existing_content=_existing_pages.get(p["slug"]),
             changed_files=changed_files,
             diff_content=diff_content,
+            branch=branch,
         )
         for p in all_pages
     ]

@@ -10,6 +10,8 @@ import markdown
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 from simple_logger.logger import get_logger
 
+from docsfy.models import DOCSFY_REPO_URL
+
 logger = get_logger(name=__name__)
 
 TEMPLATES_DIR = Path(__file__).parent / "templates"
@@ -347,6 +349,7 @@ def render_page(
         prev_page=prev_page,
         next_page=next_page,
         repo_url=repo_url,
+        docsfy_repo_url=DOCSFY_REPO_URL,
     )
 
 
@@ -364,6 +367,8 @@ def render_index(
         tagline=tagline,
         navigation=navigation,
         repo_url=repo_url,
+        current_slug="",
+        docsfy_repo_url=DOCSFY_REPO_URL,
     )
 
 

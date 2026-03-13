@@ -738,7 +738,7 @@ async def test_get_project_dir_includes_owner(db_path: Path) -> None:
 
     path = get_project_dir("my-repo", "claude", "opus", "alice")
     assert "alice" in str(path)
-    assert str(path).endswith("alice/my-repo/claude/opus")
+    assert path.parts[-5:] == ("alice", "my-repo", "main", "claude", "opus")
 
 
 async def test_get_project_dir_default_owner(db_path: Path) -> None:
@@ -746,6 +746,116 @@ async def test_get_project_dir_default_owner(db_path: Path) -> None:
 
     path = get_project_dir("my-repo", "claude", "opus", "")
     assert "_default" in str(path)
+
+
+# ---------------------------------------------------------------------------
+# Test: init_db with data_dir parameter (Fix 11)
+# ---------------------------------------------------------------------------
+
+
+async def test_save_and_get_project_with_branch(db_path: Path) -> None:
+    from docsfy.storage import get_project, save_project
+
+    await save_project(
+        name="my-repo",
+        repo_url="https://github.com/org/my-repo.git",
+        status="generating",
+        ai_provider="claude",
+        ai_model="opus",
+        owner="testuser",
+        branch="v2.0",
+    )
+    project = await get_project(
+        "my-repo",
+        ai_provider="claude",
+        ai_model="opus",
+        owner="testuser",
+        branch="v2.0",
+    )
+    assert project is not None
+    assert project["branch"] == "v2.0"
+
+
+async def test_same_repo_different_branches(db_path: Path) -> None:
+    from docsfy.storage import get_project, save_project
+
+    await save_project(
+        name="repo",
+        repo_url="https://github.com/org/repo.git",
+        status="ready",
+        ai_provider="claude",
+        ai_model="opus",
+        owner="user",
+        branch="main",
+    )
+    await save_project(
+        name="repo",
+        repo_url="https://github.com/org/repo.git",
+        status="generating",
+        ai_provider="claude",
+        ai_model="opus",
+        owner="user",
+        branch="v2.0",
+    )
+    main_proj = await get_project(
+        "repo", ai_provider="claude", ai_model="opus", owner="user", branch="main"
+    )
+    v2 = await get_project(
+        "repo", ai_provider="claude", ai_model="opus", owner="user", branch="v2.0"
+    )
+    assert main_proj is not None
+    assert v2 is not None
+    assert main_proj["status"] == "ready"
+    assert v2["status"] == "generating"
+
+
+async def test_delete_project_with_branch(db_path: Path) -> None:
+    from docsfy.storage import delete_project, get_project, save_project
+
+    await save_project(
+        name="repo",
+        repo_url="https://github.com/org/repo.git",
+        status="ready",
+        ai_provider="claude",
+        ai_model="opus",
+        owner="user",
+        branch="v2.0",
+    )
+    result = await delete_project(
+        "repo", ai_provider="claude", ai_model="opus", owner="user", branch="v2.0"
+    )
+    assert result is True
+    project = await get_project(
+        "repo", ai_provider="claude", ai_model="opus", owner="user", branch="v2.0"
+    )
+    assert project is None
+
+
+async def test_get_project_dir_with_branch(db_path: Path) -> None:
+    from docsfy.storage import PROJECTS_DIR, get_project_dir
+
+    result = get_project_dir(
+        "my-repo", ai_provider="claude", ai_model="opus", owner="user", branch="main"
+    )
+    assert result == PROJECTS_DIR / "user" / "my-repo" / "main" / "claude" / "opus"
+
+
+async def test_migration_adds_branch_default(db_path: Path) -> None:
+    from docsfy.storage import get_project, save_project
+
+    await save_project(
+        name="old-repo",
+        repo_url="https://github.com/org/old.git",
+        status="ready",
+        ai_provider="claude",
+        ai_model="opus",
+        owner="user",
+    )
+    project = await get_project(
+        "old-repo", ai_provider="claude", ai_model="opus", owner="user"
+    )
+    assert project is not None
+    assert project["branch"] == "main"
 
 
 # ---------------------------------------------------------------------------
@@ -777,3 +887,48 @@ async def test_init_db_with_data_dir(tmp_path: Path) -> None:
         storage.DB_PATH = orig_db_path
         storage.DATA_DIR = orig_data_dir
         storage.PROJECTS_DIR = orig_projects_dir
+
+
+async def test_get_known_branches(db_path: Path) -> None:
+    from docsfy.storage import get_known_branches, save_project, update_project_status
+
+    await save_project(
+        name="repo1",
+        repo_url="https://github.com/org/repo1.git",
+        status="generating",
+        ai_provider="claude",
+        ai_model="opus",
+        owner="user",
+        branch="main",
+    )
+    await update_project_status(
+        "repo1", "claude", "opus", status="ready", owner="user", branch="main"
+    )
+    await save_project(
+        name="repo1",
+        repo_url="https://github.com/org/repo1.git",
+        status="generating",
+        ai_provider="claude",
+        ai_model="opus",
+        owner="user",
+        branch="v2.0",
+    )
+    await update_project_status(
+        "repo1", "claude", "opus", status="ready", owner="user", branch="v2.0"
+    )
+    # This one is still generating, should not appear
+    await save_project(
+        name="repo1",
+        repo_url="https://github.com/org/repo1.git",
+        status="generating",
+        ai_provider="claude",
+        ai_model="opus",
+        owner="user",
+        branch="dev",
+    )
+
+    branches = await get_known_branches()
+    assert "repo1" in branches
+    assert "main" in branches["repo1"]
+    assert "v2.0" in branches["repo1"]
+    assert "dev" not in branches["repo1"]

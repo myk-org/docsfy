@@ -4,39 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>docsfy - Login</title>
+    {% include '_app_styles.html' %}
     <style>
-    :root {
-        --bg-primary: #ffffff;
-        --bg-secondary: #f9fafb;
-        --text-primary: #111827;
-        --text-secondary: #4b5563;
-        --border-primary: #e5e7eb;
-        --border-focus: #4f46e5;
-        --accent: #4f46e5;
-        --accent-light: #eef2ff;
-        --accent-hover: #4338ca;
-        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
-        --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-        --transition-fast: 150ms ease;
-    }
-
-    [data-theme="dark"] {
-        --bg-primary: #0f1117;
-        --bg-secondary: #161822;
-        --text-primary: #e5e7eb;
-        --text-secondary: #9ca3af;
-        --border-primary: #2e3248;
-        --border-focus: #818cf8;
-        --accent: #818cf8;
-        --accent-light: #1e1b4b;
-        --accent-hover: #a5b4fc;
-        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
-    }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-        font-family: var(--font-sans);
         background: var(--bg-secondary);
-        color: var(--text-primary);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -112,31 +83,11 @@
         color: #fca5a5;
         border-color: #7f1d1d;
     }
-    .brand-accent {
-        color: var(--accent);
-    }
     .theme-toggle {
         position: fixed;
         top: 1rem;
         right: 1rem;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 36px;
-        height: 36px;
-        border: 1px solid var(--border-primary);
-        border-radius: 8px;
-        background: var(--bg-primary);
-        color: var(--text-secondary);
-        cursor: pointer;
-        transition: color var(--transition-fast), border-color var(--transition-fast);
     }
-    .theme-toggle:hover {
-        color: var(--text-primary);
-        border-color: var(--border-focus);
-    }
-    [data-theme="dark"] .icon-sun { display: none; }
-    [data-theme="light"] .icon-moon { display: none; }
     </style>
 </head>
 <body>
