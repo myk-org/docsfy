@@ -465,7 +465,6 @@
         border: 1px solid var(--border-primary);
         border-radius: 8px;
         margin-bottom: 1rem;
-        overflow: hidden;
     }
 
     .group-header {
@@ -474,6 +473,7 @@
         gap: 0.75rem;
         padding: 1rem 1.25rem;
         border-bottom: 1px solid var(--border-primary);
+        border-radius: 8px 8px 0 0;
         background: var(--bg-secondary);
         cursor: pointer;
     }
@@ -483,6 +483,15 @@
         color: var(--text-tertiary);
         flex-shrink: 0;
     }
+    .project-group > :last-child {
+        border-radius: 0 0 8px 8px;
+    }
+
+    .project-group.collapsed .group-header {
+        border-radius: 8px;
+        border-bottom: none;
+    }
+
     .project-group.collapsed .group-toggle-icon {
         transform: rotate(-90deg);
     }
