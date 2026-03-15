@@ -12,8 +12,8 @@ def test_default_settings() -> None:
     with patch.dict(os.environ, {}, clear=True):
         settings = Settings(_env_file=None)
     assert settings.admin_key == ""
-    assert settings.ai_provider == "claude"
-    assert settings.ai_model == "claude-opus-4-6[1m]"
+    assert settings.ai_provider == "cursor"
+    assert settings.ai_model == "gpt-5.4-xhigh-fast"
     assert settings.ai_cli_timeout == 60
     assert settings.log_level == "INFO"
     assert settings.data_dir == "/data"

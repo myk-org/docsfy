@@ -382,7 +382,7 @@ async def test_viewer_cannot_delete(_init_db: None) -> None:
         base_url="http://test",
         headers={"Authorization": f"Bearer {viewer_key}"},
     ) as ac:
-        response = await ac.delete("/api/projects/proj-del/claude/opus")
+        response = await ac.delete("/api/projects/proj-del/main/claude/opus")
     assert response.status_code == 403
     _generating.clear()
 
