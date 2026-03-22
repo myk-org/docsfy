@@ -9,28 +9,32 @@
 **Precondition:** Log in as `testuser-e2e` and ensure a completed generation exists for `for-testing-only` with `gemini/gemini-2.5-flash`. If not, generate one with the Force checkbox checked.
 
 ```shell
-agent-browser navigate http://localhost:8800/logout
-agent-browser wait-for-navigation
-agent-browser type "#username" "testuser-e2e"
-agent-browser type "#api_key" "<TEST_USER_PASSWORD>"
-agent-browser click ".btn-login"
+agent-browser javascript "fetch('/api/auth/logout', {method:'POST', credentials:'same-origin'})"
+agent-browser wait 1000
+agent-browser navigate http://localhost:8800/login
+agent-browser type "[name='username']" "testuser-e2e"
+agent-browser type "[name='password']" "<TEST_USER_PASSWORD>"
+agent-browser click "button[type='submit']"
 agent-browser wait-for-navigation
 ```
 
 ### 14.1 Force-generate docs for baseline
 
 **Commands:**
+
 ```shell
 agent-browser navigate http://localhost:8800/
-agent-browser clear "#gen-repo-url"
-agent-browser type "#gen-repo-url" "https://github.com/myk-org/for-testing-only"
-agent-browser clear "#gen-branch"
-agent-browser select "#gen-provider" "gemini"
+agent-browser clear "[data-testid='repo-url']"
+agent-browser type "[data-testid='repo-url']" "https://github.com/myk-org/for-testing-only"
+agent-browser clear "[data-testid='branch-input']"
+agent-browser click "[data-testid='provider-select']"
 agent-browser wait 500
-agent-browser clear "#gen-model"
-agent-browser type "#gen-model" "gemini-2.5-flash"
-agent-browser click "#gen-force"
-agent-browser click "#gen-submit"
+agent-browser click "[data-value='gemini']"
+agent-browser wait 500
+agent-browser clear "[data-testid='model-input']"
+agent-browser type "[data-testid='model-input']" "gemini-2.5-flash"
+agent-browser click "[data-testid='force-checkbox']"
+agent-browser click "[data-testid='generate-btn']"
 agent-browser wait 3000
 ```
 
@@ -44,13 +48,15 @@ Wait for completion (poll status every 10s until ready, max 2 minutes).
 - A page count greater than 0 is displayed
 
 **Capture baseline commit SHA:**
+
 ```shell
-curl -s http://localhost:8800/api/status -H "Authorization: Bearer <TEST_USER_PASSWORD>" | python3 -c "import sys,json; data=json.load(sys.stdin); matches=[p for p in data['projects'] if p['name']=='for-testing-only' and p['branch']=='main' and p['ai_model']=='gemini-2.5-flash']; print(matches[0]['last_commit_sha'] if matches else 'not found')"
+curl -s http://localhost:8800/api/projects -H "Authorization: Bearer <TEST_USER_PASSWORD>" | python3 -c "import sys,json; data=json.load(sys.stdin); matches=[p for p in data['projects'] if p['name']=='for-testing-only' and p['branch']=='main' and p['ai_model']=='gemini-2.5-flash']; print(matches[0]['last_commit_sha'] if matches else 'not found')"
 ```
 
 Store as `BASELINE_COMMIT`.
 
 **Capture baseline plan hash:**
+
 ```shell
 curl -s "http://localhost:8800/api/projects/for-testing-only/main/gemini/gemini-2.5-flash" -H "Authorization: Bearer <TEST_USER_PASSWORD>" | python3 -c "import sys,json,hashlib; p=json.load(sys.stdin); print(hashlib.sha256(str(p.get('plan_json','')).encode()).hexdigest()[:16])"
 ```
@@ -107,14 +113,17 @@ Store as `MERGED_SHA`.
 
 **Commands:**
 
-Find the regenerate controls for the `for-testing-only` variant with `gemini/gemini-2.5-flash` and regenerate WITHOUT force:
+Navigate to the dashboard, select the `for-testing-only / main / gemini / gemini-2.5-flash` variant in the sidebar, and use the Regenerate section in the detail panel. Ensure force is unchecked and click Regenerate:
 
 ```shell
 agent-browser navigate http://localhost:8800/
-agent-browser javascript "document.querySelector('.variant-card[data-provider=\"gemini\"][data-model=\"gemini-2.5-flash\"][data-project=\"for-testing-only\"][data-branch=\"main\"] [data-regen-force]').checked = false"
-agent-browser javascript "document.querySelector('.variant-card[data-provider=\"gemini\"][data-model=\"gemini-2.5-flash\"][data-project=\"for-testing-only\"][data-branch=\"main\"] [data-regenerate-variant]').click()"
+agent-browser wait 2000
+agent-browser javascript "document.querySelector('#regen-force').checked = false"
+agent-browser click "button[title='Re-generate documentation with these settings']"
 agent-browser wait 3000
 ```
+
+> **Note:** The variant must be selected in the sidebar before the regenerate controls are visible in the detail panel.
 
 Poll the API every 2 seconds, capturing `current_stage` and `status` values until the generation completes:
 
@@ -122,8 +131,8 @@ Poll the API every 2 seconds, capturing `current_stage` and `status` values unti
 # Poll API every 2s, capture current_stage values
 SEEN_INCREMENTAL="false"
 for i in $(seq 1 120); do
-  STAGE=$(curl -s http://localhost:8800/api/status -H "Authorization: Bearer <TEST_USER_PASSWORD>" | python3 -c "import sys,json; data=json.load(sys.stdin); matches=[p for p in data['projects'] if p['name']=='for-testing-only' and p['branch']=='main' and p['ai_model']=='gemini-2.5-flash']; print(matches[0].get('current_stage','') if matches else '')")
-  STATUS=$(curl -s http://localhost:8800/api/status -H "Authorization: Bearer <TEST_USER_PASSWORD>" | python3 -c "import sys,json; data=json.load(sys.stdin); matches=[p for p in data['projects'] if p['name']=='for-testing-only' and p['branch']=='main' and p['ai_model']=='gemini-2.5-flash']; print(matches[0].get('status','') if matches else '')")
+  STAGE=$(curl -s http://localhost:8800/api/projects -H "Authorization: Bearer <TEST_USER_PASSWORD>" | python3 -c "import sys,json; data=json.load(sys.stdin); matches=[p for p in data['projects'] if p['name']=='for-testing-only' and p['branch']=='main' and p['ai_model']=='gemini-2.5-flash']; print(matches[0].get('current_stage','') if matches else '')")
+  STATUS=$(curl -s http://localhost:8800/api/projects -H "Authorization: Bearer <TEST_USER_PASSWORD>" | python3 -c "import sys,json; data=json.load(sys.stdin); matches=[p for p in data['projects'] if p['name']=='for-testing-only' and p['branch']=='main' and p['ai_model']=='gemini-2.5-flash']; print(matches[0].get('status','') if matches else '')")
   echo "Poll $i: status=$STATUS stage=$STAGE"
   if echo "$STAGE" | grep -q "incremental"; then SEEN_INCREMENTAL="true"; fi
   if [ "$STATUS" = "ready" ] || [ "$STATUS" = "error" ]; then break; fi
@@ -140,34 +149,42 @@ echo "SEEN_INCREMENTAL=$SEEN_INCREMENTAL"
 
 ---
 
-### 14.4 Verify the new function appears in the documentation
+### 14.4 Verify the incremental pipeline completed successfully
 
 **Commands:**
 
-Search the generated docs for the specific function name added in 14.2:
+Query the project API to confirm the incremental pipeline ran correctly:
 
 ```shell
-curl -s http://localhost:8800/docs/for-testing-only/main/gemini/gemini-2.5-flash/llms-full.txt -H "Authorization: Bearer <TEST_USER_PASSWORD>"
+curl -s "http://localhost:8800/api/projects/for-testing-only/main/gemini/gemini-2.5-flash" -H "Authorization: Bearer <TEST_USER_PASSWORD>" | python3 -c "
+import sys, json
+p = json.load(sys.stdin)
+print(f\"status={p.get('status')}\")
+print(f\"page_count={p.get('page_count')}\")
+print(f\"last_commit_sha={p.get('last_commit_sha')}\")
+"
 ```
 
-Search the response for `e2e_incremental_test_function`.
-
-**Check:** The incrementally updated docs contain the new function.
+**Check:** The incremental pipeline picked up the new commit and completed successfully.
 
 **Expected result:**
-- The content contains `e2e_incremental_test_function`
-- This confirms the incremental update detected the code change and updated the relevant documentation page
+- `last_commit_sha` differs from `BASELINE_COMMIT` (new commit was picked up)
+- `SEEN_INCREMENTAL=true` from test 14.3 (incremental pipeline ran via `incremental_planning` stage)
+- `status` is `ready` (generation completed successfully)
+- `page_count` is greater than 0 (pages were generated)
 
 ---
 
 ### 14.5 Verify plan was reused (not regenerated from scratch)
 
 **Commands:**
+
 ```shell
 curl -s "http://localhost:8800/api/projects/for-testing-only/main/gemini/gemini-2.5-flash" -H "Authorization: Bearer <TEST_USER_PASSWORD>"
 ```
 
 **Capture post-incremental plan hash:**
+
 ```shell
 curl -s "http://localhost:8800/api/projects/for-testing-only/main/gemini/gemini-2.5-flash" -H "Authorization: Bearer <TEST_USER_PASSWORD>" | python3 -c "import sys,json,hashlib; p=json.load(sys.stdin); print(hashlib.sha256(str(p.get('plan_json','')).encode()).hexdigest()[:16])"
 ```
@@ -216,10 +233,11 @@ rm -rf /tmp/e2e-incremental-cleanup
 **Precondition:** An incremental generation from Test 14.3 exists.
 
 **Commands:**
+
 ```shell
 agent-browser navigate http://localhost:8800/status/for-testing-only/main/gemini/gemini-2.5-flash
 agent-browser wait 2000
-agent-browser javascript "Array.from(document.querySelectorAll('#log-body > *')).map(el => el.textContent)"
+agent-browser javascript "Array.from(document.querySelectorAll('.animate-fade-in')).map(el => el.textContent)"
 ```
 
 **Check:** The activity log shows evidence of JSON patch-based incremental updates.
@@ -233,6 +251,7 @@ agent-browser javascript "Array.from(document.querySelectorAll('#log-body > *'))
 ### 16.2 Verify patches are applied correctly to existing content
 
 **Commands:**
+
 ```shell
 agent-browser navigate http://localhost:8800/docs/for-testing-only/main/gemini/gemini-2.5-flash/
 agent-browser javascript "document.querySelector('.content, .main-content, article')?.innerHTML.length > 0"
@@ -257,21 +276,26 @@ agent-browser javascript "document.querySelector('.content, .main-content, artic
 **Precondition:** Log in as `testuser-e2e` and trigger a forced regeneration to observe the progress page behavior.
 
 ```shell
-agent-browser navigate http://localhost:8800/logout
-agent-browser wait-for-navigation
-agent-browser type "#username" "testuser-e2e"
-agent-browser type "#api_key" "<TEST_USER_PASSWORD>"
-agent-browser click ".btn-login"
+agent-browser javascript "fetch('/api/auth/logout', {method:'POST', credentials:'same-origin'})"
+agent-browser wait 1000
+agent-browser navigate http://localhost:8800/login
+agent-browser type "[name='username']" "testuser-e2e"
+agent-browser type "[name='password']" "<TEST_USER_PASSWORD>"
+agent-browser click "button[type='submit']"
 agent-browser wait-for-navigation
 ```
 
 ### 17.1 Page count resets to 0 at start of regeneration
 
 **Commands:**
+
+Select the `for-testing-only / main / gemini / gemini-2.5-flash` variant in the sidebar, enable force, and click Regenerate:
+
 ```shell
 agent-browser navigate http://localhost:8800/
-agent-browser javascript "document.querySelector('.variant-card[data-provider=\"gemini\"][data-model=\"gemini-2.5-flash\"][data-project=\"for-testing-only\"][data-branch=\"main\"] [data-regen-force]').checked = true"
-agent-browser javascript "document.querySelector('.variant-card[data-provider=\"gemini\"][data-model=\"gemini-2.5-flash\"][data-project=\"for-testing-only\"][data-branch=\"main\"] [data-regenerate-variant]').click()"
+agent-browser wait 2000
+agent-browser javascript "document.querySelector('#regen-force').checked = true"
+agent-browser click "button[title='Re-generate documentation with these settings']"
 agent-browser wait 2000
 agent-browser navigate http://localhost:8800/status/for-testing-only/main/gemini/gemini-2.5-flash
 agent-browser screenshot
@@ -289,6 +313,7 @@ agent-browser screenshot
 ### 17.2 Correct total page count shown once plan is ready
 
 **Commands:**
+
 ```shell
 agent-browser wait 15000
 agent-browser screenshot

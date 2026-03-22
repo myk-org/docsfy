@@ -1,13 +1,22 @@
 services:
   docsfy:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
     ports:
       - "8000:8000"
-    env_file: .env
+      # Uncomment for development (DEV_MODE=true)
+      # - "5173:5173"
     volumes:
       - ./data:/data
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+      # Uncomment for development (hot reload)
+      # - ./frontend:/app/frontend
+    env_file:
+      - .env
+    environment:
+      # WARNING: ADMIN_KEY must be set in your .env file or shell environment.
+      # An empty ADMIN_KEY will cause the application to reject all admin requests.
+      - ADMIN_KEY=${ADMIN_KEY}
+      # Uncomment for development
+      # - DEV_MODE=true
+    restart: unless-stopped

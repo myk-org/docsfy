@@ -36,4 +36,8 @@ htmlcov/
 dist/
 build/
 
+# Frontend
+frontend/node_modules/
+frontend/dist/
+
 UI-TESTS-RESULTS.md

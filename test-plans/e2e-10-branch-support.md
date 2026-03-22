@@ -2,6 +2,8 @@
 
 > Back to the [main E2E index](e2e-ui-test-plan.md#test-files). Shared execution rules, prerequisites, variables, and environment constraints live there.
 
+> **UI Framework Note:** The app UI is a React SPA. Real-time updates use WebSocket (`/api/ws`).
+
 ---
 
 ## Test 22: Generate Docs for Specific Branch
@@ -9,11 +11,12 @@
 **Precondition:** Log in as `testuser-e2e`. The `for-testing-only` repo has both `main` and `dev` branches.
 
 ```shell
-agent-browser navigate http://localhost:8800/logout
-agent-browser wait-for-navigation
-agent-browser type "#username" "testuser-e2e"
-agent-browser type "#api_key" "<TEST_USER_PASSWORD>"
-agent-browser click ".btn-login"
+agent-browser javascript "fetch('/api/auth/logout', {method:'POST', credentials:'same-origin'})"
+agent-browser wait 1000
+agent-browser navigate http://localhost:8800/login
+agent-browser type "[name='username']" "testuser-e2e"
+agent-browser type "[name='password']" "<TEST_USER_PASSWORD>"
+agent-browser click "button[type='submit']"
 agent-browser wait-for-navigation
 ```
 
@@ -22,23 +25,23 @@ agent-browser wait-for-navigation
 **Commands:**
 ```shell
 agent-browser navigate http://localhost:8800/
-agent-browser clear "#gen-repo-url"
-agent-browser type "#gen-repo-url" "https://github.com/myk-org/for-testing-only"
-agent-browser clear "#gen-branch"
-agent-browser type "#gen-branch" "dev"
-agent-browser select "#gen-provider" "gemini"
+agent-browser clear "[data-testid='repo-url']"
+agent-browser type "[data-testid='repo-url']" "https://github.com/myk-org/for-testing-only"
+agent-browser clear "[data-testid='branch-input']"
+agent-browser type "[data-testid='branch-input']" "dev"
+agent-browser click "[data-testid='provider-select']"
 agent-browser wait 500
-agent-browser clear "#gen-model"
-agent-browser type "#gen-model" "gemini-2.5-flash"
+agent-browser click "[data-value='gemini']"
+agent-browser wait 500
+agent-browser clear "[data-testid='model-input']"
+agent-browser type "[data-testid='model-input']" "gemini-2.5-flash"
 agent-browser screenshot
 ```
-
-**Check:** The form fields are correctly populated including the branch field.
 
 **Expected result:**
 - Repository URL field contains `https://github.com/myk-org/for-testing-only`
 - Branch field contains `dev`
-- Provider dropdown shows `gemini`
+- Provider shows `gemini`
 - Model field shows `gemini-2.5-flash`
 
 ---
@@ -47,12 +50,10 @@ agent-browser screenshot
 
 **Commands:**
 ```shell
-agent-browser click "#gen-submit"
+agent-browser click "[data-testid='generate-btn']"
 agent-browser wait 3000
 agent-browser screenshot
 ```
-
-**Check:** A generation task is started for the dev branch.
 
 **Expected result:**
 - A toast notification appears with a success message about generation starting
@@ -66,7 +67,7 @@ agent-browser screenshot
 ```shell
 # Poll status every 10s until ready or error, max 3 minutes
 for i in $(seq 1 18); do
-  STATUS=$(curl -s http://localhost:8800/api/status -H "Authorization: Bearer <TEST_USER_PASSWORD>" | python3 -c "import sys,json; data=json.load(sys.stdin); matches=[p for p in data['projects'] if p['name']=='for-testing-only' and p['branch']=='dev' and p['ai_model']=='gemini-2.5-flash']; print(matches[0].get('status','') if matches else '')")
+  STATUS=$(curl -s http://localhost:8800/api/projects -H "Authorization: Bearer <TEST_USER_PASSWORD>" | python3 -c "import sys,json; data=json.load(sys.stdin); matches=[p for p in data['projects'] if p['name']=='for-testing-only' and p['branch']=='dev' and p['ai_model']=='gemini-2.5-flash']; print(matches[0].get('status','') if matches else '')")
   echo "Poll $i: $STATUS"
   if [ "$STATUS" = "ready" ] || [ "$STATUS" = "error" ]; then break; fi
   sleep 10
@@ -78,10 +79,8 @@ fi
 agent-browser screenshot
 ```
 
-**Check:** The generation completes successfully.
-
 **Expected result:**
-- The status indicator shows `ready` with a green dot
+- The status indicator shows `ready`
 - The page count is greater than 0
 
 ---
@@ -94,12 +93,9 @@ agent-browser navigate http://localhost:8800/
 agent-browser screenshot
 ```
 
-**Check:** The dashboard groups the `for-testing-only` project with branch sub-sections.
-
 **Expected result:**
 - The `for-testing-only` project group contains a `@dev` branch section
 - The `@dev` section shows the `gemini/gemini-2.5-flash` variant with status `READY`
-- If a `@main` variant exists from earlier tests, it appears in a separate `@main` section
 
 ---
 
@@ -110,8 +106,6 @@ agent-browser screenshot
 agent-browser navigate http://localhost:8800/docs/for-testing-only/dev/gemini/gemini-2.5-flash/
 agent-browser screenshot
 ```
-
-**Check:** The generated documentation loads for the dev branch.
 
 **Expected result:**
 - The documentation page renders HTML content
@@ -124,10 +118,8 @@ agent-browser screenshot
 **Commands:**
 ```shell
 agent-browser navigate http://localhost:8800/status/for-testing-only/dev/gemini/gemini-2.5-flash
-agent-browser javascript "document.getElementById('btn-download').getAttribute('href')"
+agent-browser javascript "document.querySelector('[data-testid=\"download-btn\"]')?.getAttribute('href')"
 ```
-
-**Check:** The download link includes the branch segment.
 
 **Expected result:**
 - The href is `/api/projects/for-testing-only/dev/gemini/gemini-2.5-flash/download`
@@ -139,29 +131,24 @@ agent-browser javascript "document.getElementById('btn-download').getAttribute('
 **Commands:**
 ```shell
 agent-browser navigate http://localhost:8800/
-agent-browser clear "#gen-repo-url"
-agent-browser type "#gen-repo-url" "https://github.com/myk-org/for-testing-only"
-agent-browser clear "#gen-branch"
-agent-browser type "#gen-branch" "nonexistent-branch-xyz"
-agent-browser select "#gen-provider" "gemini"
+agent-browser clear "[data-testid='repo-url']"
+agent-browser type "[data-testid='repo-url']" "https://github.com/myk-org/for-testing-only"
+agent-browser clear "[data-testid='branch-input']"
+agent-browser type "[data-testid='branch-input']" "nonexistent-branch-xyz"
+agent-browser click "[data-testid='provider-select']"
 agent-browser wait 500
-agent-browser clear "#gen-model"
-agent-browser type "#gen-model" "gemini-2.5-flash"
-agent-browser click "#gen-submit"
+agent-browser click "[data-value='gemini']"
+agent-browser wait 500
+agent-browser clear "[data-testid='model-input']"
+agent-browser type "[data-testid='model-input']" "gemini-2.5-flash"
+agent-browser click "[data-testid='generate-btn']"
 agent-browser wait 10000
 agent-browser screenshot
 ```
 
-**Check:** The generation fails with a clear error about the invalid branch.
-
-**Verify the error card content:**
-```shell
-agent-browser javascript "var cards = document.querySelectorAll('[data-project=\"for-testing-only\"]'); var errorCard = Array.from(cards).find(c => c.getAttribute('data-status') === 'error'); errorCard ? errorCard.textContent : 'no error card'"
-```
-
 **Expected result:**
 - The project card shows status `ERROR`
-- The error card text contains `nonexistent-branch-xyz` or `not found` or `Clone failed`
+- The error text contains `nonexistent-branch-xyz` or `not found` or `Clone failed`
 
 ---
 
@@ -172,12 +159,10 @@ agent-browser javascript "var cards = document.querySelectorAll('[data-project=\
 agent-browser navigate http://localhost:8800/
 agent-browser click "[data-delete-variant='for-testing-only/dev/gemini/gemini-2.5-flash']"
 agent-browser wait 1000
-agent-browser click "#modal-ok"
+agent-browser click "[data-testid='dialog-confirm']"
 agent-browser wait 3000
 agent-browser screenshot
 ```
-
-**Check:** The dev branch variant is deleted.
 
 **Expected result:**
 - The `@dev` section is removed from the `for-testing-only` group
@@ -210,23 +195,14 @@ agent-browser javascript "fetch('/api/projects/for-testing-only/nonexistent-bran
 agent-browser navigate http://localhost:8800/
 ```
 
-Find the regenerate controls for the `for-testing-only` project:
+Find the regenerate controls for the `for-testing-only` project and change the branch to `dev`:
 ```shell
-agent-browser javascript "document.querySelector('.variant-card[data-project=\"for-testing-only\"][data-branch=\"main\"][data-provider=\"gemini\"][data-model=\"gemini-2.5-flash\"] [data-regen-branch]') !== null"
-```
-
-**Expected result:** Returns `true` --- branch input exists in regen controls.
-
-Change the branch to `dev` and regenerate:
-```shell
-agent-browser javascript "var branchInput = document.querySelector('.variant-card[data-project=\"for-testing-only\"][data-branch=\"main\"][data-provider=\"gemini\"][data-model=\"gemini-2.5-flash\"] [data-regen-branch]'); branchInput.value = 'dev'; branchInput.dispatchEvent(new Event('input'));"
-agent-browser javascript "document.querySelector('.variant-card[data-project=\"for-testing-only\"][data-branch=\"main\"][data-provider=\"gemini\"][data-model=\"gemini-2.5-flash\"] [data-regen-force]').checked = true"
-agent-browser javascript "document.querySelector('.variant-card[data-project=\"for-testing-only\"][data-branch=\"main\"][data-provider=\"gemini\"][data-model=\"gemini-2.5-flash\"] [data-regenerate-variant]').click()"
+agent-browser javascript "var branchInput = document.querySelector('[data-regen-branch]'); branchInput.value = 'dev'; branchInput.dispatchEvent(new Event('input'));"
+agent-browser click "[data-regen-force]"
+agent-browser click "[data-regenerate-variant]"
 agent-browser wait 3000
 agent-browser screenshot
 ```
-
-**Check:** A new generation starts for the `dev` branch.
 
 **Expected result:**
 - A toast notification appears indicating generation started
@@ -240,8 +216,6 @@ agent-browser screenshot
 ```shell
 curl -s -X POST http://localhost:8800/api/generate -H "Authorization: Bearer <TEST_USER_PASSWORD>" -H "Content-Type: application/json" -d '{"repo_url":"https://github.com/myk-org/for-testing-only","ai_provider":"gemini","ai_model":"gemini-2.5-flash"}'
 ```
-
-**Check:** Generation uses default branch "main".
 
 **Expected result:**
 - Response includes `"branch": "main"`

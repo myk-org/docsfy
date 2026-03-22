@@ -11,7 +11,7 @@ These rules apply to every `###` test subsection in this plan.
 5. If a test cannot run because an external prerequisite is missing, record it as `blocked` and continue unless that prerequisite blocks the rest of the plan.
 6. Only after executing all required tests, report the collected failed tests and discovered bugs, and only then start fixing the bugs.
 7. After fixing all bugs, re-run ONLY the previously failed tests with the fixed code. Repeat this fix-and-rerun cycle until all tests pass. The test plan is complete only when every test has passed.
-8. **NEVER stop to ask the user if they want to continue.** Execute ALL tests from start to finish without pausing for confirmation. Do not ask "should I continue?", "this will take a long time, are you sure?", or any similar question. The user already told you to run all tests — run them.
+8. **NEVER stop to ask the user if they want to continue.** Execute ALL tests from start to finish without pausing for confirmation. Do not ask "should I continue?", "this will take a long time, are you sure?", or any similar question. The user already told you to run all tests --- run them.
 9. **NEVER skip tests.** Every test section must be executed in order. Do not summarize, batch, or skip tests to "save time". Execute each test step exactly as written.
 10. **NEVER suggest running a subset of tests.** When asked to run the e2e tests, that means ALL of them, every single one, in order.
 11. **Log every test result to `UI-TESTS-RESULTS.md`.** As each `###` test subsection completes, append a row to `UI-TESTS-RESULTS.md` in the project root. Use this format:
@@ -87,6 +87,8 @@ These rules apply to ALL tests in this plan. The AI runner MUST follow them with
 - **Admin API key:** Read from `.dev/.env` file, variable `ADMIN_KEY`
 - The AI reads this value once at the start and uses it for all admin operations
 - Never hardcode the admin key in test steps
+- **Login endpoint:** `POST /api/auth/login` (JSON body: `{"username": "...", "api_key": "..."}`)
+- **Logout endpoint:** `POST /api/auth/logout`
 
 ### Test Repository
 - **URL:** `https://github.com/myk-org/for-testing-only`
@@ -100,8 +102,14 @@ These rules apply to ALL tests in this plan. The AI runner MUST follow them with
   - `gemini/gemini-2.5-flash`
   - `gemini/gemini-2.0-flash`
 - The default provider/model check (Test 6.0) verifies the configured defaults, which may differ from the generation test models
-- All doc generation steps must explicitly select the test model — never rely on defaults
+- All doc generation steps must explicitly select the test model --- never rely on defaults
 - Cross-model coverage in this plan uses these two Gemini models (different models, same provider) to exercise the variant replacement/update behavior
+
+### UI Framework
+- The app UI is a React SPA served from `frontend/dist`
+- UI components use shadcn/ui and Tailwind CSS
+- Real-time updates use WebSocket (`/api/ws`) instead of HTTP polling
+- Modals, toasts, and dialogs are React components (not browser native dialogs)
 
 ## Prerequisites
 
@@ -144,15 +152,17 @@ Each linked sub-file contains only the detailed test bodies for its assigned sec
 
 | File | Tests | Description |
 |---|---|---|
-| [e2e-01-auth-and-roles.md](e2e-01-auth-and-roles.md) | 1-5 | Login, Admin Panel, User/Viewer/Admin role permissions |
-| [e2e-02-generation-and-dashboard.md](e2e-02-generation-and-dashboard.md) | 6-7 | Doc Generation (default provider/model verification, branch combobox), Dashboard Features |
+| [e2e-01-auth-and-roles.md](e2e-01-auth-and-roles.md) | 1-5 | Login, Admin Panel (incl. Users panel rendering, change password UX), User/Viewer/Admin role permissions |
+| [e2e-02-generation-and-dashboard.md](e2e-02-generation-and-dashboard.md) | 6-7 | Doc Generation (default provider/model verification, branch combobox), Dashboard Features (incl. post-login project loading, new generation auto-select) |
 | [e2e-03-docs-quality-and-ui.md](e2e-03-docs-quality-and-ui.md) | 8-10 | Generated Docs Quality, Status Page, Custom Modals |
 | [e2e-04-isolation-and-auth.md](e2e-04-isolation-and-auth.md) | 11-13 | Cross-User Isolation, Logout, Direct URL Authorization |
 | [e2e-05-incremental-updates.md](e2e-05-incremental-updates.md) | 14, 16-17 | Incremental Documentation Updates, JSON Patch, Progress Page |
 | [e2e-06-delete-and-owner.md](e2e-06-delete-and-owner.md) | 15 | Delete with Owner Scoping |
-| [e2e-07-ui-components.md](e2e-07-ui-components.md) | 18-19 | Username Dropdown Menu, Variant Card Visual Hierarchy |
+| [e2e-07-ui-components.md](e2e-07-ui-components.md) | 18-19, 25-26 | Username Dropdown Menu (incl. theme persistence, first-click toggle), Sidebar Collapse Toggle, Dialog Theme Consistency, Variant Card Visual Hierarchy |
 | [e2e-08-cross-model-updates.md](e2e-08-cross-model-updates.md) | 20 | Cross-Model Incremental Updates |
 | [e2e-10-branch-support.md](e2e-10-branch-support.md) | 22 | Branch Support (including regenerate with different branch) |
+| [e2e-11-websocket.md](e2e-11-websocket.md) | 23 | WebSocket Connection, Auth, Real-time Updates |
+| [e2e-12-cli.md](e2e-12-cli.md) | 24 | CLI Commands (config, generate, list, status, admin) |
 | [e2e-09-cleanup.md](e2e-09-cleanup.md) | 21 | Cleanup and Teardown |
 
 **`e2e-09-cleanup.md` must always be executed last, after all other test files.**
@@ -164,24 +174,28 @@ Each linked sub-file contains only the detailed test bodies for its assigned sec
 | Test | Area | Sub-tests |
 |---|---|---|
 | 1 | Login Page | 1.1-1.6 |
-| 2 | Admin Panel | 2.1-2.9 |
+| 2 | Admin Panel | 2.1-2.11 |
 | 3 | User Role Permissions | 3.1-3.6 |
 | 4 | Viewer Role Permissions | 4.1-4.7 |
 | 5 | Admin Role (DB user) Permissions | 5.1-5.4 |
 | 6 | Doc Generation (via User) | 6.0-6.7 |
-| 7 | Dashboard Features | 7.1-7.10 |
+| 7 | Dashboard Features | 7.1-7.12 |
 | 8 | Generated Docs Quality | 8.1-8.7 |
 | 9 | Status Page | 9.1-9.3 |
 | 10 | Custom Modals | 10.1-10.4 |
 | 11 | Cross-User Isolation | 11.1-11.10 |
-| 12 | Logout | 12.1-12.2 |
+| 12 | Logout | 12.1-12.3 |
 | 13 | Direct URL Authorization | 13.1-13.7 |
 | 14 | Incremental Documentation Updates | 14.1-14.6 |
-| 15 | Delete with Owner Scoping | 15.1-15.7 |
+| 15 | Delete with Owner Scoping | 15.1-15.8 |
 | 16 | Incremental Page JSON Patch | 16.1-16.3 |
 | 17 | Progress Page During Regeneration | 17.1-17.4 |
-| 18 | Username Dropdown Menu | 18.1-18.8 |
+| 18 | Username Dropdown Menu | 18.1-18.10 |
 | 19 | Variant Card Visual Hierarchy | 19.1-19.5 |
 | 20 | Cross-Model Incremental Updates | 20.1-20.5 |
 | 22 | Branch Support | 22.1-22.11 |
+| 23 | WebSocket | 23.1-23.8 |
+| 24 | CLI Commands | 24.1-24.10 |
+| 25 | Sidebar Collapse Toggle Position | 25.1-25.4 |
+| 26 | Dialog Theme Consistency | 26.1-26.2 |
 | 21 | Cleanup and Teardown | 21.1-21.5 |

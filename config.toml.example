@@ -1,0 +1,25 @@
+# docsfy CLI configuration
+# Copy to ~/.config/docsfy/config.toml or run: docsfy config init
+#
+# SECURITY: This file contains passwords. Keep it private:
+#   chmod 600 ~/.config/docsfy/config.toml
+
+# Default server to use when --server is not specified
+[default]
+server = "dev"
+
+# Server profiles -- add as many as you need
+[servers.dev]
+url = "http://localhost:8000"
+username = "admin"
+password = "<your-dev-key>"
+
+[servers.prod]
+url = "https://docsfy.example.com"
+username = "admin"
+password = "<your-prod-key>"
+
+[servers.staging]
+url = "https://staging.docsfy.example.com"
+username = "deployer"
+password = "<your-staging-key>"

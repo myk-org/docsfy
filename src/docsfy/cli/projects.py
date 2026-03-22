@@ -1,0 +1,329 @@
+from __future__ import annotations
+
+import json
+import tarfile
+import tempfile
+from pathlib import Path
+from typing import Any, Optional
+
+import typer
+
+from docsfy.cli.formatting import print_table
+
+
+def list_projects(
+    status_filter: Optional[str] = typer.Option(  # noqa: M511
+        None, "--status", help="Filter by status (ready, generating, error)"
+    ),
+    provider_filter: Optional[str] = typer.Option(  # noqa: M511
+        None, "--provider", help="Filter by AI provider"
+    ),
+    output_json: bool = typer.Option(False, "--json", help="Output as JSON"),  # noqa: M511
+) -> None:
+    """List all projects."""
+    from docsfy.cli.main import get_client
+
+    client = get_client()
+    try:
+        response = client.get("/api/status")
+        data = response.json()
+        projects = data.get("projects", [])
+
+        if status_filter:
+            projects = [p for p in projects if p.get("status") == status_filter]
+        if provider_filter:
+            projects = [p for p in projects if p.get("ai_provider") == provider_filter]
+
+        if output_json:
+            typer.echo(json.dumps(projects, indent=2))
+            return
+
+        if not projects:
+            typer.echo("No projects found.")
+            return
+
+        rows = []
+        for p in projects:
+            rows.append(
+                [
+                    str(p.get("name", "")),
+                    str(p.get("branch", "main")),
+                    str(p.get("ai_provider", "")),
+                    str(p.get("ai_model", "")),
+                    str(p.get("status", "")),
+                    str(p.get("owner", "")),
+                    str(p.get("page_count", "") or ""),
+                ]
+            )
+
+        print_table(
+            ["NAME", "BRANCH", "PROVIDER", "MODEL", "STATUS", "OWNER", "PAGES"],
+            rows,
+        )
+    finally:
+        client.close()
+
+
+def status(
+    name: str = typer.Argument(help="Project name"),  # noqa: M511
+    branch: Optional[str] = typer.Option(  # noqa: M511
+        None, "--branch", "-b", help="Filter by branch"
+    ),
+    provider: Optional[str] = typer.Option(  # noqa: M511
+        None, "--provider", "-p", help="Filter by provider"
+    ),
+    model: Optional[str] = typer.Option(  # noqa: M511
+        None, "--model", "-m", help="Filter by model"
+    ),
+    owner: Optional[str] = typer.Option(  # noqa: M511
+        None, "--owner", help="Project owner (for admin disambiguation)"
+    ),
+    output_json: bool = typer.Option(False, "--json", help="Output as JSON"),  # noqa: M511
+) -> None:
+    """Show status of a project and its variants."""
+    from docsfy.cli.main import get_client
+
+    owner_qs = f"?owner={owner}" if owner else ""
+
+    client = get_client()
+    try:
+        # If all three are specified, get the specific variant
+        if branch and provider and model:
+            response = client.get(
+                f"/api/projects/{name}/{branch}/{provider}/{model}{owner_qs}"
+            )
+            variant = response.json()
+            if output_json:
+                typer.echo(json.dumps(variant, indent=2))
+            else:
+                _print_variant_detail(variant)
+            return
+
+        # Otherwise get all variants
+        response = client.get(f"/api/projects/{name}")
+        data = response.json()
+        variants = data.get("variants", [])
+
+        # Apply filters
+        if branch:
+            variants = [v for v in variants if v.get("branch") == branch]
+        if provider:
+            variants = [v for v in variants if v.get("ai_provider") == provider]
+        if model:
+            variants = [v for v in variants if v.get("ai_model") == model]
+
+        if output_json:
+            typer.echo(json.dumps({"name": name, "variants": variants}, indent=2))
+            return
+
+        if not variants:
+            typer.echo(f"No variants found for '{name}'.")
+            return
+
+        typer.echo(f"Project: {name}")
+        typer.echo(f"Variants: {len(variants)}")
+        typer.echo("")
+
+        for v in variants:
+            _print_variant_detail(v)
+            typer.echo("")
+    finally:
+        client.close()
+
+
+def _print_variant_detail(v: dict[str, Any]) -> None:
+    """Print a single variant's details."""
+    typer.echo(
+        f"  {v.get('branch', 'main')}/{v.get('ai_provider', '')}/{v.get('ai_model', '')}"
+    )
+    typer.echo(f"    Status:  {v.get('status', '')}")
+    typer.echo(f"    Owner:   {v.get('owner', '')}")
+    if v.get("page_count"):
+        typer.echo(f"    Pages:   {v['page_count']}")
+    if v.get("last_generated"):
+        typer.echo(f"    Updated: {v['last_generated']}")
+    if v.get("last_commit_sha"):
+        sha = str(v["last_commit_sha"])[:8]
+        typer.echo(f"    Commit:  {sha}")
+    if v.get("current_stage"):
+        typer.echo(f"    Stage:   {v['current_stage']}")
+    if v.get("error_message"):
+        typer.echo(f"    Error:   {v['error_message']}")
+
+
+def delete(
+    name: str = typer.Argument(help="Project name"),  # noqa: M511
+    branch: Optional[str] = typer.Option(  # noqa: M511
+        None, "--branch", "-b", help="Branch of variant to delete"
+    ),
+    provider: Optional[str] = typer.Option(  # noqa: M511
+        None, "--provider", "-p", help="Provider of variant to delete"
+    ),
+    model: Optional[str] = typer.Option(  # noqa: M511
+        None, "--model", "-m", help="Model of variant to delete"
+    ),
+    owner: Optional[str] = typer.Option(  # noqa: M511
+        None, "--owner", help="Project owner (required for admin)"
+    ),
+    all_variants: bool = typer.Option(  # noqa: M511
+        False, "--all", help="Delete all variants of the project"
+    ),
+    yes: bool = typer.Option(  # noqa: M511
+        False, "--yes", "-y", help="Skip confirmation prompt"
+    ),
+) -> None:
+    """Delete a project or a specific variant."""
+    from docsfy.cli.main import get_client
+
+    if all_variants and any([branch, provider, model]):
+        typer.echo(
+            "Use either --all or --branch/--provider/--model, not both.",
+            err=True,
+        )
+        raise typer.Exit(code=1)
+
+    owner_qs = f"?owner={owner}" if owner else ""
+
+    client = get_client()
+    try:
+        if all_variants:
+            if not yes:
+                confirmed = typer.confirm(f"Delete ALL variants of '{name}'?")
+                if not confirmed:
+                    typer.echo("Aborted.")
+                    raise typer.Exit()
+            client.delete(f"/api/projects/{name}{owner_qs}")
+            typer.echo(f"Deleted all variants of '{name}'.")
+
+        elif branch and provider and model:
+            target = f"{name}/{branch}/{provider}/{model}"
+            if not yes:
+                confirmed = typer.confirm(f"Delete variant '{target}'?")
+                if not confirmed:
+                    typer.echo("Aborted.")
+                    raise typer.Exit()
+            client.delete(f"/api/projects/{name}/{branch}/{provider}/{model}{owner_qs}")
+            typer.echo(f"Deleted variant '{target}'.")
+
+        else:
+            typer.echo(
+                "Specify --branch, --provider, and --model to delete a specific variant, "
+                "or use --all to delete all variants.",
+                err=True,
+            )
+            raise typer.Exit(code=1)
+    finally:
+        client.close()
+
+
+def abort(
+    name: str = typer.Argument(help="Project name"),  # noqa: M511
+    branch: Optional[str] = typer.Option(  # noqa: M511
+        None, "--branch", "-b", help="Branch of variant to abort"
+    ),
+    provider: Optional[str] = typer.Option(  # noqa: M511
+        None, "--provider", "-p", help="Provider of variant to abort"
+    ),
+    model: Optional[str] = typer.Option(  # noqa: M511
+        None, "--model", "-m", help="Model of variant to abort"
+    ),
+    owner: Optional[str] = typer.Option(  # noqa: M511
+        None, "--owner", help="Project owner (required for admin)"
+    ),
+) -> None:
+    """Abort an active documentation generation."""
+    from docsfy.cli.main import get_client
+
+    # Require all variant selectors together, or none
+    variant_opts = [branch, provider, model]
+    if any(variant_opts) and not all(variant_opts):
+        typer.echo(
+            "Specify --branch, --provider, and --model together to abort a specific variant, "
+            "or omit all three to abort by project name.",
+            err=True,
+        )
+        raise typer.Exit(code=1)
+
+    owner_qs = f"?owner={owner}" if owner else ""
+
+    client = get_client()
+    try:
+        if branch and provider and model:
+            client.post(
+                f"/api/projects/{name}/{branch}/{provider}/{model}/abort{owner_qs}"
+            )
+            typer.echo(f"Aborted generation for '{name}/{branch}/{provider}/{model}'.")
+        else:
+            client.post(f"/api/projects/{name}/abort{owner_qs}")
+            typer.echo(f"Aborted generation for '{name}'.")
+    finally:
+        client.close()
+
+
+def download(
+    name: str = typer.Argument(help="Project name"),  # noqa: M511
+    branch: Optional[str] = typer.Option(  # noqa: M511
+        None, "--branch", "-b", help="Branch of variant to download"
+    ),
+    provider: Optional[str] = typer.Option(  # noqa: M511
+        None, "--provider", "-p", help="Provider of variant to download"
+    ),
+    model: Optional[str] = typer.Option(  # noqa: M511
+        None, "--model", "-m", help="Model of variant to download"
+    ),
+    owner: Optional[str] = typer.Option(  # noqa: M511
+        None, "--owner", help="Project owner (for admin disambiguation)"
+    ),
+    output: Optional[str] = typer.Option(  # noqa: M511
+        None,
+        "--output",
+        "-o",
+        help="Output directory to extract to (default: save tar.gz to current dir)",
+    ),
+) -> None:
+    """Download generated documentation as tar.gz or extract to a directory."""
+    from docsfy.cli.main import get_client
+
+    # Require all variant selectors together, or none
+    variant_opts = [branch, provider, model]
+    if any(variant_opts) and not all(variant_opts):
+        typer.echo(
+            "Specify --branch, --provider, and --model together to download a specific variant, "
+            "or omit all three to download the default variant.",
+            err=True,
+        )
+        raise typer.Exit(code=1)
+
+    owner_qs = f"?owner={owner}" if owner else ""
+
+    client = get_client()
+    try:
+        if branch and provider and model:
+            url_path = (
+                f"/api/projects/{name}/{branch}/{provider}/{model}/download{owner_qs}"
+            )
+            archive_name = f"{name}-{branch}-{provider}-{model}-docs.tar.gz"
+        else:
+            url_path = f"/api/projects/{name}/download{owner_qs}"
+            archive_name = f"{name}-docs.tar.gz"
+
+        if output:
+            # Download to a temp file and extract
+            with tempfile.NamedTemporaryFile(suffix=".tar.gz", delete=False) as tmp:
+                tmp_path = Path(tmp.name)
+
+            try:
+                client.download(url_path, tmp_path)
+                output_dir = Path(output)
+                output_dir.mkdir(parents=True, exist_ok=True)
+                with tarfile.open(tmp_path, "r:gz") as tar:
+                    tar.extractall(path=output_dir, filter="data")
+                typer.echo(f"Extracted to {output_dir}")
+            finally:
+                tmp_path.unlink(missing_ok=True)
+        else:
+            dest = Path.cwd() / archive_name
+            client.download(url_path, dest)
+            typer.echo(f"Downloaded to {dest}")
+    finally:
+        client.close()

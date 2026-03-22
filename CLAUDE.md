@@ -9,6 +9,11 @@
 
 All secrets MUST be read from environment variables at runtime. Test plans use placeholders like `<ADMIN_KEY>`, `<TEST_USER_PASSWORD>` — never actual values.
 
+## Entry Points
+
+- `docsfy` — CLI for managing projects, users, and config from the terminal
+- `docsfy-server` — starts the FastAPI server (uvicorn)
+
 ## Code Reusability (MANDATORY)
 
 **Every element used more than once MUST be defined in ONE place and reused everywhere.**
@@ -28,29 +33,33 @@ When adding new code:
 | DB constants & validators | `src/docsfy/storage.py` | `VALID_STATUSES`, `VALID_ROLES`, `_validate_name()`, `_validate_owner()` |
 | Git timeouts | `src/docsfy/repository.py` | `_CLONE_TIMEOUT`, `_FETCH_TIMEOUT`, `_DIFF_TIMEOUT` |
 | Prompt constants | `src/docsfy/prompts.py` | `_MAX_DIFF_LENGTH`, `_PAGE_WRITING_RULES` |
-| App CSS (buttons, forms, layout) | `src/docsfy/templates/_app_styles.html` | `.btn-*`, `.form-*`, `.status-dot-*`, `.spinner`, `.progress-bar-*` |
+| Frontend constants | `frontend/src/lib/constants.ts` | API base URL, poll intervals, toast durations |
+| Frontend types | `frontend/src/types/index.ts` | `Project`, `User`, `Variant`, `AuthState` |
+| Frontend API client | `frontend/src/lib/api.ts` | `fetchProjects()`, `login()`, `generateDocs()` |
+| Frontend WebSocket | `frontend/src/lib/websocket.ts` | `useWebSocket()`, connection manager |
 | Doc site base template | `src/docsfy/templates/_doc_base.html` | Sidebar, top bar, footer, script imports |
+| CLI config | `~/.config/docsfy/config.toml` | Server URL, API key, default provider/model |
 
 ### Rules for New CSS
 
-- ALL shared styles go in `_app_styles.html`
-- Button styles: use `.btn` + `.btn-primary` / `.btn-secondary` / `.btn-danger` / `.btn-warning`
-- No backgrounds or borders by default — only on hover
-- Individual templates only contain styles SPECIFIC to that template
-- Use CSS variables from `_app_styles.html` — never hardcode colors
+- App UI styles are managed by Tailwind CSS in the React frontend (`frontend/`)
+- The old `_app_styles.html` has been removed — do not recreate it
+- Doc site templates (`_doc_base.html`, `index.html`, `page.html`) have their own self-contained CSS
+- Use Tailwind utility classes and shadcn/ui components for all new app UI
 
 ### Rules for New Constants
 
 - If a value is used in 2+ files → define in `models.py` and import
 - If a value is used in SQL → accepted exception (SQL DDL can't reference Python vars)
 - Magic numbers → named constants in the file that owns them
+- Frontend constants → define in `frontend/src/lib/constants.ts`
 
 ### Rules for Templates
 
-- `dashboard.html`, `status.html`, `admin.html`, `login.html` all include `_app_styles.html`
-- `index.html`, `page.html` extend `_doc_base.html`
+- Only doc site templates remain: `_doc_base.html`, `_sidebar.html`, `_theme.html`, `index.html`, `page.html`
+- `index.html` and `page.html` extend `_doc_base.html`
+- App UI (dashboard, admin, login, status) is now a React SPA in `frontend/`
 - Template variables (provider list, branch, URLs) come from the backend — never hardcoded in HTML
-- JS timing values use named constants (`POLL_INTERVAL_MS`, `TOAST_DEFAULT_MS`, etc.)
 
 ## Branch Support
 

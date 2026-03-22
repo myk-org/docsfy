@@ -1,3 +1,17 @@
+# Stage 1: Frontend Builder
+FROM node:20-slim AS frontend-builder
+
+WORKDIR /app/frontend
+
+# Install dependencies first (better layer caching)
+COPY frontend/package.json frontend/package-lock.json ./
+RUN npm ci
+
+# Copy full frontend directory and build
+COPY frontend/ ./
+RUN npm run build
+
+# Stage 2: Python Builder
 FROM python:3.12-slim AS builder
 
 WORKDIR /app
@@ -17,7 +31,7 @@ COPY src/ src/
 # Create venv and install dependencies
 RUN uv sync --frozen --no-dev
 
-# Production stage
+# Stage 3: Runtime
 FROM python:3.12-slim
 
 WORKDIR /app
@@ -69,6 +83,16 @@ COPY --chown=appuser:0 --from=builder /app/pyproject.toml /app/uv.lock ./
 # Copy source code
 COPY --chown=appuser:0 --from=builder /app/src /app/src
 
+# Copy frontend build output
+COPY --chown=appuser:0 --from=frontend-builder /app/frontend/dist /app/frontend/dist
+
+# Copy frontend package files for DEV_MODE (npm ci)
+COPY --chown=appuser:0 frontend/package.json frontend/package-lock.json /app/frontend/
+
+# Copy entrypoint script
+COPY --chown=appuser:0 entrypoint.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
+
 # Make /app group-writable for OpenShift compatibility
 RUN chmod -R g+w /app
 
@@ -89,12 +113,10 @@ ENV PATH="/home/appuser/.local/bin:/home/appuser/.npm-global/bin:${PATH}"
 ENV HOME="/home/appuser"
 
 EXPOSE 8000
+# Vite dev server (DEV_MODE only)
+EXPOSE 5173
 
 HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
   CMD curl -f http://localhost:8000/health || exit 1
 
-# Use uv run for uvicorn
-# --no-sync prevents uv from attempting to modify the venv at runtime.
-# This is required for OpenShift where containers run as an arbitrary UID
-# and may not have write access to the .venv directory.
-ENTRYPOINT ["uv", "run", "--no-sync", "uvicorn", "docsfy.main:app", "--host", "0.0.0.0", "--port", "8000"]
+ENTRYPOINT ["/app/entrypoint.sh"]
