@@ -222,6 +222,26 @@ export default function ProjectTree({
 
   return (
     <div ref={parentRef} data-testid="project-tree" className="overflow-auto flex-1 min-h-0">
+      <div className="flex items-center justify-end gap-0.5 px-3 pb-1">
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          onClick={expandAll}
+          title="Expand all"
+          className="text-muted-foreground hover:text-foreground"
+        >
+          <ChevronsDown className="size-3.5" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          onClick={collapseAll}
+          title="Collapse all"
+          className="text-muted-foreground hover:text-foreground"
+        >
+          <ChevronsUp className="size-3.5" />
+        </Button>
+      </div>
       <div
         style={{ height: `${virtualizer.getTotalSize()}px`, position: 'relative', width: '100%' }}
       >
