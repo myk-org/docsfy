@@ -77,7 +77,7 @@ Monitor output until generation completes with status `ready`, `error`, or `abor
 
 If generation fails, show the error and ask the user how to proceed.
 
-### Phase 3: Download Generated Docs
+### Phase 3: Download and Flatten Generated Docs
 
 After generation completes (status: `ready`):
 
@@ -86,6 +86,14 @@ docsfy download <project_name> --branch <branch> --provider <provider> --model <
 ```
 
 `<project_name>` is extracted from the repo URL (e.g., `docsfy` from `https://github.com/myk-org/docsfy`).
+
+The download creates a nested subdirectory: `<output_dir>/<project>-<branch>-<provider>-<model>/`. Flatten it so all files are directly under `<output_dir>/`:
+
+```bash
+mv <output_dir>/<project>-<branch>-<provider>-<model>/* <output_dir>/
+mv <output_dir>/<project>-<branch>-<provider>-<model>/.* <output_dir>/ 2>/dev/null
+rmdir <output_dir>/<project>-<branch>-<provider>-<model>
+```
 
 ### Phase 4: Summary
 
@@ -117,3 +125,4 @@ Display:
 | Using local files instead of repo URL | docsfy works with Git repository URLs |
 | Forgetting `--watch` flag | Always use `--watch` for real-time progress |
 | Downloading before ready | Check status is `ready` before downloading |
+| Leaving nested download folder | Flatten after download — move files to output root |
