@@ -95,7 +95,7 @@ wheels = [
 
 [[package]]
 name = "docsfy"
-version = "1.0.0"
+version = "1.0.1"
 source = { editable = "." }
 dependencies = [
     { name = "ai-cli-runner" },
