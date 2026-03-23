@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projects API - docsfy</title>
+    <meta name="description" content="AI-powered documentation generator that turns Git repositories into shareable static docs sites.">
+    <link rel="stylesheet" href="assets/style.css">
+    <link rel="alternate" type="text/plain" title="LLM Documentation Index" href="llms.txt">
+    <link rel="alternate" type="text/plain" title="LLM Full Documentation" href="llms-full.txt">
+</head>
+<body>
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <a href="index.html" class="sidebar-logo">docsfy</a>
+            <p class="sidebar-tagline">AI-powered documentation generator that turns Git repositories into shareable static docs sites.</p>
+        </div>
+
+        <div class="sidebar-search">
+            <input type="text" id="search-input" placeholder="Search... (⌘K)" autocomplete="off" readonly>
+            <div id="search-results" class="search-results"></div>
+        </div>
+
+        <nav class="sidebar-nav">
+
+            <div class="nav-group">
+                <h3 class="nav-group-title">Overview</h3>
+                <ul class="nav-group-pages">
+
+                    <li>
+                        <a href="introduction.html"
+                           class="nav-link">
+                            Introduction
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="architecture-and-runtime.html"
+                           class="nav-link">
+                            Architecture and Runtime
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="projects-variants-and-ownership.html"
+                           class="nav-link">
+                            Projects, Variants, and Ownership
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="generated-output.html"
+                           class="nav-link">
+                            Generated Output
+                        </a>
+                    </li>
+
+                </ul>
+            </div>
+
+            <div class="nav-group">
+                <h3 class="nav-group-title">Getting Started</h3>
+                <ul class="nav-group-pages">
+
+                    <li>
+                        <a href="installation.html"
+                           class="nav-link">
+                            Installation
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="ai-provider-setup.html"
+                           class="nav-link">
+                            AI Provider Setup
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="local-development.html"
+                           class="nav-link">
+                            Local Development
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="docker-quickstart.html"
+                           class="nav-link">
+                            Docker and Compose Quickstart
+                        </a>
+                    </li>
+
+                </ul>
+            </div>
+
+            <div class="nav-group">
+                <h3 class="nav-group-title">Configuration</h3>
+                <ul class="nav-group-pages">
+
+                    <li>
+                        <a href="environment-variables.html"
+                           class="nav-link">
+                            Environment Variables
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="cli-configuration.html"
+                           class="nav-link">
+                            CLI Configuration
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="authentication-and-roles.html"
+                           class="nav-link">
+                            Authentication and Roles
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="data-storage-and-layout.html"
+                           class="nav-link">
+                            Data Storage and Layout
+                        </a>
+                    </li>
+
+                </ul>
+            </div>
+
+            <div class="nav-group">
+                <h3 class="nav-group-title">Usage Guides</h3>
+                <ul class="nav-group-pages">
+
+                    <li>
+                        <a href="first-run-quickstart.html"
+                           class="nav-link">
+                            First Run Quickstart
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="generating-documentation.html"
+                           class="nav-link">
+                            Generating Documentation
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="tracking-progress-and-status.html"
+                           class="nav-link">
+                            Tracking Progress and Status
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="variants-branches-and-regeneration.html"
+                           class="nav-link">
+                            Variants, Branches, and Regeneration
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="viewing-downloading-and-hosting-docs.html"
+                           class="nav-link">
+                            Viewing, Downloading, and Hosting Docs
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="user-and-access-management.html"
+                           class="nav-link">
+                            User and Access Management
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="cli-workflows.html"
+                           class="nav-link">
+                            CLI Workflows
+                        </a>
+                    </li>
+
+                </ul>
+            </div>
+
+            <div class="nav-group">
+                <h3 class="nav-group-title">Reference</h3>
+                <ul class="nav-group-pages">
+
+                    <li>
+                        <a href="cli-command-reference.html"
+                           class="nav-link">
+                            CLI Command Reference
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="auth-api.html"
+                           class="nav-link">
+                            Authentication API
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="projects-api.html"
+                           class="nav-link active" aria-current="page">
+                            Projects API
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="admin-api.html"
+                           class="nav-link">
+                            Admin API
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="websocket-protocol.html"
+                           class="nav-link">
+                            WebSocket Protocol
+                        </a>
+                    </li>
+
+                </ul>
+            </div>
+
+            <div class="nav-group">
+                <h3 class="nav-group-title">Operations</h3>
+                <ul class="nav-group-pages">
+
+                    <li>
+                        <a href="deployment-and-runtime.html"
+                           class="nav-link">
+                            Deployment and Runtime
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="testing-and-quality-checks.html"
+                           class="nav-link">
+                            Testing and Quality Checks
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="security-considerations.html"
+                           class="nav-link">
+                            Security Considerations
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="troubleshooting.html"
+                           class="nav-link">
+                            Troubleshooting
+                        </a>
+                    </li>
+
+                </ul>
+            </div>
+
+        </nav>
+    </aside>
+
+    <div class="main-wrapper">
+        <header class="top-bar">
+            <div class="top-bar-left">
+                <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebar" aria-expanded="false">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                </button>
+                <a href="index.html" class="top-bar-title">docsfy</a>
+            </div>
+            <div class="top-bar-spacer"></div>
+            <div class="top-bar-right">
+                <button class="top-bar-search-btn" id="search-trigger" aria-label="Search">
+                    <kbd>&#8984;K</kbd> Search
+                </button>
+                <a href="https://github.com/myk-org/docsfy" target="_blank" rel="noopener" class="docsfy-badge" title="Generated with docsfy">
+                    ⚡ docs<span class="brand-accent">fy</span>
+                </a>
+
+                <a href="https://github.com/myk-org/docsfy" target="_blank" rel="noopener noreferrer" class="top-bar-github" id="github-link" data-repo-url="https://github.com/myk-org/docsfy">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                    <span class="github-stars" id="github-stars"></span>
+                </a>
+
+                <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+                    <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                    </svg>
+                    <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <main class="content">
+
+            <article class="article">
+                <div class="article-body">
+                    <!-- SECURITY: |safe is intentional. Content is AI-generated markdown
+                         converted to HTML server-side by the markdown library, not
+                         user-supplied input. XSS risk is minimal and accepted since
+                         the AI generates the content, not end users. -->
+                    <h1 id="projects-api">Projects API</h1>
+<p>docsfy stores generated documentation as <strong>project variants</strong>. A variant is one combination of:</p>
+<ul>
+<li>project name</li>
+<li>branch</li>
+<li>AI provider</li>
+<li>AI model</li>
+<li>owner</li>
+</ul>
+<p>That design is what makes the Projects API useful: the same repository can exist multiple times at once for different branches, models, and users.</p>
+<h2 id="quick-reference">Quick Reference</h2>
+<table>
+<thead>
+<tr>
+<th>Route</th>
+<th>Purpose</th>
+<th>Best for</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GET /api/status</code></td>
+<td>List all visible variants</td>
+<td>Dashboard-style listings</td>
+</tr>
+<tr>
+<td><code>GET /api/projects</code></td>
+<td>Alias for <code>/api/status</code></td>
+<td>Same payload as <code>/api/status</code></td>
+</tr>
+<tr>
+<td><code>GET /api/projects/{name}</code></td>
+<td>List all visible variants for one project name</td>
+<td>Variant browsing</td>
+</tr>
+<tr>
+<td><code>POST /api/generate</code></td>
+<td>Start a generation run</td>
+<td>New docs or regeneration</td>
+</tr>
+<tr>
+<td><code>GET /api/projects/{name}/{branch}/{provider}/{model}</code></td>
+<td>Fetch one exact variant</td>
+<td>Precise status/detail lookups</td>
+</tr>
+<tr>
+<td><code>POST /api/projects/{name}/abort</code></td>
+<td>Abort by project name</td>
+<td>Convenience abort when only one run matches</td>
+</tr>
+<tr>
+<td><code>POST /api/projects/{name}/{branch}/{provider}/{model}/abort</code></td>
+<td>Abort one exact variant</td>
+<td>Precise aborts</td>
+</tr>
+<tr>
+<td><code>DELETE /api/projects/{name}/{branch}/{provider}/{model}</code></td>
+<td>Delete one variant</td>
+<td>Cleanup for one exact build</td>
+</tr>
+<tr>
+<td><code>DELETE /api/projects/{name}</code></td>
+<td>Delete all variants for one owner-scoped project</td>
+<td>Bulk cleanup</td>
+</tr>
+<tr>
+<td><code>GET /api/projects/{name}/{branch}/{provider}/{model}/download</code></td>
+<td>Download one ready variant as <code>.tar.gz</code></td>
+<td>Deterministic downloads</td>
+</tr>
+<tr>
+<td><code>GET /api/projects/{name}/download</code></td>
+<td>Download the latest ready accessible variant</td>
+<td>Convenience downloads</td>
+</tr>
+<tr>
+<td><code>GET /docs/{project}/{branch}/{provider}/{model}/{path:path}</code></td>
+<td>Serve generated HTML for one exact variant</td>
+<td>Stable docs links</td>
+</tr>
+<tr>
+<td><code>GET /docs/{project}/{path:path}</code></td>
+<td>Serve generated HTML for the latest ready accessible variant</td>
+<td>Convenience docs links</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Note:</strong> <code>GET /api/status</code> and <code>GET /api/projects</code> are aliases. Both call the same handler and return the same payload.</p>
+</blockquote>
+<h2 id="authentication-and-permissions">Authentication And Permissions</h2>
+<p>All project API routes and all <code>/docs/*</code> routes are authenticated.</p>
+<ul>
+<li>API clients use <code>Authorization: Bearer &lt;API_KEY&gt;</code>.</li>
+<li>Browsers use the <code>docsfy_session</code> cookie after logging in.</li>
+<li><code>admin</code> and <code>user</code> can generate and abort.</li>
+<li><code>viewer</code> is read-only.</li>
+</ul>
+<blockquote>
+<p><strong>Note:</strong> Unauthenticated browser requests to <code>/docs/*</code> are redirected to <code>/login</code>. API-style requests get <code>401 Unauthorized</code>.</p>
+<p><strong>Warning:</strong> <code>viewer</code> users can list projects, inspect variants, download ready docs, and open <code>/docs/*</code>, but write routes return <code>403 Write access required.</code></p>
+</blockquote>
+<h2 id="runtime-settings">Runtime Settings</h2>
+<p>These defaults affect how the Projects API behaves:</p>
+<div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Settings</span><span class="p">(</span><span class="n">BaseSettings</span><span class="p">):</span>
+    <span class="n">model_config</span> <span class="o">=</span> <span class="n">SettingsConfigDict</span><span class="p">(</span>
+        <span class="n">env_file</span><span class="o">=</span><span class="s2">&quot;.env&quot;</span><span class="p">,</span>
+        <span class="n">env_file_encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">,</span>
+        <span class="n">extra</span><span class="o">=</span><span class="s2">&quot;ignore&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">admin_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>  <span class="c1"># Required — validated at startup</span>
+    <span class="n">ai_provider</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;cursor&quot;</span>
+    <span class="n">ai_model</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;gpt-5.4-xhigh-fast&quot;</span>
+    <span class="n">ai_cli_timeout</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="mi">60</span><span class="p">,</span> <span class="n">gt</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">log_level</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;INFO&quot;</span>
+    <span class="n">data_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;/data&quot;</span>
+    <span class="n">secure_cookies</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>  <span class="c1"># Set to False for local HTTP dev</span>
+</code></pre></div>
+
+<p>Environment variables override these values, and <code>.env</code> is loaded automatically.</p>
+<p>Practical implications:</p>
+<ul>
+<li><code>ADMIN_KEY</code> is required, and startup fails without it.</li>
+<li>If you omit <code>ai_provider</code> or <code>ai_model</code> in <code>POST /api/generate</code>, the server defaults are used.</li>
+<li><code>ai_cli_timeout</code> defaults to <code>60</code>.</li>
+<li>Browser auth assumes secure cookies unless you disable them for local HTTP development.</li>
+</ul>
+<h2 id="variant-identity-and-branch-aware-urls">Variant Identity And Branch-Aware URLs</h2>
+<p>The most precise routes include all four variant selectors:</p>
+<ul>
+<li><code>{name}</code></li>
+<li><code>{branch}</code></li>
+<li><code>{provider}</code></li>
+<li><code>{model}</code></li>
+</ul>
+<p>That is the stable format to use when you want predictable behavior.</p>
+<p>The test suite uses branch-aware URLs like these:</p>
+<div class="highlight"><pre><span></span><code><span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/api/projects/test-repo/v2.0/claude/opus&quot;</span><span class="p">)</span>
+<span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/docs/test-repo/v2.0/claude/opus/index.html&quot;</span><span class="p">)</span>
+<span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/api/projects/test-repo/v2.0/claude/opus/download&quot;</span><span class="p">)</span>
+</code></pre></div>
+
+<blockquote>
+<p><strong>Warning:</strong> The convenience routes <code>GET /docs/{project}/...</code> and <code>GET /api/projects/{name}/download</code> are <strong>not</strong> pinned to <code>main</code>. They return the newest ready variant you can access, regardless of branch, provider, or model.</p>
+</blockquote>
+<h2 id="listing-projects-and-variants">Listing Projects And Variants</h2>
+<p>Use <code>GET /api/status</code> or <code>GET /api/projects</code> to get the visible project list. The payload also includes <code>known_models</code> and <code>known_branches</code>, which the web UI uses for suggestions.</p>
+<p>The frontend types describe the response like this:</p>
+<div class="highlight"><pre><span></span><code><span class="k">export</span><span class="w"> </span><span class="kd">interface</span><span class="w"> </span><span class="nx">Project</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">name</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span>
+<span class="w">  </span><span class="nx">branch</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span>
+<span class="w">  </span><span class="nx">ai_provider</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span>
+<span class="w">  </span><span class="nx">ai_model</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span>
+<span class="w">  </span><span class="nx">owner</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span>
+<span class="w">  </span><span class="nx">repo_url</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span>
+<span class="w">  </span><span class="nx">status</span><span class="o">:</span><span class="w"> </span><span class="kt">ProjectStatus</span>
+<span class="w">  </span><span class="nx">current_stage</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="kc">null</span>
+<span class="w">  </span><span class="nx">last_commit_sha</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="kc">null</span>
+<span class="w">  </span><span class="nx">last_generated</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="kc">null</span>
+<span class="w">  </span><span class="nx">page_count</span><span class="o">:</span><span class="w"> </span><span class="kt">number</span>
+<span class="w">  </span><span class="nx">error_message</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="kc">null</span>
+<span class="w">  </span><span class="nx">plan_json</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="kc">null</span>
+<span class="w">  </span><span class="nx">created_at</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span>
+<span class="w">  </span><span class="nx">updated_at</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span>
+<span class="p">}</span>
+
+<span class="k">export</span><span class="w"> </span><span class="kd">interface</span><span class="w"> </span><span class="nx">ProjectsResponse</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">projects</span><span class="o">:</span><span class="w"> </span><span class="kt">Project</span><span class="p">[]</span>
+<span class="w">  </span><span class="nx">known_models</span><span class="o">:</span><span class="w"> </span><span class="kt">Record</span><span class="o">&lt;</span><span class="kt">string</span><span class="p">,</span><span class="w"> </span><span class="kt">string</span><span class="p">[]</span><span class="o">&gt;</span>
+<span class="w">  </span><span class="nx">known_branches</span><span class="o">:</span><span class="w"> </span><span class="kt">Record</span><span class="o">&lt;</span><span class="kt">string</span><span class="p">,</span><span class="w"> </span><span class="kt">string</span><span class="p">[]</span><span class="o">&gt;</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<p>Use <code>GET /api/projects/{name}</code> when you want all visible variants for one project name. The response shape is:</p>
+<ul>
+<li><code>name</code>: the project name</li>
+<li><code>variants</code>: every accessible variant for that project</li>
+</ul>
+<p>For non-admin users, this endpoint merges:</p>
+<ul>
+<li>variants you own</li>
+<li>variants another owner explicitly shared with you</li>
+</ul>
+<p>If nothing visible matches, the server returns <code>404</code>.</p>
+<h2 id="starting-generation">Starting Generation</h2>
+<p>Use <code>POST /api/generate</code> to start a new run.</p>
+<p>The request schema is defined like this:</p>
+<div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">GenerateRequest</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+    <span class="n">repo_url</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Git repository URL (HTTPS or SSH)&quot;</span>
+    <span class="p">)</span>
+    <span class="n">repo_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Local git repository path&quot;</span><span class="p">)</span>
+    <span class="n">ai_provider</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;claude&quot;</span><span class="p">,</span> <span class="s2">&quot;gemini&quot;</span><span class="p">,</span> <span class="s2">&quot;cursor&quot;</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">ai_model</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">ai_cli_timeout</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">gt</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">force</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Force full regeneration, ignoring cache&quot;</span>
+    <span class="p">)</span>
+    <span class="n">branch</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
+        <span class="n">default</span><span class="o">=</span><span class="n">DEFAULT_BRANCH</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Git branch to generate docs from&quot;</span>
+    <span class="p">)</span>
+
+    <span class="nd">@field_validator</span><span class="p">(</span><span class="s2">&quot;branch&quot;</span><span class="p">)</span>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">validate_branch</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">if</span> <span class="s2">&quot;/&quot;</span> <span class="ow">in</span> <span class="n">v</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Invalid branch name: &#39;</span><span class="si">{</span><span class="n">v</span><span class="si">}</span><span class="s2">&#39;. Branch names cannot contain slashes &quot;</span>
+                <span class="s2">&quot;— use hyphens instead (e.g., release-1.x).&quot;</span>
+            <span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+</code></pre></div>
+
+<p>The web app sends generation requests like this:</p>
+<div class="highlight"><pre><span></span><code><span class="k">await</span><span class="w"> </span><span class="nx">api</span><span class="p">.</span><span class="nx">post</span><span class="p">(</span><span class="s1">&#39;/api/generate&#39;</span><span class="p">,</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">repo_url</span><span class="o">:</span><span class="w"> </span><span class="kt">submittedRepoUrl</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">branch</span><span class="o">:</span><span class="w"> </span><span class="kt">submittedBranch</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">ai_provider</span><span class="o">:</span><span class="w"> </span><span class="kt">submittedProvider</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">ai_model</span><span class="o">:</span><span class="w"> </span><span class="kt">submittedModel</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">force</span><span class="o">:</span><span class="w"> </span><span class="kt">submittedForce</span><span class="p">,</span>
+<span class="p">})</span>
+</code></pre></div>
+
+<p>A real API example from the branch-support test omits <code>branch</code>, so the server falls back to the default:</p>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-s<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8800/api/generate<span class="w"> </span>-H<span class="w"> </span><span class="s2">&quot;Authorization: Bearer &lt;TEST_USER_PASSWORD&gt;&quot;</span><span class="w"> </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span>-d<span class="w"> </span><span class="s1">&#39;{&quot;repo_url&quot;:&quot;https://github.com/myk-org/for-testing-only&quot;,&quot;ai_provider&quot;:&quot;gemini&quot;,&quot;ai_model&quot;:&quot;gemini-2.5-flash&quot;}&#39;</span>
+</code></pre></div>
+
+<p>When accepted, the response is <code>202 Accepted</code> and includes:</p>
+<ul>
+<li><code>project</code>: inferred from the repository URL or local path</li>
+<li><code>status</code>: <code>generating</code></li>
+<li><code>branch</code>: the resolved branch value</li>
+</ul>
+<h3 id="request-fields">Request Fields</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Required</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>repo_url</code></td>
+<td>Yes, unless <code>repo_path</code> is used</td>
+<td>Remote Git URL. HTTPS and <code>git@host:org/repo.git</code> SSH-style URLs are accepted.</td>
+</tr>
+<tr>
+<td><code>repo_path</code></td>
+<td>Yes, unless <code>repo_url</code> is used</td>
+<td>Absolute local Git repo path. Admin-only. Must exist and contain <code>.git</code>.</td>
+</tr>
+<tr>
+<td><code>ai_provider</code></td>
+<td>No</td>
+<td><code>claude</code>, <code>gemini</code>, or <code>cursor</code>. Defaults to server config if omitted.</td>
+</tr>
+<tr>
+<td><code>ai_model</code></td>
+<td>No</td>
+<td>Model name. Defaults to server config if omitted.</td>
+</tr>
+<tr>
+<td><code>ai_cli_timeout</code></td>
+<td>No</td>
+<td>Positive integer timeout for the AI CLI.</td>
+</tr>
+<tr>
+<td><code>force</code></td>
+<td>No</td>
+<td>If <code>true</code>, ignore cache and do a full regeneration.</td>
+</tr>
+<tr>
+<td><code>branch</code></td>
+<td>No</td>
+<td>Git branch to generate from. Defaults to <code>main</code>.</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Warning:</strong> Branch names cannot contain <code>/</code>. <code>release/v2.0</code> is rejected; use a single path segment such as <code>release-v2.0</code>.</p>
+<p><strong>Warning:</strong> <code>repo_path</code> is admin-only, must be absolute, and the checked-out local branch must match the <code>branch</code> you send.</p>
+<p><strong>Warning:</strong> docsfy rejects repository URLs that point at <code>localhost</code>, private IP ranges, or other non-public network addresses.</p>
+</blockquote>
+<h3 id="generation-lifecycle">Generation Lifecycle</h3>
+<p>The stored <code>status</code> is one of:</p>
+<ul>
+<li><code>generating</code></li>
+<li><code>ready</code></li>
+<li><code>error</code></li>
+<li><code>aborted</code></li>
+</ul>
+<p>While <code>status</code> is <code>generating</code>, <code>current_stage</code> can move through stages such as:</p>
+<ul>
+<li><code>cloning</code></li>
+<li><code>incremental_planning</code></li>
+<li><code>planning</code></li>
+<li><code>generating_pages</code></li>
+<li><code>rendering</code></li>
+<li><code>up_to_date</code></li>
+</ul>
+<p>Related fields such as <code>page_count</code>, <code>plan_json</code>, <code>last_commit_sha</code>, and <code>error_message</code> are updated as the run progresses.</p>
+<blockquote>
+<p><strong>Tip:</strong> If the same <code>owner/name/branch/provider/model</code> is already generating, the server returns <code>409</code>. Wait for it to finish, abort it, or change the variant.</p>
+</blockquote>
+<h2 id="looking-up-one-variant">Looking Up One Variant</h2>
+<p>Use <code>GET /api/projects/{name}/{branch}/{provider}/{model}</code> when you need one exact variant.</p>
+<p>This returns the full variant record, including:</p>
+<ul>
+<li><code>status</code></li>
+<li><code>current_stage</code></li>
+<li><code>page_count</code></li>
+<li><code>last_commit_sha</code></li>
+<li><code>plan_json</code></li>
+<li><code>owner</code></li>
+</ul>
+<p>This is the safest route to use when:</p>
+<ul>
+<li>the same repo has multiple branches</li>
+<li>the same repo has multiple providers or models</li>
+<li>multiple owners may have matching variants</li>
+</ul>
+<p>If the variant is not visible to the caller, docsfy returns <code>404</code> rather than exposing whether it exists under another owner.</p>
+<h2 id="aborting-generation">Aborting Generation</h2>
+<p>There are two abort routes.</p>
+<h3 id="post-apiprojectsnameabort"><code>POST /api/projects/{name}/abort</code></h3>
+<p>This is a convenience route. It looks for an active run by project name only.</p>
+<p>Use it when there is exactly one active run for that project name. If more than one active variant matches, the server returns <code>409</code> and tells you to use the branch-specific abort route.</p>
+<h3 id="post-apiprojectsnamebranchprovidermodelabort"><code>POST /api/projects/{name}/{branch}/{provider}/{model}/abort</code></h3>
+<p>This is the precise route. It targets one exact variant and is the safer choice for scripts, admin tools, and multi-owner installs.</p>
+<p>The UI uses the variant-specific abort route like this:</p>
+<div class="highlight"><pre><span></span><code><span class="k">await</span><span class="w"> </span><span class="nx">api</span><span class="p">.</span><span class="nx">post</span><span class="p">(</span>
+<span class="w">  </span><span class="sb">`/api/projects/</span><span class="si">${</span><span class="nx">project</span><span class="p">.</span><span class="nx">name</span><span class="si">}</span><span class="sb">/</span><span class="si">${</span><span class="nx">project</span><span class="p">.</span><span class="nx">branch</span><span class="si">}</span><span class="sb">/</span><span class="si">${</span><span class="nx">project</span><span class="p">.</span><span class="nx">ai_provider</span><span class="si">}</span><span class="sb">/</span><span class="si">${</span><span class="nx">project</span><span class="p">.</span><span class="nx">ai_model</span><span class="si">}</span><span class="sb">/abort?owner=</span><span class="si">${</span><span class="nb">encodeURIComponent</span><span class="p">(</span><span class="nx">project</span><span class="p">.</span><span class="nx">owner</span><span class="p">)</span><span class="si">}</span><span class="sb">`</span>
+<span class="p">)</span>
+</code></pre></div>
+
+<p>A successful abort marks the variant as:</p>
+<ul>
+<li><code>status: aborted</code></li>
+<li><code>error_message: "Generation aborted by user"</code></li>
+</ul>
+<h2 id="deleting-variants">Deleting Variants</h2>
+<p>There are two delete routes.</p>
+<h3 id="delete-apiprojectsnamebranchprovidermodel"><code>DELETE /api/projects/{name}/{branch}/{provider}/{model}</code></h3>
+<p>Deletes one exact variant.</p>
+<h3 id="delete-apiprojectsname"><code>DELETE /api/projects/{name}</code></h3>
+<p>Deletes all variants for that project name within one owner scope.</p>
+<p>The UI builds owner-scoped delete URLs like this:</p>
+<div class="highlight"><pre><span></span><code><span class="k">await</span><span class="w"> </span><span class="nx">api</span><span class="p">.</span><span class="ow">delete</span><span class="p">(</span>
+<span class="w">  </span><span class="sb">`/api/projects/</span><span class="si">${</span><span class="nx">project</span><span class="p">.</span><span class="nx">name</span><span class="si">}</span><span class="sb">/</span><span class="si">${</span><span class="nx">project</span><span class="p">.</span><span class="nx">branch</span><span class="si">}</span><span class="sb">/</span><span class="si">${</span><span class="nx">project</span><span class="p">.</span><span class="nx">ai_provider</span><span class="si">}</span><span class="sb">/</span><span class="si">${</span><span class="nx">project</span><span class="p">.</span><span class="nx">ai_model</span><span class="si">}</span><span class="sb">?owner=</span><span class="si">${</span><span class="nb">encodeURIComponent</span><span class="p">(</span><span class="nx">project</span><span class="p">.</span><span class="nx">owner</span><span class="p">)</span><span class="si">}</span><span class="sb">`</span>
+<span class="p">)</span>
+</code></pre></div>
+
+<div class="highlight"><pre><span></span><code><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kd">const</span><span class="w"> </span><span class="nx">owner</span><span class="w"> </span><span class="k">of</span><span class="w"> </span><span class="nx">owners</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">await</span><span class="w"> </span><span class="nx">api</span><span class="p">.</span><span class="ow">delete</span><span class="p">(</span><span class="sb">`/api/projects/</span><span class="si">${</span><span class="nx">name</span><span class="si">}</span><span class="sb">?owner=</span><span class="si">${</span><span class="nb">encodeURIComponent</span><span class="p">(</span><span class="nx">owner</span><span class="p">)</span><span class="si">}</span><span class="sb">`</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<p>Delete behavior is owner-aware:</p>
+<ul>
+<li>non-admin users can delete only their own variants</li>
+<li>admins must include <code>?owner=username</code> on delete routes</li>
+<li>if a matching variant is still generating, delete returns <code>409</code> and you must abort first</li>
+</ul>
+<blockquote>
+<p><strong>Warning:</strong> Admin delete routes require <code>?owner=...</code> even when the path already includes <code>name</code>, <code>branch</code>, <code>provider</code>, and <code>model</code>.</p>
+<p><strong>Note:</strong> Legacy pre-owner records can still be targeted with <code>?owner=</code> (empty string).</p>
+</blockquote>
+<h2 id="downloading-generated-docs">Downloading Generated Docs</h2>
+<p>There are two download routes.</p>
+<h3 id="get-apiprojectsnamebranchprovidermodeldownload"><code>GET /api/projects/{name}/{branch}/{provider}/{model}/download</code></h3>
+<p>Downloads one ready variant as a <code>.tar.gz</code> archive.</p>
+<p>Rules:</p>
+<ul>
+<li>the variant must resolve successfully</li>
+<li>its status must be <code>ready</code></li>
+<li>the rendered site directory must exist</li>
+</ul>
+<p>The response is <code>application/gzip</code>, and the filename format is:</p>
+<ul>
+<li>variant-specific: <code>name-branch-provider-model-docs.tar.gz</code></li>
+</ul>
+<h3 id="get-apiprojectsnamedownload"><code>GET /api/projects/{name}/download</code></h3>
+<p>Downloads the newest ready variant you can access for that project name.</p>
+<p>Rules:</p>
+<ul>
+<li>it is not pinned to <code>main</code></li>
+<li>it is not pinned to one provider or model</li>
+<li>it chooses the latest ready accessible variant</li>
+<li>the archive filename format is <code>name-docs.tar.gz</code></li>
+</ul>
+<blockquote>
+<p><strong>Tip:</strong> Use the variant-specific download route whenever branch, provider, model, or owner matters. The project-level download route is a convenience shortcut.</p>
+</blockquote>
+<h2 id="serving-generated-docs-over-http">Serving Generated Docs Over HTTP</h2>
+<p>docsfy can serve the generated HTML directly.</p>
+<h3 id="variant-specific-docs">Variant-Specific Docs</h3>
+<p>Use:</p>
+<ul>
+<li><code>GET /docs/{project}/{branch}/{provider}/{model}/{path:path}</code></li>
+</ul>
+<p>Examples exercised by the test suite:</p>
+<ul>
+<li><code>/docs/test-repo/main/claude/opus/index.html</code></li>
+<li><code>/docs/test-repo/main/claude/opus/introduction.html</code></li>
+<li><code>/docs/test-repo/v2.0/claude/opus/index.html</code></li>
+</ul>
+<p>A trailing slash works because docsfy treats an empty path as <code>index.html</code>.</p>
+<h3 id="latest-accessible-docs">Latest Accessible Docs</h3>
+<p>Use:</p>
+<ul>
+<li><code>GET /docs/{project}/{path:path}</code></li>
+</ul>
+<p>This is the convenience route that serves the newest ready accessible variant for that project name.</p>
+<p>The implementation makes that behavior explicit:</p>
+<div class="highlight"><pre><span></span><code><span class="nd">@app</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/docs/</span><span class="si">{project}</span><span class="s2">/{path:path}&quot;</span><span class="p">)</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">serve_docs</span><span class="p">(</span>
+    <span class="n">request</span><span class="p">:</span> <span class="n">Request</span><span class="p">,</span> <span class="n">project</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;index.html&quot;</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FileResponse</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Serve the most recently generated variant.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">state</span><span class="o">.</span><span class="n">is_admin</span><span class="p">:</span>
+        <span class="n">latest</span> <span class="o">=</span> <span class="k">await</span> <span class="n">get_latest_variant</span><span class="p">(</span><span class="n">project</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">latest</span> <span class="o">=</span> <span class="k">await</span> <span class="n">_resolve_latest_accessible_variant</span><span class="p">(</span>
+            <span class="n">request</span><span class="o">.</span><span class="n">state</span><span class="o">.</span><span class="n">username</span><span class="p">,</span> <span class="n">project</span>
+        <span class="p">)</span>
+</code></pre></div>
+
+<p>The UI builds variant-specific docs and download links like this:</p>
+<div class="highlight"><pre><span></span><code><span class="kd">const</span><span class="w"> </span><span class="nx">docsUrl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="sb">`/docs/</span><span class="si">${</span><span class="nx">project</span><span class="p">.</span><span class="nx">name</span><span class="si">}</span><span class="sb">/</span><span class="si">${</span><span class="nx">project</span><span class="p">.</span><span class="nx">branch</span><span class="si">}</span><span class="sb">/</span><span class="si">${</span><span class="nx">project</span><span class="p">.</span><span class="nx">ai_provider</span><span class="si">}</span><span class="sb">/</span><span class="si">${</span><span class="nx">project</span><span class="p">.</span><span class="nx">ai_model</span><span class="si">}</span><span class="sb">/?owner=</span><span class="si">${</span><span class="nb">encodeURIComponent</span><span class="p">(</span><span class="nx">project</span><span class="p">.</span><span class="nx">owner</span><span class="p">)</span><span class="si">}</span><span class="sb">`</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">downloadUrl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="sb">`/api/projects/</span><span class="si">${</span><span class="nx">project</span><span class="p">.</span><span class="nx">name</span><span class="si">}</span><span class="sb">/</span><span class="si">${</span><span class="nx">project</span><span class="p">.</span><span class="nx">branch</span><span class="si">}</span><span class="sb">/</span><span class="si">${</span><span class="nx">project</span><span class="p">.</span><span class="nx">ai_provider</span><span class="si">}</span><span class="sb">/</span><span class="si">${</span><span class="nx">project</span><span class="p">.</span><span class="nx">ai_model</span><span class="si">}</span><span class="sb">/download?owner=</span><span class="si">${</span><span class="nb">encodeURIComponent</span><span class="p">(</span><span class="nx">project</span><span class="p">.</span><span class="nx">owner</span><span class="p">)</span><span class="si">}</span><span class="sb">`</span>
+</code></pre></div>
+
+<blockquote>
+<p><strong>Warning:</strong> <code>/docs/{project}/...</code> is a latest-variant shortcut, not a branch shortcut. If you need <code>main</code>, <code>dev</code>, or a specific provider/model, use the full variant-specific docs route.</p>
+</blockquote>
+<h2 id="owner-scoping-and-shared-access">Owner Scoping And Shared Access</h2>
+<p>Owner scoping is part of the API design.</p>
+<p>A few rules matter in practice:</p>
+<ul>
+<li><code>owner</code> is part of variant identity</li>
+<li>project access grants are scoped by both project name and project owner</li>
+<li>non-admin users cannot use <code>?owner=</code> to jump into another owner's namespace</li>
+<li>admins can use <code>?owner=</code> to disambiguate or target a specific owner's variant</li>
+</ul>
+<p>This matters most when the same project name exists under multiple owners.</p>
+<h3 id="what-shared-access-means">What Shared Access Means</h3>
+<p>If an admin grants you access to another user's project:</p>
+<ul>
+<li>the project appears in your listings</li>
+<li>its variants are merged into <code>GET /api/projects/{name}</code></li>
+<li>you can view ready docs and download them</li>
+<li>if your role is <code>user</code> or <code>admin</code>, you can abort accessible active runs</li>
+<li>you still cannot delete another user's variants unless you are an admin</li>
+</ul>
+<h3 id="when-admins-should-use-owner">When Admins Should Use <code>?owner=</code></h3>
+<p>Use <code>?owner=username</code> on:</p>
+<ul>
+<li><code>GET /api/projects/{name}/{branch}/{provider}/{model}</code> when the same variant may exist under multiple owners</li>
+<li><code>POST /api/projects/{name}/{branch}/{provider}/{model}/abort</code></li>
+<li><code>GET /api/projects/{name}/{branch}/{provider}/{model}/download</code></li>
+<li><code>GET /docs/{project}/{branch}/{provider}/{model}/...</code></li>
+<li>all admin delete routes</li>
+</ul>
+<blockquote>
+<p><strong>Tip:</strong> In multi-user installations, prefer variant-specific URLs plus <code>?owner=</code> instead of generic latest routes.</p>
+</blockquote>
+<h3 id="when-owner-does-not-solve-it">When <code>?owner=</code> Does Not Solve It</h3>
+<p>The project-level convenience routes are intentionally broad:</p>
+<ul>
+<li><code>POST /api/projects/{name}/abort</code> matches by project name only</li>
+<li><code>GET /api/projects/{name}/download</code> chooses the newest ready accessible variant</li>
+<li><code>GET /docs/{project}/...</code> chooses the newest ready accessible variant</li>
+</ul>
+<p>If you need a deterministic owner, branch, provider, or model, use the variant-specific route instead.</p>
+<h2 id="common-responses-and-failure-modes">Common Responses And Failure Modes</h2>
+<table>
+<thead>
+<tr>
+<th>Status</th>
+<th>When You Should Expect It</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>200</code></td>
+<td>Successful list, lookup, delete, abort, download, or docs fetch</td>
+</tr>
+<tr>
+<td><code>202</code></td>
+<td><code>POST /api/generate</code> accepted and queued</td>
+</tr>
+<tr>
+<td><code>400</code></td>
+<td>Invalid request data, invalid branch name, unsupported repo URL, admin delete without <code>?owner=</code>, or variant download before the variant is <code>ready</code></td>
+</tr>
+<tr>
+<td><code>401</code></td>
+<td>Missing or invalid authentication</td>
+</tr>
+<tr>
+<td><code>403</code></td>
+<td>Write route called by a <code>viewer</code>, or a blocked file access attempt under <code>/docs/*</code></td>
+</tr>
+<tr>
+<td><code>404</code></td>
+<td>Project/variant not found, not visible to the caller, no active generation, missing rendered file, or no ready docs available</td>
+</tr>
+<tr>
+<td><code>409</code></td>
+<td>Duplicate generation, multiple matching active abort targets, multiple owners matching a variant, or delete attempted while generation is still running</td>
+</tr>
+</tbody>
+</table>
+<p>A few especially important cases:</p>
+<ul>
+<li>inaccessible variants often return <code>404</code>, not <code>403</code>, so docsfy does not leak whether another owner's variant exists</li>
+<li><code>POST /api/projects/{name}/abort</code> returns <code>409</code> if more than one active variant shares that project name</li>
+<li>delete routes return <code>409</code> if generation is still in progress for the target</li>
+</ul>
+<h2 id="practical-usage-pattern">Practical Usage Pattern</h2>
+<p>Use these defaults:</p>
+<ul>
+<li>want everything you can see: <code>GET /api/status</code></li>
+<li>want all variants for one project name: <code>GET /api/projects/{name}</code></li>
+<li>want one exact variant: <code>GET /api/projects/{name}/{branch}/{provider}/{model}</code></li>
+<li>want predictable docs links: <code>GET /docs/{project}/{branch}/{provider}/{model}/</code></li>
+<li>want predictable downloads: <code>GET /api/projects/{name}/{branch}/{provider}/{model}/download</code></li>
+<li>want a convenience shortcut to the newest ready docs: <code>GET /docs/{project}/</code></li>
+<li>want to stop a specific run: <code>POST /api/projects/{name}/{branch}/{provider}/{model}/abort</code></li>
+<li>want to clean up one owner's project as admin: use the delete routes with <code>?owner=username</code></li>
+</ul>
+<p>If you remember only one rule, make it this: when branch, provider, model, or owner matters, use the full variant-specific route. Generic project-level routes are shortcuts to <strong>latest accessible</strong>, not shortcuts to <strong>main</strong>.</p>
+                </div>
+            </article>
+            <nav class="page-nav">
+
+                <a href="auth-api.html" class="page-nav-link page-nav-prev">
+                    <span class="page-nav-label">Previous</span>
+                    <span class="page-nav-title">Authentication API</span>
+                </a>
+
+
+                <a href="admin-api.html" class="page-nav-link page-nav-next">
+                    <span class="page-nav-label">Next</span>
+                    <span class="page-nav-title">Admin API</span>
+                </a>
+
+            </nav>
+
+            <aside class="toc-sidebar">
+                <div class="toc-container">
+                    <h3>On this page</h3>
+                    <div class="toc">
+<ul>
+<li><a href="#quick-reference">Quick Reference</a></li>
+<li><a href="#authentication-and-permissions">Authentication And Permissions</a></li>
+<li><a href="#runtime-settings">Runtime Settings</a></li>
+<li><a href="#variant-identity-and-branch-aware-urls">Variant Identity And Branch-Aware URLs</a></li>
+<li><a href="#listing-projects-and-variants">Listing Projects And Variants</a></li>
+<li><a href="#starting-generation">Starting Generation</a><ul>
+<li><a href="#request-fields">Request Fields</a></li>
+<li><a href="#generation-lifecycle">Generation Lifecycle</a></li>
+</ul>
+</li>
+<li><a href="#looking-up-one-variant">Looking Up One Variant</a></li>
+<li><a href="#aborting-generation">Aborting Generation</a><ul>
+<li><a href="#post-apiprojectsnameabort">POST /api/projects/{name}/abort</a></li>
+<li><a href="#post-apiprojectsnamebranchprovidermodelabort">POST /api/projects/{name}/{branch}/{provider}/{model}/abort</a></li>
+</ul>
+</li>
+<li><a href="#deleting-variants">Deleting Variants</a><ul>
+<li><a href="#delete-apiprojectsnamebranchprovidermodel">DELETE /api/projects/{name}/{branch}/{provider}/{model}</a></li>
+<li><a href="#delete-apiprojectsname">DELETE /api/projects/{name}</a></li>
+</ul>
+</li>
+<li><a href="#downloading-generated-docs">Downloading Generated Docs</a><ul>
+<li><a href="#get-apiprojectsnamebranchprovidermodeldownload">GET /api/projects/{name}/{branch}/{provider}/{model}/download</a></li>
+<li><a href="#get-apiprojectsnamedownload">GET /api/projects/{name}/download</a></li>
+</ul>
+</li>
+<li><a href="#serving-generated-docs-over-http">Serving Generated Docs Over HTTP</a><ul>
+<li><a href="#variant-specific-docs">Variant-Specific Docs</a></li>
+<li><a href="#latest-accessible-docs">Latest Accessible Docs</a></li>
+</ul>
+</li>
+<li><a href="#owner-scoping-and-shared-access">Owner Scoping And Shared Access</a><ul>
+<li><a href="#what-shared-access-means">What Shared Access Means</a></li>
+<li><a href="#when-admins-should-use-owner">When Admins Should Use ?owner=</a></li>
+<li><a href="#when-owner-does-not-solve-it">When ?owner= Does Not Solve It</a></li>
+</ul>
+</li>
+<li><a href="#common-responses-and-failure-modes">Common Responses And Failure Modes</a></li>
+<li><a href="#practical-usage-pattern">Practical Usage Pattern</a></li>
+</ul>
+</div>
+
+                </div>
+            </aside>
+
+
+        </main>
+
+        <footer class="page-footer">
+            Generated with <a href="https://github.com/myk-org/docsfy" target="_blank" rel="noopener">docs<span class="brand-accent">fy</span></a>
+            <span class="footer-sep">·</span>
+            <span class="footer-llm">LLM-friendly: <a href="llms.txt">llms.txt</a> · <a href="llms-full.txt">llms-full.txt</a></span>
+        </footer>
+    </div>
+
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <script src="assets/theme.js"></script>
+    <script src="assets/search.js"></script>
+    <script src="assets/copy.js"></script>
+    <script src="assets/callouts.js"></script>
+    <script src="assets/scrollspy.js"></script>
+    <script src="assets/codelabels.js"></script>
+    <script src="assets/github.js"></script>
+    <script>
+(function() {
+    var toggle = document.getElementById('sidebar-toggle');
+    var sidebar = document.getElementById('sidebar');
+    var overlay = document.getElementById('sidebar-overlay');
+    if (toggle && sidebar) {
+        toggle.addEventListener('click', function() {
+            sidebar.classList.toggle('open');
+            if (overlay) overlay.classList.toggle('open');
+            var expanded = sidebar.classList.contains('open');
+            toggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+        });
+    }
+    if (overlay) {
+        overlay.addEventListener('click', function() {
+            sidebar.classList.remove('open');
+            overlay.classList.remove('open');
+            if (toggle) toggle.setAttribute('aria-expanded', 'false');
+        });
+    }
+})();
+</script>
+<script>
+(function() {
+    var sidebar = document.querySelector('.sidebar-nav') || document.querySelector('.sidebar');
+    if (!sidebar) return;
+
+    // Restore scroll position
+    var saved = sessionStorage.getItem('sidebar-scroll');
+    if (saved) sidebar.scrollTop = parseInt(saved, 10);
+
+    // Save scroll position before navigating
+    sidebar.addEventListener('scroll', function() {
+        sessionStorage.setItem('sidebar-scroll', sidebar.scrollTop.toString());
+    });
+
+    // Also scroll active link into view if no saved position
+    if (!saved) {
+        var active = sidebar.querySelector('.nav-link.active');
+        if (active) {
+            active.scrollIntoView({ block: 'center', behavior: 'instant' });
+        }
+    }
+})();
+</script>
+</body>
+</html>

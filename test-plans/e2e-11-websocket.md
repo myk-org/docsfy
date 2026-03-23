@@ -138,7 +138,47 @@ agent-browser screenshot
 
 ---
 
-### 23.8 Cleanup
+### 23.8 Activity log updates continuously during long generation
+
+**Precondition:** Log in as `testuser-e2e` and navigate to the dashboard.
+
+```shell
+agent-browser navigate http://localhost:8800/login
+agent-browser type "[name='username']" "testuser-e2e"
+agent-browser type "[name='password']" "<TEST_USER_PASSWORD>"
+agent-browser click "button[type='submit']"
+agent-browser wait-for-navigation
+```
+
+Start a generation and stay on the page without refreshing:
+
+```shell
+agent-browser javascript "fetch('/api/generate', {method:'POST', headers:{'Content-Type':'application/json'}, credentials:'same-origin', body:JSON.stringify({repo_url:'https://github.com/myk-org/for-testing-only', ai_provider:'gemini', ai_model:'gemini-2.5-flash', force:true})}).then(r => r.status)"
+```
+
+Wait for generation to progress through multiple pages (do NOT refresh):
+
+```shell
+agent-browser wait 30000
+agent-browser screenshot
+```
+
+Check that the activity log in the UI has updated beyond the initial cloning/planning events:
+
+```shell
+agent-browser javascript "document.querySelectorAll('[class*=\"activity\"] li, [class*=\"log\"] li, [class*=\"progress\"] li').length"
+```
+
+**Expected result:**
+- The activity log shows progress entries beyond initial cloning and planning
+- Page-level progress entries (e.g., "Page 1 of N: ...") are visible WITHOUT requiring a page refresh
+- The screenshot shows current generation progress, not stale initial state
+
+**Bug reference:** [#33](https://github.com/myk-org/docsfy/issues/33) — WebSocket progress activity log stops updating when page stays open
+
+---
+
+### 23.9 Cleanup
 
 **Note:** Test 23 does not create persistent data (the generation started in 23.4 uses existing test infrastructure). Clean up the WebSocket state:
 

@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Security Considerations - docsfy</title>
+    <meta name="description" content="AI-powered documentation generator that turns Git repositories into shareable static docs sites.">
+    <link rel="stylesheet" href="assets/style.css">
+    <link rel="alternate" type="text/plain" title="LLM Documentation Index" href="llms.txt">
+    <link rel="alternate" type="text/plain" title="LLM Full Documentation" href="llms-full.txt">
+</head>
+<body>
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <a href="index.html" class="sidebar-logo">docsfy</a>
+            <p class="sidebar-tagline">AI-powered documentation generator that turns Git repositories into shareable static docs sites.</p>
+        </div>
+
+        <div class="sidebar-search">
+            <input type="text" id="search-input" placeholder="Search... (⌘K)" autocomplete="off" readonly>
+            <div id="search-results" class="search-results"></div>
+        </div>
+
+        <nav class="sidebar-nav">
+
+            <div class="nav-group">
+                <h3 class="nav-group-title">Overview</h3>
+                <ul class="nav-group-pages">
+
+                    <li>
+                        <a href="introduction.html"
+                           class="nav-link">
+                            Introduction
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="architecture-and-runtime.html"
+                           class="nav-link">
+                            Architecture and Runtime
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="projects-variants-and-ownership.html"
+                           class="nav-link">
+                            Projects, Variants, and Ownership
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="generated-output.html"
+                           class="nav-link">
+                            Generated Output
+                        </a>
+                    </li>
+
+                </ul>
+            </div>
+
+            <div class="nav-group">
+                <h3 class="nav-group-title">Getting Started</h3>
+                <ul class="nav-group-pages">
+
+                    <li>
+                        <a href="installation.html"
+                           class="nav-link">
+                            Installation
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="ai-provider-setup.html"
+                           class="nav-link">
+                            AI Provider Setup
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="local-development.html"
+                           class="nav-link">
+                            Local Development
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="docker-quickstart.html"
+                           class="nav-link">
+                            Docker and Compose Quickstart
+                        </a>
+                    </li>
+
+                </ul>
+            </div>
+
+            <div class="nav-group">
+                <h3 class="nav-group-title">Configuration</h3>
+                <ul class="nav-group-pages">
+
+                    <li>
+                        <a href="environment-variables.html"
+                           class="nav-link">
+                            Environment Variables
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="cli-configuration.html"
+                           class="nav-link">
+                            CLI Configuration
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="authentication-and-roles.html"
+                           class="nav-link">
+                            Authentication and Roles
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="data-storage-and-layout.html"
+                           class="nav-link">
+                            Data Storage and Layout
+                        </a>
+                    </li>
+
+                </ul>
+            </div>
+
+            <div class="nav-group">
+                <h3 class="nav-group-title">Usage Guides</h3>
+                <ul class="nav-group-pages">
+
+                    <li>
+                        <a href="first-run-quickstart.html"
+                           class="nav-link">
+                            First Run Quickstart
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="generating-documentation.html"
+                           class="nav-link">
+                            Generating Documentation
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="tracking-progress-and-status.html"
+                           class="nav-link">
+                            Tracking Progress and Status
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="variants-branches-and-regeneration.html"
+                           class="nav-link">
+                            Variants, Branches, and Regeneration
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="viewing-downloading-and-hosting-docs.html"
+                           class="nav-link">
+                            Viewing, Downloading, and Hosting Docs
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="user-and-access-management.html"
+                           class="nav-link">
+                            User and Access Management
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="cli-workflows.html"
+                           class="nav-link">
+                            CLI Workflows
+                        </a>
+                    </li>
+
+                </ul>
+            </div>
+
+            <div class="nav-group">
+                <h3 class="nav-group-title">Reference</h3>
+                <ul class="nav-group-pages">
+
+                    <li>
+                        <a href="cli-command-reference.html"
+                           class="nav-link">
+                            CLI Command Reference
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="auth-api.html"
+                           class="nav-link">
+                            Authentication API
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="projects-api.html"
+                           class="nav-link">
+                            Projects API
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="admin-api.html"
+                           class="nav-link">
+                            Admin API
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="websocket-protocol.html"
+                           class="nav-link">
+                            WebSocket Protocol
+                        </a>
+                    </li>
+
+                </ul>
+            </div>
+
+            <div class="nav-group">
+                <h3 class="nav-group-title">Operations</h3>
+                <ul class="nav-group-pages">
+
+                    <li>
+                        <a href="deployment-and-runtime.html"
+                           class="nav-link">
+                            Deployment and Runtime
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="testing-and-quality-checks.html"
+                           class="nav-link">
+                            Testing and Quality Checks
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="security-considerations.html"
+                           class="nav-link active" aria-current="page">
+                            Security Considerations
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="troubleshooting.html"
+                           class="nav-link">
+                            Troubleshooting
+                        </a>
+                    </li>
+
+                </ul>
+            </div>
+
+        </nav>
+    </aside>
+
+    <div class="main-wrapper">
+        <header class="top-bar">
+            <div class="top-bar-left">
+                <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebar" aria-expanded="false">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                </button>
+                <a href="index.html" class="top-bar-title">docsfy</a>
+            </div>
+            <div class="top-bar-spacer"></div>
+            <div class="top-bar-right">
+                <button class="top-bar-search-btn" id="search-trigger" aria-label="Search">
+                    <kbd>&#8984;K</kbd> Search
+                </button>
+                <a href="https://github.com/myk-org/docsfy" target="_blank" rel="noopener" class="docsfy-badge" title="Generated with docsfy">
+                    ⚡ docs<span class="brand-accent">fy</span>
+                </a>
+
+                <a href="https://github.com/myk-org/docsfy" target="_blank" rel="noopener noreferrer" class="top-bar-github" id="github-link" data-repo-url="https://github.com/myk-org/docsfy">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                    <span class="github-stars" id="github-stars"></span>
+                </a>
+
+                <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+                    <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                    </svg>
+                    <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <main class="content">
+
+            <article class="article">
+                <div class="article-body">
+                    <!-- SECURITY: |safe is intentional. Content is AI-generated markdown
+                         converted to HTML server-side by the markdown library, not
+                         user-supplied input. XSS risk is minimal and accepted since
+                         the AI generates the content, not end users. -->
+                    <h1 id="security-considerations">Security Considerations</h1>
+<p>docsfy is designed for authenticated, internal-style documentation hosting rather than anonymous public uploads. It protects its API and generated docs with credential checks, reduces credential exposure in storage, rejects risky repository inputs, and sanitizes AI-generated HTML before it is rendered.</p>
+<h2 id="what-matters-most">What matters most</h2>
+<ul>
+<li>Protect <code>ADMIN_KEY</code> like a root credential. It is required at startup and must be at least 16 characters long.</li>
+<li>Keep <code>SECURE_COOKIES=true</code> in production so browser sessions are sent only over HTTPS.</li>
+<li>Prefer individual database-backed users over sharing the built-in <code>admin</code> credential.</li>
+<li>Use remote repository URLs for normal workflows. Local <code>repo_path</code> access is intentionally admin-only.</li>
+<li>Review generated documentation before publishing it outside your team, even though docsfy sanitizes the rendered HTML.</li>
+</ul>
+<h2 id="authentication-and-access-control">Authentication and access control</h2>
+<p>With a small set of public exceptions such as <code>/health</code>, login/logout, and the frontend login route, docsfy treats <code>/api/*</code> and <code>/docs/*</code> as authenticated surfaces.</p>
+<p>It supports two main authentication flows:</p>
+<ul>
+<li>Browser flow: log in once, receive a <code>docsfy_session</code> cookie, and let the frontend send that cookie on same-origin requests.</li>
+<li>API or CLI flow: send <code>Authorization: Bearer &lt;API_KEY&gt;</code> on each request.</li>
+</ul>
+<p>The built-in <code>admin</code> login is special. It is not a normal database user. It only authenticates when the username is literally <code>admin</code> and the submitted secret matches <code>ADMIN_KEY</code>. Database-backed users are looked up by API key and carry one of three roles: <code>admin</code>, <code>user</code>, or <code>viewer</code>.</p>
+<p>From <code>src/docsfy/api/auth.py</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Check admin -- username must be &quot;admin&quot; and key must match</span>
+<span class="k">if</span> <span class="n">username</span> <span class="o">==</span> <span class="s2">&quot;admin&quot;</span> <span class="ow">and</span> <span class="n">hmac</span><span class="o">.</span><span class="n">compare_digest</span><span class="p">(</span><span class="n">api_key</span><span class="p">,</span> <span class="n">settings</span><span class="o">.</span><span class="n">admin_key</span><span class="p">):</span>
+    <span class="n">is_admin</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">authenticated</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">role</span> <span class="o">=</span> <span class="s2">&quot;admin&quot;</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="c1"># Check user key -- verify username matches the key&#39;s owner</span>
+    <span class="n">user</span> <span class="o">=</span> <span class="k">await</span> <span class="n">get_user_by_key</span><span class="p">(</span><span class="n">api_key</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">user</span> <span class="ow">and</span> <span class="n">user</span><span class="p">[</span><span class="s2">&quot;username&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">username</span><span class="p">:</span>
+        <span class="n">authenticated</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">role</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">user</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;role&quot;</span><span class="p">,</span> <span class="s2">&quot;user&quot;</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">role</span> <span class="o">==</span> <span class="s2">&quot;admin&quot;</span><span class="p">:</span>
+            <span class="n">is_admin</span> <span class="o">=</span> <span class="kc">True</span>
+</code></pre></div>
+
+<p>Write access is enforced server-side. Viewers can read but cannot generate or delete docs.</p>
+<p>From <code>src/docsfy/api/projects.py</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">_require_write_access</span><span class="p">(</span><span class="n">request</span><span class="p">:</span> <span class="n">Request</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Raise 403 if user is a viewer (read-only).&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">state</span><span class="o">.</span><span class="n">role</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;admin&quot;</span><span class="p">,</span> <span class="s2">&quot;user&quot;</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span>
+            <span class="n">status_code</span><span class="o">=</span><span class="mi">403</span><span class="p">,</span>
+            <span class="n">detail</span><span class="o">=</span><span class="s2">&quot;Write access required.&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+</code></pre></div>
+
+<p>Access grants are owner-scoped. If one owner shares <code>my-repo</code>, that does not automatically expose another owner's <code>my-repo</code>. When a non-admin requests a project they should not see, docsfy often returns <code>404 Not found</code> instead of <code>403</code>, which helps avoid leaking whether that project exists.</p>
+<p>For browser HTML requests to <code>/docs/*</code>, unauthenticated users are redirected to <code>/login</code>. Programmatic requests get <code>401 Unauthorized</code> JSON instead. The WebSocket endpoint follows the same model: it accepts either a session cookie or a token, and the built-in frontend uses the cookie-based path after login.</p>
+<blockquote>
+<p><strong>Note:</strong> In the UI and CLI config, this secret may be shown as a "password", but for database-backed users it is the same underlying API key used for authenticated API requests.</p>
+<p><strong>Tip:</strong> For day-to-day administration, prefer a database-backed user with role <code>admin</code>. That account can rotate its own key. The built-in <code>admin</code> login is tied directly to <code>ADMIN_KEY</code>.</p>
+</blockquote>
+<h2 id="api-keys-and-session-cookies">API keys and session cookies</h2>
+<p>docsfy does not store user API keys in plaintext. The <code>users</code> table keeps only <code>api_key_hash</code>, and that hash is an HMAC-SHA256 digest keyed by <code>ADMIN_KEY</code>.</p>
+<p>From <code>src/docsfy/storage.py</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">hash_api_key</span><span class="p">(</span><span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">hmac_secret</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Hash an API key with HMAC-SHA256 for storage.</span>
+
+<span class="sd">    Uses ADMIN_KEY as the HMAC secret so that even if the source is read,</span>
+<span class="sd">    keys cannot be cracked without the environment secret.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">secret</span> <span class="o">=</span> <span class="n">hmac_secret</span> <span class="ow">or</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;ADMIN_KEY&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">secret</span><span class="p">:</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;ADMIN_KEY environment variable is required for key hashing&quot;</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">hmac</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">secret</span><span class="o">.</span><span class="n">encode</span><span class="p">(),</span> <span class="n">key</span><span class="o">.</span><span class="n">encode</span><span class="p">(),</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">sha256</span><span class="p">)</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()</span>
+</code></pre></div>
+
+<p>In practice, that means:</p>
+<ul>
+<li>The raw API key is not recoverable from the database.</li>
+<li>Creating or rotating a key is the moment when the raw value must be saved.</li>
+<li>Generated keys use a random <code>docsfy_...</code> format.</li>
+<li>Custom replacement keys must be at least 16 characters long.</li>
+<li>Creating or rotating a key returns <code>Cache-Control: no-store</code> so browsers and proxies should not cache the raw value.</li>
+<li>Rotating a user's key invalidates that user's active sessions.</li>
+</ul>
+<p>Browser sessions use a separate opaque token. docsfy generates a random session token, stores only its SHA-256 hash in the <code>sessions</code> table, and sends the raw token as an <code>HttpOnly</code> cookie.</p>
+<p>From <code>src/docsfy/api/auth.py</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="n">response</span><span class="o">.</span><span class="n">set_cookie</span><span class="p">(</span>
+    <span class="s2">&quot;docsfy_session&quot;</span><span class="p">,</span>
+    <span class="n">session_token</span><span class="p">,</span>
+    <span class="n">httponly</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">samesite</span><span class="o">=</span><span class="s2">&quot;strict&quot;</span><span class="p">,</span>
+    <span class="n">secure</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">secure_cookies</span><span class="p">,</span>
+    <span class="n">max_age</span><span class="o">=</span><span class="n">SESSION_TTL_SECONDS</span><span class="p">,</span>
+<span class="p">)</span>
+</code></pre></div>
+
+<p>That gives you:</p>
+<ul>
+<li><code>HttpOnly</code>: JavaScript cannot read the session cookie.</li>
+<li><code>SameSite=Strict</code>: the cookie is not intended for cross-site use.</li>
+<li><code>Secure</code>: controlled by <code>SECURE_COOKIES</code>, and should stay enabled in production.</li>
+<li>An 8-hour lifetime by default.</li>
+</ul>
+<p>The frontend is wired to use same-origin credentials instead of reading or managing the cookie itself. From <code>frontend/src/lib/api.ts</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="kd">const</span><span class="w"> </span><span class="nx">config</span><span class="o">:</span><span class="w"> </span><span class="kt">RequestInit</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="p">...</span><span class="nx">options</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">credentials</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;same-origin&#39;</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">redirect</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;manual&#39;</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">headers</span><span class="p">,</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<p>Start from the shipped <code>.env.example</code> settings:</p>
+<div class="highlight"><pre><span></span><code># Required: Admin password (minimum 16 characters)
+ADMIN_KEY=
+
+# AI provider and model defaults
+# (pydantic_settings reads these case-insensitively)
+AI_PROVIDER=cursor
+AI_MODEL=gpt-5.4-xhigh-fast
+AI_CLI_TIMEOUT=60
+
+# Logging
+LOG_LEVEL=INFO
+
+# Data directory for database and generated docs
+DATA_DIR=/data
+
+# Cookie security (set to false for local HTTP development)
+SECURE_COOKIES=true
+</code></pre></div>
+
+<p>If you use the CLI, remember that the config file contains the raw password or API key. The sample <code>config.toml.example</code> calls this out directly:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># docsfy CLI configuration</span>
+<span class="c1"># Copy to ~/.config/docsfy/config.toml or run: docsfy config init</span>
+<span class="c1">#</span>
+<span class="c1"># SECURITY: This file contains passwords. Keep it private:</span>
+<span class="c1">#   chmod 600 ~/.config/docsfy/config.toml</span>
+
+<span class="c1"># Default server to use when --server is not specified</span>
+<span class="k">[default]</span>
+<span class="n">server</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;dev&quot;</span>
+
+<span class="c1"># Server profiles -- add as many as you need</span>
+<span class="k">[servers.dev]</span>
+<span class="n">url</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;http://localhost:8000&quot;</span>
+<span class="n">username</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;admin&quot;</span>
+<span class="n">password</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;&lt;your-dev-key&gt;&quot;</span>
+</code></pre></div>
+
+<p><code>docsfy config init</code> reinforces this by writing the config directory and file with owner-only permissions.</p>
+<blockquote>
+<p><strong>Warning:</strong> Rotating <code>ADMIN_KEY</code> does more than change the built-in admin login. Because it is also the HMAC secret for user API-key hashes, existing database-backed API keys stop matching until new keys are issued.</p>
+<p><strong>Tip:</strong> Leave <code>SECURE_COOKIES=true</code> in production. Set it to <code>false</code> only for local HTTP development.</p>
+</blockquote>
+<h2 id="repository-urls-ssrf-protection-and-path-validation">Repository URLs, SSRF protection, and path validation</h2>
+<p>docsfy validates repository inputs in more than one place.</p>
+<h3 id="repository-url-shape">Repository URL shape</h3>
+<p>The request model only accepts a narrow set of remote Git URL forms, and local paths must be absolute.</p>
+<p>From <code>src/docsfy/models.py</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="nd">@field_validator</span><span class="p">(</span><span class="s2">&quot;repo_url&quot;</span><span class="p">)</span>
+<span class="nd">@classmethod</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">validate_repo_url</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">v</span>
+    <span class="n">https_pattern</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">&quot;^https?://[\w.\-]+/[\w.\-]+/[\w.\-]+(\.git)?$&quot;</span>
+    <span class="n">ssh_pattern</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">&quot;^git@[\w.\-]+:[\w.\-]+/[\w.\-]+(\.git)?$&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">https_pattern</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">ssh_pattern</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Invalid git repository URL: &#39;</span><span class="si">{</span><span class="n">v</span><span class="si">}</span><span class="s2">&#39;&quot;</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">v</span>
+</code></pre></div>
+
+<p>Practical implications:</p>
+<ul>
+<li>Current remote URL validation is intentionally strict. It expects <code>host/org/repo</code>-style paths.</li>
+<li>Bare local filesystem paths are not accepted as <code>repo_url</code>.</li>
+<li><code>repo_path</code> must be absolute.</li>
+<li>Local repository generation is admin-only and must point to a directory that exists and contains <code>.git</code>.</li>
+</ul>
+<p>Branch names are also validated because they are used in URLs and on disk. Slashes, leading dots, and <code>..</code> are rejected. Use <code>release-1.x</code>, not <code>release/1.x</code>.</p>
+<h3 id="ssrf-protection-for-remote-repositories">SSRF protection for remote repositories</h3>
+<p>Before cloning a remote repository, docsfy rejects repository URLs that point at localhost, private addresses, or DNS names that resolve to private addresses.</p>
+<p>From <code>src/docsfy/api/projects.py</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="k">if</span> <span class="ow">not</span> <span class="n">hostname</span><span class="p">:</span>
+    <span class="c1"># Reject bare paths like /srv/repo.git or ../repo that have</span>
+    <span class="c1"># no scheme and no hostname -- they are local filesystem refs.</span>
+    <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span>
+        <span class="n">status_code</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span>
+        <span class="n">detail</span><span class="o">=</span><span class="s2">&quot;Repository URL must include a hostname. Bare local paths are not allowed.&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+<span class="c1"># Check for localhost</span>
+<span class="k">if</span> <span class="n">hostname</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;localhost&quot;</span><span class="p">,</span> <span class="s2">&quot;127.0.0.1&quot;</span><span class="p">,</span> <span class="s2">&quot;::1&quot;</span><span class="p">,</span> <span class="s2">&quot;0.0.0.0&quot;</span><span class="p">):</span>
+    <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span>
+        <span class="n">status_code</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span>
+        <span class="n">detail</span><span class="o">=</span><span class="s2">&quot;Repository URL must not target localhost or private networks&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+<span class="c1"># Check if hostname is an IP address in private range</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="n">addr</span> <span class="o">=</span> <span class="n">ipaddress</span><span class="o">.</span><span class="n">ip_address</span><span class="p">(</span><span class="n">hostname</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">addr</span><span class="o">.</span><span class="n">is_global</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span>
+            <span class="n">status_code</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span>
+            <span class="n">detail</span><span class="o">=</span><span class="s2">&quot;Repository URL must not target localhost or private networks&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+<span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+    <span class="c1"># hostname is a DNS name - resolve and check</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">loop</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">get_event_loop</span><span class="p">()</span>
+        <span class="n">resolved</span> <span class="o">=</span> <span class="k">await</span> <span class="n">loop</span><span class="o">.</span><span class="n">run_in_executor</span><span class="p">(</span>
+            <span class="kc">None</span><span class="p">,</span>
+            <span class="n">socket</span><span class="o">.</span><span class="n">getaddrinfo</span><span class="p">,</span>
+            <span class="n">hostname</span><span class="p">,</span>
+            <span class="kc">None</span><span class="p">,</span>
+            <span class="n">socket</span><span class="o">.</span><span class="n">AF_UNSPEC</span><span class="p">,</span>
+            <span class="n">socket</span><span class="o">.</span><span class="n">SOCK_STREAM</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">for</span> <span class="n">_family</span><span class="p">,</span> <span class="n">_socktype</span><span class="p">,</span> <span class="n">_proto</span><span class="p">,</span> <span class="n">_canonname</span><span class="p">,</span> <span class="n">sockaddr</span> <span class="ow">in</span> <span class="n">resolved</span><span class="p">:</span>
+            <span class="n">ip_str</span> <span class="o">=</span> <span class="n">sockaddr</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">addr</span> <span class="o">=</span> <span class="n">ipaddress</span><span class="o">.</span><span class="n">ip_address</span><span class="p">(</span><span class="n">ip_str</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">addr</span><span class="o">.</span><span class="n">is_global</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span>
+                    <span class="n">status_code</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span>
+                    <span class="n">detail</span><span class="o">=</span><span class="s2">&quot;Repository URL resolves to a private network address&quot;</span><span class="p">,</span>
+                <span class="p">)</span>
+</code></pre></div>
+
+<p>This protects against common SSRF mistakes, such as accidentally pointing docsfy at:</p>
+<ul>
+<li><code>localhost</code></li>
+<li><code>127.0.0.1</code></li>
+<li><code>0.0.0.0</code></li>
+<li>private RFC1918 or non-global IPs</li>
+<li>DNS names that resolve to internal addresses</li>
+</ul>
+<p>The code also passes the repository URL to Git after <code>--</code>, which prevents the URL from being interpreted as a Git CLI option.</p>
+<blockquote>
+<p><strong>Note:</strong> The SSRF protection is intentionally basic. The code explicitly recommends adding network or firewall controls for stronger protection against cases such as DNS rebinding.</p>
+</blockquote>
+<h3 id="filesystem-safety">Filesystem safety</h3>
+<p>docsfy also validates the names it turns into directory names and filenames.</p>
+<p>From <code>src/docsfy/storage.py</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="k">if</span> <span class="ow">not</span> <span class="n">branch</span><span class="p">:</span>
+    <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;branch is required for project directory paths&quot;</span>
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+<span class="k">if</span> <span class="ow">not</span> <span class="n">ai_provider</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">ai_model</span><span class="p">:</span>
+    <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;ai_provider and ai_model are required for project directory paths&quot;</span>
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+<span class="c1"># Sanitize path segments to prevent traversal</span>
+<span class="k">for</span> <span class="n">segment_name</span><span class="p">,</span> <span class="n">segment</span> <span class="ow">in</span> <span class="p">[</span>
+    <span class="p">(</span><span class="s2">&quot;branch&quot;</span><span class="p">,</span> <span class="n">branch</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;ai_provider&quot;</span><span class="p">,</span> <span class="n">ai_provider</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;ai_model&quot;</span><span class="p">,</span> <span class="n">ai_model</span><span class="p">),</span>
+<span class="p">]:</span>
+    <span class="k">if</span> <span class="p">(</span>
+        <span class="s2">&quot;/&quot;</span> <span class="ow">in</span> <span class="n">segment</span>
+        <span class="ow">or</span> <span class="s2">&quot;</span><span class="se">\\</span><span class="s2">&quot;</span> <span class="ow">in</span> <span class="n">segment</span>
+        <span class="ow">or</span> <span class="s2">&quot;..&quot;</span> <span class="ow">in</span> <span class="n">segment</span>
+        <span class="ow">or</span> <span class="n">segment</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)</span>
+    <span class="p">):</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Invalid </span><span class="si">{</span><span class="n">segment_name</span><span class="si">}</span><span class="s2">: &#39;</span><span class="si">{</span><span class="n">segment</span><span class="si">}</span><span class="s2">&#39;&quot;</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+</code></pre></div>
+
+<p>There are similar checks for project names, owners, and generated page slugs. Invalid slugs are rejected before docsfy writes cache files or output pages.</p>
+<p>When serving built docs, docsfy also verifies that the requested file stays inside the generated site directory.</p>
+<p>From <code>src/docsfy/main.py</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="n">file_path</span> <span class="o">=</span> <span class="n">site_dir</span> <span class="o">/</span> <span class="n">path</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="n">file_path</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span><span class="o">.</span><span class="n">relative_to</span><span class="p">(</span><span class="n">site_dir</span><span class="o">.</span><span class="n">resolve</span><span class="p">())</span>
+<span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+    <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="n">status_code</span><span class="o">=</span><span class="mi">403</span><span class="p">,</span> <span class="n">detail</span><span class="o">=</span><span class="s2">&quot;Access denied&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
+<span class="k">if</span> <span class="ow">not</span> <span class="n">file_path</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">file_path</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
+    <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="n">status_code</span><span class="o">=</span><span class="mi">404</span><span class="p">,</span> <span class="n">detail</span><span class="o">=</span><span class="s2">&quot;File not found&quot;</span><span class="p">)</span>
+</code></pre></div>
+
+<p>That containment check is important because it prevents <code>..</code>-style path traversal from escaping the generated docs directory.</p>
+<h2 id="sanitizing-ai-generated-html">Sanitizing AI-generated HTML</h2>
+<p>docsfy does not blindly trust the HTML that comes out of the markdown rendering step. After converting markdown to HTML, it sanitizes the result before inserting it into the page template.</p>
+<p>From <code>src/docsfy/renderer.py</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Remove script tags and content</span>
+<span class="n">html</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span>
+    <span class="sa">r</span><span class="s2">&quot;&lt;script[^&gt;]*&gt;.*?&lt;/script&gt;&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">html</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="n">re</span><span class="o">.</span><span class="n">DOTALL</span> <span class="o">|</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span>
+<span class="p">)</span>
+<span class="c1"># Remove iframe, object, embed, form tags</span>
+<span class="k">for</span> <span class="n">tag</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;iframe&quot;</span><span class="p">,</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span> <span class="s2">&quot;embed&quot;</span><span class="p">,</span> <span class="s2">&quot;form&quot;</span><span class="p">]:</span>
+    <span class="n">html</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span>
+        <span class="sa">rf</span><span class="s2">&quot;&lt;</span><span class="si">{</span><span class="n">tag</span><span class="si">}</span><span class="s2">[^&gt;]*&gt;.*?&lt;/</span><span class="si">{</span><span class="n">tag</span><span class="si">}</span><span class="s2">&gt;&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">html</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="n">re</span><span class="o">.</span><span class="n">DOTALL</span> <span class="o">|</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span>
+    <span class="p">)</span>
+    <span class="n">html</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">rf</span><span class="s2">&quot;&lt;</span><span class="si">{</span><span class="n">tag</span><span class="si">}</span><span class="s2">[^&gt;]*/&gt;&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">html</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">)</span>
+<span class="c1"># Remove event handler attributes</span>
+<span class="n">html</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;\s+on\w+\s*=\s*[&quot;</span><span class="se">\&#39;</span><span class="s1">][^&quot;</span><span class="se">\&#39;</span><span class="s1">]*[&quot;</span><span class="se">\&#39;</span><span class="s1">]&#39;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">html</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">)</span>
+<span class="n">html</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;\s+on\w+\s*=\s*\S+&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">html</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">)</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_sanitize_url_attr</span><span class="p">(</span><span class="n">match</span><span class="p">:</span> <span class="n">re</span><span class="o">.</span><span class="n">Match</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="n">attr</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># href or src</span>
+    <span class="n">quote</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>  <span class="c1"># &quot; or &#39;</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>  <span class="c1"># the URL value</span>
+    <span class="n">clean_url</span> <span class="o">=</span> <span class="n">url</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">clean_url</span><span class="o">.</span><span class="n">startswith</span><span class="p">((</span><span class="s2">&quot;http://&quot;</span><span class="p">,</span> <span class="s2">&quot;https://&quot;</span><span class="p">,</span> <span class="s2">&quot;#&quot;</span><span class="p">,</span> <span class="s2">&quot;/&quot;</span><span class="p">,</span> <span class="s2">&quot;mailto:&quot;</span><span class="p">)):</span>
+        <span class="k">return</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>  <span class="c1"># Keep as-is</span>
+    <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">attr</span><span class="si">}</span><span class="s2">=</span><span class="si">{</span><span class="n">quote</span><span class="si">}</span><span class="s2">#</span><span class="si">{</span><span class="n">quote</span><span class="si">}</span><span class="s2">&quot;</span>
+</code></pre></div>
+
+<p>In practice, that means:</p>
+<ul>
+<li><code>&lt;script&gt;</code> content is removed.</li>
+<li><code>&lt;iframe&gt;</code>, <code>&lt;object&gt;</code>, <code>&lt;embed&gt;</code>, and <code>&lt;form&gt;</code> elements are removed.</li>
+<li>Inline event handlers such as <code>onclick=</code> and <code>onerror=</code> are stripped.</li>
+<li>Unsafe <code>href</code> and <code>src</code> values such as <code>javascript:</code> or <code>data:</code> are rewritten to <code>#</code>.</li>
+<li>Safe URL shapes such as <code>https://...</code>, <code>/relative-path</code>, <code>#anchor</code>, and <code>mailto:</code> are preserved.</li>
+</ul>
+<p>Template rendering adds another layer. Jinja autoescaping is enabled for HTML templates, and only the already-sanitized page body is marked safe for insertion.</p>
+<p>From <code>src/docsfy/templates/page.html</code>:</p>
+<div class="highlight"><pre><span></span><code>{{ content | safe }}
+</code></pre></div>
+
+<p>That ordering is the important part: sanitize first, then render.</p>
+<p>Other dynamic UI text is also handled conservatively. For example, search result titles and snippets in <code>src/docsfy/static/search.js</code> are inserted with DOM <code>textContent</code>, not as raw HTML.</p>
+<blockquote>
+<p><strong>Warning:</strong> Sanitization greatly reduces XSS risk, but it is not a substitute for reviewing generated documentation before publishing it to a wider audience. AI-generated docs can still contain misleading instructions, bad links, or content you would not want to ship unchanged.</p>
+</blockquote>
+<h2 id="deployment-notes">Deployment notes</h2>
+<p>A few defaults are worth knowing when you deploy docsfy:</p>
+<ul>
+<li><code>docsfy-server</code> binds to <code>127.0.0.1</code> by default when run directly, which is a safer local default.</li>
+<li>The provided container image drops to a non-root <code>appuser</code> at runtime.</li>
+<li><code>docker-compose.yaml</code> reads <code>ADMIN_KEY</code> from <code>.env</code> instead of hardcoding it into the compose file.</li>
+</ul>
+<p>For most deployments, a good baseline is simple:</p>
+<ul>
+<li>Keep <code>ADMIN_KEY</code> in the environment, never in git.</li>
+<li>Serve docsfy over HTTPS.</li>
+<li>Leave <code>SECURE_COOKIES=true</code>.</li>
+<li>Use per-user accounts and roles instead of sharing the built-in admin secret.</li>
+<li>Review generated docs before publishing them outside your trusted audience.</li>
+</ul>
+                </div>
+            </article>
+            <nav class="page-nav">
+
+                <a href="testing-and-quality-checks.html" class="page-nav-link page-nav-prev">
+                    <span class="page-nav-label">Previous</span>
+                    <span class="page-nav-title">Testing and Quality Checks</span>
+                </a>
+
+
+                <a href="troubleshooting.html" class="page-nav-link page-nav-next">
+                    <span class="page-nav-label">Next</span>
+                    <span class="page-nav-title">Troubleshooting</span>
+                </a>
+
+            </nav>
+
+            <aside class="toc-sidebar">
+                <div class="toc-container">
+                    <h3>On this page</h3>
+                    <div class="toc">
+<ul>
+<li><a href="#what-matters-most">What matters most</a></li>
+<li><a href="#authentication-and-access-control">Authentication and access control</a></li>
+<li><a href="#api-keys-and-session-cookies">API keys and session cookies</a></li>
+<li><a href="#repository-urls-ssrf-protection-and-path-validation">Repository URLs, SSRF protection, and path validation</a><ul>
+<li><a href="#repository-url-shape">Repository URL shape</a></li>
+<li><a href="#ssrf-protection-for-remote-repositories">SSRF protection for remote repositories</a></li>
+<li><a href="#filesystem-safety">Filesystem safety</a></li>
+</ul>
+</li>
+<li><a href="#sanitizing-ai-generated-html">Sanitizing AI-generated HTML</a></li>
+<li><a href="#deployment-notes">Deployment notes</a></li>
+</ul>
+</div>
+
+                </div>
+            </aside>
+
+
+        </main>
+
+        <footer class="page-footer">
+            Generated with <a href="https://github.com/myk-org/docsfy" target="_blank" rel="noopener">docs<span class="brand-accent">fy</span></a>
+            <span class="footer-sep">·</span>
+            <span class="footer-llm">LLM-friendly: <a href="llms.txt">llms.txt</a> · <a href="llms-full.txt">llms-full.txt</a></span>
+        </footer>
+    </div>
+
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <script src="assets/theme.js"></script>
+    <script src="assets/search.js"></script>
+    <script src="assets/copy.js"></script>
+    <script src="assets/callouts.js"></script>
+    <script src="assets/scrollspy.js"></script>
+    <script src="assets/codelabels.js"></script>
+    <script src="assets/github.js"></script>
+    <script>
+(function() {
+    var toggle = document.getElementById('sidebar-toggle');
+    var sidebar = document.getElementById('sidebar');
+    var overlay = document.getElementById('sidebar-overlay');
+    if (toggle && sidebar) {
+        toggle.addEventListener('click', function() {
+            sidebar.classList.toggle('open');
+            if (overlay) overlay.classList.toggle('open');
+            var expanded = sidebar.classList.contains('open');
+            toggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+        });
+    }
+    if (overlay) {
+        overlay.addEventListener('click', function() {
+            sidebar.classList.remove('open');
+            overlay.classList.remove('open');
+            if (toggle) toggle.setAttribute('aria-expanded', 'false');
+        });
+    }
+})();
+</script>
+<script>
+(function() {
+    var sidebar = document.querySelector('.sidebar-nav') || document.querySelector('.sidebar');
+    if (!sidebar) return;
+
+    // Restore scroll position
+    var saved = sessionStorage.getItem('sidebar-scroll');
+    if (saved) sidebar.scrollTop = parseInt(saved, 10);
+
+    // Save scroll position before navigating
+    sidebar.addEventListener('scroll', function() {
+        sessionStorage.setItem('sidebar-scroll', sidebar.scrollTop.toString());
+    });
+
+    // Also scroll active link into view if no saved position
+    if (!saved) {
+        var active = sidebar.querySelector('.nav-link.active');
+        if (active) {
+            active.scrollIntoView({ block: 'center', behavior: 'instant' });
+        }
+    }
+})();
+</script>
+</body>
+</html>

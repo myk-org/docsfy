@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generated Output - docsfy</title>
+    <meta name="description" content="AI-powered documentation generator that turns Git repositories into shareable static docs sites.">
+    <link rel="stylesheet" href="assets/style.css">
+    <link rel="alternate" type="text/plain" title="LLM Documentation Index" href="llms.txt">
+    <link rel="alternate" type="text/plain" title="LLM Full Documentation" href="llms-full.txt">
+</head>
+<body>
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <a href="index.html" class="sidebar-logo">docsfy</a>
+            <p class="sidebar-tagline">AI-powered documentation generator that turns Git repositories into shareable static docs sites.</p>
+        </div>
+
+        <div class="sidebar-search">
+            <input type="text" id="search-input" placeholder="Search... (⌘K)" autocomplete="off" readonly>
+            <div id="search-results" class="search-results"></div>
+        </div>
+
+        <nav class="sidebar-nav">
+
+            <div class="nav-group">
+                <h3 class="nav-group-title">Overview</h3>
+                <ul class="nav-group-pages">
+
+                    <li>
+                        <a href="introduction.html"
+                           class="nav-link">
+                            Introduction
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="architecture-and-runtime.html"
+                           class="nav-link">
+                            Architecture and Runtime
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="projects-variants-and-ownership.html"
+                           class="nav-link">
+                            Projects, Variants, and Ownership
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="generated-output.html"
+                           class="nav-link active" aria-current="page">
+                            Generated Output
+                        </a>
+                    </li>
+
+                </ul>
+            </div>
+
+            <div class="nav-group">
+                <h3 class="nav-group-title">Getting Started</h3>
+                <ul class="nav-group-pages">
+
+                    <li>
+                        <a href="installation.html"
+                           class="nav-link">
+                            Installation
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="ai-provider-setup.html"
+                           class="nav-link">
+                            AI Provider Setup
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="local-development.html"
+                           class="nav-link">
+                            Local Development
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="docker-quickstart.html"
+                           class="nav-link">
+                            Docker and Compose Quickstart
+                        </a>
+                    </li>
+
+                </ul>
+            </div>
+
+            <div class="nav-group">
+                <h3 class="nav-group-title">Configuration</h3>
+                <ul class="nav-group-pages">
+
+                    <li>
+                        <a href="environment-variables.html"
+                           class="nav-link">
+                            Environment Variables
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="cli-configuration.html"
+                           class="nav-link">
+                            CLI Configuration
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="authentication-and-roles.html"
+                           class="nav-link">
+                            Authentication and Roles
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="data-storage-and-layout.html"
+                           class="nav-link">
+                            Data Storage and Layout
+                        </a>
+                    </li>
+
+                </ul>
+            </div>
+
+            <div class="nav-group">
+                <h3 class="nav-group-title">Usage Guides</h3>
+                <ul class="nav-group-pages">
+
+                    <li>
+                        <a href="first-run-quickstart.html"
+                           class="nav-link">
+                            First Run Quickstart
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="generating-documentation.html"
+                           class="nav-link">
+                            Generating Documentation
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="tracking-progress-and-status.html"
+                           class="nav-link">
+                            Tracking Progress and Status
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="variants-branches-and-regeneration.html"
+                           class="nav-link">
+                            Variants, Branches, and Regeneration
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="viewing-downloading-and-hosting-docs.html"
+                           class="nav-link">
+                            Viewing, Downloading, and Hosting Docs
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="user-and-access-management.html"
+                           class="nav-link">
+                            User and Access Management
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="cli-workflows.html"
+                           class="nav-link">
+                            CLI Workflows
+                        </a>
+                    </li>
+
+                </ul>
+            </div>
+
+            <div class="nav-group">
+                <h3 class="nav-group-title">Reference</h3>
+                <ul class="nav-group-pages">
+
+                    <li>
+                        <a href="cli-command-reference.html"
+                           class="nav-link">
+                            CLI Command Reference
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="auth-api.html"
+                           class="nav-link">
+                            Authentication API
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="projects-api.html"
+                           class="nav-link">
+                            Projects API
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="admin-api.html"
+                           class="nav-link">
+                            Admin API
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="websocket-protocol.html"
+                           class="nav-link">
+                            WebSocket Protocol
+                        </a>
+                    </li>
+
+                </ul>
+            </div>
+
+            <div class="nav-group">
+                <h3 class="nav-group-title">Operations</h3>
+                <ul class="nav-group-pages">
+
+                    <li>
+                        <a href="deployment-and-runtime.html"
+                           class="nav-link">
+                            Deployment and Runtime
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="testing-and-quality-checks.html"
+                           class="nav-link">
+                            Testing and Quality Checks
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="security-considerations.html"
+                           class="nav-link">
+                            Security Considerations
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="troubleshooting.html"
+                           class="nav-link">
+                            Troubleshooting
+                        </a>
+                    </li>
+
+                </ul>
+            </div>
+
+        </nav>
+    </aside>
+
+    <div class="main-wrapper">
+        <header class="top-bar">
+            <div class="top-bar-left">
+                <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebar" aria-expanded="false">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                </button>
+                <a href="index.html" class="top-bar-title">docsfy</a>
+            </div>
+            <div class="top-bar-spacer"></div>
+            <div class="top-bar-right">
+                <button class="top-bar-search-btn" id="search-trigger" aria-label="Search">
+                    <kbd>&#8984;K</kbd> Search
+                </button>
+                <a href="https://github.com/myk-org/docsfy" target="_blank" rel="noopener" class="docsfy-badge" title="Generated with docsfy">
+                    ⚡ docs<span class="brand-accent">fy</span>
+                </a>
+
+                <a href="https://github.com/myk-org/docsfy" target="_blank" rel="noopener noreferrer" class="top-bar-github" id="github-link" data-repo-url="https://github.com/myk-org/docsfy">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                    <span class="github-stars" id="github-stars"></span>
+                </a>
+
+                <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+                    <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                    </svg>
+                    <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <main class="content">
+
+            <article class="article">
+                <div class="article-body">
+                    <!-- SECURITY: |safe is intentional. Content is AI-generated markdown
+                         converted to HTML server-side by the markdown library, not
+                         user-supplied input. XSS risk is minimal and accepted since
+                         the AI generates the content, not end users. -->
+                    <h1 id="generated-output">Generated Output</h1>
+<p>Every successful <code>docsfy</code> run produces a self-contained static documentation bundle for one variant: project, branch, AI provider, and AI model. That bundle is what <code>docsfy</code> serves under <code>/docs/...</code>, what the download API returns as a <code>.tar.gz</code>, and what you can publish on any static file host.</p>
+<p>For people, the primary output is the HTML site. The extra text artifacts such as <code>llms.txt</code> and <code>llms-full.txt</code> are there for AI and automation workflows.</p>
+<blockquote>
+<p><strong>Note:</strong> The published output is the variant’s <code>site/</code> directory. <code>docsfy</code> also keeps internal generation files such as <code>plan.json</code> and cached page Markdown under <code>cache/pages/</code>, but those support regeneration rather than the public site.</p>
+</blockquote>
+<h2 id="published-files">Published files</h2>
+<p>Each successful generation publishes the same core set of artifacts:</p>
+<table>
+<thead>
+<tr>
+<th>Artifact</th>
+<th>What it contains</th>
+<th>What it is for</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>index.html</code></td>
+<td>The docs homepage</td>
+<td>Landing page with project title, tagline, and navigation groups</td>
+</tr>
+<tr>
+<td><code>&lt;slug&gt;.html</code></td>
+<td>One rendered HTML page per generated doc page</td>
+<td>Human-friendly browsing</td>
+</tr>
+<tr>
+<td><code>&lt;slug&gt;.md</code></td>
+<td>One Markdown copy per generated doc page</td>
+<td>Reuse, downloads, text-based workflows, AI tooling</td>
+</tr>
+<tr>
+<td><code>search-index.json</code></td>
+<td>JSON search data</td>
+<td>Client-side search in the published site</td>
+</tr>
+<tr>
+<td><code>llms.txt</code></td>
+<td>Compact index of Markdown pages</td>
+<td>Lightweight AI-friendly map of the docs</td>
+</tr>
+<tr>
+<td><code>llms-full.txt</code></td>
+<td>All page Markdown concatenated into one file</td>
+<td>Single-file ingestion for LLMs and other text tools</td>
+</tr>
+<tr>
+<td><code>assets/</code></td>
+<td>CSS and JavaScript bundle</td>
+<td>Theme, search, code copy buttons, callouts, TOC highlighting, sidebar behavior, and GitHub badge support</td>
+</tr>
+<tr>
+<td><code>.nojekyll</code></td>
+<td>Empty marker file</td>
+<td>Prevents Jekyll processing on GitHub Pages-style hosting</td>
+</tr>
+</tbody>
+</table>
+<p>The renderer in <code>src/docsfy/renderer.py</code> writes those published files directly:</p>
+<div class="highlight"><pre><span></span><code><span class="p">(</span><span class="n">output_dir</span> <span class="o">/</span> <span class="s2">&quot;.nojekyll&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">touch</span><span class="p">()</span>
+
+<span class="p">(</span><span class="n">output_dir</span> <span class="o">/</span> <span class="s2">&quot;index.html&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="n">index_html</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+
+<span class="p">(</span><span class="n">output_dir</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">slug</span><span class="si">}</span><span class="s2">.html&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="n">page_html</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+<span class="p">(</span><span class="n">output_dir</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">slug</span><span class="si">}</span><span class="s2">.md&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="n">md_content</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+
+<span class="n">search_index</span> <span class="o">=</span> <span class="n">_build_search_index</span><span class="p">(</span><span class="n">valid_pages</span><span class="p">,</span> <span class="n">plan</span><span class="p">)</span>
+<span class="p">(</span><span class="n">output_dir</span> <span class="o">/</span> <span class="s2">&quot;search-index.json&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span>
+    <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">search_index</span><span class="p">),</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span>
+<span class="p">)</span>
+
+<span class="n">llms_txt</span> <span class="o">=</span> <span class="n">_build_llms_txt</span><span class="p">(</span><span class="n">plan</span><span class="p">,</span> <span class="n">navigation</span><span class="o">=</span><span class="n">filtered_navigation</span><span class="p">)</span>
+<span class="p">(</span><span class="n">output_dir</span> <span class="o">/</span> <span class="s2">&quot;llms.txt&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="n">llms_txt</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+
+<span class="n">llms_full_txt</span> <span class="o">=</span> <span class="n">_build_llms_full_txt</span><span class="p">(</span>
+    <span class="n">plan</span><span class="p">,</span> <span class="n">valid_pages</span><span class="p">,</span> <span class="n">navigation</span><span class="o">=</span><span class="n">filtered_navigation</span>
+<span class="p">)</span>
+<span class="p">(</span><span class="n">output_dir</span> <span class="o">/</span> <span class="s2">&quot;llms-full.txt&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="n">llms_full_txt</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+</code></pre></div>
+
+<blockquote>
+<p><strong>Note:</strong> <code>docsfy</code> recreates the entire <code>site/</code> directory on each render. If a page disappears in a newer generation, its old published files do not stay behind.</p>
+</blockquote>
+<h2 id="what-the-bundle-looks-like">What the bundle looks like</h2>
+<p>A generated site is a flat static bundle. Page filenames come from page slugs, so you get files like <code>introduction.html</code> and <code>introduction.md</code> at the site root.</p>
+<div class="highlight"><pre><span></span><code>site/
+  .nojekyll
+  index.html
+  introduction.html
+  introduction.md
+  quickstart.html
+  quickstart.md
+  search-index.json
+  llms.txt
+  llms-full.txt
+  assets/
+    style.css
+    theme.js
+    search.js
+    copy.js
+    callouts.js
+    scrollspy.js
+    codelabels.js
+    github.js
+</code></pre></div>
+
+<p>The exact page filenames depend on the generated navigation and page slugs.</p>
+<blockquote>
+<p><strong>Warning:</strong> <code>docsfy</code> only publishes path-safe page slugs. Slugs containing <code>/</code>, <code>\</code>, leading <code>.</code>, or <code>..</code> are treated as unsafe and skipped, so published pages are always flat files rather than nested directories.</p>
+</blockquote>
+<h2 id="html-pages">HTML pages</h2>
+<p>The HTML output is meant for people first. <code>index.html</code> is a real homepage, not just a redirect. It shows the project name, tagline, grouped navigation, and a “Get Started” link to the first page. Each generated page becomes its own <code>&lt;slug&gt;.html</code> file, with sidebar navigation, previous/next links, a footer, and an optional “On this page” table of contents.</p>
+<p>The HTML pages pull their behavior from the generated <code>assets/</code> directory. In <code>src/docsfy/templates/_doc_base.html</code>, the published bundle includes:</p>
+<div class="highlight"><pre><span></span><code><span class="p">&lt;</span><span class="nt">script</span> <span class="na">src</span><span class="o">=</span><span class="s">&quot;assets/theme.js&quot;</span><span class="p">&gt;&lt;/</span><span class="nt">script</span><span class="p">&gt;</span>
+<span class="p">&lt;</span><span class="nt">script</span> <span class="na">src</span><span class="o">=</span><span class="s">&quot;assets/search.js&quot;</span><span class="p">&gt;&lt;/</span><span class="nt">script</span><span class="p">&gt;</span>
+<span class="p">&lt;</span><span class="nt">script</span> <span class="na">src</span><span class="o">=</span><span class="s">&quot;assets/copy.js&quot;</span><span class="p">&gt;&lt;/</span><span class="nt">script</span><span class="p">&gt;</span>
+<span class="p">&lt;</span><span class="nt">script</span> <span class="na">src</span><span class="o">=</span><span class="s">&quot;assets/callouts.js&quot;</span><span class="p">&gt;&lt;/</span><span class="nt">script</span><span class="p">&gt;</span>
+<span class="p">&lt;</span><span class="nt">script</span> <span class="na">src</span><span class="o">=</span><span class="s">&quot;assets/scrollspy.js&quot;</span><span class="p">&gt;&lt;/</span><span class="nt">script</span><span class="p">&gt;</span>
+<span class="p">&lt;</span><span class="nt">script</span> <span class="na">src</span><span class="o">=</span><span class="s">&quot;assets/codelabels.js&quot;</span><span class="p">&gt;&lt;/</span><span class="nt">script</span><span class="p">&gt;</span>
+<span class="p">&lt;</span><span class="nt">script</span> <span class="na">src</span><span class="o">=</span><span class="s">&quot;assets/github.js&quot;</span><span class="p">&gt;&lt;/</span><span class="nt">script</span><span class="p">&gt;</span>
+</code></pre></div>
+
+<p>The page renderer also turns Markdown into HTML with fenced code blocks, syntax highlighting, tables, and a heading-based TOC:</p>
+<div class="highlight"><pre><span></span><code><span class="n">md</span> <span class="o">=</span> <span class="n">markdown</span><span class="o">.</span><span class="n">Markdown</span><span class="p">(</span>
+    <span class="n">extensions</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;fenced_code&quot;</span><span class="p">,</span> <span class="s2">&quot;codehilite&quot;</span><span class="p">,</span> <span class="s2">&quot;tables&quot;</span><span class="p">,</span> <span class="s2">&quot;toc&quot;</span><span class="p">],</span>
+    <span class="n">extension_configs</span><span class="o">=</span><span class="p">{</span>
+        <span class="s2">&quot;codehilite&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;css_class&quot;</span><span class="p">:</span> <span class="s2">&quot;highlight&quot;</span><span class="p">,</span> <span class="s2">&quot;guess_lang&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">},</span>
+        <span class="s2">&quot;toc&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;toc_depth&quot;</span><span class="p">:</span> <span class="s2">&quot;2-3&quot;</span><span class="p">},</span>
+    <span class="p">},</span>
+<span class="p">)</span>
+<span class="n">md_text</span> <span class="o">=</span> <span class="n">_clean_code_fence_annotations</span><span class="p">(</span><span class="n">md_text</span><span class="p">)</span>
+<span class="n">md_text</span> <span class="o">=</span> <span class="n">_ensure_blank_lines</span><span class="p">(</span><span class="n">md_text</span><span class="p">)</span>
+<span class="n">content_html</span> <span class="o">=</span> <span class="n">_sanitize_html</span><span class="p">(</span><span class="n">md</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="n">md_text</span><span class="p">))</span>
+</code></pre></div>
+
+<p>In practice, that means the published site includes:</p>
+<ul>
+<li>a sidebar with section links</li>
+<li>a theme toggle</li>
+<li>keyboard-driven search</li>
+<li>code copy buttons</li>
+<li>code language labels</li>
+<li>“On this page” navigation for level 2 and level 3 headings</li>
+<li>styled callouts such as <code>&gt; **Note:**</code>, <code>&gt; **Warning:**</code>, and <code>&gt; **Tip:**</code></li>
+</ul>
+<p><code>docsfy</code> also sanitizes the generated HTML before writing it, removing script tags, forms, embedded objects, inline event handlers, and unsafe URLs.</p>
+<blockquote>
+<p><strong>Tip:</strong> If you want output that can be hosted almost anywhere, this is exactly what <code>docsfy</code> produces: plain HTML, CSS, JavaScript, JSON, and Markdown files.</p>
+</blockquote>
+<h2 id="search-index">Search index</h2>
+<p><code>docsfy</code> ships search as part of the static bundle. There is no separate search service to run.</p>
+<p>The generator writes <code>search-index.json</code> with one entry per page:</p>
+<div class="highlight"><pre><span></span><code><span class="n">index</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+    <span class="p">{</span>
+        <span class="s2">&quot;slug&quot;</span><span class="p">:</span> <span class="n">slug</span><span class="p">,</span>
+        <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="n">title_map</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">slug</span><span class="p">,</span> <span class="n">slug</span><span class="p">),</span>
+        <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="n">content</span><span class="p">[:</span><span class="mi">2000</span><span class="p">],</span>
+    <span class="p">}</span>
+<span class="p">)</span>
+</code></pre></div>
+
+<p>The published search UI then loads that file in the browser and matches against both titles and content:</p>
+<div class="highlight"><pre><span></span><code><span class="nx">fetch</span><span class="p">(</span><span class="s1">&#39;search-index.json&#39;</span><span class="p">).</span><span class="nx">then</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">r</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="nx">r</span><span class="p">.</span><span class="nx">json</span><span class="p">();</span><span class="w"> </span><span class="p">})</span>
+<span class="w">  </span><span class="p">.</span><span class="nx">then</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">data</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">index</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">data</span><span class="p">;</span><span class="w"> </span><span class="p">}).</span><span class="k">catch</span><span class="p">(</span><span class="kd">function</span><span class="p">()</span><span class="w"> </span><span class="p">{});</span>
+
+<span class="kd">var</span><span class="w"> </span><span class="nx">matches</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">index</span><span class="p">.</span><span class="nx">filter</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">item</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="nx">item</span><span class="p">.</span><span class="nx">title</span><span class="p">.</span><span class="nx">toLowerCase</span><span class="p">().</span><span class="nx">includes</span><span class="p">(</span><span class="nx">q</span><span class="p">)</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="nx">item</span><span class="p">.</span><span class="nx">content</span><span class="p">.</span><span class="nx">toLowerCase</span><span class="p">().</span><span class="nx">includes</span><span class="p">(</span><span class="nx">q</span><span class="p">);</span>
+<span class="p">}).</span><span class="nx">slice</span><span class="p">(</span><span class="mf">0</span><span class="p">,</span><span class="w"> </span><span class="mf">10</span><span class="p">);</span>
+</code></pre></div>
+
+<p>That gives you a few useful guarantees:</p>
+<ul>
+<li>search works from the static bundle alone</li>
+<li>page titles are searchable</li>
+<li>page body text is searchable</li>
+<li>results are capped at 10 matches per query in the UI</li>
+</ul>
+<blockquote>
+<p><strong>Note:</strong> The built-in search index stores the page title plus the first 2,000 characters of each page. That keeps the bundle small, but very deep matches later in a long page may not appear in search results.</p>
+</blockquote>
+<h2 id="markdown-and-llm-friendly-text-files">Markdown and LLM-friendly text files</h2>
+<h3 id="markdown-copies">Markdown copies</h3>
+<p>For every published HTML page, <code>docsfy</code> also publishes a Markdown copy beside it. If you have <code>quickstart.html</code>, you also have <code>quickstart.md</code> in the same <code>site/</code> directory.</p>
+<p>Those Markdown copies are useful when you want to:</p>
+<ul>
+<li>inspect the raw generated content without HTML wrapping</li>
+<li>diff generated content in a cleaner format</li>
+<li>reuse the docs in another publishing workflow</li>
+<li>feed the output into external tools that prefer text over HTML</li>
+</ul>
+<p>This is separate from the internal page cache used during regeneration. The <code>site/*.md</code> files are part of the public output bundle.</p>
+<h3 id="llmstxt"><code>llms.txt</code></h3>
+<p><code>llms.txt</code> is a compact index of the docs. It is grouped by navigation section and links to the published Markdown page copies, not the HTML pages.</p>
+<p>This is how <code>src/docsfy/renderer.py</code> builds it:</p>
+<div class="highlight"><pre><span></span><code><span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">nav</span><span class="p">:</span>
+    <span class="n">lines</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="sa">f</span><span class="s2">&quot;## </span><span class="si">{</span><span class="n">group</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;group&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">])</span>
+    <span class="k">for</span> <span class="n">page</span> <span class="ow">in</span> <span class="n">group</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;pages&quot;</span><span class="p">,</span> <span class="p">[]):</span>
+        <span class="n">desc</span> <span class="o">=</span> <span class="n">page</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;description&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="n">page_title</span> <span class="o">=</span> <span class="n">page</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;title&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="n">page_slug</span> <span class="o">=</span> <span class="n">page</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;slug&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">desc</span><span class="p">:</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;- [</span><span class="si">{</span><span class="n">page_title</span><span class="si">}</span><span class="s2">](</span><span class="si">{</span><span class="n">page_slug</span><span class="si">}</span><span class="s2">.md): </span><span class="si">{</span><span class="n">desc</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;- [</span><span class="si">{</span><span class="n">page_title</span><span class="si">}</span><span class="s2">](</span><span class="si">{</span><span class="n">page_slug</span><span class="si">}</span><span class="s2">.md)&quot;</span><span class="p">)</span>
+</code></pre></div>
+
+<p>That format makes <code>llms.txt</code> useful as a lightweight map of the generated docs: page titles, descriptions, and direct links to the Markdown copies.</p>
+<h3 id="llms-fulltxt"><code>llms-full.txt</code></h3>
+<p><code>llms-full.txt</code> is the single-file version. It concatenates every published page’s Markdown into one document, with a source label before each page:</p>
+<div class="highlight"><pre><span></span><code><span class="n">lines</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span>
+    <span class="p">[</span>
+        <span class="sa">f</span><span class="s2">&quot;Source: </span><span class="si">{</span><span class="n">slug</span><span class="si">}</span><span class="s2">.md&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">content</span><span class="p">,</span>
+        <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;---&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="p">]</span>
+<span class="p">)</span>
+</code></pre></div>
+
+<p>If you want the entire documentation set in one file, this is the artifact to use.</p>
+<p>The generated site makes both files easy to discover. In <code>src/docsfy/templates/_doc_base.html</code>, they are exposed as alternate text resources:</p>
+<div class="highlight"><pre><span></span><code><span class="p">&lt;</span><span class="nt">link</span> <span class="na">rel</span><span class="o">=</span><span class="s">&quot;alternate&quot;</span> <span class="na">type</span><span class="o">=</span><span class="s">&quot;text/plain&quot;</span> <span class="na">title</span><span class="o">=</span><span class="s">&quot;LLM Documentation Index&quot;</span> <span class="na">href</span><span class="o">=</span><span class="s">&quot;llms.txt&quot;</span><span class="p">&gt;</span>
+<span class="p">&lt;</span><span class="nt">link</span> <span class="na">rel</span><span class="o">=</span><span class="s">&quot;alternate&quot;</span> <span class="na">type</span><span class="o">=</span><span class="s">&quot;text/plain&quot;</span> <span class="na">title</span><span class="o">=</span><span class="s">&quot;LLM Full Documentation&quot;</span> <span class="na">href</span><span class="o">=</span><span class="s">&quot;llms-full.txt&quot;</span><span class="p">&gt;</span>
+</code></pre></div>
+
+<blockquote>
+<p><strong>Tip:</strong> Use <code>llms.txt</code> when you want a small index you can crawl page by page. Use <code>llms-full.txt</code> when you want one file to hand to an LLM, a RAG ingestion job, or any other text-processing pipeline.</p>
+</blockquote>
+<h2 id="where-output-lives">Where output lives</h2>
+<p>By default, <code>docsfy</code> stores generated data under <code>/data</code>. The published site for a variant lives under that root in a branch/provider/model-aware path.</p>
+<p>From <code>src/docsfy/config.py</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Settings</span><span class="p">(</span><span class="n">BaseSettings</span><span class="p">):</span>
+    <span class="n">model_config</span> <span class="o">=</span> <span class="n">SettingsConfigDict</span><span class="p">(</span>
+        <span class="n">env_file</span><span class="o">=</span><span class="s2">&quot;.env&quot;</span><span class="p">,</span>
+        <span class="n">env_file_encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">,</span>
+        <span class="n">extra</span><span class="o">=</span><span class="s2">&quot;ignore&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">admin_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="n">ai_provider</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;cursor&quot;</span>
+    <span class="n">ai_model</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;gpt-5.4-xhigh-fast&quot;</span>
+    <span class="n">ai_cli_timeout</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="mi">60</span><span class="p">,</span> <span class="n">gt</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">log_level</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;INFO&quot;</span>
+    <span class="n">data_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;/data&quot;</span>
+</code></pre></div>
+
+<p>From <code>docker-compose.yaml</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">services</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">docsfy</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">volumes</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./data:/data</span>
+</code></pre></div>
+
+<p>And from <code>src/docsfy/storage.py</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_project_site_dir</span><span class="p">(</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">ai_provider</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="n">ai_model</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="n">owner</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="n">branch</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">DEFAULT_BRANCH</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">get_project_dir</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">ai_provider</span><span class="p">,</span> <span class="n">ai_model</span><span class="p">,</span> <span class="n">owner</span><span class="p">,</span> <span class="n">branch</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;site&quot;</span>
+</code></pre></div>
+
+<p>With the default configuration, that means a published site ends up at a path like this:</p>
+<div class="highlight"><pre><span></span><code>/data/projects/&lt;owner&gt;/&lt;project&gt;/&lt;branch&gt;/&lt;provider&gt;/&lt;model&gt;/site/
+</code></pre></div>
+
+<p>This is why generated output is variant-aware: branch, provider, and model are part of the output identity, not just labels in the UI.</p>
+<blockquote>
+<p><strong>Note:</strong> The default Docker setup already mounts <code>./data</code> into <code>/data</code>, so generated bundles persist outside the container without extra setup.</p>
+</blockquote>
+<h2 id="browsing-and-downloading-output">Browsing and downloading output</h2>
+<p><code>docsfy</code> exposes published output in two useful ways:</p>
+<ul>
+<li>browse a specific variant under <code>/docs/&lt;project&gt;/&lt;branch&gt;/&lt;provider&gt;/&lt;model&gt;/</code></li>
+<li>browse the latest accessible variant under <code>/docs/&lt;project&gt;/</code></li>
+</ul>
+<p>The route definitions in <code>src/docsfy/main.py</code> are:</p>
+<div class="highlight"><pre><span></span><code><span class="nd">@app</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/docs/</span><span class="si">{project}</span><span class="s2">/</span><span class="si">{branch}</span><span class="s2">/</span><span class="si">{provider}</span><span class="s2">/</span><span class="si">{model}</span><span class="s2">/{path:path}&quot;</span><span class="p">)</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">serve_variant_docs</span><span class="p">(</span>
+    <span class="n">request</span><span class="p">:</span> <span class="n">Request</span><span class="p">,</span>
+    <span class="n">project</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">branch</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">provider</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">model</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;index.html&quot;</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FileResponse</span><span class="p">:</span>
+</code></pre></div>
+
+<div class="highlight"><pre><span></span><code><span class="nd">@app</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/docs/</span><span class="si">{project}</span><span class="s2">/{path:path}&quot;</span><span class="p">)</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">serve_docs</span><span class="p">(</span>
+    <span class="n">request</span><span class="p">:</span> <span class="n">Request</span><span class="p">,</span> <span class="n">project</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;index.html&quot;</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FileResponse</span><span class="p">:</span>
+</code></pre></div>
+
+<p>You can also download the published site bundle as a <code>.tar.gz</code>. The CLI wraps the download API and uses predictable archive names:</p>
+<div class="highlight"><pre><span></span><code><span class="k">if</span> <span class="n">branch</span> <span class="ow">and</span> <span class="n">provider</span> <span class="ow">and</span> <span class="n">model</span><span class="p">:</span>
+    <span class="n">url_path</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;/api/projects/</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">branch</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">provider</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">model</span><span class="si">}</span><span class="s2">/download</span><span class="si">{</span><span class="n">owner_qs</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="p">)</span>
+    <span class="n">archive_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">branch</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">provider</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">model</span><span class="si">}</span><span class="s2">-docs.tar.gz&quot;</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="n">url_path</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;/api/projects/</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">/download</span><span class="si">{</span><span class="n">owner_qs</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="n">archive_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">-docs.tar.gz&quot;</span>
+</code></pre></div>
+
+<p>Example CLI usage:</p>
+<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>download<span class="w"> </span>my-repo<span class="w"> </span>-b<span class="w"> </span>main<span class="w"> </span>-p<span class="w"> </span>cursor<span class="w"> </span>-m<span class="w"> </span>gpt-5
+docsfy<span class="w"> </span>download<span class="w"> </span>my-repo<span class="w"> </span>-b<span class="w"> </span>main<span class="w"> </span>-p<span class="w"> </span>cursor<span class="w"> </span>-m<span class="w"> </span>gpt-5<span class="w"> </span>-o<span class="w"> </span>./site-copy
+</code></pre></div>
+
+<p>The first command saves the archive in your current directory. The second downloads and extracts the bundle into <code>./site-copy</code>.</p>
+<p>If you omit branch, provider, and model, <code>docsfy</code> downloads the latest accessible variant instead.</p>
+<blockquote>
+<p><strong>Note:</strong> The download archive contains the published <code>site/</code> bundle. It is the static output you can browse or deploy, not the full internal project directory with caches and planning metadata.</p>
+</blockquote>
+<h2 id="what-users-should-expect">What users should expect</h2>
+<p>When a generation is ready, you should expect more than a single HTML file. <code>docsfy</code> publishes a complete static docs package:</p>
+<ul>
+<li>a browsable HTML site</li>
+<li>raw Markdown copies of every page</li>
+<li>a client-side search index</li>
+<li>compact and full-text LLM artifacts</li>
+<li>a bundle that is easy to serve, archive, and redeploy</li>
+</ul>
+<p>That mix is what makes <code>docsfy</code> practical in day-to-day use: one generation gives you polished docs for people and portable text artifacts for everything else.</p>
+                </div>
+            </article>
+            <nav class="page-nav">
+
+                <a href="projects-variants-and-ownership.html" class="page-nav-link page-nav-prev">
+                    <span class="page-nav-label">Previous</span>
+                    <span class="page-nav-title">Projects, Variants, and Ownership</span>
+                </a>
+
+
+                <a href="installation.html" class="page-nav-link page-nav-next">
+                    <span class="page-nav-label">Next</span>
+                    <span class="page-nav-title">Installation</span>
+                </a>
+
+            </nav>
+
+            <aside class="toc-sidebar">
+                <div class="toc-container">
+                    <h3>On this page</h3>
+                    <div class="toc">
+<ul>
+<li><a href="#published-files">Published files</a></li>
+<li><a href="#what-the-bundle-looks-like">What the bundle looks like</a></li>
+<li><a href="#html-pages">HTML pages</a></li>
+<li><a href="#search-index">Search index</a></li>
+<li><a href="#markdown-and-llm-friendly-text-files">Markdown and LLM-friendly text files</a><ul>
+<li><a href="#markdown-copies">Markdown copies</a></li>
+<li><a href="#llmstxt">llms.txt</a></li>
+<li><a href="#llms-fulltxt">llms-full.txt</a></li>
+</ul>
+</li>
+<li><a href="#where-output-lives">Where output lives</a></li>
+<li><a href="#browsing-and-downloading-output">Browsing and downloading output</a></li>
+<li><a href="#what-users-should-expect">What users should expect</a></li>
+</ul>
+</div>
+
+                </div>
+            </aside>
+
+
+        </main>
+
+        <footer class="page-footer">
+            Generated with <a href="https://github.com/myk-org/docsfy" target="_blank" rel="noopener">docs<span class="brand-accent">fy</span></a>
+            <span class="footer-sep">·</span>
+            <span class="footer-llm">LLM-friendly: <a href="llms.txt">llms.txt</a> · <a href="llms-full.txt">llms-full.txt</a></span>
+        </footer>
+    </div>
+
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <script src="assets/theme.js"></script>
+    <script src="assets/search.js"></script>
+    <script src="assets/copy.js"></script>
+    <script src="assets/callouts.js"></script>
+    <script src="assets/scrollspy.js"></script>
+    <script src="assets/codelabels.js"></script>
+    <script src="assets/github.js"></script>
+    <script>
+(function() {
+    var toggle = document.getElementById('sidebar-toggle');
+    var sidebar = document.getElementById('sidebar');
+    var overlay = document.getElementById('sidebar-overlay');
+    if (toggle && sidebar) {
+        toggle.addEventListener('click', function() {
+            sidebar.classList.toggle('open');
+            if (overlay) overlay.classList.toggle('open');
+            var expanded = sidebar.classList.contains('open');
+            toggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+        });
+    }
+    if (overlay) {
+        overlay.addEventListener('click', function() {
+            sidebar.classList.remove('open');
+            overlay.classList.remove('open');
+            if (toggle) toggle.setAttribute('aria-expanded', 'false');
+        });
+    }
+})();
+</script>
+<script>
+(function() {
+    var sidebar = document.querySelector('.sidebar-nav') || document.querySelector('.sidebar');
+    if (!sidebar) return;
+
+    // Restore scroll position
+    var saved = sessionStorage.getItem('sidebar-scroll');
+    if (saved) sidebar.scrollTop = parseInt(saved, 10);
+
+    // Save scroll position before navigating
+    sidebar.addEventListener('scroll', function() {
+        sessionStorage.setItem('sidebar-scroll', sidebar.scrollTop.toString());
+    });
+
+    // Also scroll active link into view if no saved position
+    if (!saved) {
+        var active = sidebar.querySelector('.nav-link.active');
+        if (active) {
+            active.scrollIntoView({ block: 'center', behavior: 'instant' });
+        }
+    }
+})();
+</script>
+</body>
+</html>

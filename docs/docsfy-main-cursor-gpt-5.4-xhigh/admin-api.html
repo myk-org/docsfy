@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin API - docsfy</title>
+    <meta name="description" content="AI-powered documentation generator that turns Git repositories into shareable static docs sites.">
+    <link rel="stylesheet" href="assets/style.css">
+    <link rel="alternate" type="text/plain" title="LLM Documentation Index" href="llms.txt">
+    <link rel="alternate" type="text/plain" title="LLM Full Documentation" href="llms-full.txt">
+</head>
+<body>
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <a href="index.html" class="sidebar-logo">docsfy</a>
+            <p class="sidebar-tagline">AI-powered documentation generator that turns Git repositories into shareable static docs sites.</p>
+        </div>
+
+        <div class="sidebar-search">
+            <input type="text" id="search-input" placeholder="Search... (⌘K)" autocomplete="off" readonly>
+            <div id="search-results" class="search-results"></div>
+        </div>
+
+        <nav class="sidebar-nav">
+
+            <div class="nav-group">
+                <h3 class="nav-group-title">Overview</h3>
+                <ul class="nav-group-pages">
+
+                    <li>
+                        <a href="introduction.html"
+                           class="nav-link">
+                            Introduction
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="architecture-and-runtime.html"
+                           class="nav-link">
+                            Architecture and Runtime
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="projects-variants-and-ownership.html"
+                           class="nav-link">
+                            Projects, Variants, and Ownership
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="generated-output.html"
+                           class="nav-link">
+                            Generated Output
+                        </a>
+                    </li>
+
+                </ul>
+            </div>
+
+            <div class="nav-group">
+                <h3 class="nav-group-title">Getting Started</h3>
+                <ul class="nav-group-pages">
+
+                    <li>
+                        <a href="installation.html"
+                           class="nav-link">
+                            Installation
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="ai-provider-setup.html"
+                           class="nav-link">
+                            AI Provider Setup
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="local-development.html"
+                           class="nav-link">
+                            Local Development
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="docker-quickstart.html"
+                           class="nav-link">
+                            Docker and Compose Quickstart
+                        </a>
+                    </li>
+
+                </ul>
+            </div>
+
+            <div class="nav-group">
+                <h3 class="nav-group-title">Configuration</h3>
+                <ul class="nav-group-pages">
+
+                    <li>
+                        <a href="environment-variables.html"
+                           class="nav-link">
+                            Environment Variables
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="cli-configuration.html"
+                           class="nav-link">
+                            CLI Configuration
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="authentication-and-roles.html"
+                           class="nav-link">
+                            Authentication and Roles
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="data-storage-and-layout.html"
+                           class="nav-link">
+                            Data Storage and Layout
+                        </a>
+                    </li>
+
+                </ul>
+            </div>
+
+            <div class="nav-group">
+                <h3 class="nav-group-title">Usage Guides</h3>
+                <ul class="nav-group-pages">
+
+                    <li>
+                        <a href="first-run-quickstart.html"
+                           class="nav-link">
+                            First Run Quickstart
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="generating-documentation.html"
+                           class="nav-link">
+                            Generating Documentation
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="tracking-progress-and-status.html"
+                           class="nav-link">
+                            Tracking Progress and Status
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="variants-branches-and-regeneration.html"
+                           class="nav-link">
+                            Variants, Branches, and Regeneration
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="viewing-downloading-and-hosting-docs.html"
+                           class="nav-link">
+                            Viewing, Downloading, and Hosting Docs
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="user-and-access-management.html"
+                           class="nav-link">
+                            User and Access Management
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="cli-workflows.html"
+                           class="nav-link">
+                            CLI Workflows
+                        </a>
+                    </li>
+
+                </ul>
+            </div>
+
+            <div class="nav-group">
+                <h3 class="nav-group-title">Reference</h3>
+                <ul class="nav-group-pages">
+
+                    <li>
+                        <a href="cli-command-reference.html"
+                           class="nav-link">
+                            CLI Command Reference
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="auth-api.html"
+                           class="nav-link">
+                            Authentication API
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="projects-api.html"
+                           class="nav-link">
+                            Projects API
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="admin-api.html"
+                           class="nav-link active" aria-current="page">
+                            Admin API
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="websocket-protocol.html"
+                           class="nav-link">
+                            WebSocket Protocol
+                        </a>
+                    </li>
+
+                </ul>
+            </div>
+
+            <div class="nav-group">
+                <h3 class="nav-group-title">Operations</h3>
+                <ul class="nav-group-pages">
+
+                    <li>
+                        <a href="deployment-and-runtime.html"
+                           class="nav-link">
+                            Deployment and Runtime
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="testing-and-quality-checks.html"
+                           class="nav-link">
+                            Testing and Quality Checks
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="security-considerations.html"
+                           class="nav-link">
+                            Security Considerations
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="troubleshooting.html"
+                           class="nav-link">
+                            Troubleshooting
+                        </a>
+                    </li>
+
+                </ul>
+            </div>
+
+        </nav>
+    </aside>
+
+    <div class="main-wrapper">
+        <header class="top-bar">
+            <div class="top-bar-left">
+                <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebar" aria-expanded="false">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                </button>
+                <a href="index.html" class="top-bar-title">docsfy</a>
+            </div>
+            <div class="top-bar-spacer"></div>
+            <div class="top-bar-right">
+                <button class="top-bar-search-btn" id="search-trigger" aria-label="Search">
+                    <kbd>&#8984;K</kbd> Search
+                </button>
+                <a href="https://github.com/myk-org/docsfy" target="_blank" rel="noopener" class="docsfy-badge" title="Generated with docsfy">
+                    ⚡ docs<span class="brand-accent">fy</span>
+                </a>
+
+                <a href="https://github.com/myk-org/docsfy" target="_blank" rel="noopener noreferrer" class="top-bar-github" id="github-link" data-repo-url="https://github.com/myk-org/docsfy">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                    <span class="github-stars" id="github-stars"></span>
+                </a>
+
+                <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+                    <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                    </svg>
+                    <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <main class="content">
+
+            <article class="article">
+                <div class="article-body">
+                    <!-- SECURITY: |safe is intentional. Content is AI-generated markdown
+                         converted to HTML server-side by the markdown library, not
+                         user-supplied input. XSS risk is minimal and accepted since
+                         the AI generates the content, not end users. -->
+                    <h2 id="authentication">Authentication</h2>
+<p>All routes under <code>\</code>/api/admin`` require admin privileges. docsfy recognizes two kinds of admin credentials:</p>
+<ul>
+<li>the built-in <code>admin</code> account, authenticated with the <code>ADMIN_KEY</code> environment variable</li>
+<li>a database-backed user created with role <code>admin</code></li>
+</ul>
+<p>For scripts and automation, send the key as <code>Authorization: Bearer &lt;token&gt;</code>. For browser-based admin flows, log in through <code>POST /api/auth/login</code>; successful logins set an <code>HttpOnly</code> <code>docsfy_session</code> cookie with <code>SameSite=strict</code>, an 8-hour lifetime, and a <code>secure</code> flag controlled by <code>SECURE_COOKIES</code>.</p>
+<p>The server-side auth settings come directly from <code>.env.example</code>:</p>
+<div class="highlight"><pre><span></span><code># Required: Admin password (minimum 16 characters)
+ADMIN_KEY=
+
+# AI provider and model defaults
+# (pydantic_settings reads these case-insensitively)
+AI_PROVIDER=cursor
+AI_MODEL=gpt-5.4-xhigh-fast
+AI_CLI_TIMEOUT=60
+
+# Logging
+LOG_LEVEL=INFO
+
+# Data directory for database and generated docs
+DATA_DIR=/data
+
+# Cookie security (set to false for local HTTP development)
+SECURE_COOKIES=true
+</code></pre></div>
+
+<blockquote>
+<p><strong>Warning:</strong> <code>ADMIN_KEY</code> is not just the built-in admin password. docsfy also uses it as the HMAC secret for stored user API keys, so changing <code>ADMIN_KEY</code> invalidates every existing database-backed user key.</p>
+<p><strong>Tip:</strong> If you are testing over plain <code>http://</code> on localhost, set <code>SECURE_COOKIES=false</code> or browser login sessions will not persist.</p>
+</blockquote>
+<p>The bundled <code>docsfy</code> CLI uses the same Bearer-token model under the hood. The admin commands live under <code>docsfy admin users ...</code> and <code>docsfy admin access ...</code>.</p>
+<h2 id="quick-reference">Quick Reference</h2>
+<table>
+<thead>
+<tr>
+<th>Route</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GET /api/admin/users</code></td>
+<td>List database-backed users</td>
+</tr>
+<tr>
+<td><code>POST /api/admin/users</code></td>
+<td>Create a user and return a one-time API key</td>
+</tr>
+<tr>
+<td><code>DELETE /api/admin/users/{username}</code></td>
+<td>Delete a user, their sessions, grants, and owned projects</td>
+</tr>
+<tr>
+<td><code>POST /api/admin/users/{username}/rotate-key</code></td>
+<td>Generate or set a new API key for a user</td>
+</tr>
+<tr>
+<td><code>POST /api/admin/projects/{name}/access</code></td>
+<td>Grant access to a project owned by a specific user</td>
+</tr>
+<tr>
+<td><code>GET /api/admin/projects/{name}/access?owner=&lt;owner&gt;</code></td>
+<td>List usernames with access to that project</td>
+</tr>
+<tr>
+<td><code>DELETE /api/admin/projects/{name}/access/{username}?owner=&lt;owner&gt;</code></td>
+<td>Revoke access from a user</td>
+</tr>
+</tbody>
+</table>
+<p>Common status codes:</p>
+<ul>
+<li><code>200</code>: request succeeded</li>
+<li><code>400</code>: malformed JSON, missing required fields, invalid role, invalid username, or too-short custom key</li>
+<li><code>401</code>: no valid Bearer token or session cookie</li>
+<li><code>403</code>: authenticated, but not an admin</li>
+<li><code>404</code>: target user or project was not found</li>
+<li><code>409</code>: delete was blocked because the user currently has a generation in progress</li>
+</ul>
+<h2 id="user-management">User Management</h2>
+<h3 id="create-a-user">Create A User</h3>
+<p>Use <code>POST /api/admin/users</code> to create a database-backed account.</p>
+<p>Request body:</p>
+<ul>
+<li><code>username</code>: required</li>
+<li><code>role</code>: optional, defaults to <code>user</code></li>
+</ul>
+<p>Valid roles are:</p>
+<ul>
+<li><code>admin</code>: full admin privileges</li>
+<li><code>user</code>: normal read/write project operations</li>
+<li><code>viewer</code>: read-only access; can sign in and view granted docs, but cannot generate or delete projects</li>
+</ul>
+<p>Username rules are strict:</p>
+<ul>
+<li>2 to 50 characters</li>
+<li>letters and digits first</li>
+<li><code>.</code> <code>_</code> and <code>-</code> are allowed</li>
+<li><code>admin</code> is reserved, case-insensitively</li>
+</ul>
+<p>The admin API tests exercise user creation like this:</p>
+<div class="highlight"><pre><span></span><code><span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="n">admin_client</span><span class="o">.</span><span class="n">post</span><span class="p">(</span>
+    <span class="s2">&quot;/api/admin/users&quot;</span><span class="p">,</span>
+    <span class="n">json</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;username&quot;</span><span class="p">:</span> <span class="s2">&quot;testuser&quot;</span><span class="p">,</span> <span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;user&quot;</span><span class="p">},</span>
+<span class="p">)</span>
+<span class="k">assert</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">200</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+<span class="k">assert</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;username&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;testuser&quot;</span>
+<span class="k">assert</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;role&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;user&quot;</span>
+<span class="k">assert</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;api_key&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;docsfy_&quot;</span><span class="p">)</span>
+<span class="k">assert</span> <span class="n">response</span><span class="o">.</span><span class="n">headers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;cache-control&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;no-store&quot;</span>
+</code></pre></div>
+
+<p>A successful response includes:</p>
+<ul>
+<li><code>username</code></li>
+<li><code>role</code></li>
+<li><code>api_key</code></li>
+</ul>
+<p>The returned <code>api_key</code> is the raw secret. docsfy stores only a hash in the database.</p>
+<blockquote>
+<p><strong>Warning:</strong> Treat the returned <code>api_key</code> as a one-time secret. <code>GET /api/admin/users</code> does not return raw keys later.</p>
+<p><strong>Note:</strong> The built-in <code>admin</code> account is not a database user. You will not see it in <code>GET /api/admin/users</code>, and you cannot create another user named <code>admin</code>.</p>
+</blockquote>
+<h3 id="list-users">List Users</h3>
+<p>Use <code>GET /api/admin/users</code> to retrieve the current database-backed user list.</p>
+<p>Each entry includes:</p>
+<ul>
+<li><code>id</code></li>
+<li><code>username</code></li>
+<li><code>role</code></li>
+<li><code>created_at</code></li>
+</ul>
+<p>This route intentionally does not return <code>api_key</code> or <code>api_key_hash</code>.</p>
+<h3 id="delete-a-user">Delete A User</h3>
+<p>Use <code>DELETE /api/admin/users/{username}</code> to permanently remove a user.</p>
+<p>Important behavior:</p>
+<ul>
+<li>the request is rejected if you try to delete the account you are currently authenticated as</li>
+<li>the request returns <code>404</code> if the user does not exist</li>
+<li>the request returns <code>409</code> if that user currently has a generation in progress</li>
+<li>all sessions for that user are invalidated</li>
+<li>project-access grants for that user are removed</li>
+<li>access entries for projects owned by that user are removed</li>
+<li>projects owned by that user are deleted</li>
+</ul>
+<blockquote>
+<p><strong>Warning:</strong> Deleting a user is destructive. In docsfy, this is more than removing a login: it also removes the user's owned projects and related access-control entries.</p>
+</blockquote>
+<h3 id="rotate-a-user-key">Rotate A User Key</h3>
+<p>Use <code>POST /api/admin/users/{username}/rotate-key</code> to replace a user's API key.</p>
+<p>Request body:</p>
+<ul>
+<li>empty JSON object to generate a new random key</li>
+<li>or <code>{ "new_key": "..." }</code> to set a custom key</li>
+</ul>
+<p>Custom keys must be at least 16 characters long.</p>
+<p>The auth tests cover an admin-set custom key like this:</p>
+<div class="highlight"><pre><span></span><code><span class="n">custom</span> <span class="o">=</span> <span class="s2">&quot;admin-chosen-password-long&quot;</span>
+<span class="n">resp</span> <span class="o">=</span> <span class="k">await</span> <span class="n">admin_client</span><span class="o">.</span><span class="n">post</span><span class="p">(</span>
+    <span class="s2">&quot;/api/admin/users/admin-custom-target/rotate-key&quot;</span><span class="p">,</span>
+    <span class="n">json</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;new_key&quot;</span><span class="p">:</span> <span class="n">custom</span><span class="p">},</span>
+<span class="p">)</span>
+<span class="k">assert</span> <span class="n">resp</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">200</span>
+<span class="k">assert</span> <span class="n">resp</span><span class="o">.</span><span class="n">json</span><span class="p">()[</span><span class="s2">&quot;new_api_key&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">custom</span>
+
+<span class="c1"># Verify the custom key works</span>
+<span class="n">user</span> <span class="o">=</span> <span class="k">await</span> <span class="n">get_user_by_key</span><span class="p">(</span><span class="n">custom</span><span class="p">)</span>
+<span class="k">assert</span> <span class="n">user</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+<span class="k">assert</span> <span class="n">user</span><span class="p">[</span><span class="s2">&quot;username&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;admin-custom-target&quot;</span>
+</code></pre></div>
+
+<p>A successful response includes:</p>
+<ul>
+<li><code>username</code></li>
+<li><code>new_api_key</code></li>
+</ul>
+<p>This response is sent with <code>Cache-Control: no-store</code>, and all existing sessions for that user are invalidated.</p>
+<p>If the target user does not exist, the route returns <code>404</code>.</p>
+<blockquote>
+<p><strong>Note:</strong> There is currently no separate admin endpoint for changing a user's role after creation. Roles are assigned when the user is created.</p>
+</blockquote>
+<h2 id="project-access-administration">Project Access Administration</h2>
+<p>Project sharing in docsfy is grant-based. An admin can give one user access to a project owned by another user without transferring ownership.</p>
+<p>Access is scoped by:</p>
+<ul>
+<li>project name</li>
+<li>project owner</li>
+</ul>
+<p>Access is not scoped by:</p>
+<ul>
+<li>branch</li>
+<li>AI provider</li>
+<li>AI model</li>
+</ul>
+<p>That means one grant covers every variant of that project for that owner.</p>
+<blockquote>
+<p><strong>Note:</strong> In these endpoints, <code>owner</code> means the project owner's username, not the admin making the request.</p>
+</blockquote>
+<p>A granted user sees shared projects through the normal project listing and docs routes. Their role still matters: a <code>viewer</code> with a grant can open docs, but remains read-only.</p>
+<h3 id="grant-access">Grant Access</h3>
+<p>Use <code>POST /api/admin/projects/{name}/access</code>.</p>
+<p>Request body:</p>
+<ul>
+<li><code>username</code>: required</li>
+<li><code>owner</code>: required</li>
+</ul>
+<p>Before creating the grant, docsfy verifies that:</p>
+<ul>
+<li>the target user exists</li>
+<li>the project exists for the specified owner</li>
+</ul>
+<p>The route implementation shows the exact validation and response shape:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Validate user exists</span>
+<span class="n">user</span> <span class="o">=</span> <span class="k">await</span> <span class="n">get_user_by_username</span><span class="p">(</span><span class="n">username</span><span class="p">)</span>
+<span class="k">if</span> <span class="ow">not</span> <span class="n">user</span><span class="p">:</span>
+    <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="n">status_code</span><span class="o">=</span><span class="mi">404</span><span class="p">,</span> <span class="n">detail</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;User &#39;</span><span class="si">{</span><span class="n">username</span><span class="si">}</span><span class="s2">&#39; not found&quot;</span><span class="p">)</span>
+<span class="c1"># Validate project exists for the specified owner</span>
+<span class="n">variants</span> <span class="o">=</span> <span class="k">await</span> <span class="n">list_variants</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">owner</span><span class="o">=</span><span class="n">project_owner</span><span class="p">)</span>
+<span class="k">if</span> <span class="ow">not</span> <span class="n">variants</span><span class="p">:</span>
+    <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span>
+        <span class="n">status_code</span><span class="o">=</span><span class="mi">404</span><span class="p">,</span>
+        <span class="n">detail</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Project &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; not found for owner &#39;</span><span class="si">{</span><span class="n">project_owner</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+<span class="k">await</span> <span class="n">grant_project_access</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">username</span><span class="p">,</span> <span class="n">project_owner</span><span class="o">=</span><span class="n">project_owner</span><span class="p">)</span>
+<span class="k">await</span> <span class="n">notify_access_change</span><span class="p">(</span><span class="n">username</span><span class="p">)</span>
+<span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+    <span class="sa">f</span><span class="s2">&quot;[AUDIT] Admin &#39;</span><span class="si">{</span><span class="n">request</span><span class="o">.</span><span class="n">state</span><span class="o">.</span><span class="n">username</span><span class="si">}</span><span class="s2">&#39; granted &#39;</span><span class="si">{</span><span class="n">username</span><span class="si">}</span><span class="s2">&#39; access to &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; (owner: &#39;</span><span class="si">{</span><span class="n">project_owner</span><span class="si">}</span><span class="s2">&#39;)&quot;</span>
+<span class="p">)</span>
+<span class="k">return</span> <span class="p">{</span><span class="s2">&quot;granted&quot;</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span> <span class="s2">&quot;username&quot;</span><span class="p">:</span> <span class="n">username</span><span class="p">,</span> <span class="s2">&quot;owner&quot;</span><span class="p">:</span> <span class="n">project_owner</span><span class="p">}</span>
+</code></pre></div>
+
+<p>Use this route when you want a user to see a project they do not own, including all of that project's variants for the chosen owner.</p>
+<h3 id="look-up-current-access">Look Up Current Access</h3>
+<p>Use <code>GET /api/admin/projects/{name}/access?owner=&lt;owner&gt;</code> to see who currently has access to a project.</p>
+<p>The response shape is:</p>
+<ul>
+<li><code>project</code></li>
+<li><code>owner</code></li>
+<li><code>users</code></li>
+</ul>
+<p><code>users</code> is a username list, ordered alphabetically.</p>
+<p>This is the admin access-lookup endpoint exposed by the API today. It is project-centric: there is no separate admin route that lists every grant for a given user.</p>
+<h3 id="revoke-access">Revoke Access</h3>
+<p>Use <code>DELETE /api/admin/projects/{name}/access/{username}?owner=&lt;owner&gt;</code> to remove a grant.</p>
+<p>The response includes:</p>
+<ul>
+<li><code>revoked</code></li>
+<li><code>username</code></li>
+<li><code>owner</code></li>
+</ul>
+<p>You must still provide <code>owner</code>, because grants are stored per project-owner pair.</p>
+<p>This route is effectively idempotent for automation. It always returns the same summary object and does not distinguish between "grant was present and removed" and "grant was already absent."</p>
+<blockquote>
+<p><strong>Tip:</strong> Grant and revoke operations trigger a sync update for the affected user, so connected dashboards usually reflect the change without a manual refresh.</p>
+</blockquote>
+<h2 id="related-auth-endpoints">Related Auth Endpoints</h2>
+<p>A few non-admin auth routes matter when you are operating the Admin API.</p>
+<h3 id="log-in">Log In</h3>
+<p>Use <code>POST /api/auth/login</code> with JSON:</p>
+<ul>
+<li><code>username</code></li>
+<li><code>api_key</code></li>
+</ul>
+<p>For the built-in admin account, <code>username</code> must be exactly <code>admin</code> and <code>api_key</code> must match <code>ADMIN_KEY</code>.</p>
+<p>For database-backed users, the username must match the owner of the supplied API key.</p>
+<p>A successful login returns:</p>
+<ul>
+<li><code>username</code></li>
+<li><code>role</code></li>
+<li><code>is_admin</code></li>
+</ul>
+<p>It also sets the <code>docsfy_session</code> cookie for browser use.</p>
+<h3 id="check-current-identity">Check Current Identity</h3>
+<p>Use <code>GET /api/auth/me</code> to verify who the server thinks you are. It returns:</p>
+<ul>
+<li><code>username</code></li>
+<li><code>role</code></li>
+<li><code>is_admin</code></li>
+</ul>
+<p>This is the quickest way to confirm whether a token is being treated as built-in admin, database admin, normal user, or viewer.</p>
+<h3 id="log-out">Log Out</h3>
+<p>Use <code>POST /api/auth/logout</code> to clear the current session cookie and delete the matching server-side session record.</p>
+<h3 id="self-service-key-rotation">Self-Service Key Rotation</h3>
+<p>Use <code>POST /api/auth/rotate-key</code> when a database-backed user needs to rotate their own key.</p>
+<p>This route accepts the same optional <code>new_key</code> field as the admin rotate route. On success, it:</p>
+<ul>
+<li>returns <code>username</code> and <code>new_api_key</code></li>
+<li>sends <code>Cache-Control: no-store</code></li>
+<li>deletes the current session cookie</li>
+<li>invalidates the user's existing sessions, so they must log in again with the new key</li>
+</ul>
+<blockquote>
+<p><strong>Warning:</strong> The built-in <code>admin</code> account cannot use <code>POST /api/auth/rotate-key</code>. Manage that credential by changing <code>ADMIN_KEY</code> in your deployment instead.</p>
+</blockquote>
+                </div>
+            </article>
+            <nav class="page-nav">
+
+                <a href="projects-api.html" class="page-nav-link page-nav-prev">
+                    <span class="page-nav-label">Previous</span>
+                    <span class="page-nav-title">Projects API</span>
+                </a>
+
+
+                <a href="websocket-protocol.html" class="page-nav-link page-nav-next">
+                    <span class="page-nav-label">Next</span>
+                    <span class="page-nav-title">WebSocket Protocol</span>
+                </a>
+
+            </nav>
+
+            <aside class="toc-sidebar">
+                <div class="toc-container">
+                    <h3>On this page</h3>
+                    <div class="toc">
+<ul>
+<li><a href="#authentication">Authentication</a></li>
+<li><a href="#quick-reference">Quick Reference</a></li>
+<li><a href="#user-management">User Management</a><ul>
+<li><a href="#create-a-user">Create A User</a></li>
+<li><a href="#list-users">List Users</a></li>
+<li><a href="#delete-a-user">Delete A User</a></li>
+<li><a href="#rotate-a-user-key">Rotate A User Key</a></li>
+</ul>
+</li>
+<li><a href="#project-access-administration">Project Access Administration</a><ul>
+<li><a href="#grant-access">Grant Access</a></li>
+<li><a href="#look-up-current-access">Look Up Current Access</a></li>
+<li><a href="#revoke-access">Revoke Access</a></li>
+</ul>
+</li>
+<li><a href="#related-auth-endpoints">Related Auth Endpoints</a><ul>
+<li><a href="#log-in">Log In</a></li>
+<li><a href="#check-current-identity">Check Current Identity</a></li>
+<li><a href="#log-out">Log Out</a></li>
+<li><a href="#self-service-key-rotation">Self-Service Key Rotation</a></li>
+</ul>
+</li>
+</ul>
+</div>
+
+                </div>
+            </aside>
+
+
+        </main>
+
+        <footer class="page-footer">
+            Generated with <a href="https://github.com/myk-org/docsfy" target="_blank" rel="noopener">docs<span class="brand-accent">fy</span></a>
+            <span class="footer-sep">·</span>
+            <span class="footer-llm">LLM-friendly: <a href="llms.txt">llms.txt</a> · <a href="llms-full.txt">llms-full.txt</a></span>
+        </footer>
+    </div>
+
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <script src="assets/theme.js"></script>
+    <script src="assets/search.js"></script>
+    <script src="assets/copy.js"></script>
+    <script src="assets/callouts.js"></script>
+    <script src="assets/scrollspy.js"></script>
+    <script src="assets/codelabels.js"></script>
+    <script src="assets/github.js"></script>
+    <script>
+(function() {
+    var toggle = document.getElementById('sidebar-toggle');
+    var sidebar = document.getElementById('sidebar');
+    var overlay = document.getElementById('sidebar-overlay');
+    if (toggle && sidebar) {
+        toggle.addEventListener('click', function() {
+            sidebar.classList.toggle('open');
+            if (overlay) overlay.classList.toggle('open');
+            var expanded = sidebar.classList.contains('open');
+            toggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+        });
+    }
+    if (overlay) {
+        overlay.addEventListener('click', function() {
+            sidebar.classList.remove('open');
+            overlay.classList.remove('open');
+            if (toggle) toggle.setAttribute('aria-expanded', 'false');
+        });
+    }
+})();
+</script>
+<script>
+(function() {
+    var sidebar = document.querySelector('.sidebar-nav') || document.querySelector('.sidebar');
+    if (!sidebar) return;
+
+    // Restore scroll position
+    var saved = sessionStorage.getItem('sidebar-scroll');
+    if (saved) sidebar.scrollTop = parseInt(saved, 10);
+
+    // Save scroll position before navigating
+    sidebar.addEventListener('scroll', function() {
+        sessionStorage.setItem('sidebar-scroll', sidebar.scrollTop.toString());
+    });
+
+    // Also scroll active link into view if no saved position
+    if (!saved) {
+        var active = sidebar.querySelector('.nav-link.active');
+        if (active) {
+            active.scrollIntoView({ block: 'center', behavior: 'instant' });
+        }
+    }
+})();
+</script>
+</body>
+</html>

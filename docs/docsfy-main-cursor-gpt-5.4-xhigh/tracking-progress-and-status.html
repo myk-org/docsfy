@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tracking Progress and Status - docsfy</title>
+    <meta name="description" content="AI-powered documentation generator that turns Git repositories into shareable static docs sites.">
+    <link rel="stylesheet" href="assets/style.css">
+    <link rel="alternate" type="text/plain" title="LLM Documentation Index" href="llms.txt">
+    <link rel="alternate" type="text/plain" title="LLM Full Documentation" href="llms-full.txt">
+</head>
+<body>
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <a href="index.html" class="sidebar-logo">docsfy</a>
+            <p class="sidebar-tagline">AI-powered documentation generator that turns Git repositories into shareable static docs sites.</p>
+        </div>
+
+        <div class="sidebar-search">
+            <input type="text" id="search-input" placeholder="Search... (⌘K)" autocomplete="off" readonly>
+            <div id="search-results" class="search-results"></div>
+        </div>
+
+        <nav class="sidebar-nav">
+
+            <div class="nav-group">
+                <h3 class="nav-group-title">Overview</h3>
+                <ul class="nav-group-pages">
+
+                    <li>
+                        <a href="introduction.html"
+                           class="nav-link">
+                            Introduction
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="architecture-and-runtime.html"
+                           class="nav-link">
+                            Architecture and Runtime
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="projects-variants-and-ownership.html"
+                           class="nav-link">
+                            Projects, Variants, and Ownership
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="generated-output.html"
+                           class="nav-link">
+                            Generated Output
+                        </a>
+                    </li>
+
+                </ul>
+            </div>
+
+            <div class="nav-group">
+                <h3 class="nav-group-title">Getting Started</h3>
+                <ul class="nav-group-pages">
+
+                    <li>
+                        <a href="installation.html"
+                           class="nav-link">
+                            Installation
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="ai-provider-setup.html"
+                           class="nav-link">
+                            AI Provider Setup
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="local-development.html"
+                           class="nav-link">
+                            Local Development
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="docker-quickstart.html"
+                           class="nav-link">
+                            Docker and Compose Quickstart
+                        </a>
+                    </li>
+
+                </ul>
+            </div>
+
+            <div class="nav-group">
+                <h3 class="nav-group-title">Configuration</h3>
+                <ul class="nav-group-pages">
+
+                    <li>
+                        <a href="environment-variables.html"
+                           class="nav-link">
+                            Environment Variables
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="cli-configuration.html"
+                           class="nav-link">
+                            CLI Configuration
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="authentication-and-roles.html"
+                           class="nav-link">
+                            Authentication and Roles
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="data-storage-and-layout.html"
+                           class="nav-link">
+                            Data Storage and Layout
+                        </a>
+                    </li>
+
+                </ul>
+            </div>
+
+            <div class="nav-group">
+                <h3 class="nav-group-title">Usage Guides</h3>
+                <ul class="nav-group-pages">
+
+                    <li>
+                        <a href="first-run-quickstart.html"
+                           class="nav-link">
+                            First Run Quickstart
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="generating-documentation.html"
+                           class="nav-link">
+                            Generating Documentation
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="tracking-progress-and-status.html"
+                           class="nav-link active" aria-current="page">
+                            Tracking Progress and Status
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="variants-branches-and-regeneration.html"
+                           class="nav-link">
+                            Variants, Branches, and Regeneration
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="viewing-downloading-and-hosting-docs.html"
+                           class="nav-link">
+                            Viewing, Downloading, and Hosting Docs
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="user-and-access-management.html"
+                           class="nav-link">
+                            User and Access Management
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="cli-workflows.html"
+                           class="nav-link">
+                            CLI Workflows
+                        </a>
+                    </li>
+
+                </ul>
+            </div>
+
+            <div class="nav-group">
+                <h3 class="nav-group-title">Reference</h3>
+                <ul class="nav-group-pages">
+
+                    <li>
+                        <a href="cli-command-reference.html"
+                           class="nav-link">
+                            CLI Command Reference
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="auth-api.html"
+                           class="nav-link">
+                            Authentication API
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="projects-api.html"
+                           class="nav-link">
+                            Projects API
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="admin-api.html"
+                           class="nav-link">
+                            Admin API
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="websocket-protocol.html"
+                           class="nav-link">
+                            WebSocket Protocol
+                        </a>
+                    </li>
+
+                </ul>
+            </div>
+
+            <div class="nav-group">
+                <h3 class="nav-group-title">Operations</h3>
+                <ul class="nav-group-pages">
+
+                    <li>
+                        <a href="deployment-and-runtime.html"
+                           class="nav-link">
+                            Deployment and Runtime
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="testing-and-quality-checks.html"
+                           class="nav-link">
+                            Testing and Quality Checks
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="security-considerations.html"
+                           class="nav-link">
+                            Security Considerations
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="troubleshooting.html"
+                           class="nav-link">
+                            Troubleshooting
+                        </a>
+                    </li>
+
+                </ul>
+            </div>
+
+        </nav>
+    </aside>
+
+    <div class="main-wrapper">
+        <header class="top-bar">
+            <div class="top-bar-left">
+                <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebar" aria-expanded="false">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                </button>
+                <a href="index.html" class="top-bar-title">docsfy</a>
+            </div>
+            <div class="top-bar-spacer"></div>
+            <div class="top-bar-right">
+                <button class="top-bar-search-btn" id="search-trigger" aria-label="Search">
+                    <kbd>&#8984;K</kbd> Search
+                </button>
+                <a href="https://github.com/myk-org/docsfy" target="_blank" rel="noopener" class="docsfy-badge" title="Generated with docsfy">
+                    ⚡ docs<span class="brand-accent">fy</span>
+                </a>
+
+                <a href="https://github.com/myk-org/docsfy" target="_blank" rel="noopener noreferrer" class="top-bar-github" id="github-link" data-repo-url="https://github.com/myk-org/docsfy">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                    <span class="github-stars" id="github-stars"></span>
+                </a>
+
+                <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+                    <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                    </svg>
+                    <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <main class="content">
+
+            <article class="article">
+                <div class="article-body">
+                    <!-- SECURITY: |safe is intentional. Content is AI-generated markdown
+                         converted to HTML server-side by the markdown library, not
+                         user-supplied input. XSS risk is minimal and accepted since
+                         the AI generates the content, not end users. -->
+                    <h1 id="tracking-progress-and-status">Tracking Progress and Status</h1>
+<p>docsfy shows generation progress live. When you start a run, the server creates or updates a project variant with status <code>generating</code>, and the dashboard keeps that variant fresh over <code>/api/ws</code>. In normal use, you can stay on the selected variant and watch the badge, page count, and activity log change without refreshing the page.</p>
+<h2 id="what-the-statuses-mean">What the statuses mean</h2>
+<table>
+<thead>
+<tr>
+<th>Status</th>
+<th>Meaning</th>
+<th>What you will see</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>generating</code></td>
+<td>docsfy is still cloning, planning, writing pages, or rendering HTML</td>
+<td>A blue pulsing status, live activity log, and an <strong>Abort Generation</strong> button</td>
+</tr>
+<tr>
+<td><code>ready</code></td>
+<td>The docs finished successfully</td>
+<td><strong>View Documentation</strong>, <strong>Download</strong>, final page count, commit, and last-generated time</td>
+</tr>
+<tr>
+<td><code>error</code></td>
+<td>The run failed</td>
+<td>An error message in the detail view and a regenerate form</td>
+</tr>
+<tr>
+<td><code>aborted</code></td>
+<td>A user stopped the run</td>
+<td>An aborted message in the detail view and a regenerate form</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Note:</strong> <code>ready</code> can also mean “already up to date.” If the current commit does not require new docs, docsfy finishes immediately as ready and shows a specific up-to-date message.</p>
+</blockquote>
+<h2 id="generation-stages">Generation stages</h2>
+<p>Most full runs move through these stages:</p>
+<ol>
+<li><code>cloning</code></li>
+<li><code>planning</code></li>
+<li><code>generating_pages</code></li>
+<li><code>rendering</code></li>
+<li><code>ready</code></li>
+</ol>
+<p>Incremental runs use <code>incremental_planning</code> instead of <code>planning</code>. That happens when docsfy already has a ready variant, compares commits, and decides which pages actually need to be regenerated.</p>
+<p>The dashboard uses those stage names directly when it builds the activity log:</p>
+<div class="highlight"><pre><span></span><code><span class="kd">const</span><span class="w"> </span><span class="nx">stages</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s1">&#39;cloning&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;planning&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;incremental_planning&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;generating_pages&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;rendering&#39;</span><span class="p">]</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">currentIdx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">stages</span><span class="p">.</span><span class="nx">indexOf</span><span class="p">(</span><span class="nx">project</span><span class="p">.</span><span class="nx">current_stage</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+
+<span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">currentIdx</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mf">2</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">entries</span><span class="p">.</span><span class="nx">push</span><span class="p">({</span>
+<span class="w">    </span><span class="nx">id</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;plan&#39;</span><span class="p">,</span>
+<span class="w">    </span><span class="kr">type</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;done&#39;</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">message</span><span class="o">:</span><span class="w"> </span><span class="sb">`Planned documentation structure (</span><span class="si">${</span><span class="nx">totalPages</span><span class="si">}</span><span class="sb"> pages)`</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">timestamp</span><span class="o">:</span><span class="w"> </span><span class="kt">Date.now</span><span class="p">(),</span>
+<span class="w">  </span><span class="p">})</span>
+<span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">currentIdx</span><span class="w"> </span><span class="o">===</span><span class="w"> </span><span class="mf">1</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">entries</span><span class="p">.</span><span class="nx">push</span><span class="p">({</span><span class="w"> </span><span class="nx">id</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;plan&#39;</span><span class="p">,</span><span class="w"> </span><span class="kr">type</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;active&#39;</span><span class="p">,</span><span class="w"> </span><span class="nx">message</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;Planning documentation structure...&#39;</span><span class="p">,</span><span class="w"> </span><span class="nx">timestamp</span><span class="o">:</span><span class="w"> </span><span class="kt">Date.now</span><span class="p">()</span><span class="w"> </span><span class="p">})</span>
+<span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">currentIdx</span><span class="w"> </span><span class="o">===</span><span class="w"> </span><span class="mf">2</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">entries</span><span class="p">.</span><span class="nx">push</span><span class="p">({</span><span class="w"> </span><span class="nx">id</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;plan&#39;</span><span class="p">,</span><span class="w"> </span><span class="kr">type</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;active&#39;</span><span class="p">,</span><span class="w"> </span><span class="nx">message</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;Planning incremental update...&#39;</span><span class="p">,</span><span class="w"> </span><span class="nx">timestamp</span><span class="o">:</span><span class="w"> </span><span class="kt">Date.now</span><span class="p">()</span><span class="w"> </span><span class="p">})</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<p>What each stage means:</p>
+<ul>
+<li><code>cloning</code>: docsfy is preparing the repository source. For remote repositories, that means cloning. For local admin-only repositories, this stage is usually brief because there is no remote clone to perform.</li>
+<li><code>planning</code>: docsfy is building the documentation structure from the repository.</li>
+<li><code>incremental_planning</code>: docsfy is deciding which pages need to change instead of rebuilding everything.</li>
+<li><code>generating_pages</code>: markdown pages are being written or updated.</li>
+<li><code>rendering</code>: the finished page set is being turned into the static HTML site.</li>
+<li><code>up_to_date</code>: a special ready-state marker, not a long-running stage. It means docsfy found nothing new to regenerate.</li>
+</ul>
+<blockquote>
+<p><strong>Note:</strong> The progress bar only appears after planning. Before the plan exists, docsfy does not yet know the total number of pages.</p>
+</blockquote>
+<h2 id="how-the-dashboard-reflects-in-flight-work">How the dashboard reflects in-flight work</h2>
+<p>The dashboard loads the current project list once through <code>/api/projects</code>, then keeps it fresh with a WebSocket connection to <code>/api/ws</code>. That gives you three useful behaviors:</p>
+<ul>
+<li>New runs appear quickly without a manual refresh.</li>
+<li>The sidebar status dot changes as soon as the backend reports new state.</li>
+<li>The detail view updates page counts and log messages while the run is still in flight.</li>
+</ul>
+<p>When you start a generation from the dashboard, docsfy immediately switches to that variant view and auto-expands the matching repository and branch in the sidebar. That makes the current run easy to follow without leaving the page.</p>
+<p>While a run is active, the server sends <code>progress</code> messages with the fields the UI needs for in-flight updates: <code>current_stage</code>, <code>page_count</code>, <code>plan_json</code>, and <code>error_message</code>. When a run reaches <code>ready</code>, <code>error</code>, or <code>aborted</code>, the server sends a terminal <code>status_change</code> and then a full <code>sync</code>, so the whole dashboard stays consistent.</p>
+<h2 id="understanding-page-counts">Understanding page counts</h2>
+<p><code>page_count</code> is backed by the server, not calculated only in the browser. docsfy updates it as pages are written to the cache:</p>
+<div class="highlight"><pre><span></span><code><span class="k">if</span> <span class="n">project_name</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">docsfy.storage</span><span class="w"> </span><span class="kn">import</span> <span class="n">update_project_status</span>
+
+    <span class="c1"># Count cached pages to get current total</span>
+    <span class="n">existing_pages</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">cache_dir</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">&quot;*.md&quot;</span><span class="p">)))</span>
+    <span class="k">await</span> <span class="n">update_project_status</span><span class="p">(</span>
+        <span class="n">project_name</span><span class="p">,</span>
+        <span class="n">ai_provider</span><span class="p">,</span>
+        <span class="n">ai_model</span><span class="p">,</span>
+        <span class="n">owner</span><span class="o">=</span><span class="n">owner</span><span class="p">,</span>
+        <span class="n">status</span><span class="o">=</span><span class="s2">&quot;generating&quot;</span><span class="p">,</span>
+        <span class="n">page_count</span><span class="o">=</span><span class="n">existing_pages</span><span class="p">,</span>
+        <span class="n">branch</span><span class="o">=</span><span class="n">branch</span><span class="p">,</span>
+    <span class="p">)</span>
+</code></pre></div>
+
+<p>That has a few important consequences:</p>
+<ul>
+<li>The page count you see is the number of pages currently available for that variant.</li>
+<li>The total used for the progress bar comes from the saved plan (<code>plan_json</code>).</li>
+<li>Full regenerations reset the count to <code>0</code> so stale pages do not make the progress look ahead of reality.</li>
+<li>Incremental regenerations can start above <code>0</code> because unchanged cached pages are reused immediately.</li>
+</ul>
+<blockquote>
+<p><strong>Tip:</strong> If an incremental run starts at <code>3 of 8 pages</code>, that usually means docsfy reused the other five cached pages and only needed to regenerate the remaining ones.</p>
+<p><strong>Note:</strong> A run can show all pages counted while the badge still says <code>Generating</code>. That usually means page writing is complete and docsfy is in the final <code>rendering</code> stage. The docs are only finished when the status changes to <code>Ready</code>.</p>
+</blockquote>
+<h2 id="ready-error-and-aborted">Ready, Error, and Aborted</h2>
+<h3 id="ready">Ready</h3>
+<p>A successful run ends in <code>ready</code>. The dashboard then shows:</p>
+<ul>
+<li>the final page count</li>
+<li>the commit SHA for the generated docs</li>
+<li>the last-generated timestamp</li>
+<li>buttons to view or download the generated site</li>
+</ul>
+<p>If the selected commit is unchanged, docsfy still ends in <code>ready</code>, but the detail view shows <strong>Documentation is already up to date.</strong></p>
+<h3 id="error">Error</h3>
+<p>A run ends in <code>error</code> if docsfy cannot finish, for example because the AI CLI is unavailable, planning fails, or another exception stops the job. The detail view shows the backend <code>error_message</code>, and the regenerate section defaults to <strong>Force full regeneration</strong> so you can retry cleanly.</p>
+<blockquote>
+<p><strong>Warning:</strong> If the server restarts while a variant is still <code>generating</code>, docsfy automatically converts that variant to <code>error</code> with the message <code>Server restarted during generation</code>. This prevents stale runs from looking permanently in progress.</p>
+</blockquote>
+<h3 id="aborted">Aborted</h3>
+<p>A run ends in <code>aborted</code> when a user stops it from the generating view. The detail view keeps the variant visible, shows the abort message, and offers regeneration or deletion.</p>
+<blockquote>
+<p><strong>Note:</strong> docsfy does not let you delete a variant while it is actively generating. Abort it first, then delete it if you no longer need it.</p>
+</blockquote>
+<h2 id="websocket-behavior-and-fallback">WebSocket Behavior and Fallback</h2>
+<p>If you are logged into the browser UI, live updates work automatically through the same session. The server sends an initial <code>sync</code>, then periodic heartbeats and progress messages.</p>
+<p>The current server heartbeat settings are:</p>
+<div class="highlight"><pre><span></span><code><span class="n">_WS_HEARTBEAT_INTERVAL</span> <span class="o">=</span> <span class="mi">30</span>
+<span class="n">_WS_PONG_TIMEOUT</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="n">_WS_MAX_MISSED_PONGS</span> <span class="o">=</span> <span class="mi">2</span>
+</code></pre></div>
+
+<p>On the frontend, docsfy reconnects up to three times with backoff. If that still fails, it falls back to polling <code>/api/projects</code> instead of leaving the dashboard stale:</p>
+<div class="highlight"><pre><span></span><code><span class="k">private</span><span class="w"> </span><span class="nx">attemptReconnect</span><span class="p">()</span><span class="o">:</span><span class="w"> </span><span class="ow">void</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">reconnectAttempts</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="k">this</span><span class="p">.</span><span class="nx">maxReconnectAttempts</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">console</span><span class="p">.</span><span class="nx">debug</span><span class="p">(</span><span class="s1">&#39;[WS] Falling back to polling&#39;</span><span class="p">)</span>
+<span class="w">    </span><span class="k">this</span><span class="p">.</span><span class="nx">startPolling</span><span class="p">()</span>
+<span class="w">    </span><span class="k">return</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">delay</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">this</span><span class="p">.</span><span class="nx">getBackoffDelay</span><span class="p">()</span>
+<span class="w">  </span><span class="k">this</span><span class="p">.</span><span class="nx">reconnectAttempts</span><span class="o">++</span>
+<span class="w">  </span><span class="nx">console</span><span class="p">.</span><span class="nx">debug</span><span class="p">(</span><span class="s1">&#39;[WS] Reconnecting, attempt&#39;</span><span class="p">,</span><span class="w"> </span><span class="k">this</span><span class="p">.</span><span class="nx">reconnectAttempts</span><span class="p">)</span>
+<span class="w">  </span><span class="k">this</span><span class="p">.</span><span class="nx">reconnectTimer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">setTimeout</span><span class="p">(()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="k">this</span><span class="p">.</span><span class="nx">connect</span><span class="p">(</span><span class="kc">true</span><span class="p">),</span><span class="w"> </span><span class="nx">delay</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="k">private</span><span class="w"> </span><span class="nx">startPolling</span><span class="p">()</span><span class="o">:</span><span class="w"> </span><span class="ow">void</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">pollingTimer</span><span class="p">)</span><span class="w"> </span><span class="k">return</span>
+<span class="w">  </span><span class="k">this</span><span class="p">.</span><span class="nx">pollingTimer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">setInterval</span><span class="p">(</span><span class="k">async</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">try</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="kd">const</span><span class="w"> </span><span class="nx">data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">api</span><span class="p">.</span><span class="nx">get</span><span class="o">&lt;</span><span class="nx">ProjectsResponse</span><span class="o">&gt;</span><span class="p">(</span><span class="s1">&#39;/api/projects&#39;</span><span class="p">)</span>
+<span class="w">      </span><span class="kd">const</span><span class="w"> </span><span class="nx">syncMessage</span><span class="o">:</span><span class="w"> </span><span class="kt">WebSocketMessage</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="kr">type</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;sync&#39;</span><span class="w"> </span><span class="kr">as</span><span class="w"> </span><span class="kd">const</span><span class="p">,</span>
+<span class="w">        </span><span class="nx">projects</span><span class="o">:</span><span class="w"> </span><span class="kt">data.projects</span><span class="p">,</span>
+<span class="w">        </span><span class="nx">known_models</span><span class="o">:</span><span class="w"> </span><span class="kt">data.known_models</span><span class="p">,</span>
+<span class="w">        </span><span class="nx">known_branches</span><span class="o">:</span><span class="w"> </span><span class="kt">data.known_branches</span><span class="p">,</span>
+<span class="w">      </span><span class="p">}</span>
+<span class="w">      </span><span class="k">this</span><span class="p">.</span><span class="nx">handlers</span><span class="p">.</span><span class="nx">forEach</span><span class="p">(</span><span class="nx">handler</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">handler</span><span class="p">(</span><span class="nx">syncMessage</span><span class="p">))</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">catch</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="cm">/* ignore polling errors */</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">},</span><span class="w"> </span><span class="nx">WS_POLLING_FALLBACK_MS</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<p>With the current frontend defaults, that fallback polling happens every 10 seconds.</p>
+<blockquote>
+<p><strong>Tip:</strong> <code>docsfy generate --watch</code> uses the same WebSocket progress feed from the CLI, so you can follow stage and page-count updates in the terminal as well.</p>
+</blockquote>
+<h2 id="day-to-day-workflow">Day-to-Day Workflow</h2>
+<p>In practice, tracking a run is simple:</p>
+<ol>
+<li>Start the generation.</li>
+<li>Stay on the selected variant while docsfy moves through cloning, planning, page generation, and rendering.</li>
+<li>Watch the activity log and progress bar once the plan is available.</li>
+<li>Open or download the docs when the badge turns <code>Ready</code>.</li>
+<li>If the run fails or is aborted, read the message in the detail view and regenerate from there.</li>
+</ol>
+<p>If you keep one rule in mind, the UI is easy to read: a run is only complete when the status changes to <code>Ready</code>. Until then, the dashboard is showing you live progress toward that final state.</p>
+                </div>
+            </article>
+            <nav class="page-nav">
+
+                <a href="generating-documentation.html" class="page-nav-link page-nav-prev">
+                    <span class="page-nav-label">Previous</span>
+                    <span class="page-nav-title">Generating Documentation</span>
+                </a>
+
+
+                <a href="variants-branches-and-regeneration.html" class="page-nav-link page-nav-next">
+                    <span class="page-nav-label">Next</span>
+                    <span class="page-nav-title">Variants, Branches, and Regeneration</span>
+                </a>
+
+            </nav>
+
+            <aside class="toc-sidebar">
+                <div class="toc-container">
+                    <h3>On this page</h3>
+                    <div class="toc">
+<ul>
+<li><a href="#what-the-statuses-mean">What the statuses mean</a></li>
+<li><a href="#generation-stages">Generation stages</a></li>
+<li><a href="#how-the-dashboard-reflects-in-flight-work">How the dashboard reflects in-flight work</a></li>
+<li><a href="#understanding-page-counts">Understanding page counts</a></li>
+<li><a href="#ready-error-and-aborted">Ready, Error, and Aborted</a><ul>
+<li><a href="#ready">Ready</a></li>
+<li><a href="#error">Error</a></li>
+<li><a href="#aborted">Aborted</a></li>
+</ul>
+</li>
+<li><a href="#websocket-behavior-and-fallback">WebSocket Behavior and Fallback</a></li>
+<li><a href="#day-to-day-workflow">Day-to-Day Workflow</a></li>
+</ul>
+</div>
+
+                </div>
+            </aside>
+
+
+        </main>
+
+        <footer class="page-footer">
+            Generated with <a href="https://github.com/myk-org/docsfy" target="_blank" rel="noopener">docs<span class="brand-accent">fy</span></a>
+            <span class="footer-sep">·</span>
+            <span class="footer-llm">LLM-friendly: <a href="llms.txt">llms.txt</a> · <a href="llms-full.txt">llms-full.txt</a></span>
+        </footer>
+    </div>
+
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <script src="assets/theme.js"></script>
+    <script src="assets/search.js"></script>
+    <script src="assets/copy.js"></script>
+    <script src="assets/callouts.js"></script>
+    <script src="assets/scrollspy.js"></script>
+    <script src="assets/codelabels.js"></script>
+    <script src="assets/github.js"></script>
+    <script>
+(function() {
+    var toggle = document.getElementById('sidebar-toggle');
+    var sidebar = document.getElementById('sidebar');
+    var overlay = document.getElementById('sidebar-overlay');
+    if (toggle && sidebar) {
+        toggle.addEventListener('click', function() {
+            sidebar.classList.toggle('open');
+            if (overlay) overlay.classList.toggle('open');
+            var expanded = sidebar.classList.contains('open');
+            toggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+        });
+    }
+    if (overlay) {
+        overlay.addEventListener('click', function() {
+            sidebar.classList.remove('open');
+            overlay.classList.remove('open');
+            if (toggle) toggle.setAttribute('aria-expanded', 'false');
+        });
+    }
+})();
+</script>
+<script>
+(function() {
+    var sidebar = document.querySelector('.sidebar-nav') || document.querySelector('.sidebar');
+    if (!sidebar) return;
+
+    // Restore scroll position
+    var saved = sessionStorage.getItem('sidebar-scroll');
+    if (saved) sidebar.scrollTop = parseInt(saved, 10);
+
+    // Save scroll position before navigating
+    sidebar.addEventListener('scroll', function() {
+        sessionStorage.setItem('sidebar-scroll', sidebar.scrollTop.toString());
+    });
+
+    // Also scroll active link into view if no saved position
+    if (!saved) {
+        var active = sidebar.querySelector('.nav-link.active');
+        if (active) {
+            active.scrollIntoView({ block: 'center', behavior: 'instant' });
+        }
+    }
+})();
+</script>
+</body>
+</html>
