@@ -25,7 +25,7 @@ import UsersPanel from '@/components/admin/UsersPanel'
 import AccessPanel from '@/components/admin/AccessPanel'
 import { api } from '@/lib/api'
 import { wsManager } from '@/lib/websocket'
-import { TOAST_DEFAULT_MS, TOAST_ERROR_MS, WS_POLLING_FALLBACK_MS } from '@/lib/constants'
+import { TOAST_DEFAULT_MS, TOAST_ERROR_MS, WS_POLLING_FALLBACK_MS, SELECTED_VIEW_KEY } from '@/lib/constants'
 import type {
   Project,
   AuthResponse,
@@ -61,7 +61,20 @@ export default function DashboardPage() {
   const [knownModels, setKnownModels] = useState<Record<string, string[]>>({})
   const [knownBranches, setKnownBranches] = useState<Record<string, string[]>>({})
   const [searchQuery, setSearchQuery] = useState('')
-  const [selectedView, setSelectedView] = useState<SelectedView>({ type: 'empty' })
+  const [selectedView, setSelectedView] = useState<SelectedView>(() => {
+    try {
+      const stored = localStorage.getItem(SELECTED_VIEW_KEY)
+      if (stored) {
+        const parsed = JSON.parse(stored) as SelectedView
+        if (parsed && typeof parsed === 'object' && 'type' in parsed && parsed.type !== 'empty') {
+          return parsed
+        }
+      }
+    } catch {
+      /* ignore corrupt localStorage */
+    }
+    return { type: 'empty' }
+  })
 
   // Sidebar state
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
@@ -119,6 +132,36 @@ export default function DashboardPage() {
     loadProjects()
     return () => { cancelled = true }
   }, [authChecked])
+
+  // Persist selectedView to localStorage (skip 'empty' — no point restoring to empty)
+  useEffect(() => {
+    if (selectedView.type === 'empty') {
+      localStorage.removeItem(SELECTED_VIEW_KEY)
+    } else {
+      localStorage.setItem(SELECTED_VIEW_KEY, JSON.stringify(selectedView))
+    }
+  }, [selectedView])
+
+  // Validate restored selectedView against loaded projects.
+  // If a variant view was restored but the variant no longer exists, reset to empty.
+  const hasValidatedRestoredView = useRef(false)
+  useEffect(() => {
+    if (hasValidatedRestoredView.current || projects.length === 0) return
+    hasValidatedRestoredView.current = true
+    if (selectedView.type === 'variant') {
+      const exists = projects.some(
+        (p) =>
+          p.name === selectedView.name &&
+          p.branch === selectedView.branch &&
+          p.ai_provider === selectedView.provider &&
+          p.ai_model === selectedView.model &&
+          p.owner === selectedView.owner
+      )
+      if (!exists) {
+        setSelectedView({ type: 'empty' })
+      }
+    }
+  }, [projects, selectedView])
 
   // WebSocket handler
   const handleWsMessage = useCallback((message: WebSocketMessage) => {

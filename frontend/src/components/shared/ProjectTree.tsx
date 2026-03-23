@@ -1,9 +1,11 @@
 import { useState, useMemo, useRef, useEffect } from 'react'
 import { useVirtualizer } from '@tanstack/react-virtual'
-import { ChevronRight, Trash2, GitBranch } from 'lucide-react'
+import { ChevronRight, Trash2, GitBranch, ChevronsDown, ChevronsUp } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import StatusDot from './StatusDot'
 import { cn } from '@/lib/utils'
+import { TREE_EXPANDED_KEY } from '@/lib/constants'
 import type { Project } from '@/types'
 
 export interface SelectedVariant {
@@ -95,7 +97,18 @@ export default function ProjectTree({
   isAdmin,
   role,
 }: ProjectTreeProps) {
-  const [expanded, setExpanded] = useState<Set<string>>(() => new Set())
+  const [expanded, setExpanded] = useState<Set<string>>(() => {
+    try {
+      const stored = localStorage.getItem(TREE_EXPANDED_KEY)
+      if (stored) {
+        const parsed = JSON.parse(stored) as string[]
+        if (Array.isArray(parsed)) return new Set(parsed)
+      }
+    } catch {
+      /* ignore corrupt localStorage */
+    }
+    return new Set()
+  })
   const parentRef = useRef<HTMLDivElement>(null)
 
   // When a variant is selected (e.g. after generation), auto-expand its repo and branch nodes
@@ -111,6 +124,11 @@ export default function ProjectTree({
       return next
     })
   }, [selectedVariant, isAdmin])
+
+  // Persist expanded state to localStorage
+  useEffect(() => {
+    localStorage.setItem(TREE_EXPANDED_KEY, JSON.stringify([...expanded]))
+  }, [expanded])
 
   const filtered = useMemo(() => {
     if (!searchQuery) return projects
@@ -164,6 +182,21 @@ export default function ProjectTree({
       }
       return next
     })
+  }
+
+  function expandAll() {
+    const allKeys: string[] = []
+    for (const group of groups) {
+      allKeys.push(group.groupKey)
+      for (const bg of group.branches) {
+        allKeys.push(`${group.groupKey}/${bg.branch}`)
+      }
+    }
+    setExpanded(new Set(allKeys))
+  }
+
+  function collapseAll() {
+    setExpanded(new Set())
   }
 
   function isSelected(p: Project) {
