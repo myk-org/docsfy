@@ -137,7 +137,7 @@ requires-dist = [
     { name = "python-multipart", specifier = ">=0.0.22" },
     { name = "python-simple-logger" },
     { name = "tomli-w" },
-    { name = "typer", extras = ["all"] },
+    { name = "typer" },
     { name = "uvicorn" },
     { name = "websockets" },
 ]

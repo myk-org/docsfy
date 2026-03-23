@@ -14,7 +14,7 @@ dependencies = [
     "markdown",
     "pygments",
     "python-multipart>=0.0.22",
-    "typer[all]",
+    "typer",
     "tomli-w",
     "httpx",
     "websockets",
