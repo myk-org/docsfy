@@ -228,6 +228,7 @@ export default function ProjectTree({
           size="icon-sm"
           onClick={expandAll}
           title="Expand all"
+          aria-label="Expand all"
           className="text-muted-foreground hover:text-foreground"
         >
           <ChevronsDown className="size-3.5" />
@@ -237,6 +238,7 @@ export default function ProjectTree({
           size="icon-sm"
           onClick={collapseAll}
           title="Collapse all"
+          aria-label="Collapse all"
           className="text-muted-foreground hover:text-foreground"
         >
           <ChevronsUp className="size-3.5" />

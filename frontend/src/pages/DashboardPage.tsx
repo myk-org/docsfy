@@ -25,7 +25,7 @@ import UsersPanel from '@/components/admin/UsersPanel'
 import AccessPanel from '@/components/admin/AccessPanel'
 import { api } from '@/lib/api'
 import { wsManager } from '@/lib/websocket'
-import { TOAST_DEFAULT_MS, TOAST_ERROR_MS, WS_POLLING_FALLBACK_MS, SELECTED_VIEW_KEY } from '@/lib/constants'
+import { TOAST_DEFAULT_MS, TOAST_ERROR_MS, WS_POLLING_FALLBACK_MS, SELECTED_VIEW_KEY, SIDEBAR_COLLAPSED_KEY } from '@/lib/constants'
 import type {
   Project,
   AuthResponse,
@@ -43,8 +43,6 @@ type SelectedView =
   | { type: 'access' }
   | { type: 'empty' }
 
-const SIDEBAR_COLLAPSED_KEY = 'docsfy-sidebar-collapsed'
-
 export default function DashboardPage() {
   const navigate = useNavigate()
   const { modalConfirm, modalPrompt, modalAlert } = useModal()
@@ -58,6 +56,7 @@ export default function DashboardPage() {
 
   // Data state
   const [projects, setProjects] = useState<Project[]>([])
+  const [projectsLoaded, setProjectsLoaded] = useState(false)
   const [knownModels, setKnownModels] = useState<Record<string, string[]>>({})
   const [knownBranches, setKnownBranches] = useState<Record<string, string[]>>({})
   const [searchQuery, setSearchQuery] = useState('')
@@ -127,6 +126,8 @@ export default function DashboardPage() {
         setKnownBranches(data.known_branches)
       } catch {
         /* handled by api interceptor */
+      } finally {
+        if (!cancelled) setProjectsLoaded(true)
       }
     }
     loadProjects()
@@ -146,7 +147,7 @@ export default function DashboardPage() {
   // If a variant view was restored but the variant no longer exists, reset to empty.
   const hasValidatedRestoredView = useRef(false)
   useEffect(() => {
-    if (hasValidatedRestoredView.current || projects.length === 0) return
+    if (hasValidatedRestoredView.current || !projectsLoaded) return
     hasValidatedRestoredView.current = true
     if (selectedView.type === 'variant') {
       const exists = projects.some(
@@ -161,7 +162,17 @@ export default function DashboardPage() {
         setSelectedView({ type: 'empty' })
       }
     }
-  }, [projects, selectedView])
+  }, [projects, selectedView, projectsLoaded])
+
+  // Validate restored admin views against isAdmin.
+  // If a non-admin user has a stored 'users' or 'access' view, reset to empty.
+  useEffect(() => {
+    if (!authChecked) return
+    if (!isAdmin && (selectedView.type === 'users' || selectedView.type === 'access')) {
+      setSelectedView({ type: 'empty' })
+      localStorage.removeItem(SELECTED_VIEW_KEY)
+    }
+  }, [authChecked, isAdmin, selectedView])
 
   // WebSocket handler
   const handleWsMessage = useCallback((message: WebSocketMessage) => {
@@ -777,11 +788,11 @@ function MainPanel({
     )
   }
 
-  if (selectedView.type === 'users') {
+  if (selectedView.type === 'users' && isAdmin) {
     return <UsersPanel />
   }
 
-  if (selectedView.type === 'access') {
+  if (selectedView.type === 'access' && isAdmin) {
     return <AccessPanel />
   }
 

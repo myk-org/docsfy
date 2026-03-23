@@ -16,6 +16,7 @@ export const RELOAD_DELAY_MS = 1000
 
 export const TREE_EXPANDED_KEY = 'docsfy-tree-expanded'
 export const SELECTED_VIEW_KEY = 'docsfy-selected-view'
+export const SIDEBAR_COLLAPSED_KEY = 'docsfy-sidebar-collapsed'
 
 export const SIDEBAR_WIDTH_KEY = 'docsfy-sidebar-width'
 export const SIDEBAR_MIN_WIDTH = 180

@@ -160,17 +160,21 @@ export default function Layout({
             <aside className="flex flex-col border-r border-border bg-sidebar w-full">
               {sidebar}
             </aside>
-            {/* Drag handle */}
+            {/* Drag handle — wide hit target (12px) with a thin 2px visual indicator */}
             <div
               role="separator"
               aria-orientation="vertical"
               aria-label="Resize sidebar"
               onMouseDown={handleMouseDown}
-              className={cn(
-                'absolute top-0 right-0 w-1 h-full cursor-col-resize z-10 transition-colors',
-                isDragging ? 'bg-primary/50' : 'bg-transparent hover:bg-border'
-              )}
-            />
+              className="group/handle absolute top-0 -right-1.5 w-3 h-full cursor-col-resize z-10 flex justify-center"
+            >
+              <div
+                className={cn(
+                  'w-0.5 h-full transition-colors',
+                  isDragging ? 'bg-primary/50' : 'bg-transparent group-hover/handle:bg-border'
+                )}
+              />
+            </div>
           </div>
         )}
         {sidebarCollapsed && (
