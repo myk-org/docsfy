@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from typing import TYPE_CHECKING, Any, Optional
 
 import typer
@@ -80,9 +81,22 @@ def health() -> None:
     client = get_client()
     try:
         response = client.get("/health")
-        data = response.json()
+        try:
+            data = response.json()
+        except (json.JSONDecodeError, ValueError):
+            typer.echo(f"Server: {client.server_url}")
+            typer.echo(
+                f"Status: responded but returned non-JSON (status {response.status_code})"
+            )
+            typer.echo(f"Response: {response.text[:200]}")
+            raise typer.Exit(code=1)
         typer.echo(f"Server: {client.server_url}")
         typer.echo(f"Status: {data.get('status', 'unknown')}")
+    except typer.Exit:
+        raise
+    except Exception as exc:
+        typer.echo(f"Server unreachable: {exc}", err=True)
+        raise typer.Exit(code=1)
     finally:
         client.close()
 

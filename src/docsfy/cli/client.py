@@ -73,6 +73,13 @@ class DocsfyClient:
 
     def _check_error(self, response: httpx.Response) -> None:
         """Print error details and exit on HTTP errors."""
+        if response.is_redirect:
+            location = response.headers.get("location", "?")
+            typer.echo(
+                f"Error: Server redirected to {location}. Check the server URL.",
+                err=True,
+            )
+            raise typer.Exit(code=1)
         if response.status_code >= 400:
             try:
                 detail = response.json().get("detail", response.reason_phrase)
