@@ -195,10 +195,10 @@ export default function DashboardPage() {
             ? {
                 ...p,
                 status: message.status as Project['status'],
-                current_stage: message.current_stage,
-                page_count: message.page_count,
-                plan_json: message.plan_json,
-                error_message: message.error_message,
+                current_stage: message.current_stage ?? p.current_stage,
+                page_count: message.page_count ?? p.page_count,
+                plan_json: message.plan_json ?? p.plan_json,
+                error_message: message.error_message ?? p.error_message,
               }
             : p
         )
@@ -227,10 +227,10 @@ export default function DashboardPage() {
             ? {
                 ...p,
                 status: message.status as Project['status'],
-                page_count: message.page_count,
-                last_generated: message.last_generated,
-                last_commit_sha: message.last_commit_sha,
-                error_message: message.error_message,
+                page_count: message.page_count ?? p.page_count,
+                last_generated: message.last_generated ?? p.last_generated,
+                last_commit_sha: message.last_commit_sha ?? p.last_commit_sha,
+                error_message: message.error_message ?? p.error_message,
               }
             : p
         )
