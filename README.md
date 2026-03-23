@@ -93,6 +93,38 @@ See `.env.example` for all available environment variables.
 
 See `config.toml.example` for the CLI configuration format.
 
+## Claude Code Skill
+
+docsfy ships with a Claude Code skill that auto-triggers when you ask to generate documentation. It guides the full workflow: prerequisites check, parameter collection, generation with live progress, and downloading the result.
+
+### Setup
+
+Download the skill directly from GitHub (no need to clone the repo):
+
+```bash
+mkdir -p ~/.claude/skills/docsfy-generate-docs
+curl -fsSL https://raw.githubusercontent.com/myk-org/docsfy/main/skills/docsfy-generate-docs/SKILL.md \
+  -o ~/.claude/skills/docsfy-generate-docs/SKILL.md
+```
+
+Or if you have the repo cloned locally:
+
+```bash
+cp -r skills/docsfy-generate-docs ~/.claude/skills/
+```
+
+After installing, restart Claude Code or run `/reload-plugins` to pick up the skill.
+
+### Usage
+
+The skill triggers automatically when you mention docsfy documentation generation. You can also invoke it directly:
+
+```
+generate docs for https://github.com/org/repo using docsfy
+```
+
+The skill will ask you to choose the AI provider and model — these are never hardcoded.
+
 ## License
 
 Apache-2.0

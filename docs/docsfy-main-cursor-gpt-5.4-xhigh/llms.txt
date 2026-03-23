@@ -1,0 +1,49 @@
+# docsfy
+
+> AI-powered documentation generator that turns Git repositories into shareable static docs sites.
+
+## Overview
+
+- [Introduction](introduction.md): Explain what docsfy does, who it is for, and the main workflows exposed through the web app, HTTP API, generated sites, and CLI.
+- [Architecture and Runtime](architecture-and-runtime.md): Describe how the FastAPI backend, React dashboard, SQLite storage, AI CLI integrations, and static site renderer work together.
+- [Projects, Variants, and Ownership](projects-variants-and-ownership.md): Define the core data model: owners, repository names, branches, provider and model variants, statuses, and latest-variant resolution.
+- [Generated Output](generated-output.md): Show what docsfy publishes for each generation, including static HTML pages, Markdown copies, search index files, and LLM-friendly artifacts.
+
+## Getting Started
+
+- [Installation](installation.md): Cover Python and frontend prerequisites, dependency installation with uv and npm, and the two console entry points: docsfy and docsfy-server.
+- [AI Provider Setup](ai-provider-setup.md): Document the external Claude, Gemini, and Cursor CLI requirements, authentication expectations, and how provider and model availability affects generation.
+- [Local Development](local-development.md): Explain how to run the backend and frontend locally, when to build the SPA, and how DEV_MODE and the Vite proxy change the development workflow.
+- [Docker and Compose Quickstart](docker-quickstart.md): Show how to run docsfy with the provided Dockerfile and docker-compose setup, including .env usage, persistent data, and exposed ports.
+
+## Configuration
+
+- [Environment Variables](environment-variables.md): Reference runtime settings such as ADMIN_KEY, default AI provider and model, CLI timeout, logging, cookie security, and the data directory.
+- [CLI Configuration](cli-configuration.md): Document the CLI profile file in ~/.config/docsfy/config.toml, default server selection, per-server credentials, and override rules from command-line flags.
+- [Authentication and Roles](authentication-and-roles.md): Explain admin login, database-backed users, API keys, session cookies, viewer and user and admin permissions, and key rotation behavior.
+- [Data Storage and Layout](data-storage-and-layout.md): Describe the SQLite database, project artifact directories under /data, cache locations, and how branch and provider and model values shape on-disk paths.
+
+## Usage Guides
+
+- [First Run Quickstart](first-run-quickstart.md): Walk through bringing up the service, signing in as admin, creating users if needed, and starting the first documentation generation.
+- [Generating Documentation](generating-documentation.md): Show how to create a generation from a Git repository URL, choose branch and provider and model settings, and understand force regeneration.
+- [Tracking Progress and Status](tracking-progress-and-status.md): Explain generation stages, WebSocket-driven updates, page counts, ready and error and aborted states, and how the dashboard reflects in-flight work.
+- [Variants, Branches, and Regeneration](variants-branches-and-regeneration.md): Explain branch-specific generations, provider and model variants, up-to-date detection, incremental updates, and when docsfy falls back to a full regeneration.
+- [Viewing, Downloading, and Hosting Docs](viewing-downloading-and-hosting-docs.md): Show how to open generated docs through the latest or explicit variant URLs, download tarballs, and work with the published static site output.
+- [User and Access Management](user-and-access-management.md): Cover creating and deleting users, rotating keys, granting and revoking project access, and how shared projects appear for non-admin users.
+- [CLI Workflows](cli-workflows.md): Provide task-oriented CLI guides for health checks, generation, listing and inspecting projects, aborting work, downloading artifacts, and admin operations.
+
+## Reference
+
+- [CLI Command Reference](cli-command-reference.md): Reference global CLI connection options plus the config, generate, list, status, delete, abort, download, and admin subcommands.
+- [Authentication API](auth-api.md): Reference the login, logout, current-user, and rotate-key endpoints, including bearer-token and session-cookie authentication behavior.
+- [Projects API](projects-api.md): Reference project listing, generation, variant lookup, abort, delete, download, and docs-serving routes, including owner scoping and branch-aware URLs.
+- [Admin API](admin-api.md): Reference user management and project-access administration endpoints, including key rotation, access grants, and access lookups.
+- [WebSocket Protocol](websocket-protocol.md): Document the /api/ws connection model, authentication options, sync and progress and status_change messages, heartbeat ping and pong, and polling fallback expectations.
+
+## Operations
+
+- [Deployment and Runtime](deployment-and-runtime.md): Describe production runtime behavior, entrypoint modes, container expectations, persistent storage, health checks, and non-root execution details.
+- [Testing and Quality Checks](testing-and-quality-checks.md): Cover pytest, Vitest, tox, pre-commit hooks, type checks, secret scanning, review automation, and the repository's manual end-to-end test plans.
+- [Security Considerations](security-considerations.md): Document the project's auth model, API key hashing, cookie settings, SSRF protections, repository and path validation, and sanitization of AI-generated HTML.
+- [Troubleshooting](troubleshooting.md): Help users diagnose missing frontend builds, provider CLI failures, branch validation errors, generation conflicts, access issues, and WebSocket connectivity problems.

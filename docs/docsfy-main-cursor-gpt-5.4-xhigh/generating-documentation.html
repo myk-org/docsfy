@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generating Documentation - docsfy</title>
+    <meta name="description" content="AI-powered documentation generator that turns Git repositories into shareable static docs sites.">
+    <link rel="stylesheet" href="assets/style.css">
+    <link rel="alternate" type="text/plain" title="LLM Documentation Index" href="llms.txt">
+    <link rel="alternate" type="text/plain" title="LLM Full Documentation" href="llms-full.txt">
+</head>
+<body>
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <a href="index.html" class="sidebar-logo">docsfy</a>
+            <p class="sidebar-tagline">AI-powered documentation generator that turns Git repositories into shareable static docs sites.</p>
+        </div>
+
+        <div class="sidebar-search">
+            <input type="text" id="search-input" placeholder="Search... (⌘K)" autocomplete="off" readonly>
+            <div id="search-results" class="search-results"></div>
+        </div>
+
+        <nav class="sidebar-nav">
+
+            <div class="nav-group">
+                <h3 class="nav-group-title">Overview</h3>
+                <ul class="nav-group-pages">
+
+                    <li>
+                        <a href="introduction.html"
+                           class="nav-link">
+                            Introduction
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="architecture-and-runtime.html"
+                           class="nav-link">
+                            Architecture and Runtime
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="projects-variants-and-ownership.html"
+                           class="nav-link">
+                            Projects, Variants, and Ownership
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="generated-output.html"
+                           class="nav-link">
+                            Generated Output
+                        </a>
+                    </li>
+
+                </ul>
+            </div>
+
+            <div class="nav-group">
+                <h3 class="nav-group-title">Getting Started</h3>
+                <ul class="nav-group-pages">
+
+                    <li>
+                        <a href="installation.html"
+                           class="nav-link">
+                            Installation
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="ai-provider-setup.html"
+                           class="nav-link">
+                            AI Provider Setup
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="local-development.html"
+                           class="nav-link">
+                            Local Development
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="docker-quickstart.html"
+                           class="nav-link">
+                            Docker and Compose Quickstart
+                        </a>
+                    </li>
+
+                </ul>
+            </div>
+
+            <div class="nav-group">
+                <h3 class="nav-group-title">Configuration</h3>
+                <ul class="nav-group-pages">
+
+                    <li>
+                        <a href="environment-variables.html"
+                           class="nav-link">
+                            Environment Variables
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="cli-configuration.html"
+                           class="nav-link">
+                            CLI Configuration
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="authentication-and-roles.html"
+                           class="nav-link">
+                            Authentication and Roles
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="data-storage-and-layout.html"
+                           class="nav-link">
+                            Data Storage and Layout
+                        </a>
+                    </li>
+
+                </ul>
+            </div>
+
+            <div class="nav-group">
+                <h3 class="nav-group-title">Usage Guides</h3>
+                <ul class="nav-group-pages">
+
+                    <li>
+                        <a href="first-run-quickstart.html"
+                           class="nav-link">
+                            First Run Quickstart
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="generating-documentation.html"
+                           class="nav-link active" aria-current="page">
+                            Generating Documentation
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="tracking-progress-and-status.html"
+                           class="nav-link">
+                            Tracking Progress and Status
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="variants-branches-and-regeneration.html"
+                           class="nav-link">
+                            Variants, Branches, and Regeneration
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="viewing-downloading-and-hosting-docs.html"
+                           class="nav-link">
+                            Viewing, Downloading, and Hosting Docs
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="user-and-access-management.html"
+                           class="nav-link">
+                            User and Access Management
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="cli-workflows.html"
+                           class="nav-link">
+                            CLI Workflows
+                        </a>
+                    </li>
+
+                </ul>
+            </div>
+
+            <div class="nav-group">
+                <h3 class="nav-group-title">Reference</h3>
+                <ul class="nav-group-pages">
+
+                    <li>
+                        <a href="cli-command-reference.html"
+                           class="nav-link">
+                            CLI Command Reference
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="auth-api.html"
+                           class="nav-link">
+                            Authentication API
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="projects-api.html"
+                           class="nav-link">
+                            Projects API
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="admin-api.html"
+                           class="nav-link">
+                            Admin API
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="websocket-protocol.html"
+                           class="nav-link">
+                            WebSocket Protocol
+                        </a>
+                    </li>
+
+                </ul>
+            </div>
+
+            <div class="nav-group">
+                <h3 class="nav-group-title">Operations</h3>
+                <ul class="nav-group-pages">
+
+                    <li>
+                        <a href="deployment-and-runtime.html"
+                           class="nav-link">
+                            Deployment and Runtime
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="testing-and-quality-checks.html"
+                           class="nav-link">
+                            Testing and Quality Checks
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="security-considerations.html"
+                           class="nav-link">
+                            Security Considerations
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="troubleshooting.html"
+                           class="nav-link">
+                            Troubleshooting
+                        </a>
+                    </li>
+
+                </ul>
+            </div>
+
+        </nav>
+    </aside>
+
+    <div class="main-wrapper">
+        <header class="top-bar">
+            <div class="top-bar-left">
+                <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebar" aria-expanded="false">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                </button>
+                <a href="index.html" class="top-bar-title">docsfy</a>
+            </div>
+            <div class="top-bar-spacer"></div>
+            <div class="top-bar-right">
+                <button class="top-bar-search-btn" id="search-trigger" aria-label="Search">
+                    <kbd>&#8984;K</kbd> Search
+                </button>
+                <a href="https://github.com/myk-org/docsfy" target="_blank" rel="noopener" class="docsfy-badge" title="Generated with docsfy">
+                    ⚡ docs<span class="brand-accent">fy</span>
+                </a>
+
+                <a href="https://github.com/myk-org/docsfy" target="_blank" rel="noopener noreferrer" class="top-bar-github" id="github-link" data-repo-url="https://github.com/myk-org/docsfy">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                    <span class="github-stars" id="github-stars"></span>
+                </a>
+
+                <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+                    <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                    </svg>
+                    <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <main class="content">
+
+            <article class="article">
+                <div class="article-body">
+                    <!-- SECURITY: |safe is intentional. Content is AI-generated markdown
+                         converted to HTML server-side by the markdown library, not
+                         user-supplied input. XSS risk is minimal and accepted since
+                         the AI generates the content, not end users. -->
+                    <h1 id="generating-documentation">Generating Documentation</h1>
+<p><code>docsfy</code> turns a Git repository into a static documentation site. It keeps separate outputs for different branches, providers, and models, so the same repository can have multiple documentation variants when you need them.</p>
+<p>The project name is taken from the repository URL automatically. For example, <code>https://github.com/myk-org/for-testing-only</code> becomes <code>for-testing-only</code>.</p>
+<h2 id="before-you-start">Before You Start</h2>
+<ul>
+<li>Use a Git remote URL, not a local file path.</li>
+<li>You need write access to start or regenerate documentation.</li>
+<li><code>docsfy</code> accepts normal HTTPS remotes and SSH remotes.</li>
+</ul>
+<div class="highlight"><pre><span></span><code>https://github.com/myk-org/for-testing-only
+git@github.com:org/repo.git
+</code></pre></div>
+
+<blockquote>
+<p><strong>Note:</strong> If you use an SSH URL, the server running <code>docsfy</code> must already be able to authenticate to that Git host.</p>
+<p><strong>Warning:</strong> Repository URLs that point to <code>localhost</code> or other private-network addresses are rejected. Local <code>repo_path</code> generation exists in the API, but it is an admin-only workflow.</p>
+</blockquote>
+<h2 id="web-app">Web App</h2>
+<p>To start a generation from the dashboard:</p>
+<ol>
+<li>Open the <code>New Generation</code> form.</li>
+<li>Enter the repository URL.</li>
+<li>Choose a branch. The field defaults to <code>main</code>.</li>
+<li>Choose a provider: <code>claude</code>, <code>gemini</code>, or <code>cursor</code>.</li>
+<li>Choose a model from the suggestions, or type one manually.</li>
+<li>Enable <code>Force full regeneration</code> only when you want a clean rebuild.</li>
+<li>Click <code>Generate</code>.</li>
+</ol>
+<p>When the request is accepted, the dashboard creates a generating variant and switches to live progress updates. The detail view shows the branch, provider/model, commit SHA, page count, and activity log while the run is in progress.</p>
+<blockquote>
+<p><strong>Tip:</strong> The web form remembers the repository URL, branch, and Force checkbox for the current browser session.</p>
+<p><strong>Note:</strong> Branch suggestions and model suggestions come from completed generations. In-progress or failed variants do not populate those lists.</p>
+</blockquote>
+<h2 id="cli">CLI</h2>
+<p>If you use the <code>docsfy</code> CLI, point it at your server first:</p>
+<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>config<span class="w"> </span><span class="nb">set</span><span class="w"> </span>server<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$DOCSFY_SERVER</span><span class="s2">&quot;</span>
+docsfy<span class="w"> </span>config<span class="w"> </span><span class="nb">set</span><span class="w"> </span>api-key<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$DOCSFY_API_KEY</span><span class="s2">&quot;</span>
+</code></pre></div>
+
+<p>Start a generation:</p>
+<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>generate<span class="w"> </span>https://github.com/myk-org/for-testing-only<span class="w"> </span>--provider<span class="w"> </span>gemini<span class="w"> </span>--model<span class="w"> </span>gemini-2.5-flash<span class="w"> </span>--force
+</code></pre></div>
+
+<p>Generate a specific branch and watch live progress:</p>
+<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>generate<span class="w"> </span>https://github.com/myk-org/for-testing-only<span class="w"> </span>--branch<span class="w"> </span>dev<span class="w"> </span>--provider<span class="w"> </span>gemini<span class="w"> </span>--model<span class="w"> </span>gemini-2.5-flash<span class="w"> </span>--force<span class="w"> </span>--watch
+</code></pre></div>
+
+<p><code>--branch</code> defaults to <code>main</code>. With <code>--watch</code>, the CLI follows the run in real time and prints the project name, branch, and current status as soon as the generation starts.</p>
+<h2 id="api">API</h2>
+<p>Send a <code>POST</code> request to <code>/api/generate</code>. The API accepts <code>repo_url</code>, <code>branch</code>, <code>ai_provider</code>, <code>ai_model</code>, <code>ai_cli_timeout</code>, and <code>force</code>.</p>
+<p>Replace the bearer token with your own API key and adjust the host if needed:</p>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-s<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8800/api/generate<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Authorization: Bearer &lt;TEST_USER_PASSWORD&gt;&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{&quot;repo_url&quot;:&quot;https://github.com/myk-org/for-testing-only&quot;,&quot;ai_provider&quot;:&quot;gemini&quot;,&quot;ai_model&quot;:&quot;gemini-2.5-flash&quot;}&#39;</span>
+</code></pre></div>
+
+<p>A successful request returns <code>202 Accepted</code> and starts the generation asynchronously. The response includes the project name, status, and resolved branch. If you omit <code>branch</code>, the server resolves it to <code>main</code>.</p>
+<blockquote>
+<p><strong>Note:</strong> You can also send <code>ai_cli_timeout</code> to override the server timeout for a single generation.</p>
+</blockquote>
+<h2 id="branches-and-models">Branches And Models</h2>
+<p>A documentation variant is scoped by project name, branch, provider, and model. That means <code>for-testing-only/main/gemini/gemini-2.5-flash</code> and <code>for-testing-only/dev/gemini/gemini-2.5-flash</code> are different variants.</p>
+<p>If you do not set a branch, <code>docsfy</code> uses <code>main</code>. Valid branch examples from the test suite include:</p>
+<div class="highlight"><pre><span></span><code>main
+dev
+v2.0
+release-v2.0
+v2.0.1
+</code></pre></div>
+
+<blockquote>
+<p><strong>Warning:</strong> Branch names with <code>/</code> are rejected. Use <code>release-v2.0</code> instead of <code>release/v2.0</code>.</p>
+</blockquote>
+<p>If the selected branch does not exist on the remote, the generation fails during cloning and the variant ends in <code>error</code>.</p>
+<p>Provider choices are fixed to <code>claude</code>, <code>gemini</code>, and <code>cursor</code>. In the web app, changing the provider updates the model suggestions for that provider. Because the model field is a combobox, you can still type a model name manually when it is not already suggested.</p>
+<p>If you omit provider or model in the API or CLI, the server uses its configured defaults. The built-in defaults are:</p>
+<div class="highlight"><pre><span></span><code>AI_PROVIDER=cursor
+AI_MODEL=gpt-5.4-xhigh-fast
+AI_CLI_TIMEOUT=60
+</code></pre></div>
+
+<blockquote>
+<p><strong>Note:</strong> In the default setup, new generations start from <code>cursor</code> and <code>gpt-5.4-xhigh-fast</code> unless you choose something else.</p>
+<p><strong>Warning:</strong> The selected provider and model must be available on the server. If the provider CLI is missing or not authenticated there, the generation fails.</p>
+</blockquote>
+<h2 id="force-regeneration">Force Regeneration</h2>
+<p><code>Force full regeneration</code> changes how aggressively <code>docsfy</code> reuses previous work.</p>
+<table>
+<thead>
+<tr>
+<th>Force setting</th>
+<th>Behavior</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Off</td>
+<td><code>docsfy</code> reuses previous successful work when possible. If the commit is unchanged, the run can finish almost immediately as up to date. If only some files changed, <code>docsfy</code> can reuse the existing plan and regenerate only affected pages.</td>
+</tr>
+<tr>
+<td>On</td>
+<td><code>docsfy</code> clears the target variant's cached page content, resets progress to <code>0</code>, runs a full planning step, and regenerates all pages from scratch.</td>
+</tr>
+</tbody>
+</table>
+<p>Force also matters when you change provider or model on an existing project. Without Force, <code>docsfy</code> may reuse the latest successful variant on the same project and branch as a base, and after the new run succeeds it may replace the older provider/model variant. With Force enabled, <code>docsfy</code> keeps the existing variant instead of replacing it.</p>
+<blockquote>
+<p><strong>Tip:</strong> Use Force when you want a clean rebuild, when you suspect stale cached output, or when you want to keep the current variant and create a second provider/model variant beside it.</p>
+<p><strong>Note:</strong> When a non-force regenerate finds that the latest generated commit is unchanged, the ready view reports that the documentation is already up to date.</p>
+</blockquote>
+<h2 id="track-progress">Track Progress</h2>
+<p>While a run is active, the dashboard and status pages receive live updates. Common stages include <code>cloning</code>, <code>planning</code>, <code>incremental_planning</code>, <code>generating_pages</code>, and <code>rendering</code>.</p>
+<p>Once the variant reaches <code>ready</code>, you can open the generated site or download it as a <code>.tar.gz</code> archive. Variant-specific routes follow this pattern:</p>
+<div class="highlight"><pre><span></span><code>/docs/for-testing-only/dev/gemini/gemini-2.5-flash/
+/api/projects/for-testing-only/dev/gemini/gemini-2.5-flash/download
+</code></pre></div>
+
+<p>From the CLI, you can inspect the result later with:</p>
+<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>status<span class="w"> </span><span class="k">for</span>-testing-only
+</code></pre></div>
+
+<blockquote>
+<p><strong>Note:</strong> Generated docs and download endpoints are authenticated. Open them from a logged-in browser session or an API client that sends a valid bearer token.</p>
+<p><strong>Warning:</strong> Only one run can be active for the same project, branch, provider, and model at a time. If that exact variant is already generating, a second start request is rejected until the first run finishes or is aborted.</p>
+</blockquote>
+                </div>
+            </article>
+            <nav class="page-nav">
+
+                <a href="first-run-quickstart.html" class="page-nav-link page-nav-prev">
+                    <span class="page-nav-label">Previous</span>
+                    <span class="page-nav-title">First Run Quickstart</span>
+                </a>
+
+
+                <a href="tracking-progress-and-status.html" class="page-nav-link page-nav-next">
+                    <span class="page-nav-label">Next</span>
+                    <span class="page-nav-title">Tracking Progress and Status</span>
+                </a>
+
+            </nav>
+
+            <aside class="toc-sidebar">
+                <div class="toc-container">
+                    <h3>On this page</h3>
+                    <div class="toc">
+<ul>
+<li><a href="#before-you-start">Before You Start</a></li>
+<li><a href="#web-app">Web App</a></li>
+<li><a href="#cli">CLI</a></li>
+<li><a href="#api">API</a></li>
+<li><a href="#branches-and-models">Branches And Models</a></li>
+<li><a href="#force-regeneration">Force Regeneration</a></li>
+<li><a href="#track-progress">Track Progress</a></li>
+</ul>
+</div>
+
+                </div>
+            </aside>
+
+
+        </main>
+
+        <footer class="page-footer">
+            Generated with <a href="https://github.com/myk-org/docsfy" target="_blank" rel="noopener">docs<span class="brand-accent">fy</span></a>
+            <span class="footer-sep">·</span>
+            <span class="footer-llm">LLM-friendly: <a href="llms.txt">llms.txt</a> · <a href="llms-full.txt">llms-full.txt</a></span>
+        </footer>
+    </div>
+
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <script src="assets/theme.js"></script>
+    <script src="assets/search.js"></script>
+    <script src="assets/copy.js"></script>
+    <script src="assets/callouts.js"></script>
+    <script src="assets/scrollspy.js"></script>
+    <script src="assets/codelabels.js"></script>
+    <script src="assets/github.js"></script>
+    <script>
+(function() {
+    var toggle = document.getElementById('sidebar-toggle');
+    var sidebar = document.getElementById('sidebar');
+    var overlay = document.getElementById('sidebar-overlay');
+    if (toggle && sidebar) {
+        toggle.addEventListener('click', function() {
+            sidebar.classList.toggle('open');
+            if (overlay) overlay.classList.toggle('open');
+            var expanded = sidebar.classList.contains('open');
+            toggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+        });
+    }
+    if (overlay) {
+        overlay.addEventListener('click', function() {
+            sidebar.classList.remove('open');
+            overlay.classList.remove('open');
+            if (toggle) toggle.setAttribute('aria-expanded', 'false');
+        });
+    }
+})();
+</script>
+<script>
+(function() {
+    var sidebar = document.querySelector('.sidebar-nav') || document.querySelector('.sidebar');
+    if (!sidebar) return;
+
+    // Restore scroll position
+    var saved = sessionStorage.getItem('sidebar-scroll');
+    if (saved) sidebar.scrollTop = parseInt(saved, 10);
+
+    // Save scroll position before navigating
+    sidebar.addEventListener('scroll', function() {
+        sessionStorage.setItem('sidebar-scroll', sidebar.scrollTop.toString());
+    });
+
+    // Also scroll active link into view if no saved position
+    if (!saved) {
+        var active = sidebar.querySelector('.nav-link.active');
+        if (active) {
+            active.scrollIntoView({ block: 'center', behavior: 'instant' });
+        }
+    }
+})();
+</script>
+</body>
+</html>

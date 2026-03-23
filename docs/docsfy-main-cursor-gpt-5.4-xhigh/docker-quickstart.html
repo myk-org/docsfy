@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Docker and Compose Quickstart - docsfy</title>
+    <meta name="description" content="AI-powered documentation generator that turns Git repositories into shareable static docs sites.">
+    <link rel="stylesheet" href="assets/style.css">
+    <link rel="alternate" type="text/plain" title="LLM Documentation Index" href="llms.txt">
+    <link rel="alternate" type="text/plain" title="LLM Full Documentation" href="llms-full.txt">
+</head>
+<body>
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <a href="index.html" class="sidebar-logo">docsfy</a>
+            <p class="sidebar-tagline">AI-powered documentation generator that turns Git repositories into shareable static docs sites.</p>
+        </div>
+
+        <div class="sidebar-search">
+            <input type="text" id="search-input" placeholder="Search... (⌘K)" autocomplete="off" readonly>
+            <div id="search-results" class="search-results"></div>
+        </div>
+
+        <nav class="sidebar-nav">
+
+            <div class="nav-group">
+                <h3 class="nav-group-title">Overview</h3>
+                <ul class="nav-group-pages">
+
+                    <li>
+                        <a href="introduction.html"
+                           class="nav-link">
+                            Introduction
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="architecture-and-runtime.html"
+                           class="nav-link">
+                            Architecture and Runtime
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="projects-variants-and-ownership.html"
+                           class="nav-link">
+                            Projects, Variants, and Ownership
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="generated-output.html"
+                           class="nav-link">
+                            Generated Output
+                        </a>
+                    </li>
+
+                </ul>
+            </div>
+
+            <div class="nav-group">
+                <h3 class="nav-group-title">Getting Started</h3>
+                <ul class="nav-group-pages">
+
+                    <li>
+                        <a href="installation.html"
+                           class="nav-link">
+                            Installation
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="ai-provider-setup.html"
+                           class="nav-link">
+                            AI Provider Setup
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="local-development.html"
+                           class="nav-link">
+                            Local Development
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="docker-quickstart.html"
+                           class="nav-link active" aria-current="page">
+                            Docker and Compose Quickstart
+                        </a>
+                    </li>
+
+                </ul>
+            </div>
+
+            <div class="nav-group">
+                <h3 class="nav-group-title">Configuration</h3>
+                <ul class="nav-group-pages">
+
+                    <li>
+                        <a href="environment-variables.html"
+                           class="nav-link">
+                            Environment Variables
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="cli-configuration.html"
+                           class="nav-link">
+                            CLI Configuration
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="authentication-and-roles.html"
+                           class="nav-link">
+                            Authentication and Roles
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="data-storage-and-layout.html"
+                           class="nav-link">
+                            Data Storage and Layout
+                        </a>
+                    </li>
+
+                </ul>
+            </div>
+
+            <div class="nav-group">
+                <h3 class="nav-group-title">Usage Guides</h3>
+                <ul class="nav-group-pages">
+
+                    <li>
+                        <a href="first-run-quickstart.html"
+                           class="nav-link">
+                            First Run Quickstart
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="generating-documentation.html"
+                           class="nav-link">
+                            Generating Documentation
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="tracking-progress-and-status.html"
+                           class="nav-link">
+                            Tracking Progress and Status
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="variants-branches-and-regeneration.html"
+                           class="nav-link">
+                            Variants, Branches, and Regeneration
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="viewing-downloading-and-hosting-docs.html"
+                           class="nav-link">
+                            Viewing, Downloading, and Hosting Docs
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="user-and-access-management.html"
+                           class="nav-link">
+                            User and Access Management
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="cli-workflows.html"
+                           class="nav-link">
+                            CLI Workflows
+                        </a>
+                    </li>
+
+                </ul>
+            </div>
+
+            <div class="nav-group">
+                <h3 class="nav-group-title">Reference</h3>
+                <ul class="nav-group-pages">
+
+                    <li>
+                        <a href="cli-command-reference.html"
+                           class="nav-link">
+                            CLI Command Reference
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="auth-api.html"
+                           class="nav-link">
+                            Authentication API
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="projects-api.html"
+                           class="nav-link">
+                            Projects API
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="admin-api.html"
+                           class="nav-link">
+                            Admin API
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="websocket-protocol.html"
+                           class="nav-link">
+                            WebSocket Protocol
+                        </a>
+                    </li>
+
+                </ul>
+            </div>
+
+            <div class="nav-group">
+                <h3 class="nav-group-title">Operations</h3>
+                <ul class="nav-group-pages">
+
+                    <li>
+                        <a href="deployment-and-runtime.html"
+                           class="nav-link">
+                            Deployment and Runtime
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="testing-and-quality-checks.html"
+                           class="nav-link">
+                            Testing and Quality Checks
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="security-considerations.html"
+                           class="nav-link">
+                            Security Considerations
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="troubleshooting.html"
+                           class="nav-link">
+                            Troubleshooting
+                        </a>
+                    </li>
+
+                </ul>
+            </div>
+
+        </nav>
+    </aside>
+
+    <div class="main-wrapper">
+        <header class="top-bar">
+            <div class="top-bar-left">
+                <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebar" aria-expanded="false">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                </button>
+                <a href="index.html" class="top-bar-title">docsfy</a>
+            </div>
+            <div class="top-bar-spacer"></div>
+            <div class="top-bar-right">
+                <button class="top-bar-search-btn" id="search-trigger" aria-label="Search">
+                    <kbd>&#8984;K</kbd> Search
+                </button>
+                <a href="https://github.com/myk-org/docsfy" target="_blank" rel="noopener" class="docsfy-badge" title="Generated with docsfy">
+                    ⚡ docs<span class="brand-accent">fy</span>
+                </a>
+
+                <a href="https://github.com/myk-org/docsfy" target="_blank" rel="noopener noreferrer" class="top-bar-github" id="github-link" data-repo-url="https://github.com/myk-org/docsfy">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                    <span class="github-stars" id="github-stars"></span>
+                </a>
+
+                <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+                    <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                    </svg>
+                    <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <main class="content">
+
+            <article class="article">
+                <div class="article-body">
+                    <!-- SECURITY: |safe is intentional. Content is AI-generated markdown
+                         converted to HTML server-side by the markdown library, not
+                         user-supplied input. XSS risk is minimal and accepted since
+                         the AI generates the content, not end users. -->
+                    <h1 id="docker-and-compose-quickstart">Docker and Compose Quickstart</h1>
+<p><code>docsfy</code> includes a ready-to-use <code>Dockerfile</code> and <code>docker-compose.yaml</code>. The provided setup builds the app from this repository, stores runtime data in <code>./data</code>, and publishes the web UI on <code>http://localhost:8000</code>.</p>
+<h2 id="quick-start">Quick start</h2>
+<ol>
+<li>Create a <code>.env</code> file by copying <code>.env.example</code>.</li>
+<li>Set <code>ADMIN_KEY</code> to a strong value with at least 16 characters.</li>
+<li>If you are running locally over plain <code>http://localhost:8000</code>, set <code>SECURE_COOKIES=false</code>.</li>
+<li>Start the app from the repository root:</li>
+</ol>
+<div class="highlight"><pre><span></span><code>docker<span class="w"> </span>compose<span class="w"> </span>up<span class="w"> </span>--build
+</code></pre></div>
+
+<ol>
+<li>Open <code>http://localhost:8000</code>.</li>
+<li>Sign in with username <code>admin</code> and the same value you set for <code>ADMIN_KEY</code>.</li>
+</ol>
+<p>The shipped <code>.env.example</code> looks like this:</p>
+<div class="highlight"><pre><span></span><code># Required: Admin password (minimum 16 characters)
+ADMIN_KEY=
+
+# AI provider and model defaults
+# (pydantic_settings reads these case-insensitively)
+AI_PROVIDER=cursor
+AI_MODEL=gpt-5.4-xhigh-fast
+AI_CLI_TIMEOUT=60
+
+# Logging
+LOG_LEVEL=INFO
+
+# Data directory for database and generated docs
+DATA_DIR=/data
+
+# Cookie security (set to false for local HTTP development)
+SECURE_COOKIES=true
+
+# Development mode: starts Vite dev server on port 5173 alongside FastAPI
+# DEV_MODE=true
+</code></pre></div>
+
+<blockquote>
+<p><strong>Warning:</strong> <code>ADMIN_KEY</code> is required. The app exits at startup if it is missing or shorter than 16 characters.</p>
+<p><strong>Warning:</strong> For a normal local browser-based quickstart, change <code>SECURE_COOKIES</code> to <code>false</code>. With the default <code>true</code>, the login cookie is marked secure and will not work correctly on plain <code>http://localhost:8000</code>.</p>
+<p><strong>Note:</strong> <code>AI_PROVIDER</code> and <code>AI_MODEL</code> set the defaults for new generations. The supported providers in the codebase are <code>claude</code>, <code>gemini</code>, and <code>cursor</code>.</p>
+</blockquote>
+<h2 id="what-the-provided-compose-setup-does">What the provided Compose setup does</h2>
+<p>These are the key parts of <code>docker-compose.yaml</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">services</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">docsfy</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">build</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">context</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">.</span>
+<span class="w">      </span><span class="nt">dockerfile</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Dockerfile</span>
+<span class="w">    </span><span class="nt">ports</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;8000:8000&quot;</span>
+<span class="w">      </span><span class="c1"># Uncomment for development (DEV_MODE=true)</span>
+<span class="w">      </span><span class="c1"># - &quot;5173:5173&quot;</span>
+<span class="w">    </span><span class="nt">volumes</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./data:/data</span>
+<span class="w">      </span><span class="c1"># Uncomment for development (hot reload)</span>
+<span class="w">      </span><span class="c1"># - ./frontend:/app/frontend</span>
+<span class="w">    </span><span class="nt">env_file</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">.env</span>
+<span class="w">    </span><span class="nt">environment</span><span class="p">:</span>
+<span class="w">      </span><span class="c1"># WARNING: ADMIN_KEY must be set in your .env file or shell environment.</span>
+<span class="w">      </span><span class="c1"># An empty ADMIN_KEY will cause the application to reject all admin requests.</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ADMIN_KEY=${ADMIN_KEY}</span>
+<span class="w">      </span><span class="c1"># Uncomment for development</span>
+<span class="w">      </span><span class="c1"># - DEV_MODE=true</span>
+<span class="w">    </span><span class="nt">restart</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">unless-stopped</span>
+</code></pre></div>
+
+<p>In practice, that means:</p>
+<ul>
+<li>Docker Compose builds the image locally from the repository's <code>Dockerfile</code>.</li>
+<li>Port <code>8000</code> is published by default.</li>
+<li>Your local <code>./data</code> directory is mounted into <code>/data</code> inside the container.</li>
+<li>The container reads environment settings from <code>.env</code>.</li>
+<li>The service restarts automatically unless you stop it manually.</li>
+</ul>
+<blockquote>
+<p><strong>Tip:</strong> The first build can take a while. The Dockerfile builds the frontend, installs Python dependencies, and installs the provider CLIs during the image build.</p>
+</blockquote>
+<h2 id="persistent-data">Persistent data</h2>
+<p>The application stores its database and project data under <code>DATA_DIR</code>, which defaults to <code>/data</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="n">DB_PATH</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;DATA_DIR&quot;</span><span class="p">,</span> <span class="s2">&quot;/data&quot;</span><span class="p">))</span> <span class="o">/</span> <span class="s2">&quot;docsfy.db&quot;</span>
+<span class="n">DATA_DIR</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;DATA_DIR&quot;</span><span class="p">,</span> <span class="s2">&quot;/data&quot;</span><span class="p">))</span>
+<span class="n">PROJECTS_DIR</span> <span class="o">=</span> <span class="n">DATA_DIR</span> <span class="o">/</span> <span class="s2">&quot;projects&quot;</span>
+</code></pre></div>
+
+<p>Because Compose mounts <code>./data:/data</code>, the container's storage shows up on your host as:</p>
+<ul>
+<li><code>./data/docsfy.db</code> for the SQLite database</li>
+<li><code>./data/projects/</code> for generated docs and project artifacts</li>
+</ul>
+<p>Generated site output is stored under this layout:</p>
+<p><code>./data/projects/&lt;owner&gt;/&lt;project&gt;/&lt;branch&gt;/&lt;provider&gt;/&lt;model&gt;/site</code></p>
+<blockquote>
+<p><strong>Tip:</strong> Recreating the container does not erase your database or generated documentation as long as <code>./data</code> stays in place.</p>
+<p><strong>Warning:</strong> If you change <code>DATA_DIR</code> in <code>.env</code>, also change the container-side mount target in <code>docker-compose.yaml</code>. The provided setup assumes <code>DATA_DIR=/data</code> together with <code>./data:/data</code>.</p>
+</blockquote>
+<h2 id="exposed-ports-and-health-check">Exposed ports and health check</h2>
+<p>The Dockerfile exposes the main app port and the optional frontend dev port:</p>
+<div class="highlight"><pre><span></span><code><span class="k">EXPOSE</span><span class="w"> </span><span class="s">8000</span>
+<span class="c"># Vite dev server (DEV_MODE only)</span>
+<span class="k">EXPOSE</span><span class="w"> </span><span class="s">5173</span>
+
+<span class="k">HEALTHCHECK</span><span class="w"> </span>--interval<span class="o">=</span>30s<span class="w"> </span>--timeout<span class="o">=</span>10s<span class="w"> </span>--retries<span class="o">=</span><span class="m">3</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span><span class="k">CMD</span><span class="w"> </span>curl<span class="w"> </span>-f<span class="w"> </span>http://localhost:8000/health<span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="nb">exit</span><span class="w"> </span><span class="m">1</span>
+
+<span class="k">ENTRYPOINT</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;/app/entrypoint.sh&quot;</span><span class="p">]</span>
+</code></pre></div>
+
+<p>What this means:</p>
+<ul>
+<li><code>8000</code> is the main application port. In the default Compose setup, this is the port you use.</li>
+<li><code>5173</code> is only relevant when you enable frontend development mode.</li>
+<li>Container health is checked with <code>GET /health</code> on port <code>8000</code>.</li>
+</ul>
+<blockquote>
+<p><strong>Note:</strong> The default setup serves the built frontend from the FastAPI app on port <code>8000</code>. You only need port <code>5173</code> when you want Vite hot reloading.</p>
+</blockquote>
+<h2 id="development-mode">Development mode</h2>
+<p>The repository also includes a built-in development mode. When <code>DEV_MODE=true</code>, <code>entrypoint.sh</code> changes how the container starts:</p>
+<div class="highlight"><pre><span></span><code><span class="k">if</span><span class="w"> </span><span class="o">[</span><span class="w"> </span><span class="s2">&quot;</span><span class="nv">$DEV_MODE</span><span class="s2">&quot;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;true&quot;</span><span class="w"> </span><span class="o">]</span><span class="p">;</span><span class="w"> </span><span class="k">then</span>
+<span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;DEV_MODE enabled - installing frontend dependencies...&quot;</span>
+<span class="w">    </span><span class="nb">cd</span><span class="w"> </span>/app/frontend<span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="nb">exit</span><span class="w"> </span><span class="m">1</span>
+<span class="w">    </span>npm<span class="w"> </span>ci
+<span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Starting Vite dev server on port 5173...&quot;</span>
+<span class="w">    </span>npm<span class="w"> </span>run<span class="w"> </span>dev<span class="w"> </span><span class="p">&amp;</span>
+<span class="w">    </span><span class="nv">VITE_PID</span><span class="o">=</span><span class="nv">$!</span>
+<span class="w">    </span><span class="c1"># Forward signals to the background Vite process for clean shutdown</span>
+<span class="w">    </span><span class="nb">trap</span><span class="w"> </span><span class="s1">&#39;kill $VITE_PID 2&gt;/dev/null; wait $VITE_PID 2&gt;/dev/null&#39;</span><span class="w"> </span>SIGTERM<span class="w"> </span>SIGINT
+<span class="w">    </span><span class="nb">cd</span><span class="w"> </span>/app
+<span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Starting FastAPI with hot reload on port 8000...&quot;</span>
+<span class="w">    </span>uv<span class="w"> </span>run<span class="w"> </span>--no-sync<span class="w"> </span>uvicorn<span class="w"> </span>docsfy.main:app<span class="w"> </span><span class="se">\</span>
+<span class="w">        </span>--host<span class="w"> </span><span class="m">0</span>.0.0.0<span class="w"> </span>--port<span class="w"> </span><span class="m">8000</span><span class="w"> </span><span class="se">\</span>
+<span class="w">        </span>--reload<span class="w"> </span>--reload-dir<span class="w"> </span>/app/src
+<span class="k">else</span>
+<span class="w">    </span><span class="nb">exec</span><span class="w"> </span>uv<span class="w"> </span>run<span class="w"> </span>--no-sync<span class="w"> </span>uvicorn<span class="w"> </span>docsfy.main:app<span class="w"> </span><span class="se">\</span>
+<span class="w">        </span>--host<span class="w"> </span><span class="m">0</span>.0.0.0<span class="w"> </span>--port<span class="w"> </span><span class="m">8000</span>
+<span class="k">fi</span>
+</code></pre></div>
+
+<p>To use this mode:</p>
+<ul>
+<li>Set <code>DEV_MODE=true</code> in <code>.env</code>.</li>
+<li>Uncomment <code># - "5173:5173"</code> in <code>docker-compose.yaml</code>.</li>
+<li>Uncomment <code># - ./frontend:/app/frontend</code> in <code>docker-compose.yaml</code> if you want frontend hot reload from your local checkout.</li>
+</ul>
+<p>When dev mode is enabled, the Vite server runs on <code>5173</code> and the backend still runs on <code>8000</code>. The frontend dev server proxies <code>/api</code>, <code>/docs</code>, and <code>/health</code> to <code>http://localhost:8000</code>.</p>
+<blockquote>
+<p><strong>Tip:</strong> Leave <code>DEV_MODE</code> off unless you are actively editing the frontend. For normal local usage, the default <code>8000</code> setup is simpler.</p>
+</blockquote>
+<h2 id="common-gotchas">Common gotchas</h2>
+<ul>
+<li>The container exits immediately: check that <code>ADMIN_KEY</code> is set and is at least 16 characters long.</li>
+<li>You can log in, but the UI behaves like you are not signed in: set <code>SECURE_COOKIES=false</code> for plain local HTTP.</li>
+<li>Data is not persisting where you expect: confirm that <code>docker-compose.yaml</code> still mounts <code>./data:/data</code> and that <code>DATA_DIR</code> is still <code>/data</code>.</li>
+</ul>
+                </div>
+            </article>
+            <nav class="page-nav">
+
+                <a href="local-development.html" class="page-nav-link page-nav-prev">
+                    <span class="page-nav-label">Previous</span>
+                    <span class="page-nav-title">Local Development</span>
+                </a>
+
+
+                <a href="environment-variables.html" class="page-nav-link page-nav-next">
+                    <span class="page-nav-label">Next</span>
+                    <span class="page-nav-title">Environment Variables</span>
+                </a>
+
+            </nav>
+
+            <aside class="toc-sidebar">
+                <div class="toc-container">
+                    <h3>On this page</h3>
+                    <div class="toc">
+<ul>
+<li><a href="#quick-start">Quick start</a></li>
+<li><a href="#what-the-provided-compose-setup-does">What the provided Compose setup does</a></li>
+<li><a href="#persistent-data">Persistent data</a></li>
+<li><a href="#exposed-ports-and-health-check">Exposed ports and health check</a></li>
+<li><a href="#development-mode">Development mode</a></li>
+<li><a href="#common-gotchas">Common gotchas</a></li>
+</ul>
+</div>
+
+                </div>
+            </aside>
+
+
+        </main>
+
+        <footer class="page-footer">
+            Generated with <a href="https://github.com/myk-org/docsfy" target="_blank" rel="noopener">docs<span class="brand-accent">fy</span></a>
+            <span class="footer-sep">·</span>
+            <span class="footer-llm">LLM-friendly: <a href="llms.txt">llms.txt</a> · <a href="llms-full.txt">llms-full.txt</a></span>
+        </footer>
+    </div>
+
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <script src="assets/theme.js"></script>
+    <script src="assets/search.js"></script>
+    <script src="assets/copy.js"></script>
+    <script src="assets/callouts.js"></script>
+    <script src="assets/scrollspy.js"></script>
+    <script src="assets/codelabels.js"></script>
+    <script src="assets/github.js"></script>
+    <script>
+(function() {
+    var toggle = document.getElementById('sidebar-toggle');
+    var sidebar = document.getElementById('sidebar');
+    var overlay = document.getElementById('sidebar-overlay');
+    if (toggle && sidebar) {
+        toggle.addEventListener('click', function() {
+            sidebar.classList.toggle('open');
+            if (overlay) overlay.classList.toggle('open');
+            var expanded = sidebar.classList.contains('open');
+            toggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+        });
+    }
+    if (overlay) {
+        overlay.addEventListener('click', function() {
+            sidebar.classList.remove('open');
+            overlay.classList.remove('open');
+            if (toggle) toggle.setAttribute('aria-expanded', 'false');
+        });
+    }
+})();
+</script>
+<script>
+(function() {
+    var sidebar = document.querySelector('.sidebar-nav') || document.querySelector('.sidebar');
+    if (!sidebar) return;
+
+    // Restore scroll position
+    var saved = sessionStorage.getItem('sidebar-scroll');
+    if (saved) sidebar.scrollTop = parseInt(saved, 10);
+
+    // Save scroll position before navigating
+    sidebar.addEventListener('scroll', function() {
+        sessionStorage.setItem('sidebar-scroll', sidebar.scrollTop.toString());
+    });
+
+    // Also scroll active link into view if no saved position
+    if (!saved) {
+        var active = sidebar.querySelector('.nav-link.active');
+        if (active) {
+            active.scrollIntoView({ block: 'center', behavior: 'instant' });
+        }
+    }
+})();
+</script>
+</body>
+</html>

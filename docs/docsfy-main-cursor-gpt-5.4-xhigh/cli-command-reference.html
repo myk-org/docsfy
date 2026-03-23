@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CLI Command Reference - docsfy</title>
+    <meta name="description" content="AI-powered documentation generator that turns Git repositories into shareable static docs sites.">
+    <link rel="stylesheet" href="assets/style.css">
+    <link rel="alternate" type="text/plain" title="LLM Documentation Index" href="llms.txt">
+    <link rel="alternate" type="text/plain" title="LLM Full Documentation" href="llms-full.txt">
+</head>
+<body>
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <a href="index.html" class="sidebar-logo">docsfy</a>
+            <p class="sidebar-tagline">AI-powered documentation generator that turns Git repositories into shareable static docs sites.</p>
+        </div>
+
+        <div class="sidebar-search">
+            <input type="text" id="search-input" placeholder="Search... (⌘K)" autocomplete="off" readonly>
+            <div id="search-results" class="search-results"></div>
+        </div>
+
+        <nav class="sidebar-nav">
+
+            <div class="nav-group">
+                <h3 class="nav-group-title">Overview</h3>
+                <ul class="nav-group-pages">
+
+                    <li>
+                        <a href="introduction.html"
+                           class="nav-link">
+                            Introduction
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="architecture-and-runtime.html"
+                           class="nav-link">
+                            Architecture and Runtime
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="projects-variants-and-ownership.html"
+                           class="nav-link">
+                            Projects, Variants, and Ownership
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="generated-output.html"
+                           class="nav-link">
+                            Generated Output
+                        </a>
+                    </li>
+
+                </ul>
+            </div>
+
+            <div class="nav-group">
+                <h3 class="nav-group-title">Getting Started</h3>
+                <ul class="nav-group-pages">
+
+                    <li>
+                        <a href="installation.html"
+                           class="nav-link">
+                            Installation
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="ai-provider-setup.html"
+                           class="nav-link">
+                            AI Provider Setup
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="local-development.html"
+                           class="nav-link">
+                            Local Development
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="docker-quickstart.html"
+                           class="nav-link">
+                            Docker and Compose Quickstart
+                        </a>
+                    </li>
+
+                </ul>
+            </div>
+
+            <div class="nav-group">
+                <h3 class="nav-group-title">Configuration</h3>
+                <ul class="nav-group-pages">
+
+                    <li>
+                        <a href="environment-variables.html"
+                           class="nav-link">
+                            Environment Variables
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="cli-configuration.html"
+                           class="nav-link">
+                            CLI Configuration
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="authentication-and-roles.html"
+                           class="nav-link">
+                            Authentication and Roles
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="data-storage-and-layout.html"
+                           class="nav-link">
+                            Data Storage and Layout
+                        </a>
+                    </li>
+
+                </ul>
+            </div>
+
+            <div class="nav-group">
+                <h3 class="nav-group-title">Usage Guides</h3>
+                <ul class="nav-group-pages">
+
+                    <li>
+                        <a href="first-run-quickstart.html"
+                           class="nav-link">
+                            First Run Quickstart
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="generating-documentation.html"
+                           class="nav-link">
+                            Generating Documentation
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="tracking-progress-and-status.html"
+                           class="nav-link">
+                            Tracking Progress and Status
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="variants-branches-and-regeneration.html"
+                           class="nav-link">
+                            Variants, Branches, and Regeneration
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="viewing-downloading-and-hosting-docs.html"
+                           class="nav-link">
+                            Viewing, Downloading, and Hosting Docs
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="user-and-access-management.html"
+                           class="nav-link">
+                            User and Access Management
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="cli-workflows.html"
+                           class="nav-link">
+                            CLI Workflows
+                        </a>
+                    </li>
+
+                </ul>
+            </div>
+
+            <div class="nav-group">
+                <h3 class="nav-group-title">Reference</h3>
+                <ul class="nav-group-pages">
+
+                    <li>
+                        <a href="cli-command-reference.html"
+                           class="nav-link active" aria-current="page">
+                            CLI Command Reference
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="auth-api.html"
+                           class="nav-link">
+                            Authentication API
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="projects-api.html"
+                           class="nav-link">
+                            Projects API
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="admin-api.html"
+                           class="nav-link">
+                            Admin API
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="websocket-protocol.html"
+                           class="nav-link">
+                            WebSocket Protocol
+                        </a>
+                    </li>
+
+                </ul>
+            </div>
+
+            <div class="nav-group">
+                <h3 class="nav-group-title">Operations</h3>
+                <ul class="nav-group-pages">
+
+                    <li>
+                        <a href="deployment-and-runtime.html"
+                           class="nav-link">
+                            Deployment and Runtime
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="testing-and-quality-checks.html"
+                           class="nav-link">
+                            Testing and Quality Checks
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="security-considerations.html"
+                           class="nav-link">
+                            Security Considerations
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="troubleshooting.html"
+                           class="nav-link">
+                            Troubleshooting
+                        </a>
+                    </li>
+
+                </ul>
+            </div>
+
+        </nav>
+    </aside>
+
+    <div class="main-wrapper">
+        <header class="top-bar">
+            <div class="top-bar-left">
+                <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebar" aria-expanded="false">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                </button>
+                <a href="index.html" class="top-bar-title">docsfy</a>
+            </div>
+            <div class="top-bar-spacer"></div>
+            <div class="top-bar-right">
+                <button class="top-bar-search-btn" id="search-trigger" aria-label="Search">
+                    <kbd>&#8984;K</kbd> Search
+                </button>
+                <a href="https://github.com/myk-org/docsfy" target="_blank" rel="noopener" class="docsfy-badge" title="Generated with docsfy">
+                    ⚡ docs<span class="brand-accent">fy</span>
+                </a>
+
+                <a href="https://github.com/myk-org/docsfy" target="_blank" rel="noopener noreferrer" class="top-bar-github" id="github-link" data-repo-url="https://github.com/myk-org/docsfy">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                    <span class="github-stars" id="github-stars"></span>
+                </a>
+
+                <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+                    <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                    </svg>
+                    <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <main class="content">
+
+            <article class="article">
+                <div class="article-body">
+                    <!-- SECURITY: |safe is intentional. Content is AI-generated markdown
+                         converted to HTML server-side by the markdown library, not
+                         user-supplied input. XSS risk is minimal and accepted since
+                         the AI generates the content, not end users. -->
+                    <h1 id="cli-command-reference">CLI Command Reference</h1>
+<p><code>docsfy</code> is the command-line client for a running docsfy server. You use it to save connection profiles, start documentation generation, inspect existing outputs, download generated sites, and perform admin-only user and access management.</p>
+<p>In docsfy, a <em>variant</em> is one <code>project / branch / provider / model</code> combination. In admin or shared-access setups, the same project name can exist under different owners, which is why some commands also support <code>--owner</code>.</p>
+<p>Permissions at a glance:</p>
+<ul>
+<li><code>list</code>, <code>status</code>, and <code>download</code> are read-oriented commands for projects you own or have been granted access to.</li>
+<li><code>generate</code>, <code>delete</code>, and <code>abort</code> require a <code>user</code> or <code>admin</code> account.</li>
+<li><code>admin ...</code> commands require admin access.</li>
+</ul>
+<p>Examples on this page are taken from the repository's CLI tests and sample config.</p>
+<h2 id="command-summary">Command Summary</h2>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>config</code></td>
+<td>Manage saved server profiles in <code>~/.config/docsfy/config.toml</code></td>
+</tr>
+<tr>
+<td><code>generate</code></td>
+<td>Start documentation generation for a Git repository</td>
+</tr>
+<tr>
+<td><code>list</code></td>
+<td>Show accessible projects and variants</td>
+</tr>
+<tr>
+<td><code>status</code></td>
+<td>Show detailed status for one project or one exact variant</td>
+</tr>
+<tr>
+<td><code>delete</code></td>
+<td>Delete a single variant or all variants of a project</td>
+</tr>
+<tr>
+<td><code>abort</code></td>
+<td>Stop an active generation run</td>
+</tr>
+<tr>
+<td><code>download</code></td>
+<td>Download a generated docs site as a tarball, or extract it to a directory</td>
+</tr>
+<tr>
+<td><code>admin users ...</code></td>
+<td>List, create, delete, and rotate user API keys</td>
+</tr>
+<tr>
+<td><code>admin access ...</code></td>
+<td>Grant, revoke, and inspect project access for other users</td>
+</tr>
+</tbody>
+</table>
+<h2 id="global-connection-options">Global Connection Options</h2>
+<p>All commands share the same connection options. The CLI resolves them in this order:</p>
+<ol>
+<li>Explicit CLI flags such as <code>--host</code>, <code>--username</code>, and <code>--password</code></li>
+<li>A named profile selected with <code>--server</code></li>
+<li>The default profile from <code>[default].server</code> in <code>~/.config/docsfy/config.toml</code></li>
+<li>An error if nothing is configured</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--server</code>, <code>-s</code></td>
+<td>Use a named server profile from the config file</td>
+</tr>
+<tr>
+<td><code>--host</code></td>
+<td>Override the host from the selected profile</td>
+</tr>
+<tr>
+<td><code>--port</code></td>
+<td>Override the port when <code>--host</code> is used</td>
+</tr>
+<tr>
+<td><code>--username</code>, <code>-u</code></td>
+<td>Override the configured username</td>
+</tr>
+<tr>
+<td><code>--password</code>, <code>-p</code></td>
+<td>Override the configured password/API key</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Note:</strong> In CLI config and flags, the field is named <code>password</code>, but for docsfy this value is your API key.</p>
+<p><strong>Note:</strong> Global options go before the subcommand. That matters because <code>-p</code> is reused: before the subcommand it means API key, but after commands like <code>status</code>, <code>delete</code>, <code>abort</code>, and <code>download</code> it means <code>--provider</code>.</p>
+<p><strong>Tip:</strong> If you use <code>--host</code>, the CLI builds a full URL from host and port. The port defaults to <code>8000</code>, and the scheme comes from the selected profile when available; otherwise it defaults to <code>https</code>.</p>
+</blockquote>
+<h2 id="config"><code>config</code></h2>
+<p><code>docsfy config</code> manages the CLI config file at <code>~/.config/docsfy/config.toml</code>.</p>
+<p>A sample config from the repository:</p>
+<div class="highlight"><pre><span></span><code><span class="k">[default]</span>
+<span class="n">server</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;dev&quot;</span>
+
+<span class="k">[servers.dev]</span>
+<span class="n">url</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;http://localhost:8000&quot;</span>
+<span class="n">username</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;admin&quot;</span>
+<span class="n">password</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;&lt;your-dev-key&gt;&quot;</span>
+
+<span class="k">[servers.prod]</span>
+<span class="n">url</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;https://docsfy.example.com&quot;</span>
+<span class="n">username</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;admin&quot;</span>
+<span class="n">password</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;&lt;your-prod-key&gt;&quot;</span>
+
+<span class="k">[servers.staging]</span>
+<span class="n">url</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;https://staging.docsfy.example.com&quot;</span>
+<span class="n">username</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;deployer&quot;</span>
+<span class="n">password</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;&lt;your-staging-key&gt;&quot;</span>
+</code></pre></div>
+
+<blockquote>
+<p><strong>Warning:</strong> This file contains credentials. The CLI writes it with owner-only permissions, and you should keep it private.</p>
+</blockquote>
+<h3 id="config-init"><code>config init</code></h3>
+<p><code>docsfy config init</code> is the interactive setup flow. It prompts for:</p>
+<ul>
+<li>Profile name, defaulting to <code>dev</code></li>
+<li>Server URL</li>
+<li>Username</li>
+<li>Password/API key</li>
+</ul>
+<p>If you are creating the first profile, it also becomes the default server. If you add another profile later, the existing default stays in place until you change it.</p>
+<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>config<span class="w"> </span>init
+</code></pre></div>
+
+<h3 id="config-show"><code>config show</code></h3>
+<p><code>docsfy config show</code> prints the config file path, the current default profile, and each saved profile with its password/API key masked.</p>
+<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>config<span class="w"> </span>show
+</code></pre></div>
+
+<h3 id="config-set"><code>config set</code></h3>
+<p><code>docsfy config set</code> writes nested TOML keys directly.</p>
+<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>config<span class="w"> </span><span class="nb">set</span><span class="w"> </span>default.server<span class="w"> </span>prod
+docsfy<span class="w"> </span>config<span class="w"> </span><span class="nb">set</span><span class="w"> </span>servers.dev.url<span class="w"> </span>https://new-server.com
+</code></pre></div>
+
+<p>Use it when you want to switch the default profile or update individual fields without re-running <code>config init</code>.</p>
+<blockquote>
+<p><strong>Note:</strong> <code>config set</code> expects dotted keys such as <code>default.server</code>, <code>servers.dev.url</code>, and <code>servers.dev.username</code>. It does not use shorthand keys like <code>server</code> or <code>api-key</code>.</p>
+</blockquote>
+<h2 id="generate"><code>generate</code></h2>
+<p><code>docsfy generate</code> starts documentation generation for a remote Git repository.</p>
+<p>The project name used by later commands is derived from the repository name. For example:</p>
+<ul>
+<li><code>https://github.com/myk-org/for-testing-only</code> becomes <code>for-testing-only</code></li>
+<li><code>https://github.com/org/my-repo.git</code> becomes <code>my-repo</code></li>
+<li><code>git@github.com:org/repo.git</code> becomes <code>repo</code></li>
+</ul>
+<p>Common options:</p>
+<ul>
+<li><code>--branch</code>, <code>-b</code>: Git branch to generate from. Defaults to <code>main</code>.</li>
+<li><code>--provider</code>: AI provider. Valid values in this codebase are <code>claude</code>, <code>gemini</code>, and <code>cursor</code>.</li>
+<li><code>--model</code>, <code>-m</code>: AI model name.</li>
+<li><code>--force</code>, <code>-f</code>: Force a full regeneration instead of reusing cached artifacts.</li>
+<li><code>--watch</code>, <code>-w</code>: Stream live generation progress.</li>
+</ul>
+<p>Examples:</p>
+<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>generate<span class="w"> </span>https://github.com/myk-org/for-testing-only<span class="w"> </span>--provider<span class="w"> </span>gemini<span class="w"> </span>--model<span class="w"> </span>gemini-2.5-flash<span class="w"> </span>--force
+docsfy<span class="w"> </span>generate<span class="w"> </span>https://github.com/myk-org/for-testing-only<span class="w"> </span>--branch<span class="w"> </span>dev<span class="w"> </span>--provider<span class="w"> </span>gemini<span class="w"> </span>--model<span class="w"> </span>gemini-2.5-flash<span class="w"> </span>--force<span class="w"> </span>--watch
+</code></pre></div>
+
+<p>What you can expect:</p>
+<ul>
+<li>The CLI prints the derived project name, resolved branch, and initial status.</li>
+<li>With <code>--watch</code>, it listens for live progress updates such as <code>cloning</code>, <code>planning</code>, <code>incremental_planning</code>, <code>generating_pages</code>, and <code>rendering</code>.</li>
+<li>Final statuses are <code>ready</code>, <code>error</code>, or <code>aborted</code>.</li>
+</ul>
+<blockquote>
+<p><strong>Tip:</strong> <code>generate</code> takes a repository URL, but <code>status</code>, <code>delete</code>, <code>abort</code>, and <code>download</code> use the derived project name. For <code>https://github.com/myk-org/for-testing-only</code>, that name is <code>for-testing-only</code>.</p>
+<p><strong>Note:</strong> If you omit <code>--provider</code> or <code>--model</code>, the server default is used. In this codebase the current defaults are <code>cursor</code> and <code>gpt-5.4-xhigh-fast</code>, but deployments can override them.</p>
+<p><strong>Tip:</strong> When using <code>--watch</code>, pass both <code>--provider</code> and <code>--model</code> explicitly so the CLI can subscribe to the exact variant immediately.</p>
+<p><strong>Warning:</strong> Branch names cannot contain slashes. Use names like <code>release-1.x</code>, not <code>release/1.x</code>.</p>
+<p><strong>Warning:</strong> The CLI <code>generate</code> command expects a Git repository URL, not a local filesystem path. The validated URL shapes are standard HTTPS remotes like <code>https://github.com/org/repo.git</code> and SSH remotes like <code>git@github.com:org/repo.git</code>.</p>
+</blockquote>
+<h2 id="list"><code>list</code></h2>
+<p><code>docsfy list</code> shows the accessible projects and variants in a table. The table includes these columns:</p>
+<ul>
+<li><code>NAME</code></li>
+<li><code>BRANCH</code></li>
+<li><code>PROVIDER</code></li>
+<li><code>MODEL</code></li>
+<li><code>STATUS</code></li>
+<li><code>OWNER</code></li>
+<li><code>PAGES</code></li>
+</ul>
+<p>Examples:</p>
+<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>list
+docsfy<span class="w"> </span>list<span class="w"> </span>--status<span class="w"> </span>ready
+docsfy<span class="w"> </span>list<span class="w"> </span>--provider<span class="w"> </span>cursor
+docsfy<span class="w"> </span>list<span class="w"> </span>--json
+</code></pre></div>
+
+<p>Use <code>--status</code> and <code>--provider</code> to narrow the result set before printing. In practice, project statuses used by the codebase are <code>generating</code>, <code>ready</code>, <code>error</code>, and <code>aborted</code>.</p>
+<p>For non-admin users, <code>list</code> includes projects you own plus projects that have been shared with you. For admins, it shows everything.</p>
+<h2 id="status"><code>status</code></h2>
+<p><code>docsfy status</code> shows detailed information for one project.</p>
+<p>With just the project name, it shows all matching variants you can access. If you provide <code>--branch</code>, <code>--provider</code>, and <code>--model</code> together, it fetches one exact variant instead.</p>
+<p>Examples:</p>
+<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>status<span class="w"> </span><span class="k">for</span>-testing-only
+docsfy<span class="w"> </span>status<span class="w"> </span>my-repo<span class="w"> </span>-b<span class="w"> </span>main<span class="w"> </span>-p<span class="w"> </span>cursor<span class="w"> </span>-m<span class="w"> </span>gpt-5
+</code></pre></div>
+
+<p>Useful fields in the output include:</p>
+<ul>
+<li>Status</li>
+<li>Owner</li>
+<li>Page count</li>
+<li>Last generated time</li>
+<li>Short commit SHA</li>
+<li>Current stage</li>
+<li>Error message, when present</li>
+</ul>
+<blockquote>
+<p><strong>Note:</strong> <code>--owner</code> is mainly useful for admins when you are querying one fully qualified variant and need to disambiguate between multiple owners.</p>
+<p><strong>Tip:</strong> If you want one exact variant, provide all three selectors together: <code>--branch</code>, <code>--provider</code>, and <code>--model</code>.</p>
+</blockquote>
+<h2 id="delete"><code>delete</code></h2>
+<p><code>docsfy delete</code> removes either one exact variant or every variant for a project.</p>
+<p>Common options:</p>
+<ul>
+<li><code>--branch</code>, <code>-b</code>: Variant branch</li>
+<li><code>--provider</code>, <code>-p</code>: Variant provider</li>
+<li><code>--model</code>, <code>-m</code>: Variant model</li>
+<li><code>--owner</code>: Project owner, required for admin deletion of someone else's project</li>
+<li><code>--all</code>: Delete all variants for the project</li>
+<li><code>--yes</code>, <code>-y</code>: Skip the confirmation prompt</li>
+</ul>
+<p>Examples:</p>
+<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>delete<span class="w"> </span><span class="k">for</span>-testing-only<span class="w"> </span>--branch<span class="w"> </span>dev<span class="w"> </span>--provider<span class="w"> </span>gemini<span class="w"> </span>--model<span class="w"> </span>gemini-2.0-flash<span class="w"> </span>--yes
+docsfy<span class="w"> </span>delete<span class="w"> </span>my-repo<span class="w"> </span>--all<span class="w"> </span>--yes
+</code></pre></div>
+
+<p>If you leave off <code>--yes</code>, the CLI asks for confirmation before deleting anything.</p>
+<blockquote>
+<p><strong>Warning:</strong> Use either <code>--all</code> or the full variant selector (<code>--branch</code>, <code>--provider</code>, and <code>--model</code>). Do not combine them.</p>
+<p><strong>Warning:</strong> The server refuses deletion while generation is in progress. Abort the running variant first, then retry the delete.</p>
+</blockquote>
+<h2 id="abort"><code>abort</code></h2>
+<p><code>docsfy abort</code> stops an active generation run.</p>
+<p>You can use it in two ways:</p>
+<ul>
+<li>By project name alone, if there is only one active generation for that project</li>
+<li>By exact variant, using <code>--branch</code>, <code>--provider</code>, and <code>--model</code></li>
+</ul>
+<p>Examples:</p>
+<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>abort<span class="w"> </span>my-repo
+docsfy<span class="w"> </span>abort<span class="w"> </span><span class="k">for</span>-testing-only<span class="w"> </span>--branch<span class="w"> </span>main<span class="w"> </span>--provider<span class="w"> </span>gemini<span class="w"> </span>--model<span class="w"> </span>gemini-2.5-flash
+</code></pre></div>
+
+<p>When the abort succeeds, the variant ends up in <code>aborted</code> status.</p>
+<blockquote>
+<p><strong>Tip:</strong> If more than one active variant exists for the same project name, the project-level form is ambiguous. In that case, retry with <code>--branch</code>, <code>--provider</code>, and <code>--model</code>. Admins may also need <code>--owner</code> for someone else's variant.</p>
+</blockquote>
+<h2 id="download"><code>download</code></h2>
+<p><code>docsfy download</code> fetches generated documentation for a project.</p>
+<p>You can use it in two modes:</p>
+<ul>
+<li>Without variant selectors: download the latest ready variant you can access</li>
+<li>With <code>--branch</code>, <code>--provider</code>, and <code>--model</code>: download one exact variant</li>
+</ul>
+<p>Common options:</p>
+<ul>
+<li><code>--branch</code>, <code>-b</code>: Variant branch</li>
+<li><code>--provider</code>, <code>-p</code>: Variant provider</li>
+<li><code>--model</code>, <code>-m</code>: Variant model</li>
+<li><code>--owner</code>: Useful for admins when downloading a specific variant owned by someone else</li>
+<li><code>--output</code>, <code>-o</code>: Extract into a directory instead of saving a tarball in the current directory</li>
+</ul>
+<p>Example:</p>
+<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>download<span class="w"> </span>my-repo<span class="w"> </span>-b<span class="w"> </span>main<span class="w"> </span>-p<span class="w"> </span>cursor<span class="w"> </span>-m<span class="w"> </span>gpt-5
+</code></pre></div>
+
+<p>Archive naming:</p>
+<ul>
+<li>Exact variant download: <code>&lt;project&gt;-&lt;branch&gt;-&lt;provider&gt;-&lt;model&gt;-docs.tar.gz</code></li>
+<li>Project-level download: <code>&lt;project&gt;-docs.tar.gz</code></li>
+</ul>
+<p>When you pass <code>--output</code>, the CLI creates the directory if needed, downloads the archive to a temporary file, and extracts it there.</p>
+<blockquote>
+<p><strong>Tip:</strong> If a project has multiple variants, or if you are an admin working across multiple owners, prefer the fully qualified form with <code>--branch</code>, <code>--provider</code>, and <code>--model</code> so you know exactly which archive you are getting.</p>
+<p><strong>Warning:</strong> Only ready variants can be downloaded.</p>
+</blockquote>
+<h2 id="admin"><code>admin</code></h2>
+<p>All <code>admin</code> subcommands require admin credentials.</p>
+<h3 id="admin-users"><code>admin users</code></h3>
+<p><code>admin users</code> manages docsfy accounts. Valid roles are:</p>
+<ul>
+<li><code>admin</code></li>
+<li><code>user</code></li>
+<li><code>viewer</code></li>
+</ul>
+<p>Examples:</p>
+<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>admin<span class="w"> </span>users<span class="w"> </span>list
+docsfy<span class="w"> </span>admin<span class="w"> </span>users<span class="w"> </span>create<span class="w"> </span>cli-test-user<span class="w"> </span>--role<span class="w"> </span>user
+docsfy<span class="w"> </span>admin<span class="w"> </span>users<span class="w"> </span>delete<span class="w"> </span>cli-test-user<span class="w"> </span>--yes
+docsfy<span class="w"> </span>admin<span class="w"> </span>users<span class="w"> </span>rotate-key<span class="w"> </span>alice
+</code></pre></div>
+
+<p>What each subcommand does:</p>
+<ul>
+<li><code>list</code>: Show all users in a table, or JSON with <code>--json</code></li>
+<li><code>create</code>: Create a user and print the generated API key; <code>--role</code> defaults to <code>user</code></li>
+<li><code>delete</code>: Delete a user; prompts unless you pass <code>--yes</code></li>
+<li><code>rotate-key</code>: Rotate a user's API key; use <code>--new-key</code> to provide your own key, or omit it to generate one automatically</li>
+</ul>
+<p>Practical details:</p>
+<ul>
+<li>Usernames must be 2-50 characters, start with an alphanumeric character, and may include <code>.</code>, <code>_</code>, and <code>-</code></li>
+<li>The username <code>admin</code> is reserved</li>
+<li>Deleting a user also removes their sessions, owned projects, and related access grants</li>
+<li>Rotating a key invalidates that user's existing sessions</li>
+</ul>
+<blockquote>
+<p><strong>Warning:</strong> <code>create</code> and <code>rotate-key</code> show the API key only once. Save it immediately.</p>
+<p><strong>Warning:</strong> You cannot delete your own admin account, and the server blocks deleting a user while they have a generation in progress.</p>
+</blockquote>
+<h3 id="admin-access"><code>admin access</code></h3>
+<p><code>admin access</code> manages project sharing. Access is project-level and owner-scoped, which means a grant applies to all variants of that project for that owner.</p>
+<p>Examples:</p>
+<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>admin<span class="w"> </span>access<span class="w"> </span>list<span class="w"> </span>my-repo<span class="w"> </span>--owner<span class="w"> </span>admin
+docsfy<span class="w"> </span>admin<span class="w"> </span>access<span class="w"> </span>grant<span class="w"> </span>my-repo<span class="w"> </span>--username<span class="w"> </span>alice<span class="w"> </span>--owner<span class="w"> </span>admin
+docsfy<span class="w"> </span>admin<span class="w"> </span>access<span class="w"> </span>revoke<span class="w"> </span>my-repo<span class="w"> </span>--username<span class="w"> </span>alice<span class="w"> </span>--owner<span class="w"> </span>admin
+</code></pre></div>
+
+<p>What each subcommand does:</p>
+<ul>
+<li><code>list</code>: Show which users currently have access to a project; supports <code>--json</code></li>
+<li><code>grant</code>: Give a user access to a project owned by a specific owner</li>
+<li><code>revoke</code>: Remove that access again</li>
+</ul>
+<blockquote>
+<p><strong>Note:</strong> <code>--owner</code> is required on all <code>admin access</code> commands, because project sharing is scoped to a specific owner.</p>
+</blockquote>
+<h2 id="json-output-and-exit-behavior">JSON Output and Exit Behavior</h2>
+<p>Commands that support <code>--json</code>:</p>
+<ul>
+<li><code>docsfy list</code></li>
+<li><code>docsfy status</code></li>
+<li><code>docsfy admin users list</code></li>
+<li><code>docsfy admin users create</code></li>
+<li><code>docsfy admin users rotate-key</code></li>
+<li><code>docsfy admin access list</code></li>
+</ul>
+<p>When scripting:</p>
+<ul>
+<li><code>docsfy list --json</code> returns an array of project objects</li>
+<li><code>docsfy status --json</code> returns either one variant object or a <code>{name, variants}</code> object, depending on whether you fully qualified the variant</li>
+<li>HTTP and API failures are printed as <code>Error (&lt;status&gt;): ...</code> and return a non-zero exit code</li>
+<li>If you decline a confirmation prompt, the CLI prints <code>Aborted.</code> and exits without making changes</li>
+</ul>
+                </div>
+            </article>
+            <nav class="page-nav">
+
+                <a href="cli-workflows.html" class="page-nav-link page-nav-prev">
+                    <span class="page-nav-label">Previous</span>
+                    <span class="page-nav-title">CLI Workflows</span>
+                </a>
+
+
+                <a href="auth-api.html" class="page-nav-link page-nav-next">
+                    <span class="page-nav-label">Next</span>
+                    <span class="page-nav-title">Authentication API</span>
+                </a>
+
+            </nav>
+
+            <aside class="toc-sidebar">
+                <div class="toc-container">
+                    <h3>On this page</h3>
+                    <div class="toc">
+<ul>
+<li><a href="#command-summary">Command Summary</a></li>
+<li><a href="#global-connection-options">Global Connection Options</a></li>
+<li><a href="#config">config</a><ul>
+<li><a href="#config-init">config init</a></li>
+<li><a href="#config-show">config show</a></li>
+<li><a href="#config-set">config set</a></li>
+</ul>
+</li>
+<li><a href="#generate">generate</a></li>
+<li><a href="#list">list</a></li>
+<li><a href="#status">status</a></li>
+<li><a href="#delete">delete</a></li>
+<li><a href="#abort">abort</a></li>
+<li><a href="#download">download</a></li>
+<li><a href="#admin">admin</a><ul>
+<li><a href="#admin-users">admin users</a></li>
+<li><a href="#admin-access">admin access</a></li>
+</ul>
+</li>
+<li><a href="#json-output-and-exit-behavior">JSON Output and Exit Behavior</a></li>
+</ul>
+</div>
+
+                </div>
+            </aside>
+
+
+        </main>
+
+        <footer class="page-footer">
+            Generated with <a href="https://github.com/myk-org/docsfy" target="_blank" rel="noopener">docs<span class="brand-accent">fy</span></a>
+            <span class="footer-sep">·</span>
+            <span class="footer-llm">LLM-friendly: <a href="llms.txt">llms.txt</a> · <a href="llms-full.txt">llms-full.txt</a></span>
+        </footer>
+    </div>
+
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <script src="assets/theme.js"></script>
+    <script src="assets/search.js"></script>
+    <script src="assets/copy.js"></script>
+    <script src="assets/callouts.js"></script>
+    <script src="assets/scrollspy.js"></script>
+    <script src="assets/codelabels.js"></script>
+    <script src="assets/github.js"></script>
+    <script>
+(function() {
+    var toggle = document.getElementById('sidebar-toggle');
+    var sidebar = document.getElementById('sidebar');
+    var overlay = document.getElementById('sidebar-overlay');
+    if (toggle && sidebar) {
+        toggle.addEventListener('click', function() {
+            sidebar.classList.toggle('open');
+            if (overlay) overlay.classList.toggle('open');
+            var expanded = sidebar.classList.contains('open');
+            toggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+        });
+    }
+    if (overlay) {
+        overlay.addEventListener('click', function() {
+            sidebar.classList.remove('open');
+            overlay.classList.remove('open');
+            if (toggle) toggle.setAttribute('aria-expanded', 'false');
+        });
+    }
+})();
+</script>
+<script>
+(function() {
+    var sidebar = document.querySelector('.sidebar-nav') || document.querySelector('.sidebar');
+    if (!sidebar) return;
+
+    // Restore scroll position
+    var saved = sessionStorage.getItem('sidebar-scroll');
+    if (saved) sidebar.scrollTop = parseInt(saved, 10);
+
+    // Save scroll position before navigating
+    sidebar.addEventListener('scroll', function() {
+        sessionStorage.setItem('sidebar-scroll', sidebar.scrollTop.toString());
+    });
+
+    // Also scroll active link into view if no saved position
+    if (!saved) {
+        var active = sidebar.querySelector('.nav-link.active');
+        if (active) {
+            active.scrollIntoView({ block: 'center', behavior: 'instant' });
+        }
+    }
+})();
+</script>
+</body>
+</html>

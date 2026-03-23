@@ -100,10 +100,10 @@ export interface ProgressMessage {
   model: string
   owner: string
   status: string
-  current_stage: string
-  page_count: number
-  plan_json: string | null
-  error_message: string | null
+  current_stage?: string
+  page_count?: number
+  plan_json?: string | null
+  error_message?: string | null
 }
 
 export interface StatusChangeMessage {
@@ -114,10 +114,10 @@ export interface StatusChangeMessage {
   model: string
   owner: string
   status: string
-  page_count: number
-  last_generated: string | null
-  last_commit_sha: string | null
-  error_message: string | null
+  page_count?: number
+  last_generated?: string | null
+  last_commit_sha?: string | null
+  error_message?: string | null
 }
 
 export class ApiError extends Error {

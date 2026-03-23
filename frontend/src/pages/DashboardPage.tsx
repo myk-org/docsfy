@@ -25,7 +25,7 @@ import UsersPanel from '@/components/admin/UsersPanel'
 import AccessPanel from '@/components/admin/AccessPanel'
 import { api } from '@/lib/api'
 import { wsManager } from '@/lib/websocket'
-import { TOAST_DEFAULT_MS, TOAST_ERROR_MS, WS_POLLING_FALLBACK_MS } from '@/lib/constants'
+import { TOAST_DEFAULT_MS, TOAST_ERROR_MS, WS_POLLING_FALLBACK_MS, SELECTED_VIEW_KEY, SIDEBAR_COLLAPSED_KEY } from '@/lib/constants'
 import type {
   Project,
   AuthResponse,
@@ -43,8 +43,6 @@ type SelectedView =
   | { type: 'access' }
   | { type: 'empty' }
 
-const SIDEBAR_COLLAPSED_KEY = 'docsfy-sidebar-collapsed'
-
 export default function DashboardPage() {
   const navigate = useNavigate()
   const { modalConfirm, modalPrompt, modalAlert } = useModal()
@@ -58,10 +56,24 @@ export default function DashboardPage() {
 
   // Data state
   const [projects, setProjects] = useState<Project[]>([])
+  const [projectsLoaded, setProjectsLoaded] = useState(false)
   const [knownModels, setKnownModels] = useState<Record<string, string[]>>({})
   const [knownBranches, setKnownBranches] = useState<Record<string, string[]>>({})
   const [searchQuery, setSearchQuery] = useState('')
-  const [selectedView, setSelectedView] = useState<SelectedView>({ type: 'empty' })
+  const [selectedView, setSelectedView] = useState<SelectedView>(() => {
+    try {
+      const stored = localStorage.getItem(SELECTED_VIEW_KEY)
+      if (stored) {
+        const parsed = JSON.parse(stored) as SelectedView
+        if (parsed && typeof parsed === 'object' && 'type' in parsed && parsed.type !== 'empty') {
+          return parsed
+        }
+      }
+    } catch {
+      /* ignore corrupt localStorage */
+    }
+    return { type: 'empty' }
+  })
 
   // Sidebar state
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
@@ -114,11 +126,53 @@ export default function DashboardPage() {
         setKnownBranches(data.known_branches)
       } catch {
         /* handled by api interceptor */
+      } finally {
+        if (!cancelled) setProjectsLoaded(true)
       }
     }
     loadProjects()
     return () => { cancelled = true }
   }, [authChecked])
+
+  // Persist selectedView to localStorage (skip 'empty' — no point restoring to empty)
+  useEffect(() => {
+    if (selectedView.type === 'empty') {
+      localStorage.removeItem(SELECTED_VIEW_KEY)
+    } else {
+      localStorage.setItem(SELECTED_VIEW_KEY, JSON.stringify(selectedView))
+    }
+  }, [selectedView])
+
+  // Validate restored selectedView against loaded projects.
+  // If a variant view was restored but the variant no longer exists, reset to empty.
+  const hasValidatedRestoredView = useRef(false)
+  useEffect(() => {
+    if (hasValidatedRestoredView.current || !projectsLoaded) return
+    hasValidatedRestoredView.current = true
+    if (selectedView.type === 'variant') {
+      const exists = projects.some(
+        (p) =>
+          p.name === selectedView.name &&
+          p.branch === selectedView.branch &&
+          p.ai_provider === selectedView.provider &&
+          p.ai_model === selectedView.model &&
+          p.owner === selectedView.owner
+      )
+      if (!exists) {
+        setSelectedView({ type: 'empty' })
+      }
+    }
+  }, [projects, selectedView, projectsLoaded])
+
+  // Validate restored admin views against isAdmin.
+  // If a non-admin user has a stored 'users' or 'access' view, reset to empty.
+  useEffect(() => {
+    if (!authChecked) return
+    if (!isAdmin && (selectedView.type === 'users' || selectedView.type === 'access')) {
+      setSelectedView({ type: 'empty' })
+      localStorage.removeItem(SELECTED_VIEW_KEY)
+    }
+  }, [authChecked, isAdmin, selectedView])
 
   // WebSocket handler
   const handleWsMessage = useCallback((message: WebSocketMessage) => {
@@ -152,10 +206,10 @@ export default function DashboardPage() {
             ? {
                 ...p,
                 status: message.status as Project['status'],
-                current_stage: message.current_stage,
-                page_count: message.page_count,
-                plan_json: message.plan_json,
-                error_message: message.error_message,
+                current_stage: message.current_stage ?? p.current_stage,
+                page_count: message.page_count ?? p.page_count,
+                plan_json: message.plan_json ?? p.plan_json,
+                error_message: message.error_message ?? p.error_message,
               }
             : p
         )
@@ -184,10 +238,10 @@ export default function DashboardPage() {
             ? {
                 ...p,
                 status: message.status as Project['status'],
-                page_count: message.page_count,
-                last_generated: message.last_generated,
-                last_commit_sha: message.last_commit_sha,
-                error_message: message.error_message,
+                page_count: message.page_count ?? p.page_count,
+                last_generated: message.last_generated ?? p.last_generated,
+                last_commit_sha: message.last_commit_sha ?? p.last_commit_sha,
+                error_message: message.error_message ?? p.error_message,
               }
             : p
         )
@@ -734,11 +788,11 @@ function MainPanel({
     )
   }
 
-  if (selectedView.type === 'users') {
+  if (selectedView.type === 'users' && isAdmin) {
     return <UsersPanel />
   }
 
-  if (selectedView.type === 'access') {
+  if (selectedView.type === 'access' && isAdmin) {
     return <AccessPanel />
   }
 

@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket Protocol - docsfy</title>
+    <meta name="description" content="AI-powered documentation generator that turns Git repositories into shareable static docs sites.">
+    <link rel="stylesheet" href="assets/style.css">
+    <link rel="alternate" type="text/plain" title="LLM Documentation Index" href="llms.txt">
+    <link rel="alternate" type="text/plain" title="LLM Full Documentation" href="llms-full.txt">
+</head>
+<body>
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <a href="index.html" class="sidebar-logo">docsfy</a>
+            <p class="sidebar-tagline">AI-powered documentation generator that turns Git repositories into shareable static docs sites.</p>
+        </div>
+
+        <div class="sidebar-search">
+            <input type="text" id="search-input" placeholder="Search... (⌘K)" autocomplete="off" readonly>
+            <div id="search-results" class="search-results"></div>
+        </div>
+
+        <nav class="sidebar-nav">
+
+            <div class="nav-group">
+                <h3 class="nav-group-title">Overview</h3>
+                <ul class="nav-group-pages">
+
+                    <li>
+                        <a href="introduction.html"
+                           class="nav-link">
+                            Introduction
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="architecture-and-runtime.html"
+                           class="nav-link">
+                            Architecture and Runtime
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="projects-variants-and-ownership.html"
+                           class="nav-link">
+                            Projects, Variants, and Ownership
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="generated-output.html"
+                           class="nav-link">
+                            Generated Output
+                        </a>
+                    </li>
+
+                </ul>
+            </div>
+
+            <div class="nav-group">
+                <h3 class="nav-group-title">Getting Started</h3>
+                <ul class="nav-group-pages">
+
+                    <li>
+                        <a href="installation.html"
+                           class="nav-link">
+                            Installation
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="ai-provider-setup.html"
+                           class="nav-link">
+                            AI Provider Setup
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="local-development.html"
+                           class="nav-link">
+                            Local Development
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="docker-quickstart.html"
+                           class="nav-link">
+                            Docker and Compose Quickstart
+                        </a>
+                    </li>
+
+                </ul>
+            </div>
+
+            <div class="nav-group">
+                <h3 class="nav-group-title">Configuration</h3>
+                <ul class="nav-group-pages">
+
+                    <li>
+                        <a href="environment-variables.html"
+                           class="nav-link">
+                            Environment Variables
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="cli-configuration.html"
+                           class="nav-link">
+                            CLI Configuration
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="authentication-and-roles.html"
+                           class="nav-link">
+                            Authentication and Roles
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="data-storage-and-layout.html"
+                           class="nav-link">
+                            Data Storage and Layout
+                        </a>
+                    </li>
+
+                </ul>
+            </div>
+
+            <div class="nav-group">
+                <h3 class="nav-group-title">Usage Guides</h3>
+                <ul class="nav-group-pages">
+
+                    <li>
+                        <a href="first-run-quickstart.html"
+                           class="nav-link">
+                            First Run Quickstart
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="generating-documentation.html"
+                           class="nav-link">
+                            Generating Documentation
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="tracking-progress-and-status.html"
+                           class="nav-link">
+                            Tracking Progress and Status
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="variants-branches-and-regeneration.html"
+                           class="nav-link">
+                            Variants, Branches, and Regeneration
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="viewing-downloading-and-hosting-docs.html"
+                           class="nav-link">
+                            Viewing, Downloading, and Hosting Docs
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="user-and-access-management.html"
+                           class="nav-link">
+                            User and Access Management
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="cli-workflows.html"
+                           class="nav-link">
+                            CLI Workflows
+                        </a>
+                    </li>
+
+                </ul>
+            </div>
+
+            <div class="nav-group">
+                <h3 class="nav-group-title">Reference</h3>
+                <ul class="nav-group-pages">
+
+                    <li>
+                        <a href="cli-command-reference.html"
+                           class="nav-link">
+                            CLI Command Reference
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="auth-api.html"
+                           class="nav-link">
+                            Authentication API
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="projects-api.html"
+                           class="nav-link">
+                            Projects API
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="admin-api.html"
+                           class="nav-link">
+                            Admin API
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="websocket-protocol.html"
+                           class="nav-link active" aria-current="page">
+                            WebSocket Protocol
+                        </a>
+                    </li>
+
+                </ul>
+            </div>
+
+            <div class="nav-group">
+                <h3 class="nav-group-title">Operations</h3>
+                <ul class="nav-group-pages">
+
+                    <li>
+                        <a href="deployment-and-runtime.html"
+                           class="nav-link">
+                            Deployment and Runtime
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="testing-and-quality-checks.html"
+                           class="nav-link">
+                            Testing and Quality Checks
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="security-considerations.html"
+                           class="nav-link">
+                            Security Considerations
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="troubleshooting.html"
+                           class="nav-link">
+                            Troubleshooting
+                        </a>
+                    </li>
+
+                </ul>
+            </div>
+
+        </nav>
+    </aside>
+
+    <div class="main-wrapper">
+        <header class="top-bar">
+            <div class="top-bar-left">
+                <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebar" aria-expanded="false">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                </button>
+                <a href="index.html" class="top-bar-title">docsfy</a>
+            </div>
+            <div class="top-bar-spacer"></div>
+            <div class="top-bar-right">
+                <button class="top-bar-search-btn" id="search-trigger" aria-label="Search">
+                    <kbd>&#8984;K</kbd> Search
+                </button>
+                <a href="https://github.com/myk-org/docsfy" target="_blank" rel="noopener" class="docsfy-badge" title="Generated with docsfy">
+                    ⚡ docs<span class="brand-accent">fy</span>
+                </a>
+
+                <a href="https://github.com/myk-org/docsfy" target="_blank" rel="noopener noreferrer" class="top-bar-github" id="github-link" data-repo-url="https://github.com/myk-org/docsfy">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                    <span class="github-stars" id="github-stars"></span>
+                </a>
+
+                <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+                    <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                    </svg>
+                    <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <main class="content">
+
+            <article class="article">
+                <div class="article-body">
+                    <!-- SECURITY: |safe is intentional. Content is AI-generated markdown
+                         converted to HTML server-side by the markdown library, not
+                         user-supplied input. XSS risk is minimal and accepted since
+                         the AI generates the content, not end users. -->
+                    <h1 id="websocket-protocol">WebSocket Protocol</h1>
+<p><code>/api/ws</code> is docsfy's real-time update stream. Connect once, authenticate, read the initial <code>sync</code> snapshot, then apply live <code>progress</code> and <code>status_change</code> updates as work continues.</p>
+<p>For most clients, the right mental model is simple:</p>
+<ul>
+<li>WebSocket gives you live updates for everything the current user is allowed to see.</li>
+<li><code>sync</code> is the full snapshot and source of truth.</li>
+<li><code>progress</code> and <code>status_change</code> are incremental updates for a single variant.</li>
+<li><code>ping</code> / <code>pong</code> keeps the connection alive.</li>
+<li>If the socket is unavailable, fall back to polling <code>GET /api/projects</code>.</li>
+</ul>
+<h2 id="endpoint">Endpoint</h2>
+<p>The built-in frontend connects to the same host as the app and automatically chooses <code>ws://</code> or <code>wss://</code> based on the page URL:</p>
+<div class="highlight"><pre><span></span><code><span class="kd">const</span><span class="w"> </span><span class="nx">protocol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">window</span><span class="p">.</span><span class="nx">location</span><span class="p">.</span><span class="nx">protocol</span><span class="w"> </span><span class="o">===</span><span class="w"> </span><span class="s1">&#39;https:&#39;</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="s1">&#39;wss:&#39;</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;ws:&#39;</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">url</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="sb">`</span><span class="si">${</span><span class="nx">protocol</span><span class="si">}</span><span class="sb">//</span><span class="si">${</span><span class="nb">window</span><span class="p">.</span><span class="nx">location</span><span class="p">.</span><span class="nx">host</span><span class="si">}</span><span class="sb">/api/ws`</span>
+<span class="k">this</span><span class="p">.</span><span class="nx">ws</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">WebSocket</span><span class="p">(</span><span class="nx">url</span><span class="p">)</span>
+</code></pre></div>
+
+<p>That means:</p>
+<ul>
+<li>If you are serving docsfy over HTTPS, use <code>wss://</code>.</li>
+<li>If you are serving docsfy over plain HTTP, use <code>ws://</code>.</li>
+<li>The official frontend uses a same-origin connection to <code>/api/ws</code>.</li>
+</ul>
+<h2 id="authentication">Authentication</h2>
+<p>docsfy supports two WebSocket authentication paths.</p>
+<h3 id="1-session-cookie">1. Session cookie</h3>
+<p>This is the normal browser flow.</p>
+<ol>
+<li>Log in with <code>POST /api/auth/login</code>.</li>
+<li>docsfy sets the <code>docsfy_session</code> cookie.</li>
+<li>Open <code>/api/ws</code> on the same origin.</li>
+<li>The browser automatically sends the cookie during the WebSocket handshake.</li>
+</ol>
+<p>The session cookie is:</p>
+<ul>
+<li><code>HttpOnly</code></li>
+<li><code>SameSite=Strict</code></li>
+<li><code>Secure</code> when <code>SECURE_COOKIES=true</code></li>
+<li>an opaque session token, not your raw API key</li>
+<li>valid for 8 hours by default</li>
+</ul>
+<blockquote>
+<p><strong>Tip:</strong> For browser-based integrations, prefer the session-cookie flow. It avoids putting API keys in URLs and matches how the official frontend works.</p>
+</blockquote>
+<h3 id="2-token-query-parameter">2. <code>?token=</code> query parameter</h3>
+<p>You can also authenticate by passing the raw admin key or a user's API key in the WebSocket URL:</p>
+<p><code>/api/ws?token=&lt;API_KEY&gt;</code></p>
+<p>This is useful for direct programmatic clients and test clients.</p>
+<p>An actual token-authenticated connection from the codebase:</p>
+<div class="highlight"><pre><span></span><code><span class="k">with</span> <span class="n">sync_client</span><span class="o">.</span><span class="n">websocket_connect</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;/api/ws?token=</span><span class="si">{</span><span class="n">TEST_ADMIN_KEY</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">ws</span><span class="p">:</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">ws</span><span class="o">.</span><span class="n">receive_json</span><span class="p">()</span>
+    <span class="k">assert</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;sync&quot;</span>
+</code></pre></div>
+
+<blockquote>
+<p><strong>Warning:</strong> <code>?token=</code> puts the credential in the URL. URLs can show up in logs, browser history, and monitoring tools. Prefer the session-cookie flow for browser use.</p>
+<p><strong>Note:</strong> The REST API accepts <code>Authorization: Bearer ...</code>, but <code>/api/ws</code> does not read that header. WebSocket auth is handled by the session cookie or the <code>token</code> query parameter.</p>
+</blockquote>
+<h3 id="what-happens-on-auth-failure">What happens on auth failure?</h3>
+<p>If the connection is not authenticated, the server closes it with code <code>1008</code> (<code>policy violation</code>).</p>
+<p>In browser-based tooling, you may see either the <code>1008</code> close code or a generic connection error, depending on the client and runtime.</p>
+<h2 id="connection-model">Connection model</h2>
+<p>A single WebSocket connection gives you all updates the authenticated user is allowed to receive. There is no subscribe message, room selection, or per-project topic negotiation.</p>
+<p>The server behavior is:</p>
+<ol>
+<li>Authenticate the connection.</li>
+<li>Accept the WebSocket.</li>
+<li>Register the connection under the current user.</li>
+<li>Send an immediate <code>sync</code> message.</li>
+<li>Start the heartbeat loop.</li>
+<li>Continue sending <code>progress</code>, <code>status_change</code>, and occasional additional <code>sync</code> messages.</li>
+</ol>
+<p>The only client message docsfy expects is:</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="s2">&quot;pong&quot;</span><span class="p">}</span>
+</code></pre></div>
+
+<p>Malformed client messages are ignored, and message types other than <code>pong</code> are not used by the server.</p>
+<p>Multiple simultaneous connections for the same user are supported, so multiple tabs can all receive the same updates.</p>
+<h3 id="who-receives-which-updates">Who receives which updates?</h3>
+<p>docsfy delivers WebSocket updates to:</p>
+<ul>
+<li>admins</li>
+<li>the project owner</li>
+<li>users who have been granted access to that project</li>
+</ul>
+<p>If an admin grants or revokes access, docsfy does not send a special <code>access_change</code> event. Instead, it sends a fresh <code>sync</code> to the affected user so the client can replace its local state.</p>
+<h2 id="message-reference">Message reference</h2>
+<table>
+<thead>
+<tr>
+<th>Message</th>
+<th>When it is sent</th>
+<th>What it contains</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>sync</code></td>
+<td>Immediately after connect, and whenever the server wants a full resync</td>
+<td>Full project snapshot: <code>projects</code>, <code>known_models</code>, <code>known_branches</code></td>
+</tr>
+<tr>
+<td><code>progress</code></td>
+<td>While a generation is in progress</td>
+<td>Variant identity plus in-flight status and optional progress fields</td>
+</tr>
+<tr>
+<td><code>status_change</code></td>
+<td>When a variant reaches a terminal state</td>
+<td>Variant identity plus final status and optional final metadata</td>
+</tr>
+<tr>
+<td><code>ping</code></td>
+<td>Heartbeat from server</td>
+<td><code>{ "type": "ping" }</code></td>
+</tr>
+<tr>
+<td><code>pong</code></td>
+<td>Heartbeat reply from client</td>
+<td><code>{ "type": "pong" }</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="sync"><code>sync</code></h2>
+<p><code>sync</code> is the full replacement payload. When you receive it, you should treat it as the latest authoritative snapshot for the current user.</p>
+<p>The official frontend type is:</p>
+<div class="highlight"><pre><span></span><code><span class="k">export</span><span class="w"> </span><span class="kd">interface</span><span class="w"> </span><span class="nx">SyncMessage</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kr">type</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;sync&#39;</span>
+<span class="w">  </span><span class="nx">projects</span><span class="o">:</span><span class="w"> </span><span class="kt">Project</span><span class="p">[]</span>
+<span class="w">  </span><span class="nx">known_models</span><span class="o">:</span><span class="w"> </span><span class="kt">Record</span><span class="o">&lt;</span><span class="kt">string</span><span class="p">,</span><span class="w"> </span><span class="kt">string</span><span class="p">[]</span><span class="o">&gt;</span>
+<span class="w">  </span><span class="nx">known_branches</span><span class="o">:</span><span class="w"> </span><span class="kt">Record</span><span class="o">&lt;</span><span class="kt">string</span><span class="p">,</span><span class="w"> </span><span class="kt">string</span><span class="p">[]</span><span class="o">&gt;</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<p>A few important details:</p>
+<ul>
+<li><code>projects</code> is the live list of accessible variants, including <code>generating</code>, <code>ready</code>, <code>error</code>, and <code>aborted</code> entries.</li>
+<li><code>known_models</code> is grouped by provider and only includes models from <code>ready</code> projects.</li>
+<li><code>known_branches</code> is grouped by project name and only includes branches from <code>ready</code> projects.</li>
+<li><code>sync</code> uses the same underlying payload builder as <code>GET /api/projects</code>.</li>
+</ul>
+<blockquote>
+<p><strong>Tip:</strong> If you already handle the <code>GET /api/projects</code> response, you are almost done handling <code>sync</code>. The only extra field is <code>type: "sync"</code>.</p>
+</blockquote>
+<h2 id="progress"><code>progress</code></h2>
+<p><code>progress</code> is sent while work is still running. This is how docsfy reports that a generation has started and how far it has gotten.</p>
+<p>The server builds the message like this:</p>
+<div class="highlight"><pre><span></span><code><span class="n">message</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;progress&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">project_name</span><span class="p">,</span>
+    <span class="s2">&quot;branch&quot;</span><span class="p">:</span> <span class="n">branch</span><span class="p">,</span>
+    <span class="s2">&quot;provider&quot;</span><span class="p">:</span> <span class="n">provider</span><span class="p">,</span>
+    <span class="s2">&quot;model&quot;</span><span class="p">:</span> <span class="n">model</span><span class="p">,</span>
+    <span class="s2">&quot;owner&quot;</span><span class="p">:</span> <span class="n">owner</span><span class="p">,</span>
+    <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="n">status</span><span class="p">,</span>
+<span class="p">}</span>
+<span class="k">if</span> <span class="n">current_stage</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="n">message</span><span class="p">[</span><span class="s2">&quot;current_stage&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">current_stage</span>
+<span class="k">if</span> <span class="n">page_count</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="n">message</span><span class="p">[</span><span class="s2">&quot;page_count&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">page_count</span>
+<span class="k">if</span> <span class="n">plan_json</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="n">message</span><span class="p">[</span><span class="s2">&quot;plan_json&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">plan_json</span>
+<span class="k">if</span> <span class="n">error_message</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="n">message</span><span class="p">[</span><span class="s2">&quot;error_message&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">error_message</span>
+</code></pre></div>
+
+<p>In practice:</p>
+<ul>
+<li><code>status</code> will be <code>generating</code></li>
+<li><code>current_stage</code> can move through <code>cloning</code>, <code>planning</code>, <code>incremental_planning</code>, <code>generating_pages</code>, and <code>rendering</code></li>
+<li><code>page_count</code> increases as pages are generated</li>
+<li><code>plan_json</code> can appear before page generation finishes, so clients can show planned structure early</li>
+<li><code>error_message</code> can appear if there is an in-flight problem worth surfacing</li>
+</ul>
+<p><code>plan_json</code> is a serialized JSON string, not an already-parsed object.</p>
+<p>One subtle but important point: the transition into generation is reported as <code>progress</code>, not <code>status_change</code>.</p>
+<h2 id="status_change"><code>status_change</code></h2>
+<p><code>status_change</code> is used for terminal states only. In the current backend, that means:</p>
+<ul>
+<li><code>ready</code></li>
+<li><code>error</code></li>
+<li><code>aborted</code></li>
+</ul>
+<p>The message always includes the variant identity:</p>
+<ul>
+<li><code>name</code></li>
+<li><code>branch</code></li>
+<li><code>provider</code></li>
+<li><code>model</code></li>
+<li><code>owner</code></li>
+<li><code>status</code></li>
+</ul>
+<p>It may also include:</p>
+<ul>
+<li><code>page_count</code></li>
+<li><code>last_generated</code></li>
+<li><code>last_commit_sha</code></li>
+<li><code>error_message</code></li>
+</ul>
+<p>After a terminal <code>status_change</code>, the server also triggers a full <code>sync</code>. That gives clients a fast single-variant update first, followed by a full consistency pass.</p>
+<blockquote>
+<p><strong>Note:</strong> <code>sync.projects</code> uses <code>ai_provider</code> and <code>ai_model</code> because it contains full <code>Project</code> records. Incremental WebSocket messages use <code>provider</code> and <code>model</code>. The official frontend maps between those field names when applying updates.</p>
+</blockquote>
+<h2 id="matching-updates-to-a-variant">Matching updates to a variant</h2>
+<p>When you receive <code>progress</code> or <code>status_change</code>, match them using the full variant identity:</p>
+<ul>
+<li><code>name</code></li>
+<li><code>branch</code></li>
+<li><code>provider</code></li>
+<li><code>model</code></li>
+<li><code>owner</code></li>
+</ul>
+<p>That is the safest way to distinguish:</p>
+<ul>
+<li>different branches of the same repo</li>
+<li>different providers or models for the same repo</li>
+<li>different owners who generated the same repo name</li>
+</ul>
+<h2 id="heartbeat-ping-and-pong">Heartbeat: <code>ping</code> and <code>pong</code></h2>
+<p>The server sends heartbeat pings on a fixed interval:</p>
+<div class="highlight"><pre><span></span><code><span class="n">_WS_HEARTBEAT_INTERVAL</span> <span class="o">=</span> <span class="mi">30</span>
+<span class="n">_WS_PONG_TIMEOUT</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="n">_WS_MAX_MISSED_PONGS</span> <span class="o">=</span> <span class="mi">2</span>
+</code></pre></div>
+
+<p>That means:</p>
+<ul>
+<li>the server sends <code>{"type": "ping"}</code> every 30 seconds</li>
+<li>the client should reply with <code>{"type": "pong"}</code></li>
+<li>the server waits up to 10 seconds for each pong</li>
+<li>after 2 missed pongs, the server closes the connection with code <code>1001</code></li>
+</ul>
+<p>The official frontend handles heartbeat like this:</p>
+<div class="highlight"><pre><span></span><code><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">isPingMessage</span><span class="p">(</span><span class="nx">parsed</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">this</span><span class="p">.</span><span class="nx">ws</span><span class="o">?</span><span class="p">.</span><span class="nx">send</span><span class="p">(</span><span class="nb">JSON</span><span class="p">.</span><span class="nx">stringify</span><span class="p">({</span><span class="w"> </span><span class="kr">type</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;pong&#39;</span><span class="w"> </span><span class="p">}))</span>
+<span class="w">  </span><span class="k">return</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<p>If you are writing your own client, implement the same behavior. You do not need to send periodic pings yourself unless your environment requires it for other reasons.</p>
+<h2 id="polling-fallback">Polling fallback</h2>
+<p>WebSocket is the preferred path, but docsfy's frontend is designed to keep working if the socket is unavailable.</p>
+<p>The built-in behavior is:</p>
+<ul>
+<li>reconnect after non-normal closes</li>
+<li>try up to 3 reconnects</li>
+<li>use exponential backoff</li>
+<li>fall back to polling <code>GET /api/projects</code> every 10 seconds</li>
+<li>stop polling once WebSocket reconnects successfully</li>
+</ul>
+<p>The actual fallback code converts the polling result into a synthetic <code>sync</code> message:</p>
+<div class="highlight"><pre><span></span><code><span class="kd">const</span><span class="w"> </span><span class="nx">data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">api</span><span class="p">.</span><span class="nx">get</span><span class="o">&lt;</span><span class="nx">ProjectsResponse</span><span class="o">&gt;</span><span class="p">(</span><span class="s1">&#39;/api/projects&#39;</span><span class="p">)</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">syncMessage</span><span class="o">:</span><span class="w"> </span><span class="kt">WebSocketMessage</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kr">type</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;sync&#39;</span><span class="w"> </span><span class="kr">as</span><span class="w"> </span><span class="kd">const</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">projects</span><span class="o">:</span><span class="w"> </span><span class="kt">data.projects</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">known_models</span><span class="o">:</span><span class="w"> </span><span class="kt">data.known_models</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">known_branches</span><span class="o">:</span><span class="w"> </span><span class="kt">data.known_branches</span><span class="p">,</span>
+<span class="p">}</span>
+<span class="k">this</span><span class="p">.</span><span class="nx">handlers</span><span class="p">.</span><span class="nx">forEach</span><span class="p">(</span><span class="nx">handler</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">handler</span><span class="p">(</span><span class="nx">syncMessage</span><span class="p">))</span>
+</code></pre></div>
+
+<p>In the current frontend, the reconnect timing is effectively:</p>
+<ul>
+<li>attempt 1 after 1 second</li>
+<li>attempt 2 after 2 seconds</li>
+<li>attempt 3 after 4 seconds</li>
+<li>then polling every 10 seconds</li>
+</ul>
+<blockquote>
+<p><strong>Tip:</strong> Treat <code>GET /api/projects</code> as the official fallback for <code>/api/ws</code>. If your client can already apply <code>sync</code>, you can reuse that same code path for polling recovery.</p>
+</blockquote>
+<p>The dashboard also does a best-effort HTTP refresh if it receives an incremental update for a variant it does not yet have locally. That helps clients recover from edge cases where a new variant exists on the server before the local list has caught up.</p>
+<h2 id="configuration-that-affects-websocket-behavior">Configuration that affects WebSocket behavior</h2>
+<p>The most relevant environment settings are:</p>
+<div class="highlight"><pre><span></span><code># Required: Admin password (minimum 16 characters)
+ADMIN_KEY=
+
+# Cookie security (set to false for local HTTP development)
+SECURE_COOKIES=true
+</code></pre></div>
+
+<p><code>SECURE_COOKIES</code> matters for browser-based WebSocket auth because the official frontend relies on the <code>docsfy_session</code> cookie.</p>
+<ul>
+<li>In production, leave <code>SECURE_COOKIES=true</code> and use HTTPS/WSS.</li>
+<li>For local plain-HTTP development, docsfy lets you disable the <code>Secure</code> flag if needed.</li>
+</ul>
+<h2 id="practical-client-checklist">Practical client checklist</h2>
+<ul>
+<li>Open one connection to <code>/api/ws</code> per active client session.</li>
+<li>Authenticate with the session cookie or <code>?token=&lt;API_KEY&gt;</code>.</li>
+<li>Treat the first <code>sync</code> as your initial state.</li>
+<li>Use <code>name + branch + provider + model + owner</code> to match incremental updates.</li>
+<li>Reply to every <code>ping</code> with <code>pong</code>.</li>
+<li>Fall back to <code>GET /api/projects</code> if the socket cannot stay connected.</li>
+</ul>
+<p>If you follow that pattern, your client will behave the same way as docsfy's official frontend.</p>
+                </div>
+            </article>
+            <nav class="page-nav">
+
+                <a href="admin-api.html" class="page-nav-link page-nav-prev">
+                    <span class="page-nav-label">Previous</span>
+                    <span class="page-nav-title">Admin API</span>
+                </a>
+
+
+                <a href="deployment-and-runtime.html" class="page-nav-link page-nav-next">
+                    <span class="page-nav-label">Next</span>
+                    <span class="page-nav-title">Deployment and Runtime</span>
+                </a>
+
+            </nav>
+
+            <aside class="toc-sidebar">
+                <div class="toc-container">
+                    <h3>On this page</h3>
+                    <div class="toc">
+<ul>
+<li><a href="#endpoint">Endpoint</a></li>
+<li><a href="#authentication">Authentication</a><ul>
+<li><a href="#1-session-cookie">1. Session cookie</a></li>
+<li><a href="#2-token-query-parameter">2. ?token= query parameter</a></li>
+<li><a href="#what-happens-on-auth-failure">What happens on auth failure?</a></li>
+</ul>
+</li>
+<li><a href="#connection-model">Connection model</a><ul>
+<li><a href="#who-receives-which-updates">Who receives which updates?</a></li>
+</ul>
+</li>
+<li><a href="#message-reference">Message reference</a></li>
+<li><a href="#sync">sync</a></li>
+<li><a href="#progress">progress</a></li>
+<li><a href="#status_change">status_change</a></li>
+<li><a href="#matching-updates-to-a-variant">Matching updates to a variant</a></li>
+<li><a href="#heartbeat-ping-and-pong">Heartbeat: ping and pong</a></li>
+<li><a href="#polling-fallback">Polling fallback</a></li>
+<li><a href="#configuration-that-affects-websocket-behavior">Configuration that affects WebSocket behavior</a></li>
+<li><a href="#practical-client-checklist">Practical client checklist</a></li>
+</ul>
+</div>
+
+                </div>
+            </aside>
+
+
+        </main>
+
+        <footer class="page-footer">
+            Generated with <a href="https://github.com/myk-org/docsfy" target="_blank" rel="noopener">docs<span class="brand-accent">fy</span></a>
+            <span class="footer-sep">·</span>
+            <span class="footer-llm">LLM-friendly: <a href="llms.txt">llms.txt</a> · <a href="llms-full.txt">llms-full.txt</a></span>
+        </footer>
+    </div>
+
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <script src="assets/theme.js"></script>
+    <script src="assets/search.js"></script>
+    <script src="assets/copy.js"></script>
+    <script src="assets/callouts.js"></script>
+    <script src="assets/scrollspy.js"></script>
+    <script src="assets/codelabels.js"></script>
+    <script src="assets/github.js"></script>
+    <script>
+(function() {
+    var toggle = document.getElementById('sidebar-toggle');
+    var sidebar = document.getElementById('sidebar');
+    var overlay = document.getElementById('sidebar-overlay');
+    if (toggle && sidebar) {
+        toggle.addEventListener('click', function() {
+            sidebar.classList.toggle('open');
+            if (overlay) overlay.classList.toggle('open');
+            var expanded = sidebar.classList.contains('open');
+            toggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+        });
+    }
+    if (overlay) {
+        overlay.addEventListener('click', function() {
+            sidebar.classList.remove('open');
+            overlay.classList.remove('open');
+            if (toggle) toggle.setAttribute('aria-expanded', 'false');
+        });
+    }
+})();
+</script>
+<script>
+(function() {
+    var sidebar = document.querySelector('.sidebar-nav') || document.querySelector('.sidebar');
+    if (!sidebar) return;
+
+    // Restore scroll position
+    var saved = sessionStorage.getItem('sidebar-scroll');
+    if (saved) sidebar.scrollTop = parseInt(saved, 10);
+
+    // Save scroll position before navigating
+    sidebar.addEventListener('scroll', function() {
+        sessionStorage.setItem('sidebar-scroll', sidebar.scrollTop.toString());
+    });
+
+    // Also scroll active link into view if no saved position
+    if (!saved) {
+        var active = sidebar.querySelector('.nav-link.active');
+        if (active) {
+            active.scrollIntoView({ block: 'center', behavior: 'instant' });
+        }
+    }
+})();
+</script>
+</body>
+</html>

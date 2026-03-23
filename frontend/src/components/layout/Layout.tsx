@@ -4,7 +4,14 @@ import { Sun, Moon, Menu, X, ExternalLink, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { useTheme } from '@/lib/useTheme'
-import { DOCSFY_DOCS_URL, DOCSFY_REPO_URL } from '@/lib/constants'
+import {
+  DOCSFY_DOCS_URL,
+  DOCSFY_REPO_URL,
+  SIDEBAR_WIDTH_KEY,
+  SIDEBAR_MIN_WIDTH,
+  SIDEBAR_MAX_WIDTH,
+  SIDEBAR_DEFAULT_WIDTH,
+} from '@/lib/constants'
 
 interface LayoutProps {
   sidebar: ReactNode
@@ -23,6 +30,56 @@ export default function Layout({
   const { theme, toggleTheme } = useTheme()
   const [mobileOpen, setMobileOpen] = useState(false)
   const hamburgerRef = useRef<HTMLButtonElement>(null)
+
+  // Resizable sidebar state
+  const [sidebarWidth, setSidebarWidth] = useState(() => {
+    const stored = localStorage.getItem(SIDEBAR_WIDTH_KEY)
+    if (stored) {
+      const parsed = Number(stored)
+      if (!Number.isNaN(parsed) && parsed >= SIDEBAR_MIN_WIDTH && parsed <= SIDEBAR_MAX_WIDTH) {
+        return parsed
+      }
+    }
+    return SIDEBAR_DEFAULT_WIDTH
+  })
+  const [isDragging, setIsDragging] = useState(false)
+
+  // Persist width to localStorage when it changes
+  useEffect(() => {
+    localStorage.setItem(SIDEBAR_WIDTH_KEY, String(sidebarWidth))
+  }, [sidebarWidth])
+
+  // Drag handlers
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    e.preventDefault()
+    setIsDragging(true)
+  }, [])
+
+  useEffect(() => {
+    if (!isDragging) return
+
+    function handleMouseMove(e: MouseEvent) {
+      const newWidth = Math.min(SIDEBAR_MAX_WIDTH, Math.max(SIDEBAR_MIN_WIDTH, e.clientX))
+      setSidebarWidth(newWidth)
+    }
+
+    function handleMouseUp() {
+      setIsDragging(false)
+    }
+
+    document.addEventListener('mousemove', handleMouseMove)
+    document.addEventListener('mouseup', handleMouseUp)
+    // Prevent text selection while dragging
+    document.body.style.userSelect = 'none'
+    document.body.style.cursor = 'col-resize'
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove)
+      document.removeEventListener('mouseup', handleMouseUp)
+      document.body.style.userSelect = ''
+      document.body.style.cursor = ''
+    }
+  }, [isDragging])
 
   const closeMobile = useCallback(() => {
     setMobileOpen(false)
@@ -98,14 +155,33 @@ export default function Layout({
             </button>
           </div>
         )}
-        <aside
-          className={cn(
-            'hidden sm:flex flex-col border-r border-border bg-sidebar transition-[width] duration-200 ease-in-out',
-            sidebarCollapsed ? 'w-0 overflow-hidden' : 'w-64'
-          )}
-        >
-          {sidebar}
-        </aside>
+        {!sidebarCollapsed && (
+          <div className="hidden sm:flex shrink-0 relative" style={{ width: sidebarWidth }}>
+            <aside className="flex flex-col border-r border-border bg-sidebar w-full">
+              {sidebar}
+            </aside>
+            {/* Drag handle — wide hit target (12px) with a thin 2px visual indicator */}
+            <div
+              role="separator"
+              aria-orientation="vertical"
+              aria-label="Resize sidebar"
+              onMouseDown={handleMouseDown}
+              className="group/handle absolute top-0 -right-1.5 w-3 h-full cursor-col-resize z-10 flex justify-center"
+            >
+              <div
+                className={cn(
+                  'w-0.5 h-full transition-colors',
+                  isDragging ? 'bg-primary/50' : 'bg-transparent group-hover/handle:bg-border'
+                )}
+              />
+            </div>
+          </div>
+        )}
+        {sidebarCollapsed && (
+          <aside className="hidden sm:flex flex-col border-r border-border bg-sidebar w-0 overflow-hidden">
+            {sidebar}
+          </aside>
+        )}
 
         {/* Mobile sidebar drawer */}
         {mobileOpen && (
