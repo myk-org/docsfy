@@ -28,13 +28,10 @@ This test provides a comprehensive cleanup of ALL test-created artifacts across 
 | Test 14 | Project variant | `for-testing-only/main/gemini/gemini-2.5-flash` (owner: `testuser-e2e`) | Regenerated in-place |
 | Test 14.2 | Git commit | `test: add e2e_incremental_test_function` in `for-testing-only` repo | Reverted in Test 14.6 |
 | Test 15.4 | Project variant | `for-testing-only/main/gemini/gemini-2.0-flash` (owner: `userb-e2e`) | Created for Delete All coverage; should be removed within Test 15.4 |
-| Test 15.5 | Modal verification | Admin delete-confirmation modal for `testuser-e2e`'s `for-testing-only/main/gemini/gemini-2.5-flash` | Reuses existing variant; no new artifact created |
 | Test 20.1 | Project variant | `for-testing-only/main/gemini/gemini-2.5-flash` (owner: `admin`) | Baseline generated from the local clone in Test 20 |
-| Test 20.2 | Project variant | `for-testing-only/main/gemini/gemini-2.0-flash` (owner: `admin`) | Same-commit model switch; replaces the `gemini-2.5-flash` baseline variant |
-| Test 20.3 | Project variant | `for-testing-only/main/gemini/gemini-2.5-flash` (owner: `admin`) | Recreated after a local README commit; replaces the `gemini-2.0-flash` variant |
-| Test 20.4 | Project variant | `for-testing-only/main/gemini/gemini-2.0-flash` (owner: `admin`) | Force-regenerated after Test 20.3; should coexist with the `gemini-2.5-flash` variant until Test 20.5 cleanup |
-| Test 21.2 | Cleanup target | `for-testing-only/main/gemini/gemini-2.5-flash` (owner: `admin`) | Deleted during cleanup (from Test 20.1/20.3) |
-| Test 21.2 | Cleanup target | `for-testing-only/main/gemini/gemini-2.0-flash` (owner: `admin`) | Deleted during cleanup (from Test 20.2/20.4) |
+| Test 20.2 | Project variant | `for-testing-only/main/gemini/gemini-2.0-flash` (owner: `admin`) | Same-commit model switch |
+| Test 20.3 | Project variant | `for-testing-only/main/gemini/gemini-2.5-flash` (owner: `admin`) | Recreated after local commit |
+| Test 20.4 | Project variant | `for-testing-only/main/gemini/gemini-2.0-flash` (owner: `admin`) | Force-regenerated |
 | Test 22.1 | Project variant | `for-testing-only/dev/gemini/gemini-2.5-flash` (owner: `testuser-e2e`) | Deleted in Test 22.8 |
 | Test 22.7 | Project variant | `for-testing-only/nonexistent-branch-xyz/gemini/gemini-2.5-flash` (owner: `testuser-e2e`) | Error variant, deleted in Test 22.9 |
 
@@ -43,15 +40,16 @@ This test provides a comprehensive cleanup of ALL test-created artifacts across 
 **Precondition:** Log in as `admin`.
 
 ```shell
-agent-browser navigate http://localhost:8800/logout
-agent-browser wait-for-navigation
-agent-browser type "#username" "admin"
-agent-browser type "#api_key" "<ADMIN_KEY>"
-agent-browser click ".btn-login"
+agent-browser javascript "fetch('/api/auth/logout', {method:'POST', credentials:'same-origin'})"
+agent-browser wait 1000
+agent-browser navigate http://localhost:8800/login
+agent-browser type "[name='username']" "admin"
+agent-browser type "[name='password']" "<ADMIN_KEY>"
+agent-browser click "button[type='submit']"
 agent-browser wait-for-navigation
 ```
 
-**Revoke `testviewer-e2e` access to `testuser-e2e`'s project (granted in Test 13.7, may already be revoked):**
+**Revoke `testviewer-e2e` access (granted in Test 13.7, may already be revoked):**
 ```shell
 agent-browser javascript "fetch('/api/admin/projects/for-testing-only/access/testviewer-e2e?owner=testuser-e2e', {method:'DELETE', credentials:'same-origin'}).then(r => r.status)"
 ```
@@ -70,21 +68,21 @@ agent-browser wait 2000
 
 **Expected result:** Returns `200` (deleted) or `404` (already deleted). Both are acceptable.
 
-**Delete `admin`'s `for-testing-only/main/gemini/gemini-2.5-flash` variant (Test 20.1/20.3, if it exists):**
+**Delete `admin`'s `for-testing-only/main/gemini/gemini-2.5-flash` variant:**
 ```shell
 agent-browser javascript "fetch('/api/projects/for-testing-only/main/gemini/gemini-2.5-flash?owner=admin', {method:'DELETE', credentials:'same-origin'}).then(r => r.status)"
 agent-browser wait 2000
 ```
 
-**Expected result:** Returns `200` (deleted) or `404` (already deleted). Both are acceptable.
+**Expected result:** Returns `200` or `404`. Both are acceptable.
 
-**Delete `admin`'s `for-testing-only/main/gemini/gemini-2.0-flash` variant (Test 20.2/20.4, if it exists):**
+**Delete `admin`'s `for-testing-only/main/gemini/gemini-2.0-flash` variant:**
 ```shell
 agent-browser javascript "fetch('/api/projects/for-testing-only/main/gemini/gemini-2.0-flash?owner=admin', {method:'DELETE', credentials:'same-origin'}).then(r => r.status)"
 agent-browser wait 2000
 ```
 
-**Expected result:** Returns `200` (deleted) or `404` (already deleted). Both are acceptable.
+**Expected result:** Returns `200` or `404`. Both are acceptable.
 
 **Delete `userb-e2e`'s `for-testing-only` variant (if it exists):**
 ```shell
@@ -92,7 +90,7 @@ agent-browser javascript "fetch('/api/projects/for-testing-only/main/gemini/gemi
 agent-browser wait 2000
 ```
 
-**Expected result:** Returns `200` (deleted) or `404` (already deleted). Both are acceptable.
+**Expected result:** Returns `200` or `404`. Both are acceptable.
 
 **Delete `userb-e2e`'s `gemini-2.0-flash` variant (if it exists):**
 ```shell
@@ -100,27 +98,27 @@ agent-browser javascript "fetch('/api/projects/for-testing-only/main/gemini/gemi
 agent-browser wait 2000
 ```
 
-**Expected result:** Returns `200` (deleted) or `404` (already deleted). Both are acceptable.
+**Expected result:** Returns `200` or `404`. Both are acceptable.
 
 ---
 
 ### 21.2b Delete branch-specific variants
 
-**Delete `testuser-e2e`'s dev branch variant (Test 22, if it exists):**
+**Delete `testuser-e2e`'s dev branch variant:**
 ```shell
 agent-browser javascript "fetch('/api/projects/for-testing-only/dev/gemini/gemini-2.5-flash?owner=testuser-e2e', {method:'DELETE', credentials:'same-origin'}).then(r => r.status)"
 agent-browser wait 2000
 ```
 
-**Expected result:** Returns `200` (deleted) or `404` (already deleted). Both are acceptable.
+**Expected result:** Returns `200` or `404`. Both are acceptable.
 
-**Delete error variant from invalid branch test (Test 22.7, if it exists):**
+**Delete error variant from invalid branch test:**
 ```shell
 agent-browser javascript "fetch('/api/projects/for-testing-only/nonexistent-branch-xyz/gemini/gemini-2.5-flash?owner=testuser-e2e', {method:'DELETE', credentials:'same-origin'}).then(r => r.status)"
 agent-browser wait 2000
 ```
 
-**Expected result:** Returns `200` (deleted) or `404` (already deleted). Both are acceptable.
+**Expected result:** Returns `200` or `404`. Both are acceptable.
 
 ---
 
@@ -136,56 +134,19 @@ agent-browser wait 2000
 
 For each user in [`testuser-e2e`, `testadmin-e2e`, `testviewer-e2e`, `userb-e2e`]:
 
+Check if user exists via API, then delete:
 ```shell
-agent-browser javascript "document.getElementById('user-row-testuser-e2e') !== null"
-```
-
-If `true`:
-```shell
-agent-browser click "[data-delete-user='testuser-e2e']"
+agent-browser javascript "fetch('/api/admin/users/testuser-e2e', {method:'DELETE', credentials:'same-origin'}).then(r => r.status)"
 agent-browser wait 1000
-agent-browser click "#modal-ok"
-agent-browser wait 2000
-```
-
-Repeat for `testadmin-e2e`:
-```shell
-agent-browser javascript "document.getElementById('user-row-testadmin-e2e') !== null"
-```
-
-If `true`:
-```shell
-agent-browser click "[data-delete-user='testadmin-e2e']"
+agent-browser javascript "fetch('/api/admin/users/testadmin-e2e', {method:'DELETE', credentials:'same-origin'}).then(r => r.status)"
 agent-browser wait 1000
-agent-browser click "#modal-ok"
-agent-browser wait 2000
-```
-
-Repeat for `testviewer-e2e`:
-```shell
-agent-browser javascript "document.getElementById('user-row-testviewer-e2e') !== null"
-```
-
-If `true`:
-```shell
-agent-browser click "[data-delete-user='testviewer-e2e']"
+agent-browser javascript "fetch('/api/admin/users/testviewer-e2e', {method:'DELETE', credentials:'same-origin'}).then(r => r.status)"
 agent-browser wait 1000
-agent-browser click "#modal-ok"
-agent-browser wait 2000
-```
-
-Repeat for `userb-e2e`:
-```shell
-agent-browser javascript "document.getElementById('user-row-userb-e2e') !== null"
-```
-
-If `true`:
-```shell
-agent-browser click "[data-delete-user='userb-e2e']"
+agent-browser javascript "fetch('/api/admin/users/userb-e2e', {method:'DELETE', credentials:'same-origin'}).then(r => r.status)"
 agent-browser wait 1000
-agent-browser click "#modal-ok"
-agent-browser wait 2000
 ```
+
+**Expected result:** Each returns `200` (deleted) or `404` (already deleted). Both are acceptable.
 
 ---
 
@@ -193,22 +154,20 @@ agent-browser wait 2000
 
 **Verify no test users remain:**
 ```shell
-agent-browser javascript "['testuser-e2e', 'testadmin-e2e', 'testviewer-e2e', 'userb-e2e'].filter(u => document.getElementById('user-row-' + u) !== null)"
-agent-browser screenshot
+agent-browser javascript "fetch('/api/admin/users', {credentials:'same-origin'}).then(r => r.json()).then(d => d.users.filter(u => ['testuser-e2e','testadmin-e2e','testviewer-e2e','userb-e2e'].includes(u.username)).length)"
 ```
 
 **Expected result:**
-- Returns an empty array `[]`
-- No test user rows remain in the users table
+- Returns `0`
+- No test user rows remain
 
-**Verify no test project variants remain (including admin-owned Test 20 variants):**
+**Verify no test project variants remain:**
 ```shell
-agent-browser navigate http://localhost:8800/
-agent-browser javascript "Array.from(document.querySelectorAll('.variant-card')).filter(c => ['testuser-e2e', 'userb-e2e'].includes(c.getAttribute('data-owner'))).length"
+agent-browser javascript "fetch('/api/projects', {credentials:'same-origin'}).then(r => r.json()).then(d => d.projects.filter(p => ['testuser-e2e','userb-e2e'].includes(p.owner)).length)"
 ```
 
 **Expected result:**
-- Returns `0` -- no variant cards owned by test users remain
+- Returns `0` --- no variants owned by test users remain
 
 **Verify admin-owned Test 20 variants are also cleaned up:**
 ```shell
@@ -217,8 +176,7 @@ agent-browser javascript "fetch('/api/projects/for-testing-only/main/gemini/gemi
 ```
 
 **Expected result:**
-- Both requests return `404` -- the admin-owned Test 20 variants no longer exist
-- Pre-existing projects owned by `admin` that were NOT created by the test suite are untouched
+- Both requests return `404`
 
 ---
 
@@ -232,25 +190,4 @@ grep -r "e2e_incremental_test_function" src/ || echo "CLEAN"
 rm -rf /tmp/e2e-cleanup
 ```
 
-**Expected result:** "CLEAN" — the function does not exist in the current HEAD.
-
-**Note:** If Test 14.6 failed to revert the commit, create a revert PR:
-```shell
-git clone --depth 50 https://github.com/myk-org/for-testing-only /tmp/e2e-cleanup
-cd /tmp/e2e-cleanup
-if grep -r "e2e_incremental_test_function" src/ 2>/dev/null; then
-    COMMIT=$(git log -S "e2e_incremental_test_function" --oneline -1 | cut -d' ' -f1)
-    if [ -n "$COMMIT" ]; then
-        git checkout -b revert-e2e-cleanup
-        git revert --no-edit "$COMMIT"
-        git push origin revert-e2e-cleanup
-        gh pr create --repo myk-org/for-testing-only --title "Revert: e2e cleanup" --body "Cleanup" --base main --head revert-e2e-cleanup
-        gh pr merge --repo myk-org/for-testing-only --squash --delete-branch
-    else
-        echo "WARNING: Function present but commit not found in history. Manual cleanup needed."
-    fi
-else
-    echo "CLEAN — function not present in current HEAD"
-fi
-rm -rf /tmp/e2e-cleanup
-```
+**Expected result:** "CLEAN" --- the function does not exist in the current HEAD.

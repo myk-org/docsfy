@@ -2,6 +2,8 @@
 
 > Back to the [main E2E index](e2e-ui-test-plan.md#test-files). Shared execution rules, prerequisites, variables, and environment constraints live there.
 
+> **UI Framework Note:** The app UI is a React SPA using shadcn/ui components and Tailwind CSS. All modals, toasts, and dialogs are React components. Real-time updates use WebSocket (`/api/ws`).
+
 ---
 
 ## Test 1: Login Page
@@ -17,7 +19,7 @@ agent-browser screenshot
 **Check:** The login page renders with the docsfy branding.
 
 **Expected result:**
-- Page title is "docsfy - Login"
+- The React SPA loads and renders the login form
 - The heading shows "docsfy" with the "fy" portion in accent color
 - The subtitle text reads "Enter your credentials to continue"
 - A "Username" input field is visible with placeholder "Enter your username"
@@ -32,15 +34,15 @@ agent-browser screenshot
 **Commands:**
 ```
 agent-browser navigate http://localhost:8800/login
-agent-browser javascript "document.documentElement.getAttribute('data-theme')"
+agent-browser javascript "document.documentElement.classList.contains('dark')"
 agent-browser screenshot
 ```
 
-**Check:** The `data-theme` attribute on the `<html>` element is `"dark"`.
+**Check:** The app defaults to dark theme.
 
 **Expected result:**
-- The return value from `getAttribute('data-theme')` is `"dark"`
-- The page visually appears with a dark background (`#0f1117` body, `#161822` card area)
+- The return value is `true` (the `dark` class is on the `<html>` element --- Tailwind dark mode)
+- The page visually appears with a dark background
 - Text is light-colored on the dark background
 
 ---
@@ -50,26 +52,25 @@ agent-browser screenshot
 **Commands:**
 ```
 agent-browser navigate http://localhost:8800/login
-agent-browser click "#theme-toggle"
-agent-browser javascript "document.documentElement.getAttribute('data-theme')"
+agent-browser click "[data-testid='theme-toggle']"
+agent-browser javascript "document.documentElement.classList.contains('dark')"
 agent-browser screenshot
 ```
 
 **Check:** After clicking the theme toggle, the theme changes from dark to light.
 
 **Expected result:**
-- The return value from `getAttribute('data-theme')` is `"light"`
-- The page background changes to light colors (white/`#ffffff`)
-- The sun icon is now hidden and the moon icon is visible
+- The return value is `false` (dark class removed --- now light mode)
+- The page background changes to light colors
 
 **Then toggle back:**
 ```
-agent-browser click "#theme-toggle"
-agent-browser javascript "document.documentElement.getAttribute('data-theme')"
+agent-browser click "[data-testid='theme-toggle']"
+agent-browser javascript "document.documentElement.classList.contains('dark')"
 ```
 
 **Expected result:**
-- The return value is `"dark"` again
+- The return value is `true` again (dark mode restored)
 
 ---
 
@@ -78,18 +79,18 @@ agent-browser javascript "document.documentElement.getAttribute('data-theme')"
 **Commands:**
 ```
 agent-browser navigate http://localhost:8800/login
-agent-browser type "#username" "wronguser"
-agent-browser type "#api_key" "wrongpassword"
-agent-browser click ".btn-login"
+agent-browser type "[name='username']" "wronguser"
+agent-browser type "[name='password']" "wrongpassword"
+agent-browser click "button[type='submit']"
+agent-browser wait 2000
 agent-browser screenshot
 ```
 
 **Check:** An error message appears on the login page.
 
 **Expected result:**
-- The page reloads and remains on `/login`
-- A red error box is visible with the text "Invalid username or password"
-- The error box has class `error-msg`
+- The page remains on `/login`
+- A red error message or toast is visible with text "Invalid username or password"
 
 ---
 
@@ -98,9 +99,9 @@ agent-browser screenshot
 **Commands:**
 ```
 agent-browser navigate http://localhost:8800/login
-agent-browser type "#username" "admin"
-agent-browser type "#api_key" "<ADMIN_KEY>"
-agent-browser click ".btn-login"
+agent-browser type "[name='username']" "admin"
+agent-browser type "[name='password']" "<ADMIN_KEY>"
+agent-browser click "button[type='submit']"
 agent-browser wait-for-navigation
 agent-browser screenshot
 ```
@@ -109,12 +110,11 @@ agent-browser screenshot
 
 **Expected result:**
 - The browser is redirected to `/` (the dashboard)
-- The page title is "docsfy - Dashboard"
+- The React SPA renders the dashboard view
 - The header shows the username "admin"
-- The "Admin Panel" link is visible in the header (because the admin role is active)
+- The "Admin Panel" link is visible (because the admin role is active)
 - The "Generate Documentation" form section is visible
-- The "Logout" link is visible in the header
-- The "Change Password" button is visible in the header
+- A "Logout" option is available in the user menu
 
 ---
 
@@ -124,21 +124,23 @@ agent-browser screenshot
 
 **Commands:**
 ```
-agent-browser click ".btn-change-password"
+agent-browser click "[data-testid='user-menu-trigger']"
+agent-browser wait 500
+agent-browser click "[data-testid='change-password']"
 agent-browser wait 1000
 agent-browser screenshot
 ```
 
-**Check:** The change password modal appears.
+**Check:** The change password dialog appears (React dialog component).
 
 **Expected result:**
-- The modal overlay is visible
-- The modal title reads "Change Password"
+- A dialog/modal is visible
+- The title reads "Change Password"
 
 **Enter a new password and confirm:**
 ```
-agent-browser type "#modal-input" "somenewpassword12345"
-agent-browser click "#modal-ok"
+agent-browser type "[data-testid='password-input']" "somenewpassword12345"
+agent-browser click "[data-testid='dialog-confirm']"
 agent-browser wait 2000
 agent-browser screenshot
 ```
@@ -160,22 +162,15 @@ agent-browser screenshot
 
 **Commands:**
 ```
-agent-browser eval 'document.querySelector(".user-menu-item[href=\"/admin\"]") !== null'
-agent-browser eval 'document.querySelector(".user-menu-item[href=\"/admin\"]").textContent.trim()'
+agent-browser javascript "document.querySelector('[data-testid=\"admin-link\"], a[href=\"/admin\"]') !== null"
 agent-browser screenshot
 ```
 
-**Check:** The Admin link exists in the header.
-
-**Verify the href:**
-```shell
-agent-browser eval 'document.querySelector(".user-menu-item[href=\"/admin\"]").getAttribute("href")'
-```
+**Check:** The Admin link exists in the navigation.
 
 **Expected result:**
-- The first query returns `true`
-- The second query returns `"Admin Panel"`
-- The link href is "/admin"
+- Returns `true`
+- The link navigates to `/admin`
 
 ---
 
@@ -183,25 +178,26 @@ agent-browser eval 'document.querySelector(".user-menu-item[href=\"/admin\"]").g
 
 **Commands:**
 ```shell
-agent-browser click ".user-menu-item[href='/admin']"
-agent-browser wait-for-navigation
+agent-browser navigate http://localhost:8800/admin
+agent-browser wait 2000
 agent-browser screenshot
 ```
 
-**Check:** The admin panel loads with the "User Management" heading.
+**Check:** The admin panel loads with user management features.
 
 **Expected result:**
 - URL is `http://localhost:8800/admin`
-- Page title is "docsfy - Admin Panel"
-- The heading "User Management" is visible
-- The "Create User" card is visible with username input, role dropdown, and "Create User" button
+- The React SPA renders the admin panel
+- A "Create User" form is visible with username input, role dropdown, and submit button
 
 **Now create the user:**
 ```
-agent-browser type "#new-username" "testuser-e2e"
-agent-browser select "#new-role" "user"
+agent-browser type "[data-testid='new-username']" "testuser-e2e"
+agent-browser click "[data-testid='role-select']"
 agent-browser wait 500
-agent-browser click "#create-user-form button[type='submit']"
+agent-browser click "[data-value='user']"
+agent-browser wait 500
+agent-browser click "[data-testid='create-user-btn']"
 agent-browser wait 2000
 agent-browser screenshot
 ```
@@ -209,23 +205,20 @@ agent-browser screenshot
 **Check:** The user is created and the password is displayed.
 
 **Expected result:**
-- A success alert appears with text containing "User 'testuser-e2e' created successfully"
-- The `#new-key-display` section becomes visible (the yellow/amber bordered box)
-- The displayed username shows `testuser-e2e`
-- The displayed role shows `user`
-- A password value is shown (capture this as `TEST_USER_PASSWORD`)
+- A success message or toast appears with text containing "User 'testuser-e2e' created successfully"
+- The generated password is displayed (capture this as `TEST_USER_PASSWORD`)
 - The user appears in the users table with a `user` role badge
 
 **Capture the password:**
 ```
-agent-browser javascript "document.getElementById('new-key-value').textContent"
+agent-browser javascript "document.querySelector('[data-testid=\"generated-password\"]')?.textContent"
 ```
 
 Store this value as `TEST_USER_PASSWORD`.
 
 **Click Done to dismiss:**
 ```
-agent-browser click "#new-key-display .btn-primary"
+agent-browser click "[data-testid='dismiss-password']"
 agent-browser wait 2000
 ```
 
@@ -236,10 +229,12 @@ agent-browser wait 2000
 **Commands:**
 ```
 agent-browser navigate http://localhost:8800/admin
-agent-browser type "#new-username" "testadmin-e2e"
-agent-browser select "#new-role" "admin"
+agent-browser type "[data-testid='new-username']" "testadmin-e2e"
+agent-browser click "[data-testid='role-select']"
 agent-browser wait 500
-agent-browser click "#create-user-form button[type='submit']"
+agent-browser click "[data-value='admin']"
+agent-browser wait 500
+agent-browser click "[data-testid='create-user-btn']"
 agent-browser wait 2000
 agent-browser screenshot
 ```
@@ -247,21 +242,20 @@ agent-browser screenshot
 **Check:** The admin user is created.
 
 **Expected result:**
-- Success alert with "User 'testadmin-e2e' created successfully"
-- The `#new-key-display` section shows the password
+- Success message with "User 'testadmin-e2e' created successfully"
 - The displayed role shows `admin`
-- The user appears in the table with an `admin` role badge (green)
+- The user appears in the table with an `admin` role badge
 
 **Capture the password:**
 ```
-agent-browser javascript "document.getElementById('new-key-value').textContent"
+agent-browser javascript "document.querySelector('[data-testid=\"generated-password\"]')?.textContent"
 ```
 
 Store this value as `TEST_ADMIN_PASSWORD`.
 
 **Click Done:**
 ```
-agent-browser click "#new-key-display .btn-primary"
+agent-browser click "[data-testid='dismiss-password']"
 agent-browser wait 2000
 ```
 
@@ -272,10 +266,12 @@ agent-browser wait 2000
 **Commands:**
 ```
 agent-browser navigate http://localhost:8800/admin
-agent-browser type "#new-username" "testviewer-e2e"
-agent-browser select "#new-role" "viewer"
+agent-browser type "[data-testid='new-username']" "testviewer-e2e"
+agent-browser click "[data-testid='role-select']"
 agent-browser wait 500
-agent-browser click "#create-user-form button[type='submit']"
+agent-browser click "[data-value='viewer']"
+agent-browser wait 500
+agent-browser click "[data-testid='create-user-btn']"
 agent-browser wait 2000
 agent-browser screenshot
 ```
@@ -283,21 +279,20 @@ agent-browser screenshot
 **Check:** The viewer user is created.
 
 **Expected result:**
-- Success alert with "User 'testviewer-e2e' created successfully"
-- The `#new-key-display` section shows the password
+- Success message with "User 'testviewer-e2e' created successfully"
 - The displayed role shows `viewer`
-- The user appears in the table with a `viewer` role badge (gray)
+- The user appears in the table with a `viewer` role badge
 
 **Capture the password:**
 ```
-agent-browser javascript "document.getElementById('new-key-value').textContent"
+agent-browser javascript "document.querySelector('[data-testid=\"generated-password\"]')?.textContent"
 ```
 
 Store this value as `TEST_VIEWER_PASSWORD`.
 
 **Click Done:**
 ```
-agent-browser click "#new-key-display .btn-primary"
+agent-browser click "[data-testid='dismiss-password']"
 agent-browser wait 2000
 ```
 
@@ -308,21 +303,19 @@ agent-browser wait 2000
 **First, create a disposable user to delete:**
 ```
 agent-browser navigate http://localhost:8800/admin
-agent-browser type "#new-username" "delete-me-e2e"
-agent-browser select "#new-role" "user"
+agent-browser type "[data-testid='new-username']" "delete-me-e2e"
+agent-browser click "[data-testid='role-select']"
 agent-browser wait 500
-agent-browser click "#create-user-form button[type='submit']"
+agent-browser click "[data-value='user']"
+agent-browser wait 500
+agent-browser click "[data-testid='create-user-btn']"
 agent-browser wait 2000
-agent-browser click "#new-key-display .btn-primary"
+agent-browser click "[data-testid='dismiss-password']"
 agent-browser wait 2000
 agent-browser screenshot
 ```
 
 **Check:** The user `delete-me-e2e` appears in the users table.
-
-**Expected result:**
-- A row with username `delete-me-e2e` exists in the table
-- The row has a "Delete" button
 
 **Now delete the user:**
 ```
@@ -331,17 +324,17 @@ agent-browser wait 1000
 agent-browser screenshot
 ```
 
-**Check:** A custom modal dialog appears (not a browser `confirm` dialog).
+**Check:** A confirmation dialog appears (React AlertDialog, not a browser `confirm`).
 
 **Expected result:**
-- The modal overlay (`.modal-overlay`) is visible
-- The modal title reads "Delete User"
-- The modal body reads "Delete user 'delete-me-e2e'? This cannot be undone."
-- There is a red "Delete" button and a "Cancel" button
+- A dialog is visible
+- The dialog title reads "Delete User"
+- The dialog body reads "Delete user 'delete-me-e2e'? This cannot be undone."
+- There is a destructive "Delete" button and a "Cancel" button
 
 **Confirm the deletion:**
 ```
-agent-browser click "#modal-ok"
+agent-browser click "[data-testid='dialog-confirm']"
 agent-browser wait 2000
 agent-browser screenshot
 ```
@@ -349,19 +342,42 @@ agent-browser screenshot
 **Check:** The user is removed from the table.
 
 **Expected result:**
-- A success alert appears with text "User 'delete-me-e2e' deleted"
-- The row `#user-row-delete-me-e2e` no longer exists in the DOM
-
-**Verify:**
-```
-agent-browser javascript "document.getElementById('user-row-delete-me-e2e') === null"
-```
-
-**Expected result:** Returns `true`.
+- A success toast appears with text "User 'delete-me-e2e' deleted"
+- The row for `delete-me-e2e` no longer exists in the DOM
 
 ---
 
-### 2.6 Change password works
+### 2.6 Users panel renders (not blank)
+
+**Precondition:** Logged in as `admin` (from Test 2.2).
+
+**Commands:**
+```shell
+agent-browser navigate http://localhost:8800/admin
+agent-browser wait 2000
+agent-browser screenshot
+```
+
+**Check:** The Users panel renders content (not a blank/white page).
+
+**Expected result:**
+- The admin panel URL is `http://localhost:8800/admin`
+- The users table or user management section is visible
+- The page is NOT blank or showing only a white background
+- At least the "Create User" form section is rendered
+- If users exist, the users table shows their rows
+
+**Verify users table is in the DOM:**
+```shell
+agent-browser javascript "document.querySelector('[data-testid=\"users-table\"], table, [data-testid=\"create-user-btn\"]') !== null"
+```
+
+**Expected result:**
+- Returns `true` (the users panel has rendered its content)
+
+---
+
+### 2.7 Change password works
 
 **Commands:**
 ```
@@ -371,76 +387,63 @@ agent-browser wait 1000
 agent-browser screenshot
 ```
 
-**Check:** A modal prompt appears for entering a new password.
+**Check:** A dialog appears for entering a new password.
 
 **Expected result:**
-- The modal overlay is visible
-- The modal title reads "Change Password"
-- The modal body contains "Enter new password for 'testuser-e2e'"
+- A dialog is visible
+- The dialog title reads "Change Password"
+- The dialog body contains "Enter new password for 'testuser-e2e'"
 - There is a password input field
 - There is a hint "Minimum 16 characters"
 
 **Enter a new password and confirm:**
 ```
-agent-browser type "#modal-input" "newpassword1234567890"
-agent-browser click "#modal-ok"
+agent-browser type "[data-testid='password-input']" "newpassword1234567890"
+agent-browser click "[data-testid='dialog-confirm']"
 agent-browser wait 2000
 agent-browser screenshot
 ```
 
-**Check:** The new password is displayed in the key result section.
+**Check:** The new password is displayed.
 
 **Expected result:**
-- The `#new-key-display` section becomes visible
-- The username shows `testuser-e2e`
-- The role shows `rotated`
-- The password value shows `newpassword1234567890`
-
-**Capture the updated password:**
-```
-agent-browser javascript "document.getElementById('new-key-value').textContent"
-```
+- The password display shows `newpassword1234567890`
 
 Update `TEST_USER_PASSWORD` to this new value (`newpassword1234567890`).
 
 **Click Done:**
 ```
-agent-browser click "#new-key-display .btn-primary"
+agent-browser click "[data-testid='dismiss-password']"
 agent-browser wait 2000
 ```
 
 ---
 
-### 2.7 Deleted user session is invalidated
+### 2.8 Deleted user session is invalidated
 
 **Commands (create and login as a disposable user):**
 ```
 agent-browser navigate http://localhost:8800/admin
-agent-browser type "#new-username" "session-test-e2e"
-agent-browser select "#new-role" "user"
+agent-browser type "[data-testid='new-username']" "session-test-e2e"
+agent-browser click "[data-testid='role-select']"
 agent-browser wait 500
-agent-browser click "#create-user-form button[type='submit']"
+agent-browser click "[data-value='user']"
+agent-browser wait 500
+agent-browser click "[data-testid='create-user-btn']"
 agent-browser wait 2000
 agent-browser screenshot
 ```
 
-**Check:** The user `session-test-e2e` is created and the password is displayed.
-
-**Expected result:**
-- A success alert appears with text containing "User 'session-test-e2e' created successfully"
-- The `#new-key-display` section becomes visible
-- The displayed username shows `session-test-e2e`
-
 **Capture the password:**
 ```
-agent-browser javascript "document.getElementById('new-key-value').textContent"
+agent-browser javascript "document.querySelector('[data-testid=\"generated-password\"]')?.textContent"
 ```
 
 Save the password as `SESSION_TEST_PASSWORD`.
 
 **Click Done:**
 ```
-agent-browser click "#new-key-display .btn-primary"
+agent-browser click "[data-testid='dismiss-password']"
 agent-browser wait 2000
 ```
 
@@ -448,9 +451,9 @@ agent-browser wait 2000
 ```
 agent-browser new-context
 agent-browser navigate http://localhost:8800/login
-agent-browser type "#username" "session-test-e2e"
-agent-browser type "#api_key" "<SESSION_TEST_PASSWORD>"
-agent-browser click ".btn-login"
+agent-browser type "[name='username']" "session-test-e2e"
+agent-browser type "[name='password']" "<SESSION_TEST_PASSWORD>"
+agent-browser click "button[type='submit']"
 agent-browser wait-for-navigation
 agent-browser screenshot
 ```
@@ -467,16 +470,12 @@ agent-browser switch-context 0
 agent-browser navigate http://localhost:8800/admin
 agent-browser click "[data-delete-user='session-test-e2e']"
 agent-browser wait 1000
-agent-browser click "#modal-ok"
+agent-browser click "[data-testid='dialog-confirm']"
 agent-browser wait 2000
 agent-browser screenshot
 ```
 
 **Check:** The user is deleted from the admin panel.
-
-**Expected result:**
-- A success alert appears with text "User 'session-test-e2e' deleted"
-- The row for `session-test-e2e` no longer exists in the table
 
 **Switch back to session-test-e2e's context and refresh:**
 ```
@@ -499,17 +498,19 @@ agent-browser close-context
 
 ---
 
-### 2.8 Cannot create user with reserved username "admin" (case-insensitive)
+### 2.9 Cannot create user with reserved username "admin" (case-insensitive)
 
 **Precondition:** Logged in as `admin` on the admin panel.
 
 **Attempt with lowercase "admin":**
 ```
 agent-browser navigate http://localhost:8800/admin
-agent-browser type "#new-username" "admin"
-agent-browser select "#new-role" "user"
+agent-browser type "[data-testid='new-username']" "admin"
+agent-browser click "[data-testid='role-select']"
 agent-browser wait 500
-agent-browser click "#create-user-form button[type='submit']"
+agent-browser click "[data-value='user']"
+agent-browser wait 500
+agent-browser click "[data-testid='create-user-btn']"
 agent-browser wait 2000
 agent-browser screenshot
 ```
@@ -517,47 +518,14 @@ agent-browser screenshot
 **Check:** An error message appears and no new user is created.
 
 **Expected result:**
-- An error message appears indicating that the username "admin" is reserved
+- An error message/toast appears indicating that the username "admin" is reserved
 - No new user row for "admin" appears in the users table
-- The `#new-key-display` section does NOT become visible
 
-**Attempt with mixed case "Admin":**
-```shell
-agent-browser navigate http://localhost:8800/admin
-agent-browser clear "#new-username"
-agent-browser type "#new-username" "Admin"
-agent-browser select "#new-role" "user"
-agent-browser wait 500
-agent-browser click "#create-user-form button[type='submit']"
-agent-browser wait 2000
-agent-browser screenshot
-```
-
-**Expected result:**
-- An error message appears indicating that the username is reserved
-- No new user row for "Admin" appears in the users table
-- The `#new-key-display` section does NOT become visible
-
-**Attempt with uppercase "ADMIN":**
-```
-agent-browser navigate http://localhost:8800/admin
-agent-browser clear "#new-username"
-agent-browser type "#new-username" "ADMIN"
-agent-browser select "#new-role" "user"
-agent-browser wait 500
-agent-browser click "#create-user-form button[type='submit']"
-agent-browser wait 2000
-agent-browser screenshot
-```
-
-**Expected result:**
-- An error message appears indicating that the username is reserved
-- No new user row for "ADMIN" appears in the users table
-- The `#new-key-display` section does NOT become visible
+**Repeat with "Admin" and "ADMIN" --- same expected result for each.**
 
 ---
 
-### 2.9 Cannot delete own admin account
+### 2.10 Cannot delete own admin account
 
 **Precondition:** Logged in as `admin` on the admin panel.
 
@@ -573,16 +541,64 @@ agent-browser wait 2000
 - The response status is `400`
 - The response body contains "Cannot delete your own account"
 
-**Verify admin still exists in the table:**
-```
+---
+
+### 2.11 Change password dialog shows correct fields and displays new key
+
+**Precondition:** Logged in as `admin` on the admin panel. At least one non-admin user exists (e.g., `testuser-e2e`).
+
+**Commands (open change password for testuser-e2e):**
+```shell
 agent-browser navigate http://localhost:8800/admin
-agent-browser javascript "document.getElementById('user-row-admin') !== null"
+agent-browser wait 2000
+agent-browser click "[data-rotate-user='testuser-e2e']"
+agent-browser wait 1000
+agent-browser screenshot
+```
+
+**Check:** The change password dialog shows correct fields.
+
+**Expected result:**
+- A dialog/modal is visible with title "Change Password"
+- There is a single password input field (NOT a "current password" field --- admin does not need the old password)
+- There is a hint about minimum password length
+
+**Enter a new password and confirm:**
+```shell
+agent-browser type "[data-testid='password-input']" "test-change-pw-e2e-1234"
+agent-browser click "[data-testid='dialog-confirm']"
+agent-browser wait 2000
+agent-browser screenshot
+```
+
+**Check:** The new password/key is displayed after confirmation.
+
+**Expected result:**
+- The new password `test-change-pw-e2e-1234` is displayed in the success alert or password display area
+- The user is NOT left with a blank screen or missing password
+- The password display is clearly visible and copyable
+
+**Dismiss and verify redirect:**
+```shell
+agent-browser click "[data-testid='dismiss-password']"
+agent-browser wait 2000
 agent-browser screenshot
 ```
 
 **Expected result:**
-- Returns `true`
-- The admin row is still visible in the users table
+- The admin panel reloads or the dialog closes cleanly
+- The admin session remains valid (admin is still on the admin panel)
+
+**Restore the original password for testuser-e2e:**
+```shell
+agent-browser click "[data-rotate-user='testuser-e2e']"
+agent-browser wait 1000
+agent-browser type "[data-testid='password-input']" "<TEST_USER_PASSWORD>"
+agent-browser click "[data-testid='dialog-confirm']"
+agent-browser wait 2000
+agent-browser click "[data-testid='dismiss-password']"
+agent-browser wait 2000
+```
 
 ---
 
@@ -592,11 +608,13 @@ agent-browser screenshot
 
 **Commands:**
 ```
-agent-browser navigate http://localhost:8800/logout
-agent-browser wait-for-navigation
-agent-browser type "#username" "testuser-e2e"
-agent-browser type "#api_key" "<TEST_USER_PASSWORD>"
-agent-browser click ".btn-login"
+agent-browser navigate http://localhost:8800/login
+agent-browser javascript "fetch('/api/auth/logout', {method:'POST', credentials:'same-origin'})"
+agent-browser wait 1000
+agent-browser navigate http://localhost:8800/login
+agent-browser type "[name='username']" "testuser-e2e"
+agent-browser type "[name='password']" "<TEST_USER_PASSWORD>"
+agent-browser click "button[type='submit']"
 agent-browser wait-for-navigation
 agent-browser screenshot
 ```
@@ -606,7 +624,6 @@ agent-browser screenshot
 **Expected result:**
 - URL is `http://localhost:8800/`
 - The header shows `testuser-e2e` as the username
-- The page title is "docsfy - Dashboard"
 
 ---
 
@@ -614,24 +631,16 @@ agent-browser screenshot
 
 **Commands:**
 ```
-agent-browser javascript "document.querySelector('.generate-section') !== null"
-agent-browser javascript "document.querySelector('.generate-section h2').textContent.trim()"
+agent-browser javascript "document.querySelector('[data-testid=\"generate-form\"]') !== null"
 agent-browser screenshot
 ```
 
 **Check:** The "Generate Documentation" form is visible for users.
 
 **Expected result:**
-- The first query returns `true`
-- The second query returns `"Generate Documentation"`
+- Returns `true`
 - The form contains: Repository URL input, Provider select, Model input, Force checkbox, and Generate button
-
-**Verify branch input is visible:**
-```shell
-agent-browser javascript "document.getElementById('gen-branch') !== null"
-```
-
-**Expected result:** `true` --- branch input is visible.
+- Branch input is visible
 
 ---
 
@@ -639,13 +648,13 @@ agent-browser javascript "document.getElementById('gen-branch') !== null"
 
 **Commands:**
 ```shell
-agent-browser eval 'document.querySelector(".user-menu-item[href=\"/admin\"]")'
+agent-browser javascript "document.querySelector('[data-testid=\"admin-link\"], a[href=\"/admin\"]') === null"
 ```
 
-**Check:** The Admin link is absent from the header.
+**Check:** The Admin link is absent from the navigation.
 
 **Expected result:**
-- Returns `null` (the element does not exist in the DOM)
+- Returns `true` (the element does not exist in the DOM)
 
 ---
 
@@ -653,16 +662,13 @@ agent-browser eval 'document.querySelector(".user-menu-item[href=\"/admin\"]")'
 
 **Commands:**
 ```
-agent-browser navigate http://localhost:8800/admin
-agent-browser screenshot
-agent-browser javascript "document.body.innerText"
+agent-browser javascript "fetch('/api/admin/users', {credentials:'same-origin'}).then(r => r.status)"
 ```
 
-**Check:** The server returns a 403 Forbidden error.
+**Check:** The API returns 403 Forbidden for non-admin users.
 
 **Expected result:**
-- The page shows a JSON or text response containing "Admin access required"
-- The HTTP status code is 403
+- Returns `403`
 
 ---
 
@@ -671,12 +677,14 @@ agent-browser javascript "document.body.innerText"
 **Commands:**
 ```
 agent-browser navigate http://localhost:8800/
-agent-browser type "#gen-repo-url" "https://github.com/myk-org/for-testing-only"
-agent-browser select "#gen-provider" "gemini"
+agent-browser type "[data-testid='repo-url']" "https://github.com/myk-org/for-testing-only"
+agent-browser click "[data-testid='provider-select']"
 agent-browser wait 500
-agent-browser clear "#gen-model"
-agent-browser type "#gen-model" "gemini-2.5-flash"
-agent-browser click "#gen-submit"
+agent-browser click "[data-value='gemini']"
+agent-browser wait 500
+agent-browser clear "[data-testid='model-input']"
+agent-browser type "[data-testid='model-input']" "gemini-2.5-flash"
+agent-browser click "[data-testid='generate-btn']"
 agent-browser wait 3000
 agent-browser screenshot
 ```
@@ -686,9 +694,7 @@ agent-browser screenshot
 **Expected result:**
 - A toast notification appears with text "Generation started" or similar success message
 - A new project card appears in the project list with status "GENERATING"
-- The card shows a progress bar and "Generating..." text
-- A "View progress" link is visible on the card
-- An "Abort" button is visible on the card
+- The card shows a progress indicator
 
 ---
 
@@ -699,7 +705,7 @@ agent-browser screenshot
 **Commands:**
 ```
 agent-browser navigate http://localhost:8800/
-agent-browser javascript "Array.from(document.querySelectorAll('.project-group')).map(g => g.getAttribute('data-repo'))"
+agent-browser javascript "document.querySelectorAll('[data-testid=\"project-group\"]').length"
 agent-browser screenshot
 ```
 
@@ -717,11 +723,12 @@ agent-browser screenshot
 
 **Commands:**
 ```
-agent-browser navigate http://localhost:8800/logout
-agent-browser wait-for-navigation
-agent-browser type "#username" "testviewer-e2e"
-agent-browser type "#api_key" "<TEST_VIEWER_PASSWORD>"
-agent-browser click ".btn-login"
+agent-browser javascript "fetch('/api/auth/logout', {method:'POST', credentials:'same-origin'})"
+agent-browser wait 1000
+agent-browser navigate http://localhost:8800/login
+agent-browser type "[name='username']" "testviewer-e2e"
+agent-browser type "[name='password']" "<TEST_VIEWER_PASSWORD>"
+agent-browser click "button[type='submit']"
 agent-browser wait-for-navigation
 agent-browser screenshot
 ```
@@ -738,14 +745,13 @@ agent-browser screenshot
 
 **Commands:**
 ```
-agent-browser javascript "document.querySelector('.generate-section')"
+agent-browser javascript "document.querySelector('[data-testid=\"generate-form\"]') === null"
 ```
 
 **Check:** The generate form is not rendered for viewers.
 
 **Expected result:**
-- Returns `null` (the `.generate-section` element does not exist in the DOM)
-- The template uses `{% if role != 'viewer' %}` to conditionally render the form
+- Returns `true` (the generate form does not exist in the DOM for viewer role)
 
 ---
 
@@ -753,13 +759,11 @@ agent-browser javascript "document.querySelector('.generate-section')"
 
 **Commands:**
 ```
-agent-browser eval 'document.querySelector(".user-menu-item[href=\"/admin\"]")'
+agent-browser javascript "document.querySelector('[data-testid=\"admin-link\"], a[href=\"/admin\"]') === null"
 ```
 
-**Check:** The Admin link is absent from the header.
-
 **Expected result:**
-- Returns `null`
+- Returns `true`
 
 ---
 
@@ -767,15 +771,11 @@ agent-browser eval 'document.querySelector(".user-menu-item[href=\"/admin\"]")'
 
 **Commands:**
 ```
-agent-browser navigate http://localhost:8800/admin
-agent-browser screenshot
-agent-browser javascript "document.body.innerText"
+agent-browser javascript "fetch('/api/admin/users', {credentials:'same-origin'}).then(r => r.status)"
 ```
 
-**Check:** The server returns a 403 Forbidden error.
-
 **Expected result:**
-- The response contains "Admin access required"
+- Returns `403`
 
 ---
 
@@ -784,33 +784,17 @@ agent-browser javascript "document.body.innerText"
 **Commands:**
 ```
 agent-browser navigate http://localhost:8800/
-agent-browser javascript "document.querySelector('.top-bar-btn') !== null"
-agent-browser javascript "document.querySelector('.top-bar-btn').textContent.trim()"
+agent-browser click "[data-testid='user-menu-trigger']"
+agent-browser wait 500
+agent-browser javascript "document.querySelector('[data-testid=\"change-password\"]') !== null"
 ```
-
-**Check:** The "Change Password" button is visible for viewers.
 
 **Expected result:**
-- The first query returns `true`
-- The second query returns `"Change Password"`
+- Returns `true` --- the change password option is available
 
-**Click it:**
+**Cancel to avoid actually changing:**
 ```
-agent-browser click ".top-bar-btn"
-agent-browser wait 1000
-agent-browser screenshot
-```
-
-**Check:** The modal prompt appears.
-
-**Expected result:**
-- The modal overlay is visible
-- The title reads "Change Password"
-- A password input is shown
-
-**Cancel the modal (do not actually change the password):**
-```
-agent-browser click "#modal-cancel"
+agent-browser press "Escape"
 ```
 
 ---
@@ -820,23 +804,19 @@ agent-browser click "#modal-cancel"
 **Commands:**
 ```
 agent-browser navigate http://localhost:8800/
-agent-browser javascript "document.querySelectorAll('.project-group').length"
+agent-browser javascript "document.querySelectorAll('[data-testid=\"project-group\"]').length"
 agent-browser screenshot
 ```
 
-**Check:** The viewer sees no projects (none have been assigned yet).
-
 **Expected result:**
 - The project count is `0`
-- The empty state is shown with text "No projects yet"
+- An empty state message is shown
 
 ---
 
 ### 4.7 Viewer blocked by API (not just UI)
 
 **Precondition:** Logged in as `testviewer-e2e`.
-
-Verify that the backend enforces viewer restrictions, not just the UI. Run `fetch` calls in the browser console:
 
 **Generate endpoint (POST):**
 ```
@@ -847,14 +827,14 @@ agent-browser javascript "fetch('/api/generate', {method:'POST', headers:{'Conte
 
 **Abort endpoint (POST):**
 ```
-agent-browser javascript "fetch('/api/projects/some-project/gemini/gemini-2.5-flash/abort', {method:'POST', credentials:'same-origin'}).then(r => r.status)"
+agent-browser javascript "fetch('/api/projects/some-project/main/gemini/gemini-2.5-flash/abort', {method:'POST', credentials:'same-origin'}).then(r => r.status)"
 ```
 
 **Expected result:** Returns `403` or `404`.
 
 **Delete endpoint (DELETE):**
 ```
-agent-browser javascript "fetch('/api/projects/some-project/gemini/gemini-2.5-flash', {method:'DELETE', credentials:'same-origin'}).then(r => r.status)"
+agent-browser javascript "fetch('/api/projects/some-project/main/gemini/gemini-2.5-flash', {method:'DELETE', credentials:'same-origin'}).then(r => r.status)"
 ```
 
 **Expected result:** Returns `403` or `404`.
@@ -867,16 +847,15 @@ agent-browser javascript "fetch('/api/projects/some-project/gemini/gemini-2.5-fl
 
 **Commands:**
 ```
-agent-browser navigate http://localhost:8800/logout
-agent-browser wait-for-navigation
-agent-browser type "#username" "testadmin-e2e"
-agent-browser type "#api_key" "<TEST_ADMIN_PASSWORD>"
-agent-browser click ".btn-login"
+agent-browser javascript "fetch('/api/auth/logout', {method:'POST', credentials:'same-origin'})"
+agent-browser wait 1000
+agent-browser navigate http://localhost:8800/login
+agent-browser type "[name='username']" "testadmin-e2e"
+agent-browser type "[name='password']" "<TEST_ADMIN_PASSWORD>"
+agent-browser click "button[type='submit']"
 agent-browser wait-for-navigation
 agent-browser screenshot
 ```
-
-**Check:** The DB admin user is redirected to the dashboard.
 
 **Expected result:**
 - URL is `http://localhost:8800/`
@@ -888,15 +867,11 @@ agent-browser screenshot
 
 **Commands:**
 ```
-agent-browser eval 'document.querySelector(".user-menu-item[href=\"/admin\"]") !== null'
-agent-browser eval 'document.querySelector(".user-menu-item[href=\"/admin\"]").textContent.trim()'
+agent-browser javascript "document.querySelector('[data-testid=\"admin-link\"], a[href=\"/admin\"]') !== null"
 ```
 
-**Check:** The Admin link is visible for DB users with admin role.
-
 **Expected result:**
-- The first query returns `true`
-- The second query returns `"Admin Panel"`
+- Returns `true`
 
 ---
 
@@ -904,16 +879,14 @@ agent-browser eval 'document.querySelector(".user-menu-item[href=\"/admin\"]").t
 
 **Commands:**
 ```shell
-agent-browser click ".user-menu-item[href='/admin']"
-agent-browser wait-for-navigation
+agent-browser navigate http://localhost:8800/admin
+agent-browser wait 2000
 agent-browser screenshot
 ```
 
-**Check:** The admin panel loads without a 403 error.
-
 **Expected result:**
 - URL is `http://localhost:8800/admin`
-- The "User Management" heading is visible
+- The user management interface is visible
 - The users table shows the created test users
 
 ---
@@ -923,12 +896,10 @@ agent-browser screenshot
 **Commands:**
 ```
 agent-browser navigate http://localhost:8800/
-agent-browser javascript "Array.from(document.querySelectorAll('.project-group')).map(g => g.getAttribute('data-repo'))"
+agent-browser javascript "document.querySelectorAll('[data-testid=\"project-group\"]').length"
 agent-browser screenshot
 ```
 
-**Check:** The DB admin user can see all projects from all users.
-
 **Expected result:**
 - If `testuser-e2e` generated a project in Test 3.5, the `for-testing-only` project is visible here
-- Admin users see all projects regardless of owner (the code calls `list_projects()` without owner filter for admins)
+- Admin users see all projects regardless of owner

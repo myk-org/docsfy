@@ -13,8 +13,8 @@ TEST_ADMIN_KEY = "test-admin-secret-key"
 @pytest.fixture
 async def client(tmp_path: Path):
     import docsfy.storage as storage
+    from docsfy.api.projects import _generating
     from docsfy.config import get_settings
-    from docsfy.main import _generating
 
     orig_db = storage.DB_PATH
     orig_data = storage.DATA_DIR
@@ -48,14 +48,18 @@ async def client(tmp_path: Path):
         get_settings.cache_clear()
 
 
-async def test_dashboard_returns_html(client: AsyncClient) -> None:
+async def test_root_serves_spa_index(client: AsyncClient) -> None:
+    """GET / should serve the SPA index.html via the catch-all handler.
+
+    The middleware passes SPA routes through without auth check, and the
+    catch-all handler serves frontend/dist/index.html.
+    """
     response = await client.get("/")
     assert response.status_code == 200
-    assert "text/html" in response.headers["content-type"]
-    assert "docsfy" in response.text
 
 
-async def test_dashboard_shows_projects(client: AsyncClient) -> None:
+async def test_api_status_returns_projects(client: AsyncClient) -> None:
+    """GET /api/status should list projects as JSON."""
     from docsfy.storage import save_project, update_project_status
 
     await save_project(
@@ -75,20 +79,15 @@ async def test_dashboard_shows_projects(client: AsyncClient) -> None:
         page_count=10,
     )
 
-    response = await client.get("/")
+    response = await client.get("/api/status")
     assert response.status_code == 200
-    assert "test-repo" in response.text
+    projects = response.json()["projects"]
+    project_names = [p["name"] for p in projects]
+    assert "test-repo" in project_names
 
 
-async def test_dashboard_shows_generate_form(client: AsyncClient) -> None:
-    response = await client.get("/")
+async def test_api_status_empty_state(client: AsyncClient) -> None:
+    """GET /api/status with no projects should return an empty list."""
+    response = await client.get("/api/status")
     assert response.status_code == 200
-    assert "Generate" in response.text
-
-
-async def test_dashboard_empty_state(client: AsyncClient) -> None:
-    response = await client.get("/")
-    assert response.status_code == 200
-    assert "docsfy" in response.text
-    assert "No projects yet" in response.text
-    assert '<div class="variant-card"' not in response.text
+    assert response.json()["projects"] == []

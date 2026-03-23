@@ -143,6 +143,21 @@ diff -rq "$CROSS_PROVIDER_ROOT/baseline" "$CROSS_PROVIDER_ROOT/same-commit-switc
 
 ### 20.3 Cross-Model Incremental Update After a New Commit
 
+> **Docker note:** If the server runs inside a Docker container, `repo_path` must
+> resolve inside the container. The default `docker-compose.dev.yml` bind-mounts
+> `.dev/data` → `/data`, so clone into `$HOST_DATA_DIR` and reference
+> `/data/<dir-name>` in the API call. Set `HOST_DATA_DIR` in the shell variables
+> at the top of this file (defaults to `.dev/data` relative to the project root).
+
+**Step 0 (Docker only): Set the host-side data directory that is bind-mounted into the container.**
+
+```shell
+# Resolve the host-side data dir (adjust if your mount differs)
+HOST_DATA_DIR="${HOST_DATA_DIR:-$(git -C "$(dirname "$0")/../" rev-parse --show-toplevel 2>/dev/null)/.dev/data}"
+# Fallback for manual runs:
+HOST_DATA_DIR="${HOST_DATA_DIR:-/home/$USER/git/docsfy/.dev/data}"
+```
+
 **Step 1: Create a local clone and add a deterministic commit so the server sees a newer SHA than the baseline.**
 
 ```shell
@@ -156,24 +171,28 @@ git -C "$LOCAL_CLONE" rev-parse HEAD
 
 Store the final SHA as `LOCAL_UPDATED_COMMIT`.
 
-**Step 2: Trigger a non-force generation back to `gemini/gemini-2.5-flash` using the local clone (which contains the new commit).**
+**Step 2: Copy the clone to the container-accessible data directory and trigger a non-force generation using the container-side path.**
 
 ```shell
+# Copy clone to container-accessible location
+CONTAINER_CLONE_NAME="for-testing-only-e2e"
+cp -r "$LOCAL_CLONE" "$HOST_DATA_DIR/$CONTAINER_CLONE_NAME"
+
 curl -s -H "Authorization: Bearer $ADMIN_KEY" \
   -H "Content-Type: application/json" \
   -X POST "$SERVER/api/generate" \
-  -d "{\"repo_path\":\"$LOCAL_CLONE\",\"ai_provider\":\"$BASELINE_PROVIDER\",\"ai_model\":\"$BASELINE_MODEL\"}"
+  -d "{\"repo_path\":\"/data/$CONTAINER_CLONE_NAME\",\"ai_provider\":\"$BASELINE_PROVIDER\",\"ai_model\":\"$BASELINE_MODEL\"}"
 ```
 
 **Expected result:**
-- The response JSON contains `"project": "for-testing-only"`
+- The response JSON contains `"project": "for-testing-only-e2e"`
 - The response JSON contains `"status": "generating"`
 
 **Step 3: Poll the Gemini variant until it is ready. Use the Standard Polling Procedure with this exact status command.**
 
 ```shell
 curl -s -H "Authorization: Bearer $ADMIN_KEY" \
-  "$SERVER/api/projects/for-testing-only/main/$BASELINE_PROVIDER/$BASELINE_MODEL"
+  "$SERVER/api/projects/$CONTAINER_CLONE_NAME/main/$BASELINE_PROVIDER/$BASELINE_MODEL"
 ```
 
 **Expected result:**
@@ -185,7 +204,7 @@ curl -s -H "Authorization: Bearer $ADMIN_KEY" \
 ```shell
 curl -s -H "Authorization: Bearer $ADMIN_KEY" \
   -w "\nHTTP_STATUS:%{http_code}\n" \
-  "$SERVER/api/projects/for-testing-only/main/$SWITCH_PROVIDER/$SWITCH_MODEL_URL"
+  "$SERVER/api/projects/$CONTAINER_CLONE_NAME/main/$SWITCH_PROVIDER/$SWITCH_MODEL_URL"
 ```
 
 **Expected result:**
@@ -206,7 +225,7 @@ docker logs "$DOCSFY_CONTAINER" --since 10m 2>&1 | rg -i "cross-provider update"
 
 ```shell
 curl -s -L -H "Authorization: Bearer $ADMIN_KEY" \
-  "$SERVER/api/projects/for-testing-only/main/$BASELINE_PROVIDER/$BASELINE_MODEL/download" \
+  "$SERVER/api/projects/$CONTAINER_CLONE_NAME/main/$BASELINE_PROVIDER/$BASELINE_MODEL/download" \
   -o "$CROSS_PROVIDER_ROOT/updated-gemini.tar.gz"
 mkdir -p "$CROSS_PROVIDER_ROOT/updated-gemini"
 tar -xzf "$CROSS_PROVIDER_ROOT/updated-gemini.tar.gz" --strip-components=1 -C "$CROSS_PROVIDER_ROOT/updated-gemini"
@@ -307,9 +326,15 @@ curl -s -H "Authorization: Bearer $ADMIN_KEY" \
 curl -s -H "Authorization: Bearer $ADMIN_KEY" \
   -X DELETE "$SERVER/api/projects/for-testing-only/main/$SWITCH_PROVIDER/$SWITCH_MODEL_URL?owner=admin"
 
+# Clean up the container-accessible clone from Test 20.3
+curl -s -H "Authorization: Bearer $ADMIN_KEY" \
+  -X DELETE "$SERVER/api/projects/$CONTAINER_CLONE_NAME/main/$BASELINE_PROVIDER/$BASELINE_MODEL?owner=admin"
+rm -rf "$HOST_DATA_DIR/$CONTAINER_CLONE_NAME"
+
 rm -rf "$CROSS_PROVIDER_ROOT"
 ```
 
 **Expected result:**
 - The delete requests return success JSON or `404` if a prior step already removed the variant
 - The temporary directory `$CROSS_PROVIDER_ROOT` no longer exists
+- The container-accessible clone `$HOST_DATA_DIR/$CONTAINER_CLONE_NAME` no longer exists

@@ -14,6 +14,10 @@ dependencies = [
     "markdown",
     "pygments",
     "python-multipart>=0.0.22",
+    "typer[all]",
+    "tomli-w",
+    "httpx",
+    "websockets",
 ]
 
 [project.urls]
@@ -21,10 +25,11 @@ Documentation = "https://myk-org.github.io/docsfy-docs/"
 Repository = "https://github.com/myk-org/docsfy"
 
 [project.scripts]
-docsfy = "docsfy.main:run"
+docsfy-server = "docsfy.main:run"
+docsfy = "docsfy.cli.main:main"
 
 [project.optional-dependencies]
-dev = ["pytest", "pytest-asyncio", "pytest-xdist", "httpx"]
+dev = ["pytest", "pytest-asyncio", "pytest-xdist"]
 
 [build-system]
 requires = ["hatchling"]

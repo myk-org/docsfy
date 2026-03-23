@@ -14,7 +14,7 @@ TEST_ADMIN_KEY = "test-admin-secret-key"
 async def client(tmp_path: Path):
     import docsfy.storage as storage
     from docsfy.config import get_settings
-    from docsfy.main import _generating
+    from docsfy.api.projects import _generating
 
     orig_db = storage.DB_PATH
     orig_data = storage.DATA_DIR
@@ -71,17 +71,18 @@ async def test_full_flow_mock(client: AsyncClient, tmp_path: Path) -> None:
     }
 
     with (
-        patch("docsfy.main.check_ai_cli_available", return_value=(True, "")),
+        patch("docsfy.api.projects.check_ai_cli_available", return_value=(True, "")),
         patch(
-            "docsfy.main.clone_repo", return_value=(tmp_path / "repo", "abc123", "main")
+            "docsfy.api.projects.clone_repo",
+            return_value=(tmp_path / "repo", "abc123", "main"),
         ),
-        patch("docsfy.main.run_planner", return_value=sample_plan),
+        patch("docsfy.api.projects.run_planner", return_value=sample_plan),
         patch(
-            "docsfy.main.generate_all_pages",
+            "docsfy.api.projects.generate_all_pages",
             return_value={"introduction": "# Intro\n\nWelcome!"},
         ),
     ):
-        from docsfy.main import _run_generation
+        from docsfy.api.projects import _run_generation
 
         await storage.save_project(
             name="test-repo",
@@ -183,15 +184,15 @@ async def test_full_flow_with_branch(client: AsyncClient, tmp_path: Path) -> Non
         return (tmp_path / "repo", "def456", "v2.0")
 
     with (
-        patch("docsfy.main.check_ai_cli_available", return_value=(True, "")),
-        patch("docsfy.main.clone_repo", side_effect=mock_clone),
-        patch("docsfy.main.run_planner", return_value=sample_plan),
+        patch("docsfy.api.projects.check_ai_cli_available", return_value=(True, "")),
+        patch("docsfy.api.projects.clone_repo", side_effect=mock_clone),
+        patch("docsfy.api.projects.run_planner", return_value=sample_plan),
         patch(
-            "docsfy.main.generate_all_pages",
+            "docsfy.api.projects.generate_all_pages",
             return_value={"introduction": "# Intro\n\nWelcome v2!"},
         ),
     ):
-        from docsfy.main import _run_generation
+        from docsfy.api.projects import _run_generation
 
         await storage.save_project(
             name="test-repo",

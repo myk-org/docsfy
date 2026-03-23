@@ -16,8 +16,8 @@ TEST_ADMIN_KEY = "test-admin-secret-key"
 @pytest.fixture
 async def client(tmp_path: Path):
     import docsfy.storage as storage
+    from docsfy.api.projects import _generating
     from docsfy.config import get_settings
-    from docsfy.main import _generating
 
     # Save originals
     orig_db = storage.DB_PATH
@@ -72,7 +72,7 @@ async def test_generate_endpoint_invalid_url(client: AsyncClient) -> None:
 
 
 async def test_generate_endpoint_starts_generation(client: AsyncClient) -> None:
-    with patch("docsfy.main.asyncio.create_task") as mock_task:
+    with patch("docsfy.api.projects.asyncio.create_task") as mock_task:
         mock_task.side_effect = lambda coro: coro.close()
         response = await client.post(
             "/api/generate",
@@ -90,7 +90,7 @@ async def test_get_project_not_found(client: AsyncClient) -> None:
 
 
 async def test_generate_endpoint_with_force(client: AsyncClient) -> None:
-    with patch("docsfy.main.asyncio.create_task") as mock_task:
+    with patch("docsfy.api.projects.asyncio.create_task") as mock_task:
         mock_task.side_effect = lambda coro: coro.close()
         response = await client.post(
             "/api/generate",
@@ -106,7 +106,7 @@ async def test_generate_endpoint_local_path(
 ) -> None:
     # Create a fake git repo
     (tmp_path / "myrepo" / ".git").mkdir(parents=True)
-    with patch("docsfy.main.asyncio.create_task") as mock_task:
+    with patch("docsfy.api.projects.asyncio.create_task") as mock_task:
         mock_task.side_effect = lambda coro: coro.close()
         response = await client.post(
             "/api/generate",
@@ -136,7 +136,7 @@ async def test_delete_project_admin_requires_owner(client: AsyncClient) -> None:
 
 async def test_generate_duplicate_variant(client: AsyncClient) -> None:
     """Test that generating the same variant twice returns 409."""
-    from docsfy.main import _generating
+    from docsfy.api.projects import _generating
 
     # gen_key format: "owner/name/branch/provider/model"
     _generating["admin/repo/main/claude/opus"] = asyncio.create_task(asyncio.sleep(100))
@@ -261,7 +261,7 @@ async def test_reject_private_url_dns(monkeypatch: pytest.MonkeyPatch) -> None:
     """Test that SSRF protection rejects DNS names resolving to private IPs."""
     import socket
 
-    from docsfy.main import _reject_private_url
+    from docsfy.api.projects import _reject_private_url
 
     def mock_getaddrinfo(
         host: str, port: object, *args: object, **kwargs: object
@@ -291,7 +291,7 @@ async def test_generate_from_path_falls_back_to_full_regeneration_when_diff_fail
     client: AsyncClient, tmp_path: Path
 ) -> None:
     import docsfy.storage as storage
-    from docsfy.main import _generate_from_path
+    from docsfy.api.projects import _generate_from_path
     from docsfy.storage import get_project_dir
 
     sample_plan = {
@@ -336,14 +336,16 @@ async def test_generate_from_path_falls_back_to_full_regeneration_when_diff_fail
     )
 
     with (
-        patch("docsfy.main.deepen_clone_for_diff", return_value=True),
-        patch("docsfy.main.get_diff", return_value=None),
-        patch("docsfy.main.run_planner", return_value=sample_plan) as mock_run_planner,
+        patch("docsfy.api.projects.deepen_clone_for_diff", return_value=True),
+        patch("docsfy.api.projects.get_diff", return_value=None),
         patch(
-            "docsfy.main.generate_all_pages",
+            "docsfy.api.projects.run_planner", return_value=sample_plan
+        ) as mock_run_planner,
+        patch(
+            "docsfy.api.projects.generate_all_pages",
             return_value={"introduction": "# Intro\n\nWelcome!"},
         ) as mock_generate_all_pages,
-        patch("docsfy.main.render_site") as mock_render_site,
+        patch("docsfy.api.projects.render_site") as mock_render_site,
     ):
         await _generate_from_path(
             repo_dir=repo_dir,
@@ -372,7 +374,7 @@ async def test_generate_from_path_reuses_existing_plan_for_incremental_updates(
     client: AsyncClient, tmp_path: Path
 ) -> None:
     import docsfy.storage as storage
-    from docsfy.main import _generate_from_path
+    from docsfy.api.projects import _generate_from_path
     from docsfy.storage import get_project_cache_dir, get_project_dir
 
     sample_plan = {
@@ -426,27 +428,27 @@ async def test_generate_from_path_reuses_existing_plan_for_incremental_updates(
     )
 
     with (
-        patch("docsfy.main.deepen_clone_for_diff", return_value=True),
+        patch("docsfy.api.projects.deepen_clone_for_diff", return_value=True),
         patch(
-            "docsfy.main.get_diff",
+            "docsfy.api.projects.get_diff",
             return_value=(["src/intro.py"], "diff --git a/src/intro.py\n+new intro"),
         ),
         patch(
-            "docsfy.main.run_incremental_planner",
+            "docsfy.api.projects.run_incremental_planner",
             return_value=["introduction"],
         ) as mock_incremental_planner,
         patch(
-            "docsfy.main.run_planner",
+            "docsfy.api.projects.run_planner",
             side_effect=AssertionError("full planner should not run"),
         ) as mock_run_planner,
         patch(
-            "docsfy.main.generate_all_pages",
+            "docsfy.api.projects.generate_all_pages",
             return_value={
                 "introduction": "# Introduction\n\nNew intro\n",
                 "quickstart": "# Quick Start\n\nCached quickstart\n",
             },
         ) as mock_generate_all_pages,
-        patch("docsfy.main.render_site"),
+        patch("docsfy.api.projects.render_site"),
     ):
         await _generate_from_path(
             repo_dir=repo_dir,
@@ -478,7 +480,7 @@ async def test_generate_from_path_clears_stale_cache_for_full_regeneration(
     client: AsyncClient, tmp_path: Path
 ) -> None:
     import docsfy.storage as storage
-    from docsfy.main import _generate_from_path
+    from docsfy.api.projects import _generate_from_path
     from docsfy.storage import get_project_cache_dir, get_project_dir
 
     sample_plan = {
@@ -533,19 +535,19 @@ async def test_generate_from_path_clears_stale_cache_for_full_regeneration(
         await real_update_project_status(*args, **kwargs)
 
     with (
-        patch("docsfy.main.deepen_clone_for_diff", return_value=True),
+        patch("docsfy.api.projects.deepen_clone_for_diff", return_value=True),
         patch(
-            "docsfy.main.get_diff",
+            "docsfy.api.projects.get_diff",
             return_value=(["src/intro.py"], "diff --git a/src/intro.py\n+new intro"),
         ),
-        patch("docsfy.main.run_planner", return_value=sample_plan),
+        patch("docsfy.api.projects.run_planner", return_value=sample_plan),
         patch(
-            "docsfy.main.generate_all_pages",
+            "docsfy.api.projects.generate_all_pages",
             return_value={"introduction": "# Introduction\n\nNew intro\n"},
         ),
-        patch("docsfy.main.render_site"),
+        patch("docsfy.api.projects.render_site"),
         patch(
-            "docsfy.main.update_project_status",
+            "docsfy.api.projects.update_project_status",
             side_effect=record_update_project_status,
         ),
     ):
@@ -574,7 +576,7 @@ async def test_generate_from_path_cross_provider_same_commit_reuses_existing_art
     client: AsyncClient, tmp_path: Path
 ) -> None:
     import docsfy.storage as storage
-    from docsfy.main import _generate_from_path
+    from docsfy.api.projects import _generate_from_path
     from docsfy.storage import get_project, get_project_cache_dir, get_project_site_dir
 
     sample_plan = {
@@ -633,9 +635,9 @@ async def test_generate_from_path_cross_provider_same_commit_reuses_existing_art
     )
 
     with (
-        patch("docsfy.main.run_planner") as mock_run_planner,
-        patch("docsfy.main.generate_all_pages") as mock_generate_all_pages,
-        patch("docsfy.main.render_site") as mock_render_site,
+        patch("docsfy.api.projects.run_planner") as mock_run_planner,
+        patch("docsfy.api.projects.generate_all_pages") as mock_generate_all_pages,
+        patch("docsfy.api.projects.render_site") as mock_render_site,
     ):
         await _generate_from_path(
             repo_dir=repo_dir,
@@ -679,7 +681,7 @@ async def test_generate_from_path_cross_provider_reuses_unchanged_cached_pages(
     client: AsyncClient, tmp_path: Path
 ) -> None:
     import docsfy.storage as storage
-    from docsfy.main import _generate_from_path
+    from docsfy.api.projects import _generate_from_path
     from docsfy.storage import get_project, get_project_cache_dir, get_project_dir
 
     sample_plan = {
@@ -759,21 +761,24 @@ async def test_generate_from_path_cross_provider_reuses_unchanged_cached_pages(
         }
 
     with (
-        patch("docsfy.main.deepen_clone_for_diff", return_value=True),
+        patch("docsfy.api.projects.deepen_clone_for_diff", return_value=True),
         patch(
-            "docsfy.main.get_diff",
+            "docsfy.api.projects.get_diff",
             return_value=(["src/intro.py"], "diff --git a/src/intro.py\n+new intro"),
         ),
         patch(
-            "docsfy.main.run_incremental_planner",
+            "docsfy.api.projects.run_incremental_planner",
             return_value=["introduction"],
         ) as mock_incremental_planner,
         patch(
-            "docsfy.main.run_planner",
+            "docsfy.api.projects.run_planner",
             side_effect=AssertionError("full planner should not run"),
         ) as mock_run_planner,
-        patch("docsfy.main.generate_all_pages", side_effect=fake_generate_all_pages),
-        patch("docsfy.main.render_site"),
+        patch(
+            "docsfy.api.projects.generate_all_pages",
+            side_effect=fake_generate_all_pages,
+        ),
+        patch("docsfy.api.projects.render_site"),
     ):
         await _generate_from_path(
             repo_dir=repo_dir,
@@ -812,7 +817,7 @@ async def test_force_generation_does_not_replace_existing_variant(
 ) -> None:
     """force=True should do full generation without cross-provider reuse."""
     import docsfy.storage as storage
-    from docsfy.main import _generate_from_path
+    from docsfy.api.projects import _generate_from_path
     from docsfy.storage import (
         get_project,
         get_project_cache_dir,
@@ -886,12 +891,14 @@ async def test_force_generation_does_not_replace_existing_variant(
     )
 
     with (
-        patch("docsfy.main.run_planner", return_value=sample_plan) as mock_run_planner,
         patch(
-            "docsfy.main.generate_all_pages",
+            "docsfy.api.projects.run_planner", return_value=sample_plan
+        ) as mock_run_planner,
+        patch(
+            "docsfy.api.projects.generate_all_pages",
             return_value={"introduction": "# Introduction\n\nClaude intro\n"},
         ) as mock_generate_all_pages,
-        patch("docsfy.main.render_site"),
+        patch("docsfy.api.projects.render_site"),
     ):
         # Call _generate_from_path with force=True and provider B
         await _generate_from_path(

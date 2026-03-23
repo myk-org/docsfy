@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Awaitable, Callable
 from pathlib import Path
 from typing import Any
 
@@ -258,6 +259,7 @@ async def generate_page(
     changed_files: list[str] | None = None,
     diff_content: str | None = None,
     branch: str = DEFAULT_BRANCH,
+    on_page_generated: Callable[[int], Awaitable[None]] | None = None,
 ) -> str:
     _label = project_name or repo_path.name
     prompt_project_name = project_name or repo_path.name
@@ -336,6 +338,13 @@ async def generate_page(
             page_count=existing_pages,
             branch=branch,
         )
+        if on_page_generated is not None:
+            try:
+                await on_page_generated(existing_pages)
+            except Exception as exc:
+                logger.debug(
+                    f"[{_label}] on_page_generated callback failed for '{slug}': {exc}"
+                )
 
     return output
 
@@ -354,6 +363,7 @@ async def generate_all_pages(
     existing_pages: dict[str, str] | None = None,
     diff_content: str | None = None,
     branch: str = DEFAULT_BRANCH,
+    on_page_generated: Callable[[int], Awaitable[None]] | None = None,
 ) -> dict[str, str]:
     _label = project_name or repo_path.name
 
@@ -396,6 +406,7 @@ async def generate_all_pages(
             changed_files=changed_files,
             diff_content=diff_content,
             branch=branch,
+            on_page_generated=on_page_generated,
         )
         for p in all_pages
     ]

@@ -41,7 +41,8 @@ async def _init_db(tmp_path: Path):
 @pytest.fixture
 async def unauthed_client(_init_db: None):
     """Client with NO auth credentials."""
-    from docsfy.main import _generating, app
+    from docsfy.api.projects import _generating
+    from docsfy.main import app
 
     _generating.clear()
     try:
@@ -55,7 +56,8 @@ async def unauthed_client(_init_db: None):
 @pytest.fixture
 async def admin_client(_init_db: None):
     """Client authenticated as admin via Bearer token."""
-    from docsfy.main import _generating, app
+    from docsfy.api.projects import _generating
+    from docsfy.main import app
 
     _generating.clear()
     try:
@@ -71,17 +73,8 @@ async def admin_client(_init_db: None):
 
 
 # ---------------------------------------------------------------------------
-# Test: unauthenticated redirect / 401
+# Test: unauthenticated API returns 401
 # ---------------------------------------------------------------------------
-
-
-async def test_login_redirect_when_unauthenticated(
-    unauthed_client: AsyncClient,
-) -> None:
-    """Browser requests to protected pages should redirect to /login."""
-    response = await unauthed_client.get("/", follow_redirects=False)
-    assert response.status_code == 302
-    assert response.headers["location"] == "/login"
 
 
 async def test_api_returns_401_when_unauthenticated(
@@ -94,40 +87,59 @@ async def test_api_returns_401_when_unauthenticated(
 
 
 # ---------------------------------------------------------------------------
-# Test: login with admin key
+# Test: SPA routes pass through without auth (middleware lets them through)
+# ---------------------------------------------------------------------------
+
+
+async def test_spa_root_passes_through_without_auth(
+    unauthed_client: AsyncClient,
+) -> None:
+    """Non-API, non-docs routes should pass through the middleware without auth check.
+
+    The SPA catch-all serves index.html for all unmatched routes, so GET /
+    returns 200 without requiring authentication.
+    """
+    response = await unauthed_client.get("/", follow_redirects=False)
+    # SPA routes pass through middleware; catch-all serves index.html
+    assert response.status_code == 200
+
+
+# ---------------------------------------------------------------------------
+# Test: login with admin key via JSON API
 # ---------------------------------------------------------------------------
 
 
 async def test_login_with_admin_key(unauthed_client: AsyncClient) -> None:
-    """POST /login with the admin key should set a session cookie and redirect."""
+    """POST /api/auth/login with the admin key should set a session cookie."""
     response = await unauthed_client.post(
-        "/login",
-        data={"username": "admin", "api_key": TEST_ADMIN_KEY},
-        follow_redirects=False,
+        "/api/auth/login",
+        json={"username": "admin", "api_key": TEST_ADMIN_KEY},
     )
-    assert response.status_code == 302
-    assert response.headers["location"] == "/"
+    assert response.status_code == 200
+    data = response.json()
+    assert data["username"] == "admin"
+    assert data["is_admin"] is True
     assert "docsfy_session" in response.cookies
 
 
 # ---------------------------------------------------------------------------
-# Test: login with user key
+# Test: login with user key via JSON API
 # ---------------------------------------------------------------------------
 
 
 async def test_login_with_user_key(unauthed_client: AsyncClient) -> None:
-    """POST /login with a valid user key should set a session cookie."""
+    """POST /api/auth/login with a valid user key should set a session cookie."""
     from docsfy.storage import create_user
 
     _username, raw_key = await create_user("alice")
 
     response = await unauthed_client.post(
-        "/login",
-        data={"username": "alice", "api_key": raw_key},
-        follow_redirects=False,
+        "/api/auth/login",
+        json={"username": "alice", "api_key": raw_key},
     )
-    assert response.status_code == 302
-    assert response.headers["location"] == "/"
+    assert response.status_code == 200
+    data = response.json()
+    assert data["username"] == "alice"
     assert "docsfy_session" in response.cookies
 
 
@@ -137,16 +149,16 @@ async def test_login_with_user_key(unauthed_client: AsyncClient) -> None:
 
 
 async def test_login_with_invalid_key(unauthed_client: AsyncClient) -> None:
-    """POST /login with a bad key should return 401 with an error message."""
+    """POST /api/auth/login with a bad key should return 401."""
     response = await unauthed_client.post(
-        "/login",
-        data={
+        "/api/auth/login",
+        json={
             "username": "someone",
             "api_key": "totally-wrong",  # pragma: allowlist secret
         },
     )
     assert response.status_code == 401
-    assert "Invalid username or password" in response.text
+    assert "Invalid username or password" in response.json()["detail"]
 
 
 # ---------------------------------------------------------------------------
@@ -163,7 +175,8 @@ async def test_api_bearer_auth(admin_client: AsyncClient) -> None:
 
 async def test_api_bearer_auth_user_key(_init_db: None) -> None:
     """Requests with a valid user Bearer token should succeed."""
-    from docsfy.main import _generating, app
+    from docsfy.api.projects import _generating
+    from docsfy.main import app
     from docsfy.storage import create_user
 
     _generating.clear()
@@ -181,19 +194,20 @@ async def test_api_bearer_auth_user_key(_init_db: None) -> None:
 
 
 # ---------------------------------------------------------------------------
-# Test: user sees only own docs, admin sees all
+# Test: user sees only own docs (via API)
 # ---------------------------------------------------------------------------
 
 
 async def test_user_sees_only_own_docs(_init_db: None) -> None:
-    """A non-admin user should only see projects they own."""
-    from docsfy.main import _generating, app
+    """A non-admin user should only see projects they own via /api/status."""
+    from docsfy.api.projects import _generating
+    from docsfy.main import app
     from docsfy.storage import create_user, save_project
 
     _generating.clear()
 
     _, alice_key = await create_user("alice-owner")
-    _, bob_key = await create_user("bob-owner")
+    await create_user("bob-owner")
 
     # Alice owns project-a
     await save_project(
@@ -220,16 +234,18 @@ async def test_user_sees_only_own_docs(_init_db: None) -> None:
         base_url="http://test",
         headers={"Authorization": f"Bearer {alice_key}"},
     ) as ac:
-        response = await ac.get("/")
+        response = await ac.get("/api/status")
     assert response.status_code == 200
-    assert "project-a" in response.text
-    assert "project-b" not in response.text
+    projects = response.json()["projects"]
+    project_names = [p["name"] for p in projects]
+    assert "project-a" in project_names
+    assert "project-b" not in project_names
 
     _generating.clear()
 
 
 async def test_admin_sees_all_docs(admin_client: AsyncClient) -> None:
-    """Admin should see all projects regardless of owner."""
+    """Admin should see all projects regardless of owner via /api/status."""
     from docsfy.storage import save_project
 
     await save_project(
@@ -247,36 +263,34 @@ async def test_admin_sees_all_docs(admin_client: AsyncClient) -> None:
         owner="other",
     )
 
-    response = await admin_client.get("/")
+    response = await admin_client.get("/api/status")
     assert response.status_code == 200
-    assert "project-x" in response.text
-    assert "project-y" in response.text
+    projects = response.json()["projects"]
+    project_names = [p["name"] for p in projects]
+    assert "project-x" in project_names
+    assert "project-y" in project_names
 
 
 # ---------------------------------------------------------------------------
-# Test: logout
+# Test: logout via JSON API
 # ---------------------------------------------------------------------------
 
 
 async def test_logout(unauthed_client: AsyncClient) -> None:
-    """GET /logout should delete the session cookie and redirect to /login."""
+    """POST /api/auth/logout should delete the session cookie and return {ok: true}."""
     # First login to get a session cookie
     login_response = await unauthed_client.post(
-        "/login",
-        data={"username": "admin", "api_key": TEST_ADMIN_KEY},
-        follow_redirects=False,
+        "/api/auth/login",
+        json={"username": "admin", "api_key": TEST_ADMIN_KEY},
     )
     assert "docsfy_session" in login_response.cookies
     session_cookie = login_response.cookies["docsfy_session"]
 
     # Now logout with the session cookie
-    response = await unauthed_client.get(
-        "/logout",
-        cookies={"docsfy_session": session_cookie},
-        follow_redirects=False,
-    )
-    assert response.status_code == 302
-    assert response.headers["location"] == "/login"
+    unauthed_client.cookies.set("docsfy_session", session_cookie)
+    response = await unauthed_client.post("/api/auth/logout")
+    assert response.status_code == 200
+    assert response.json() == {"ok": True}
     # Cookie should be deleted (set to empty / expired)
     set_cookie = response.headers.get("set-cookie", "")
     assert "docsfy_session" in set_cookie
@@ -295,17 +309,20 @@ async def test_health_is_public(unauthed_client: AsyncClient) -> None:
 
 
 # ---------------------------------------------------------------------------
-# Test: login page is accessible without auth
+# Test: /login path is accessible without auth (public path)
 # ---------------------------------------------------------------------------
 
 
-async def test_login_page_accessible(unauthed_client: AsyncClient) -> None:
-    """GET /login should return the login page without redirecting."""
-    response = await unauthed_client.get("/login")
+async def test_login_path_is_public(unauthed_client: AsyncClient) -> None:
+    """GET /login should pass through middleware without auth.
+
+    The SPA catch-all serves index.html for /login so React can render
+    the login form client-side.
+    """
+    response = await unauthed_client.get("/login", follow_redirects=False)
+    # /login is in _PUBLIC_PATHS, so middleware passes through.
+    # The SPA catch-all serves index.html.
     assert response.status_code == 200
-    assert "docsfy" in response.text
-    assert "Username" in response.text
-    assert "Password" in response.text
 
 
 # ---------------------------------------------------------------------------
@@ -313,30 +330,10 @@ async def test_login_page_accessible(unauthed_client: AsyncClient) -> None:
 # ---------------------------------------------------------------------------
 
 
-async def test_viewer_can_view_dashboard(_init_db: None) -> None:
-    """A viewer should be able to access the dashboard (read-only)."""
-    from docsfy.main import _generating, app
-    from docsfy.storage import create_user
-
-    _generating.clear()
-    _, viewer_key = await create_user("viewer-user", role="viewer")
-
-    transport = ASGITransport(app=app)
-    async with AsyncClient(
-        transport=transport,
-        base_url="http://test",
-        headers={"Authorization": f"Bearer {viewer_key}"},
-    ) as ac:
-        response = await ac.get("/")
-    assert response.status_code == 200
-    # Viewer should NOT see the generate form
-    assert "Generate Documentation" not in response.text
-    _generating.clear()
-
-
 async def test_viewer_cannot_generate(_init_db: None) -> None:
     """A viewer should get 403 when trying to generate docs."""
-    from docsfy.main import _generating, app
+    from docsfy.api.projects import _generating
+    from docsfy.main import app
     from docsfy.storage import create_user
 
     _generating.clear()
@@ -362,7 +359,8 @@ async def test_viewer_cannot_generate(_init_db: None) -> None:
 
 async def test_viewer_cannot_delete(_init_db: None) -> None:
     """A viewer should get 403 when trying to delete a project."""
-    from docsfy.main import _generating, app
+    from docsfy.api.projects import _generating
+    from docsfy.main import app
     from docsfy.storage import create_user, save_project
 
     _generating.clear()
@@ -393,8 +391,9 @@ async def test_viewer_cannot_delete(_init_db: None) -> None:
 
 
 async def test_admin_user_sees_all_docs(_init_db: None) -> None:
-    """A user with admin role should see all projects (like ADMIN_KEY)."""
-    from docsfy.main import _generating, app
+    """A user with admin role should see all projects (like ADMIN_KEY) via /api/status."""
+    from docsfy.api.projects import _generating
+    from docsfy.main import app
     from docsfy.storage import create_user, save_project
 
     _generating.clear()
@@ -421,10 +420,12 @@ async def test_admin_user_sees_all_docs(_init_db: None) -> None:
         base_url="http://test",
         headers={"Authorization": f"Bearer {admin_key}"},
     ) as ac:
-        response = await ac.get("/")
+        response = await ac.get("/api/status")
     assert response.status_code == 200
-    assert "proj-alpha" in response.text
-    assert "proj-beta" in response.text
+    projects = response.json()["projects"]
+    project_names = [p["name"] for p in projects]
+    assert "proj-alpha" in project_names
+    assert "proj-beta" in project_names
     _generating.clear()
 
 
@@ -436,9 +437,8 @@ async def test_admin_user_sees_all_docs(_init_db: None) -> None:
 async def test_session_cookie_is_opaque_token(unauthed_client: AsyncClient) -> None:
     """The session cookie should NOT contain the raw API key."""
     response = await unauthed_client.post(
-        "/login",
-        data={"username": "admin", "api_key": TEST_ADMIN_KEY},
-        follow_redirects=False,
+        "/api/auth/login",
+        json={"username": "admin", "api_key": TEST_ADMIN_KEY},
     )
     assert "docsfy_session" in response.cookies
     cookie_value = response.cookies["docsfy_session"]
@@ -452,17 +452,14 @@ async def test_session_cookie_authenticates(unauthed_client: AsyncClient) -> Non
     """A valid session cookie should authenticate the user."""
     # Login to get session
     response = await unauthed_client.post(
-        "/login",
-        data={"username": "admin", "api_key": TEST_ADMIN_KEY},
-        follow_redirects=False,
+        "/api/auth/login",
+        json={"username": "admin", "api_key": TEST_ADMIN_KEY},
     )
     session_cookie = response.cookies["docsfy_session"]
 
     # Use session cookie to access protected page
-    response = await unauthed_client.get(
-        "/api/status",
-        cookies={"docsfy_session": session_cookie},
-    )
+    unauthed_client.cookies.set("docsfy_session", session_cookie)
+    response = await unauthed_client.get("/api/status")
     assert response.status_code == 200
 
 
@@ -472,9 +469,8 @@ async def test_session_deleted_on_logout(unauthed_client: AsyncClient) -> None:
 
     # Login
     response = await unauthed_client.post(
-        "/login",
-        data={"username": "admin", "api_key": TEST_ADMIN_KEY},
-        follow_redirects=False,
+        "/api/auth/login",
+        json={"username": "admin", "api_key": TEST_ADMIN_KEY},
     )
     session_token = response.cookies["docsfy_session"]
     # Session should exist
@@ -482,11 +478,8 @@ async def test_session_deleted_on_logout(unauthed_client: AsyncClient) -> None:
     assert session is not None
 
     # Logout
-    await unauthed_client.get(
-        "/logout",
-        cookies={"docsfy_session": session_token},
-        follow_redirects=False,
-    )
+    unauthed_client.cookies.set("docsfy_session", session_token)
+    await unauthed_client.post("/api/auth/logout")
 
     # Session should be deleted from DB
     session = await get_session(session_token)
@@ -537,7 +530,8 @@ async def test_admin_cannot_self_delete(admin_client: AsyncClient) -> None:
 
 async def test_api_status_filters_by_owner(_init_db: None) -> None:
     """Non-admin user should only see their own projects via /api/status."""
-    from docsfy.main import _generating, app
+    from docsfy.api.projects import _generating
+    from docsfy.main import app
     from docsfy.storage import create_user, save_project
 
     _generating.clear()
@@ -579,7 +573,8 @@ async def test_api_status_filters_by_owner(_init_db: None) -> None:
 
 async def test_non_owner_cannot_access_project(_init_db: None) -> None:
     """Non-admin user should not see projects owned by others."""
-    from docsfy.main import _generating, app
+    from docsfy.api.projects import _generating
+    from docsfy.main import app
     from docsfy.storage import create_user, save_project
 
     _generating.clear()
@@ -603,8 +598,8 @@ async def test_non_owner_cannot_access_project(_init_db: None) -> None:
         response = await ac.get("/api/projects/secret-proj")
         assert response.status_code == 404
 
-        # GET /api/projects/{name}/{provider}/{model}
-        response = await ac.get("/api/projects/secret-proj/claude/opus")
+        # GET /api/projects/{name}/{branch}/{provider}/{model}
+        response = await ac.get("/api/projects/secret-proj/main/claude/opus")
         assert response.status_code == 404
 
     _generating.clear()
@@ -617,7 +612,8 @@ async def test_non_owner_cannot_access_project(_init_db: None) -> None:
 
 async def test_non_admin_cannot_use_repo_path(_init_db: None, tmp_path: Path) -> None:
     """Non-admin users should get 403 when using repo_path."""
-    from docsfy.main import _generating, app
+    from docsfy.api.projects import _generating
+    from docsfy.main import app
     from docsfy.storage import create_user
 
     _generating.clear()
@@ -652,9 +648,8 @@ async def test_login_cookie_has_samesite_strict(
 ) -> None:
     """Login cookie should have SameSite=strict."""
     response = await unauthed_client.post(
-        "/login",
-        data={"username": "admin", "api_key": TEST_ADMIN_KEY},
-        follow_redirects=False,
+        "/api/auth/login",
+        json={"username": "admin", "api_key": TEST_ADMIN_KEY},
     )
     set_cookie = response.headers.get("set-cookie", "")
     assert "samesite=strict" in set_cookie.lower()
@@ -667,7 +662,8 @@ async def test_login_cookie_has_samesite_strict(
 
 async def test_viewer_sees_assigned_projects(_init_db: None) -> None:
     """A viewer with granted access should see assigned projects."""
-    from docsfy.main import _generating, app
+    from docsfy.api.projects import _generating
+    from docsfy.main import app
     from docsfy.storage import create_user, grant_project_access, save_project
 
     _generating.clear()
@@ -702,13 +698,14 @@ async def test_viewer_sees_assigned_projects(_init_db: None) -> None:
 
 
 # ---------------------------------------------------------------------------
-# Test: user rotates own key
+# Test: user rotates own key via /api/auth/rotate-key
 # ---------------------------------------------------------------------------
 
 
 async def test_user_rotates_own_key(_init_db: None) -> None:
     """A user can rotate their own API key, invalidating the old one."""
-    from docsfy.main import _generating, app
+    from docsfy.api.projects import _generating
+    from docsfy.main import app
     from docsfy.storage import create_user
 
     _generating.clear()
@@ -716,18 +713,17 @@ async def test_user_rotates_own_key(_init_db: None) -> None:
 
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
-        # Login
+        # Login via JSON API
         resp = await ac.post(
-            "/login",
-            data={"username": "rotatetest", "api_key": key},
-            follow_redirects=False,
+            "/api/auth/login",
+            json={"username": "rotatetest", "api_key": key},
         )
         cookie = resp.cookies.get("docsfy_session")
 
-        # Rotate
+        # Rotate via new endpoint
+        ac.cookies.set("docsfy_session", cookie)
         resp = await ac.post(
-            "/api/me/rotate-key",
-            cookies={"docsfy_session": cookie},
+            "/api/auth/rotate-key",
             json={},
         )
         assert resp.status_code == 200
@@ -737,11 +733,10 @@ async def test_user_rotates_own_key(_init_db: None) -> None:
 
         # Old key should no longer work for login
         resp = await ac.post(
-            "/login",
-            data={"username": "rotatetest", "api_key": key},
-            follow_redirects=False,
+            "/api/auth/login",
+            json={"username": "rotatetest", "api_key": key},
         )
-        assert resp.status_code != 302  # login should fail
+        assert resp.status_code == 401  # login should fail
 
     _generating.clear()
 
@@ -776,13 +771,14 @@ async def test_admin_rotates_nonexistent_user_key(
 
 
 # ---------------------------------------------------------------------------
-# Test: viewer cannot rotate key
+# Test: viewer can rotate own key
 # ---------------------------------------------------------------------------
 
 
 async def test_viewer_can_rotate_key(_init_db: None) -> None:
     """A viewer should be able to rotate their own key (change password)."""
-    from docsfy.main import _generating, app
+    from docsfy.api.projects import _generating
+    from docsfy.main import app
     from docsfy.storage import create_user
 
     _generating.clear()
@@ -792,16 +788,15 @@ async def test_viewer_can_rotate_key(_init_db: None) -> None:
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
         # Login first
         resp = await ac.post(
-            "/login",
-            data={"username": "viewer-rotate", "api_key": viewer_key},
-            follow_redirects=False,
+            "/api/auth/login",
+            json={"username": "viewer-rotate", "api_key": viewer_key},
         )
         cookie = resp.cookies.get("docsfy_session")
 
         # Rotate should succeed
+        ac.cookies.set("docsfy_session", cookie)
         resp = await ac.post(
-            "/api/me/rotate-key",
-            cookies={"docsfy_session": cookie},
+            "/api/auth/rotate-key",
             json={},
         )
     assert resp.status_code == 200
@@ -818,7 +813,7 @@ async def test_admin_key_user_cannot_rotate_own_key(
     admin_client: AsyncClient,
 ) -> None:
     """ADMIN_KEY users should get 400 when trying to rotate their own key."""
-    resp = await admin_client.post("/api/me/rotate-key", json={})
+    resp = await admin_client.post("/api/auth/rotate-key", json={})
     assert resp.status_code == 400
     assert "ADMIN_KEY" in resp.json()["detail"]
 
@@ -830,7 +825,8 @@ async def test_admin_key_user_cannot_rotate_own_key(
 
 async def test_user_rotates_with_custom_key(_init_db: None) -> None:
     """A user can set a custom password when rotating their key."""
-    from docsfy.main import _generating, app
+    from docsfy.api.projects import _generating
+    from docsfy.main import app
     from docsfy.storage import create_user
 
     _generating.clear()
@@ -840,16 +836,15 @@ async def test_user_rotates_with_custom_key(_init_db: None) -> None:
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
         # Login
         resp = await ac.post(
-            "/login",
-            data={"username": "customkey", "api_key": key},
-            follow_redirects=False,
+            "/api/auth/login",
+            json={"username": "customkey", "api_key": key},
         )
         cookie = resp.cookies.get("docsfy_session")
 
         custom = "my-very-secure-custom-password-123"
+        ac.cookies.set("docsfy_session", cookie)
         resp = await ac.post(
-            "/api/me/rotate-key",
-            cookies={"docsfy_session": cookie},
+            "/api/auth/rotate-key",
             json={"new_key": custom},
         )
         assert resp.status_code == 200
@@ -857,11 +852,10 @@ async def test_user_rotates_with_custom_key(_init_db: None) -> None:
 
         # Can login with custom key
         resp = await ac.post(
-            "/login",
-            data={"username": "customkey", "api_key": custom},
-            follow_redirects=False,
+            "/api/auth/login",
+            json={"username": "customkey", "api_key": custom},
         )
-        assert resp.status_code == 302
+        assert resp.status_code == 200
 
     _generating.clear()
 
@@ -873,7 +867,8 @@ async def test_user_rotates_with_custom_key(_init_db: None) -> None:
 
 async def test_reject_short_custom_key(_init_db: None) -> None:
     """A custom key shorter than 16 characters should be rejected."""
-    from docsfy.main import _generating, app
+    from docsfy.api.projects import _generating
+    from docsfy.main import app
     from docsfy.storage import create_user
 
     _generating.clear()
@@ -883,15 +878,14 @@ async def test_reject_short_custom_key(_init_db: None) -> None:
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
         # Login
         resp = await ac.post(
-            "/login",
-            data={"username": "shortkey", "api_key": key},
-            follow_redirects=False,
+            "/api/auth/login",
+            json={"username": "shortkey", "api_key": key},
         )
         cookie = resp.cookies.get("docsfy_session")
 
+        ac.cookies.set("docsfy_session", cookie)
         resp = await ac.post(
-            "/api/me/rotate-key",
-            cookies={"docsfy_session": cookie},
+            "/api/auth/rotate-key",
             json={"new_key": "short"},
         )
         assert resp.status_code == 400

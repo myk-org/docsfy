@@ -2,6 +2,8 @@
 
 > Back to the [main E2E index](e2e-ui-test-plan.md#test-files). Shared execution rules, prerequisites, variables, and environment constraints live there.
 
+> **UI Framework Note:** The app UI is a React SPA using shadcn/ui components and Tailwind CSS. Modals and dialogs are React AlertDialog/Dialog components. Real-time updates use WebSocket (`/api/ws`).
+
 ---
 
 ## Test 8: Generated Docs Quality
@@ -9,30 +11,23 @@
 **Precondition:** Generate docs first as `testuser-e2e` if not already done. Log in as `testuser-e2e` and ensure docs are in `ready` state.
 
 ```
-agent-browser navigate http://localhost:8800/logout
-agent-browser wait-for-navigation
-agent-browser type "#username" "testuser-e2e"
-agent-browser type "#api_key" "<TEST_USER_PASSWORD>"
-agent-browser click ".btn-login"
+agent-browser javascript "fetch('/api/auth/logout', {method:'POST', credentials:'same-origin'})"
+agent-browser wait 1000
+agent-browser navigate http://localhost:8800/login
+agent-browser type "[name='username']" "testuser-e2e"
+agent-browser type "[name='password']" "<TEST_USER_PASSWORD>"
+agent-browser click "button[type='submit']"
 agent-browser wait-for-navigation
 ```
 
-If the project was deleted in Test 7.5, regenerate it:
-```
-agent-browser type "#gen-repo-url" "https://github.com/myk-org/for-testing-only"
-agent-browser type "#gen-branch" "main"
-agent-browser select "#gen-provider" "gemini"
-agent-browser wait 500
-agent-browser clear "#gen-model"
-agent-browser type "#gen-model" "gemini-2.5-flash"
-agent-browser click "#gen-submit"
-```
+If the project was deleted in Test 7.5, regenerate it via the generate form.
 
 Wait for generation to complete (poll status every 10s until ready).
 
 ### 8.1 Docs page loads with sidebar
 
 **Commands:**
+
 ```
 agent-browser navigate http://localhost:8800/docs/for-testing-only/main/gemini/gemini-2.5-flash/
 agent-browser screenshot
@@ -42,7 +37,7 @@ agent-browser screenshot
 
 **Expected result:**
 - The page loads without error
-- A sidebar (`.sidebar` or similar navigation element) is visible on the left
+- A sidebar navigation element is visible on the left
 - The sidebar contains navigation links to documentation sections
 - The main content area contains the documentation text
 
@@ -51,6 +46,7 @@ agent-browser screenshot
 ### 8.2 Dark theme works on docs
 
 **Commands:**
+
 ```
 agent-browser javascript "document.documentElement.getAttribute('data-theme')"
 ```
@@ -66,6 +62,7 @@ agent-browser javascript "document.documentElement.getAttribute('data-theme')"
 ### 8.3 "On this page" TOC present
 
 **Commands:**
+
 ```
 agent-browser javascript "document.querySelectorAll('.toc a[href^=\"#\"], .on-this-page a[href^=\"#\"]').length > 0"
 agent-browser screenshot
@@ -81,37 +78,30 @@ agent-browser screenshot
 ### 8.4 Code copy button works
 
 **Commands:**
+
 ```
-agent-browser javascript "document.querySelector('.copy-btn, [data-copy], button[class*=\"copy\"]') !== null"
+agent-browser javascript "const btn = document.querySelector('.copy-btn, [data-copy], button[class*=\"copy\"]'); btn !== null"
+agent-browser javascript "const btn = document.querySelector('.copy-btn, [data-copy], button[class*=\"copy\"]'); if (btn) { btn.click(); true } else { 'no copy button found' }"
+agent-browser wait 500
+agent-browser screenshot
 ```
 
-**Check:** Code blocks have copy buttons.
+**Check:** Code blocks have copy buttons and clicking them triggers the copy action.
 
 **Expected result:**
 - If code blocks exist in the generated docs, they include a copy button
-
-If code blocks exist on the page, test the copy button:
-```shell
-agent-browser javascript "var btn = document.querySelector('.copy-btn, [data-copy], button[class*=\"copy\"]'); if (btn) { btn.click(); true; } else { 'no code blocks' }"
-agent-browser wait 1000
-agent-browser javascript "var btn = document.querySelector('.copy-btn, [data-copy], button[class*=\"copy\"]'); btn ? (document.querySelector('.copy-btn.copied, [data-copy].copied, .copy-success') !== null || document.body.textContent.includes('Copied')) : 'no code blocks — skip'"
-```
-
-**Expected result:**
-- If code blocks exist: returns true --- clicking copy button shows feedback (copied state or success message)
-- If no code blocks exist: returns `"no code blocks — skip"` and the test passes (no copy button expected)
+- After clicking the copy button, a visual confirmation appears (e.g., button text/icon changes to "Copied" or a checkmark)
 
 ---
 
 ### 8.5 "Generated with docsfy" in footer
 
 **Commands:**
+
 ```
 agent-browser javascript "document.querySelector('footer') !== null"
 agent-browser javascript "document.querySelector('footer').textContent.toLowerCase().includes('docsfy')"
 ```
-
-**Check:** The footer credits docsfy.
 
 **Expected result:**
 - A `<footer>` element exists
@@ -122,34 +112,32 @@ agent-browser javascript "document.querySelector('footer').textContent.toLowerCa
 ### 8.6 llms.txt accessible
 
 **Commands:**
+
 ```
 agent-browser navigate http://localhost:8800/docs/for-testing-only/main/gemini/gemini-2.5-flash/llms.txt
 agent-browser javascript "document.body.innerText.length > 0"
 agent-browser screenshot
 ```
 
-**Check:** The `llms.txt` file is accessible and contains content.
-
 **Expected result:**
 - The page loads without a 404 error
-- The content is non-empty text (LLM-friendly summary of the documentation)
+- The content is non-empty text
 
 ---
 
 ### 8.7 llms-full.txt accessible
 
 **Commands:**
+
 ```
 agent-browser navigate http://localhost:8800/docs/for-testing-only/main/gemini/gemini-2.5-flash/llms-full.txt
 agent-browser javascript "document.body.innerText.length > 0"
 agent-browser screenshot
 ```
 
-**Check:** The `llms-full.txt` file is accessible and contains content.
-
 **Expected result:**
 - The page loads without a 404 error
-- The content is non-empty text (full documentation in LLM-friendly format)
+- The content is non-empty text
 - This file should be larger than `llms.txt`
 
 ---
@@ -160,86 +148,64 @@ agent-browser screenshot
 
 ```
 agent-browser navigate http://localhost:8800/
-agent-browser clear "#gen-repo-url"
-agent-browser type "#gen-repo-url" "https://github.com/myk-org/for-testing-only"
-agent-browser select "#gen-provider" "gemini"
+agent-browser clear "[data-testid='repo-url']"
+agent-browser type "[data-testid='repo-url']" "https://github.com/myk-org/for-testing-only"
+agent-browser clear "[data-testid='branch-input']"
+agent-browser type "[data-testid='branch-input']" "main"
+agent-browser click "[data-testid='provider-select']"
 agent-browser wait 500
-agent-browser clear "#gen-model"
-agent-browser type "#gen-model" "gemini-2.5-flash"
-agent-browser click "#gen-force"
-agent-browser click "#gen-submit"
+agent-browser click "[data-value='gemini']"
+agent-browser wait 500
+agent-browser clear "[data-testid='model-input']"
+agent-browser type "[data-testid='model-input']" "gemini-2.5-flash"
+agent-browser click "[data-testid='force-checkbox']"
+agent-browser click "[data-testid='generate-btn']"
 agent-browser wait 3000
 ```
 
 ### 9.1 Activity log shows progress
 
 **Commands:**
+
 ```
 agent-browser navigate http://localhost:8800/status/for-testing-only/main/gemini/gemini-2.5-flash
 agent-browser wait 5000
 agent-browser screenshot
 ```
 
-**Check:** The activity log section shows real-time updates.
+**Check:** The activity log section shows real-time updates via WebSocket.
 
 **Expected result:**
-- The "Activity Log" section is visible with a title and status area
+- The "Activity Log" section is visible
 - Log entries appear showing stages (e.g., "cloning", "planning", "generating_pages")
-- Each log entry has an icon indicating its state (check for complete, spinner for in-progress, circle for pending)
-- The log status area shows a spinner while generating
-
-**Verify log entries exist:**
-```
-agent-browser javascript "document.querySelectorAll('#log-body > *').length > 0"
-```
-
-**Expected result:** Returns `true`.
+- Each log entry has an icon indicating its state
+- Updates arrive in real-time via WebSocket
 
 ---
 
 ### 9.2 Abort button works
 
-**Precondition:** A generation is running. If Test 9.1 shows the variant already reached `ready`, `error`, or `aborted`, start a fresh forced generation before continuing.
-
-Check current status:
-```
-agent-browser javascript "document.getElementById('status-text')?.textContent?.trim().toLowerCase()"
-```
-
-If the previous command returned `ready`, `error`, or `aborted`, restart generation and return to the status page:
-```
-agent-browser navigate http://localhost:8800/
-agent-browser clear "#gen-repo-url"
-agent-browser type "#gen-repo-url" "https://github.com/myk-org/for-testing-only"
-agent-browser select "#gen-provider" "gemini"
-agent-browser wait 500
-agent-browser clear "#gen-model"
-agent-browser type "#gen-model" "gemini-2.5-flash"
-agent-browser click "#gen-force"
-agent-browser click "#gen-submit"
-agent-browser wait 2000
-agent-browser navigate http://localhost:8800/status/for-testing-only/main/gemini/gemini-2.5-flash
-agent-browser wait 2000
-```
+**Precondition:** A generation is running.
 
 **Commands:**
+
 ```
-agent-browser javascript "document.getElementById('btn-abort') !== null"
-agent-browser click "#btn-abort"
+agent-browser javascript "document.querySelector('button[title=\"Stop the documentation generation\"]') !== null"
+agent-browser click "button[title='Stop the documentation generation']"
 agent-browser wait 1000
 agent-browser screenshot
 ```
 
-**Check:** The abort modal appears.
+**Check:** The abort confirmation dialog appears (React component).
 
 **Expected result:**
-- The modal title reads "Abort Generation"
-- The modal body reads "Abort generation for for-testing-only?"
-- There is a red "Delete" (confirm) button and a "Cancel" button
+- The dialog title reads "Abort Generation"
+- There is a destructive confirm button and a "Cancel" button
 
 **Confirm abort:**
+
 ```
-agent-browser click "#modal-ok"
+agent-browser click "[data-testid='dialog-confirm']"
 agent-browser wait 3000
 agent-browser screenshot
 ```
@@ -247,8 +213,6 @@ agent-browser screenshot
 **Expected result:**
 - The status changes to `aborted`
 - The error message shows "Generation aborted by user"
-- The log status shows "Aborted"
-- The "Abort" button is replaced by regenerate controls (provider select, model input, force checkbox, and "Regenerate" button)
 
 ---
 
@@ -257,161 +221,158 @@ agent-browser screenshot
 **Precondition:** The project is in `aborted` state from Test 9.2.
 
 **Commands:**
+
 ```
-agent-browser javascript "document.getElementById('retry-provider') !== null"
-agent-browser javascript "document.getElementById('retry-model') !== null"
-agent-browser javascript "document.getElementById('retry-force') !== null"
-agent-browser javascript "document.getElementById('btn-retry') !== null"
+agent-browser javascript "document.querySelector('button[title=\"Re-generate documentation with these settings\"]') !== null"
+agent-browser javascript "document.querySelector('select') !== null || document.querySelector('[data-testid=\"provider-select\"]') !== null"
+agent-browser javascript "document.querySelector('input[type=\"checkbox\"]') !== null"
 agent-browser screenshot
 ```
 
 **Check:** Regenerate controls appear when the project is in error or aborted state.
 
 **Expected result:**
-- All four elements exist: provider select, model input, force checkbox, and "Regenerate" button
-- The provider select shows the current provider (`gemini`)
-- The model input shows the current model (`gemini-2.5-flash`)
+- Regenerate button exists with title "Re-generate documentation with these settings"
+- Provider select control is present
+- Force checkbox is present
+- All controls are visible in the screenshot
 
 ---
 
 ## Test 10: Custom Modals
 
-### 10.1 Delete confirmation uses themed modal (not browser dialog)
+### 10.1 Delete confirmation uses React dialog (not browser dialog)
 
 **Precondition:** Log in as `admin` and navigate to admin panel.
 
 ```
-agent-browser navigate http://localhost:8800/logout
-agent-browser wait-for-navigation
-agent-browser type "#username" "admin"
-agent-browser type "#api_key" "<ADMIN_KEY>"
-agent-browser click ".btn-login"
+agent-browser javascript "fetch('/api/auth/logout', {method:'POST', credentials:'same-origin'})"
+agent-browser wait 1000
+agent-browser navigate http://localhost:8800/login
+agent-browser type "[name='username']" "admin"
+agent-browser type "[name='password']" "<ADMIN_KEY>"
+agent-browser click "button[type='submit']"
 agent-browser wait-for-navigation
 agent-browser navigate http://localhost:8800/admin
 ```
 
 **Commands:**
+
 ```
 agent-browser click "[data-delete-user='testviewer-e2e']"
 agent-browser wait 1000
 agent-browser screenshot
-agent-browser javascript "document.getElementById('custom-modal').style.display"
 ```
 
-**Check:** A custom-themed modal appears (not a browser `window.confirm`).
+**Check:** A React AlertDialog appears (not a browser `window.confirm`).
 
 **Expected result:**
-- The return value is `"flex"` (the modal overlay is displayed as flex)
-- The modal has the class `modal-overlay`
-- The modal box uses the app's theme colors (dark background with light text in dark mode)
+- A dialog overlay is visible
+- The dialog has themed styling (dark background with light text in dark mode)
 - The title reads "Delete User"
-- The confirm button is styled as a danger button (red)
+- The confirm button is styled as destructive (red)
 
 **Cancel to close:**
+
 ```
-agent-browser click "#modal-cancel"
+agent-browser click "[data-testid='dialog-cancel']"
 agent-browser wait 500
 ```
 
 ---
 
-### 10.2 Password change uses themed modal
+### 10.2 Password change uses React dialog
 
 **Commands:**
+
 ```
 agent-browser navigate http://localhost:8800/admin
 agent-browser click "[data-rotate-user='testuser-e2e']"
 agent-browser wait 1000
-agent-browser javascript "document.getElementById('custom-modal').style.display"
-agent-browser javascript "document.getElementById('modal-title').textContent"
-agent-browser javascript "document.getElementById('modal-input').type"
 agent-browser screenshot
 ```
 
-**Check:** The password change modal uses the themed modal component.
+**Check:** The password change dialog uses a React component.
 
 **Expected result:**
-- Modal display is `"flex"`
+- A dialog is visible
 - Title is `"Change Password"`
 - Input type is `"password"` (masked input)
-- The input hint shows "Minimum 16 characters"
 
 **Cancel:**
+
 ```
-agent-browser click "#modal-cancel"
+agent-browser click "[data-testid='dialog-cancel']"
 ```
 
 ---
 
-### 10.3 Abort uses themed modal
+### 10.3 Abort uses React dialog
 
-**Precondition:** Start a generation to enable the abort button. Navigate to the dashboard.
+**Precondition:** Start a generation to enable the abort button.
 
 ```
 agent-browser navigate http://localhost:8800/
-agent-browser clear "#gen-repo-url"
-agent-browser type "#gen-repo-url" "https://github.com/myk-org/for-testing-only"
-agent-browser select "#gen-provider" "gemini"
+agent-browser clear "[data-testid='repo-url']"
+agent-browser type "[data-testid='repo-url']" "https://github.com/myk-org/for-testing-only"
+agent-browser click "[data-testid='provider-select']"
 agent-browser wait 500
-agent-browser clear "#gen-model"
-agent-browser type "#gen-model" "gemini-2.5-flash"
-agent-browser click "#gen-force"
-agent-browser click "#gen-submit"
+agent-browser click "[data-value='gemini']"
+agent-browser wait 500
+agent-browser clear "[data-testid='model-input']"
+agent-browser type "[data-testid='model-input']" "gemini-2.5-flash"
+agent-browser click "[data-testid='force-checkbox']"
+agent-browser click "[data-testid='generate-btn']"
 agent-browser wait 3000
 ```
 
 **Commands:**
+
 ```
-agent-browser click ".variant-card[data-owner='admin'] [data-abort-variant]"
+agent-browser click "button[title='Stop the documentation generation']"
 agent-browser wait 1000
-agent-browser javascript "document.getElementById('custom-modal').style.display"
-agent-browser javascript "document.getElementById('modal-title').textContent"
 agent-browser screenshot
 ```
 
-**Check:** The abort confirmation uses the themed modal.
+**Check:** The abort confirmation uses a React dialog.
 
 **Expected result:**
-- Modal display is `"flex"`
+- A dialog is visible
 - Title is `"Abort Generation"`
-- The confirm button is styled as a danger button
+- The confirm button is styled as destructive
 
-**Cancel:**
-```
-agent-browser click "#modal-cancel"
-```
+**Cancel and then abort to clean up:**
 
-Then abort the generation to clean up:
 ```
-agent-browser click ".variant-card[data-owner='admin'] [data-abort-variant]"
+agent-browser click "[data-testid='dialog-cancel']"
+agent-browser click "button[title='Stop the documentation generation']"
 agent-browser wait 1000
-agent-browser click "#modal-ok"
+agent-browser click "[data-testid='dialog-confirm']"
 agent-browser wait 3000
 ```
 
 ---
 
-### 10.4 Escape closes modal
+### 10.4 Escape closes dialog
 
 **Commands:**
+
 ```
 agent-browser navigate http://localhost:8800/admin
 agent-browser click "[data-delete-user='testviewer-e2e']"
 agent-browser wait 1000
-agent-browser javascript "document.getElementById('custom-modal').style.display"
 ```
 
-**Check:** Modal is open.
-
-**Expected result:** Returns `"flex"`.
+**Check:** Dialog is open.
 
 **Press Escape:**
+
 ```
 agent-browser press "Escape"
 agent-browser wait 500
-agent-browser javascript "document.getElementById('custom-modal').style.display"
+agent-browser screenshot
 ```
 
-**Check:** Modal closes on Escape key.
+**Check:** Dialog closes on Escape key.
 
-**Expected result:** Returns `"none"`.
+**Expected result:** The dialog is no longer visible.
