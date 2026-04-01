@@ -1,9 +1,12 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Any
+from unittest.mock import patch
 
 
-def test_render_page_to_html() -> None:
+@patch("docsfy.renderer._prerender_mermaid", side_effect=lambda md: md)
+def test_render_page_to_html(_mock_mermaid: Any) -> None:
     from docsfy.renderer import render_page
 
     html = render_page(
@@ -20,7 +23,8 @@ def test_render_page_to_html() -> None:
     assert "This is a test." in html
 
 
-def test_render_site(tmp_path: Path) -> None:
+@patch("docsfy.renderer._prerender_mermaid", side_effect=lambda md: md)
+def test_render_site(_mock_mermaid: Any, tmp_path: Path) -> None:
     from docsfy.renderer import render_site
 
     plan = {
@@ -400,7 +404,8 @@ def test_render_index_with_version() -> None:
     assert "footer-version" in html
 
 
-def test_render_site_passes_version(tmp_path: Path) -> None:
+@patch("docsfy.renderer._prerender_mermaid", side_effect=lambda md: md)
+def test_render_site_passes_version(_mock_mermaid: Any, tmp_path: Path) -> None:
     from docsfy.renderer import render_site
 
     plan = {
@@ -484,7 +489,8 @@ def test_prerender_mermaid_multiple_blocks() -> None:
     assert result.count("<svg>") == 2
 
 
-def test_search_index_generated(tmp_path: Path) -> None:
+@patch("docsfy.renderer._prerender_mermaid", side_effect=lambda md: md)
+def test_search_index_generated(_mock_mermaid: Any, tmp_path: Path) -> None:
     from docsfy.renderer import render_site
 
     plan = {
