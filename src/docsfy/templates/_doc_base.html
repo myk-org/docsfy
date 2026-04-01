@@ -80,9 +80,13 @@
         </main>
 
         <footer class="page-footer">
+            {% if version %}
+            <span class="footer-version">v{{ version }}</span>
+            <span class="footer-sep">&middot;</span>
+            {% endif %}
             Generated with <a href="{{ docsfy_repo_url }}" target="_blank" rel="noopener">docs<span class="brand-accent">fy</span></a>
-            <span class="footer-sep">·</span>
-            <span class="footer-llm">LLM-friendly: <a href="llms.txt">llms.txt</a> · <a href="llms-full.txt">llms-full.txt</a></span>
+            <span class="footer-sep">&middot;</span>
+            <span class="footer-llm">LLM-friendly: <a href="llms.txt">llms.txt</a> &middot; <a href="llms-full.txt">llms-full.txt</a></span>
         </footer>
     </div>
 

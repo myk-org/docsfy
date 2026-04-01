@@ -357,6 +357,72 @@ def test_clean_code_fence_annotations_unknown_extensionless_path() -> None:
     assert result == "```\ndata\n```"
 
 
+def test_render_page_with_version() -> None:
+    from docsfy.renderer import render_page
+
+    html = render_page(
+        markdown_content="# Test\nHello",
+        page_title="Test",
+        project_name="test-repo",
+        tagline="A test",
+        navigation=[],
+        current_slug="test",
+        version="2.1.0",
+    )
+    assert "v2.1.0" in html
+    assert "footer-version" in html
+
+
+def test_render_page_without_version() -> None:
+    from docsfy.renderer import render_page
+
+    html = render_page(
+        markdown_content="# Test\nHello",
+        page_title="Test",
+        project_name="test-repo",
+        tagline="A test",
+        navigation=[],
+        current_slug="test",
+    )
+    assert "footer-version" not in html
+
+
+def test_render_index_with_version() -> None:
+    from docsfy.renderer import render_index
+
+    html = render_index(
+        project_name="test-repo",
+        tagline="A test",
+        navigation=[],
+        version="1.0.0",
+    )
+    assert "v1.0.0" in html
+    assert "footer-version" in html
+
+
+def test_render_site_passes_version(tmp_path: Path) -> None:
+    from docsfy.renderer import render_site
+
+    plan = {
+        "project_name": "test-repo",
+        "tagline": "A test",
+        "navigation": [
+            {
+                "group": "Getting Started",
+                "pages": [{"slug": "intro", "title": "Introduction"}],
+            },
+        ],
+        "version": "3.0.0",
+    }
+    pages = {"intro": "# Introduction\nHello world"}
+    output_dir = tmp_path / "site"
+    render_site(plan=plan, pages=pages, output_dir=output_dir)
+    index_html = (output_dir / "index.html").read_text()
+    assert "v3.0.0" in index_html
+    page_html = (output_dir / "intro.html").read_text()
+    assert "v3.0.0" in page_html
+
+
 def test_search_index_generated(tmp_path: Path) -> None:
     from docsfy.renderer import render_site
 

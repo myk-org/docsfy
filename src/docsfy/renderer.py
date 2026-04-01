@@ -334,6 +334,7 @@ def render_page(
     prev_page: dict[str, str] | None = None,
     next_page: dict[str, str] | None = None,
     repo_url: str = "",
+    version: str | None = None,
 ) -> str:
     env = _get_jinja_env()
     template = env.get_template("page.html")
@@ -350,6 +351,7 @@ def render_page(
         next_page=next_page,
         repo_url=repo_url,
         docsfy_repo_url=DOCSFY_REPO_URL,
+        version=version,
     )
 
 
@@ -358,6 +360,7 @@ def render_index(
     tagline: str,
     navigation: list[dict[str, Any]],
     repo_url: str = "",
+    version: str | None = None,
 ) -> str:
     env = _get_jinja_env()
     template = env.get_template("index.html")
@@ -369,6 +372,7 @@ def render_index(
         repo_url=repo_url,
         current_slug="",
         docsfy_repo_url=DOCSFY_REPO_URL,
+        version=version,
     )
 
 
@@ -475,6 +479,7 @@ def render_site(plan: dict[str, Any], pages: dict[str, str], output_dir: Path) -
     tagline: str = plan.get("tagline", "")
     navigation: list[dict[str, Any]] = plan.get("navigation", [])
     repo_url: str = plan.get("repo_url", "")
+    version: str | None = plan.get("version")
 
     if STATIC_DIR.exists():
         for static_file in STATIC_DIR.iterdir():
@@ -501,7 +506,7 @@ def render_site(plan: dict[str, Any], pages: dict[str, str], output_dir: Path) -
             filtered_navigation.append({**group, "pages": filtered_pages})
 
     index_html = render_index(
-        project_name, tagline, filtered_navigation, repo_url=repo_url
+        project_name, tagline, filtered_navigation, repo_url=repo_url, version=version
     )
     (output_dir / "index.html").write_text(index_html, encoding="utf-8")
 
@@ -532,6 +537,7 @@ def render_site(plan: dict[str, Any], pages: dict[str, str], output_dir: Path) -
             prev_page=prev_page,
             next_page=next_page,
             repo_url=repo_url,
+            version=version,
         )
         (output_dir / f"{slug}.html").write_text(page_html, encoding="utf-8")
         (output_dir / f"{slug}.md").write_text(md_content, encoding="utf-8")
