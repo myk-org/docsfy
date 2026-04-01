@@ -456,3 +456,100 @@ async def test_validate_single_page_empty_exclusions_returns_original(
     mock_regen.assert_not_called()
     # Must return original content unchanged
     assert result == pages
+
+
+# --- Fix 3: project_name parameter for structured logging in add_cross_links ---
+
+
+@pytest.mark.asyncio
+async def test_add_cross_links_accepts_project_name_parameter(
+    tmp_path: Path,
+) -> None:
+    """add_cross_links must accept project_name parameter."""
+    from docsfy.postprocess import add_cross_links
+
+    pages = {"intro": "# Intro\nContent."}
+    plan = {
+        "navigation": [
+            {
+                "group": "Docs",
+                "pages": [{"slug": "intro", "title": "Intro", "description": ""}],
+            }
+        ]
+    }
+    with patch("docsfy.postprocess.call_ai_cli", return_value=(True, json.dumps({}))):
+        result = await add_cross_links(
+            pages=pages,
+            plan=plan,
+            ai_provider="claude",
+            ai_model="opus",
+            repo_path=tmp_path,
+            project_name="my-project",
+        )
+    assert result == pages
+
+
+@pytest.mark.asyncio
+async def test_add_cross_links_ai_failure_includes_project_name_in_log(
+    tmp_path: Path,
+) -> None:
+    """When AI call fails, add_cross_links must log with [project_name] prefix."""
+    from docsfy.postprocess import add_cross_links
+
+    pages = {"intro": "# Intro\nContent."}
+    plan = {
+        "navigation": [
+            {
+                "group": "Docs",
+                "pages": [{"slug": "intro", "title": "Intro", "description": ""}],
+            }
+        ]
+    }
+    with patch("docsfy.postprocess.call_ai_cli", return_value=(False, "AI error")):
+        with patch("docsfy.postprocess.logger") as mock_logger:
+            result = await add_cross_links(
+                pages=pages,
+                plan=plan,
+                ai_provider="claude",
+                ai_model="opus",
+                repo_path=tmp_path,
+                project_name="my-project",
+            )
+    # Should have logged with [my-project] prefix
+    mock_logger.warning.assert_called_once()
+    log_msg = mock_logger.warning.call_args[0][0]
+    assert "[my-project]" in log_msg
+    assert result == pages
+
+
+@pytest.mark.asyncio
+async def test_add_cross_links_parse_failure_includes_project_name_in_log(
+    tmp_path: Path,
+) -> None:
+    """When parsing cross-links fails, add_cross_links must log with [project_name] prefix."""
+    from docsfy.postprocess import add_cross_links
+
+    pages = {"intro": "# Intro\nContent."}
+    plan = {
+        "navigation": [
+            {
+                "group": "Docs",
+                "pages": [{"slug": "intro", "title": "Intro", "description": ""}],
+            }
+        ]
+    }
+    with patch("docsfy.postprocess.call_ai_cli", return_value=(True, "invalid json")):
+        with patch("docsfy.postprocess.logger") as mock_logger:
+            result = await add_cross_links(
+                pages=pages,
+                plan=plan,
+                ai_provider="claude",
+                ai_model="opus",
+                repo_path=tmp_path,
+                project_name="my-project",
+            )
+    # Should have logged with [my-project] prefix
+    mock_logger.warning.assert_called_once()
+    log_msg = mock_logger.warning.call_args[0][0]
+    assert "[my-project]" in log_msg
+    assert result == pages

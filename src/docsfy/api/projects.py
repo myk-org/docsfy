@@ -1022,6 +1022,7 @@ async def _generate_from_path(
             ai_provider=ai_provider,
             ai_model=ai_model,
             repo_path=repo_dir,
+            project_name=project_name,
             ai_cli_timeout=ai_cli_timeout,
         )
     except Exception as exc:

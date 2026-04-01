@@ -262,6 +262,7 @@ async def add_cross_links(
     ai_provider: str,
     ai_model: str,
     repo_path: Path,
+    project_name: str = "",
     ai_cli_timeout: int | None = None,
 ) -> dict[str, str]:
     """Add cross-reference links between related pages.
@@ -323,13 +324,15 @@ async def add_cross_links(
         shutil.rmtree(job_dir, ignore_errors=True)
 
     if not success:
-        logger.warning("add_cross_links: AI call failed, returning pages unchanged")
+        logger.warning(
+            f"[{project_name}] add_cross_links: AI call failed, returning pages unchanged"
+        )
         return pages
 
     cross_links = parse_json_response(output)
     if not cross_links:
         logger.warning(
-            "add_cross_links: Failed to parse AI cross-links response, returning pages unchanged"
+            f"[{project_name}] add_cross_links: Failed to parse AI cross-links response, returning pages unchanged"
         )
         return pages
 
