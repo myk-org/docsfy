@@ -43,6 +43,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   curl \
   nodejs \
   npm \
+  chromium \
   && rm -rf /var/lib/apt/lists/*
 
 # Create non-root user, data directory, and set permissions
@@ -66,10 +67,13 @@ RUN /bin/bash -o pipefail -c "curl -fsSL https://claude.ai/install.sh | bash"
 # Install Cursor Agent CLI (installs to ~/.local/bin)
 RUN /bin/bash -o pipefail -c "curl -fsSL https://cursor.com/install | bash"
 
-# Configure npm for non-root global installs and install Gemini CLI
+# Configure npm for non-root global installs and install Gemini CLI + mermaid-cli
 RUN mkdir -p /home/appuser/.npm-global \
   && npm config set prefix '/home/appuser/.npm-global' \
-  && npm install -g @google/gemini-cli
+  && npm install -g @google/gemini-cli @mermaid-js/mermaid-cli
+
+# Verify mermaid-cli works
+RUN printf 'flowchart LR\n  A-->B\n' > /tmp/test.mmd && mmdc -i /tmp/test.mmd -o /tmp/test.svg && rm /tmp/test.mmd /tmp/test.svg
 
 # Switch to root for file copies and permission fixes
 USER root
@@ -111,6 +115,8 @@ USER appuser
 ENV PATH="/home/appuser/.local/bin:/home/appuser/.npm-global/bin:${PATH}"
 # Set HOME for OpenShift compatibility (random UID has no passwd entry)
 ENV HOME="/home/appuser"
+ENV PUPPETEER_EXECUTABLE_PATH="/usr/bin/chromium"
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD="true"
 
 EXPOSE 8000
 # Vite dev server (DEV_MODE only)
