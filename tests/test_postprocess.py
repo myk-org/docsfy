@@ -699,13 +699,11 @@ async def test_add_cross_links_non_dict_json_returns_pages_unchanged(
             }
         ]
     }
-    # parse_json_response returns None for non-dict JSON,
-    # so this tests that None is properly handled with the isinstance check
+    # Mock parse_json_response to return a list (non-dict) directly,
+    # so we test the isinstance(cross_links, dict) guard, not parse failure
     with (
-        patch(
-            "docsfy.postprocess.call_ai_cli",
-            return_value=(True, "not a dict or valid json"),
-        ),
+        patch("docsfy.postprocess.call_ai_cli", return_value=(True, '["intro"]')),
+        patch("docsfy.postprocess.parse_json_response", return_value=["intro"]),
         patch("docsfy.postprocess.logger") as mock_logger,
     ):
         result = await add_cross_links(
@@ -722,3 +720,208 @@ async def test_add_cross_links_non_dict_json_returns_pages_unchanged(
         "Invalid AI cross-links response" in str(call)
         for call in mock_logger.warning.call_args_list
     )
+
+
+# --- Fix 6: Path confinement validation ---
+
+
+def test_confined_path_normal_slug(tmp_path: Path) -> None:
+    """_confined_path must resolve a normal slug inside the base directory."""
+    from docsfy.postprocess import _confined_path
+
+    result = _confined_path(tmp_path, "intro.md")
+    assert result == (tmp_path / "intro.md").resolve()
+    assert result.parent.exists()
+
+
+def test_confined_path_traversal_attack(tmp_path: Path) -> None:
+    """_confined_path must reject path traversal attempts."""
+    from docsfy.postprocess import _confined_path
+
+    with pytest.raises(ValueError, match="Unsafe generated filename"):
+        _confined_path(tmp_path, "../../etc/passwd")
+
+
+def test_confined_path_absolute_path_attack(tmp_path: Path) -> None:
+    """_confined_path must reject slugs that resolve outside base via absolute components."""
+    from docsfy.postprocess import _confined_path
+
+    with pytest.raises(ValueError, match="Unsafe generated filename"):
+        _confined_path(tmp_path, "../outside.md")
+
+
+def test_confined_path_creates_parent_dirs(tmp_path: Path) -> None:
+    """_confined_path must create parent directories if slug has subdirs."""
+    from docsfy.postprocess import _confined_path
+
+    result = _confined_path(tmp_path, "subdir/page.md")
+    assert result == (tmp_path / "subdir" / "page.md").resolve()
+    assert result.parent.exists()
+
+
+@pytest.mark.asyncio
+async def test_validate_pages_uses_confined_paths(tmp_path: Path) -> None:
+    """validate_pages must use _confined_path for slug-based file paths.
+
+    The ValueError from _confined_path is caught by the parallel runner
+    and logged as a warning; the original content is preserved.
+    """
+    from docsfy.postprocess import validate_pages
+
+    pages = {"../../etc/passwd": "# Malicious\nContent."}
+    with (
+        patch("docsfy.postprocess.call_ai_cli", return_value=(True, "[]")),
+        patch("docsfy.postprocess.logger") as mock_logger,
+    ):
+        result = await validate_pages(
+            pages=pages,
+            repo_path=tmp_path,
+            ai_provider="claude",
+            ai_model="opus",
+            cache_dir=tmp_path / "cache",
+            project_name="test",
+        )
+    # Original content preserved
+    assert result == pages
+    # Warning logged about the unsafe filename
+    assert any(
+        "Unsafe generated filename" in str(call)
+        for call in mock_logger.warning.call_args_list
+    )
+
+
+@pytest.mark.asyncio
+async def test_add_cross_links_uses_confined_paths(tmp_path: Path) -> None:
+    """add_cross_links must use _confined_path for slug-based file paths."""
+    from docsfy.postprocess import add_cross_links
+
+    pages = {"../../etc/passwd": "# Malicious\nContent."}
+    plan = {
+        "navigation": [
+            {
+                "group": "Docs",
+                "pages": [
+                    {
+                        "slug": "../../etc/passwd",
+                        "title": "Malicious",
+                        "description": "",
+                    }
+                ],
+            }
+        ]
+    }
+    with patch("docsfy.postprocess.call_ai_cli", return_value=(True, json.dumps({}))):
+        with pytest.raises(ValueError, match="Unsafe generated filename"):
+            await add_cross_links(
+                pages=pages,
+                plan=plan,
+                ai_provider="claude",
+                ai_model="opus",
+                repo_path=tmp_path,
+            )
+
+
+# --- Fix 7: Cross-link constraints (self-links, dedup, cap at 5) ---
+
+
+@pytest.mark.asyncio
+async def test_add_cross_links_skips_self_links(tmp_path: Path) -> None:
+    """add_cross_links must not add a self-link (related_slug == slug)."""
+    from docsfy.postprocess import add_cross_links
+
+    pages = {
+        "intro": "# Intro\nContent.",
+        "config": "# Config\nContent.",
+    }
+    plan = {
+        "navigation": [
+            {
+                "group": "Docs",
+                "pages": [
+                    {"slug": "intro", "title": "Intro", "description": ""},
+                    {"slug": "config", "title": "Config", "description": ""},
+                ],
+            }
+        ]
+    }
+    # AI suggests intro links to itself and config
+    cross_links_json = json.dumps({"intro": ["intro", "config"]})
+    with patch("docsfy.postprocess.call_ai_cli", return_value=(True, cross_links_json)):
+        result = await add_cross_links(
+            pages=pages,
+            plan=plan,
+            ai_provider="claude",
+            ai_model="opus",
+            repo_path=tmp_path,
+        )
+    # Should have config link but NOT self-link
+    assert "[Config](config.html)" in result["intro"]
+    assert "[Intro](intro.html)" not in result["intro"]
+
+
+@pytest.mark.asyncio
+async def test_add_cross_links_deduplicates(tmp_path: Path) -> None:
+    """add_cross_links must deduplicate related slugs."""
+    from docsfy.postprocess import add_cross_links
+
+    pages = {
+        "intro": "# Intro\nContent.",
+        "config": "# Config\nContent.",
+    }
+    plan = {
+        "navigation": [
+            {
+                "group": "Docs",
+                "pages": [
+                    {"slug": "intro", "title": "Intro", "description": ""},
+                    {"slug": "config", "title": "Config", "description": ""},
+                ],
+            }
+        ]
+    }
+    # AI suggests config twice
+    cross_links_json = json.dumps({"intro": ["config", "config"]})
+    with patch("docsfy.postprocess.call_ai_cli", return_value=(True, cross_links_json)):
+        result = await add_cross_links(
+            pages=pages,
+            plan=plan,
+            ai_provider="claude",
+            ai_model="opus",
+            repo_path=tmp_path,
+        )
+    # Should appear only once
+    assert result["intro"].count("[Config](config.html)") == 1
+
+
+@pytest.mark.asyncio
+async def test_add_cross_links_caps_at_five(tmp_path: Path) -> None:
+    """add_cross_links must cap related pages at 5."""
+    from docsfy.postprocess import add_cross_links
+
+    slugs = [f"page{i}" for i in range(8)]
+    pages = {slug: f"# {slug}\nContent." for slug in slugs}
+    plan = {
+        "navigation": [
+            {
+                "group": "Docs",
+                "pages": [
+                    {"slug": slug, "title": slug.title(), "description": ""}
+                    for slug in slugs
+                ],
+            }
+        ]
+    }
+    # AI suggests 7 related pages for page0
+    cross_links_json = json.dumps({"page0": slugs[1:]})
+    with patch("docsfy.postprocess.call_ai_cli", return_value=(True, cross_links_json)):
+        result = await add_cross_links(
+            pages=pages,
+            plan=plan,
+            ai_provider="claude",
+            ai_model="opus",
+            repo_path=tmp_path,
+        )
+    # Count the number of link items
+    related_section = result["page0"].split("## Related Pages")[1]
+    link_count = related_section.count("- [")
+    assert link_count == 5

@@ -21,6 +21,18 @@ from docsfy.prompts import build_cross_links_prompt, build_validation_prompt
 logger = get_logger(name=__name__)
 
 
+def _confined_path(base: Path, relative_name: str) -> Path:
+    """Ensure a relative filename resolves inside the base directory."""
+    candidate = (base / relative_name).resolve()
+    base_resolved = base.resolve()
+    try:
+        candidate.relative_to(base_resolved)
+    except ValueError as exc:
+        raise ValueError(f"Unsafe generated filename: {relative_name!r}") from exc
+    candidate.parent.mkdir(parents=True, exist_ok=True)
+    return candidate
+
+
 def detect_version(repo_path: Path) -> str | None:
     """Auto-detect project version from common sources.
 
@@ -121,7 +133,7 @@ async def _validate_single_page(
     and regenerates content via generate_full_page_content if issues are found.
     Returns the (possibly updated) page content.
     """
-    temp_file = job_dir / f"{slug}.md"
+    temp_file = _confined_path(job_dir, f"{slug}.md")
     await asyncio.to_thread(temp_file.write_text, content, "utf-8")
 
     prompt = build_validation_prompt(str(temp_file))
@@ -163,7 +175,7 @@ async def _validate_single_page(
     )
 
     try:
-        exclusions_file = job_dir / f"{slug}_exclusions.txt"
+        exclusions_file = _confined_path(job_dir, f"{slug}_exclusions.txt")
         await asyncio.to_thread(
             exclusions_file.write_text,
             "\n".join(exclusions),
@@ -179,10 +191,8 @@ async def _validate_single_page(
             ai_cli_timeout=ai_cli_timeout,
             exclusions_path=str(exclusions_file),
         )
-        await asyncio.to_thread(cache_dir.mkdir, parents=True, exist_ok=True)
-        await asyncio.to_thread(
-            (cache_dir / f"{slug}.md").write_text, new_content, encoding="utf-8"
-        )
+        cache_file = _confined_path(cache_dir, f"{slug}.md")
+        await asyncio.to_thread(cache_file.write_text, new_content, encoding="utf-8")
         return new_content
     except Exception as exc:
         logger.warning(f"[{project_name}] Regeneration failed for page '{slug}': {exc}")
@@ -320,9 +330,8 @@ async def add_cross_links(
 
         # Write page files
         for slug, content in pages.items():
-            await asyncio.to_thread(
-                (pages_dir / f"{slug}.md").write_text, content, "utf-8"
-            )
+            page_file = _confined_path(pages_dir, f"{slug}.md")
+            await asyncio.to_thread(page_file.write_text, content, "utf-8")
 
         prompt = build_cross_links_prompt(
             manifest_path=str(manifest_path),
@@ -367,11 +376,20 @@ async def add_cross_links(
             continue
 
         link_items: list[str] = []
+        seen: set[str] = set()
         for related_slug in related_slugs:
-            if not isinstance(related_slug, str) or related_slug not in slug_titles:
+            if (
+                not isinstance(related_slug, str)
+                or related_slug == slug
+                or related_slug not in slug_titles
+                or related_slug in seen
+            ):
                 continue
+            seen.add(related_slug)
             title = slug_titles[related_slug]
             link_items.append(f"- [{title}]({related_slug}.html)")
+            if len(link_items) == 5:
+                break
 
         if link_items:
             related_section = "\n\n## Related Pages\n\n" + "\n".join(link_items)
