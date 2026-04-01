@@ -466,11 +466,22 @@ def test_prerender_mermaid_fallback_on_failure() -> None:
 
 
 def test_prerender_mermaid_multiple_blocks() -> None:
+    import subprocess
+    from unittest.mock import patch
+
     from docsfy.renderer import _prerender_mermaid
 
     md = "```mermaid\nflowchart LR\n  A-->B\n```\n\nText\n\n```mermaid\nsequenceDiagram\n  A->>B: Hello\n```\n"
-    result = _prerender_mermaid(md)
+    with patch("docsfy.renderer.shutil.which", return_value="/usr/bin/mmdc"):
+        with patch("docsfy.renderer.subprocess.run") as mock_run:
+            mock_run.return_value = subprocess.CompletedProcess(
+                args=[], returncode=0, stdout="", stderr=""
+            )
+            with patch("pathlib.Path.read_text", return_value="<svg>multi</svg>"):
+                result = _prerender_mermaid(md)
     assert "Text" in result
+    assert result.count("mermaid-diagram") == 2
+    assert result.count("<svg>") == 2
 
 
 def test_search_index_generated(tmp_path: Path) -> None:
