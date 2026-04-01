@@ -23,6 +23,8 @@ logger = get_logger(name=__name__)
 
 def _confined_path(base: Path, relative_name: str) -> Path:
     """Ensure a relative filename resolves inside the base directory."""
+    if any(ord(ch) < 32 for ch in relative_name):
+        raise ValueError(f"Unsafe generated filename: {relative_name!r}")
     candidate = (base / relative_name).resolve()
     base_resolved = base.resolve()
     try:
@@ -148,9 +150,8 @@ async def _validate_single_page(
     )
 
     if not success:
-        logger.warning(
-            f"[{project_name}] Validation AI call failed for page '{slug}': {output}"
-        )
+        logger.warning(f"[{project_name}] Validation AI call failed for page '{slug}'")
+        logger.debug(f"[{project_name}] Validation output for '{slug}': {output[:200]}")
         return content
 
     stale_refs = parse_json_array_response(output)
@@ -307,8 +308,8 @@ async def add_cross_links(
     Returns:
         Updated mapping of slug -> markdown content with cross-links appended.
     """
-    # Build slug -> title map for link labels
-    slug_titles: dict[str, str] = {}
+    # Build slug -> title map for link labels (fallback to slug itself for pages not in plan)
+    slug_titles: dict[str, str] = {slug: slug for slug in pages}
     for group in plan.get("navigation", []):
         for page in group.get("pages", []):
             slug = page.get("slug", "")
@@ -381,12 +382,19 @@ async def add_cross_links(
             if (
                 not isinstance(related_slug, str)
                 or related_slug == slug
-                or related_slug not in slug_titles
+                or related_slug not in updated
                 or related_slug in seen
             ):
                 continue
             seen.add(related_slug)
-            title = slug_titles[related_slug]
+            title = (
+                slug_titles.get(related_slug, related_slug)
+                .replace("\\", "\\\\")
+                .replace("[", "\\[")
+                .replace("]", "\\]")
+                .replace("\n", " ")
+                .replace("\r", " ")
+            )
             link_items.append(f"- [{title}]({related_slug}.html)")
             if len(link_items) == 5:
                 break

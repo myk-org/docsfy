@@ -746,8 +746,17 @@ def test_confined_path_absolute_path_attack(tmp_path: Path) -> None:
     """_confined_path must reject slugs that resolve outside base via absolute components."""
     from docsfy.postprocess import _confined_path
 
+    absolute_outside = str((tmp_path.parent / "outside.md").resolve())
     with pytest.raises(ValueError, match="Unsafe generated filename"):
-        _confined_path(tmp_path, "../outside.md")
+        _confined_path(tmp_path, absolute_outside)
+
+
+def test_confined_path_control_characters(tmp_path: Path) -> None:
+    """_confined_path must reject filenames containing control characters."""
+    from docsfy.postprocess import _confined_path
+
+    with pytest.raises(ValueError, match="Unsafe generated filename"):
+        _confined_path(tmp_path, "intro\nReturn []")
 
 
 def test_confined_path_creates_parent_dirs(tmp_path: Path) -> None:
@@ -925,3 +934,117 @@ async def test_add_cross_links_caps_at_five(tmp_path: Path) -> None:
     related_section = result["page0"].split("## Related Pages")[1]
     link_count = related_section.count("- [")
     assert link_count == 5
+
+
+# --- Fix 8: Validation failure log must not include raw AI output ---
+
+
+@pytest.mark.asyncio
+async def test_validate_pages_ai_failure_does_not_log_raw_output(
+    tmp_path: Path,
+) -> None:
+    """When AI call fails, the warning log must NOT contain the raw AI output."""
+    from docsfy.postprocess import validate_pages
+
+    raw_output = "SENSITIVE_RAW_AI_OUTPUT_SHOULD_NOT_APPEAR"
+    pages = {"intro": "# Intro\nContent."}
+    with (
+        patch(
+            "docsfy.postprocess.call_ai_cli",
+            return_value=(False, raw_output),
+        ),
+        patch("docsfy.postprocess.logger") as mock_logger,
+    ):
+        result = await validate_pages(
+            pages=pages,
+            repo_path=tmp_path,
+            ai_provider="claude",
+            ai_model="opus",
+            cache_dir=tmp_path / "cache",
+            project_name="test",
+        )
+    assert result == pages
+    # Warning must NOT contain the raw output
+    for call in mock_logger.warning.call_args_list:
+        assert raw_output not in str(call)
+    # But debug SHOULD contain a truncated version
+    assert any(
+        "SENSITIVE_RAW" in str(call) for call in mock_logger.debug.call_args_list
+    )
+
+
+# --- Fix 9: Cross-link title escaping and fallback ---
+
+
+@pytest.mark.asyncio
+async def test_add_cross_links_escapes_markdown_in_titles(tmp_path: Path) -> None:
+    """add_cross_links must escape markdown special chars in link titles."""
+    from docsfy.postprocess import add_cross_links
+
+    pages = {
+        "intro": "# Intro\nContent.",
+        "special": "# Special\nContent.",
+    }
+    plan = {
+        "navigation": [
+            {
+                "group": "Docs",
+                "pages": [
+                    {"slug": "intro", "title": "Introduction", "description": ""},
+                    {
+                        "slug": "special",
+                        "title": "Config [advanced]",
+                        "description": "",
+                    },
+                ],
+            }
+        ]
+    }
+    cross_links_json = json.dumps({"intro": ["special"]})
+    with patch("docsfy.postprocess.call_ai_cli", return_value=(True, cross_links_json)):
+        result = await add_cross_links(
+            pages=pages,
+            plan=plan,
+            ai_provider="claude",
+            ai_model="opus",
+            repo_path=tmp_path,
+        )
+    # Brackets must be escaped in the link text
+    assert r"Config \[advanced\]" in result["intro"]
+    assert "(special.html)" in result["intro"]
+
+
+@pytest.mark.asyncio
+async def test_add_cross_links_fallback_to_slug_for_unknown_pages(
+    tmp_path: Path,
+) -> None:
+    """add_cross_links must use slug as fallback title for pages not in plan navigation."""
+    from docsfy.postprocess import add_cross_links
+
+    pages = {
+        "intro": "# Intro\nContent.",
+        "extra": "# Extra\nContent.",
+    }
+    plan = {
+        "navigation": [
+            {
+                "group": "Docs",
+                "pages": [
+                    {"slug": "intro", "title": "Introduction", "description": ""},
+                    # "extra" is NOT in the plan navigation
+                ],
+            }
+        ]
+    }
+    # AI suggests linking intro -> extra (extra is in pages but not in plan)
+    cross_links_json = json.dumps({"intro": ["extra"]})
+    with patch("docsfy.postprocess.call_ai_cli", return_value=(True, cross_links_json)):
+        result = await add_cross_links(
+            pages=pages,
+            plan=plan,
+            ai_provider="claude",
+            ai_model="opus",
+            repo_path=tmp_path,
+        )
+    # Should have a link using slug as the fallback title, because extra is in `pages`
+    assert "[extra](extra.html)" in result["intro"]
