@@ -144,3 +144,25 @@ def test_page_prompt_without_exclusions() -> None:
 
     prompt = build_page_prompt("test-repo", "Overview", "Project overview")
     assert "stale" not in prompt.lower()
+
+
+def test_validation_prompt() -> None:
+    from docsfy.prompts import build_validation_prompt
+
+    prompt = build_validation_prompt("/tmp/docsfy-validation/abc123/intro.md")
+    assert "/tmp/docsfy-validation/abc123/intro.md" in prompt
+    assert "json" in prompt.lower()
+    assert "stale" in prompt.lower() or "exist" in prompt.lower()
+
+
+def test_cross_links_prompt() -> None:
+    from docsfy.prompts import build_cross_links_prompt
+
+    prompt = build_cross_links_prompt(
+        "/tmp/docsfy-crosslinks/abc123/manifest.json",
+        "/tmp/docsfy-crosslinks/abc123/",
+    )
+    assert "/tmp/docsfy-crosslinks/abc123/manifest.json" in prompt
+    assert "/tmp/docsfy-crosslinks/abc123/" in prompt
+    assert "json" in prompt.lower()
+    assert "related" in prompt.lower()

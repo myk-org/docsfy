@@ -207,3 +207,55 @@ Instructions:
 
 When writing "new_text", follow these content rules:
 {_PAGE_WRITING_RULES}"""
+
+
+VALIDATION_SCHEMA = """[
+  {
+    "reference": "string - the stale reference found",
+    "reason": "string - why it is considered stale"
+  }
+]"""
+
+
+def build_validation_prompt(page_temp_path: str) -> str:
+    return f"""You are a documentation quality validator. Read the documentation page at:
+{page_temp_path}
+
+Then explore this repository thoroughly. Verify that ALL referenced files, features,
+modules, classes, functions, and tools actually exist in the current codebase.
+
+Check for:
+- File paths that do not exist
+- Function or class names that are not defined
+- Features described that have been removed or replaced
+- Module names that do not exist
+- CLI commands or flags that are not implemented
+
+CRITICAL: Your response must be ONLY a valid JSON array. No text before or after.
+
+If all references are valid, return exactly: []
+
+If stale references are found, return:
+{VALIDATION_SCHEMA}"""
+
+
+def build_cross_links_prompt(manifest_path: str, pages_dir: str) -> str:
+    return f"""You are a documentation cross-linking assistant. Read the page manifest at:
+{manifest_path}
+
+Then read ALL the page markdown files in:
+{pages_dir}
+
+For each page, suggest 2-5 related pages based on content overlap, topic relevance,
+and natural reading flow. Pages that reference similar concepts, APIs, or features
+should be linked together.
+
+CRITICAL: Your response must be ONLY a valid JSON object. No text before or after.
+
+Output format:
+{{
+  "page-slug": ["related-slug-1", "related-slug-2"],
+  "another-slug": ["related-slug-3", "related-slug-4", "related-slug-5"]
+}}
+
+Every slug in the output must come from the manifest. Do not invent page slugs."""
