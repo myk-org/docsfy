@@ -585,3 +585,140 @@ async def test_add_cross_links_parse_failure_includes_project_name_in_log(
         "[my-project]" in str(call) for call in mock_logger.warning.call_args_list
     )
     assert result == pages
+
+
+# --- Fix 4: Separate parse failure from empty results in validation ---
+
+
+@pytest.mark.asyncio
+async def test_validate_single_page_parse_failure_logs_warning(
+    tmp_path: Path,
+) -> None:
+    """When parse_json_array_response returns None (invalid JSON),
+    _validate_single_page must log a warning mentioning 'invalid JSON'."""
+    from docsfy.postprocess import validate_pages
+
+    pages = {"intro": "# Intro\nContent."}
+    with (
+        patch(
+            "docsfy.postprocess.call_ai_cli",
+            return_value=(True, "not valid json at all"),
+        ),
+        patch("docsfy.postprocess.logger") as mock_logger,
+    ):
+        result = await validate_pages(
+            pages=pages,
+            repo_path=tmp_path,
+            ai_provider="claude",
+            ai_model="opus",
+            cache_dir=tmp_path / "cache",
+            project_name="test",
+        )
+    assert result == pages
+    # Must have logged a warning about invalid JSON
+    assert any(
+        "invalid JSON" in str(call) for call in mock_logger.warning.call_args_list
+    )
+
+
+@pytest.mark.asyncio
+async def test_validate_single_page_empty_list_no_warning(
+    tmp_path: Path,
+) -> None:
+    """When parse_json_array_response returns [] (empty list, no issues),
+    _validate_single_page must NOT log any warning."""
+    from docsfy.postprocess import validate_pages
+
+    pages = {"intro": "# Intro\nContent."}
+    with (
+        patch("docsfy.postprocess.call_ai_cli", return_value=(True, "[]")),
+        patch("docsfy.postprocess.logger") as mock_logger,
+    ):
+        result = await validate_pages(
+            pages=pages,
+            repo_path=tmp_path,
+            ai_provider="claude",
+            ai_model="opus",
+            cache_dir=tmp_path / "cache",
+            project_name="test",
+        )
+    assert result == pages
+    # Must NOT have logged any warnings
+    mock_logger.warning.assert_not_called()
+
+
+# --- Fix 5: add_cross_links fail-soft on AI exceptions and non-dict JSON ---
+
+
+@pytest.mark.asyncio
+async def test_add_cross_links_ai_exception_returns_pages_unchanged(
+    tmp_path: Path,
+) -> None:
+    """When call_ai_cli raises an exception, add_cross_links must catch it
+    and return pages unchanged."""
+    from docsfy.postprocess import add_cross_links
+
+    pages = {"intro": "# Intro\nContent."}
+    plan = {
+        "navigation": [
+            {
+                "group": "Docs",
+                "pages": [{"slug": "intro", "title": "Intro", "description": ""}],
+            }
+        ]
+    }
+    with patch(
+        "docsfy.postprocess.call_ai_cli",
+        side_effect=RuntimeError("AI backend crashed"),
+    ):
+        result = await add_cross_links(
+            pages=pages,
+            plan=plan,
+            ai_provider="claude",
+            ai_model="opus",
+            repo_path=tmp_path,
+            project_name="test-project",
+        )
+    assert result == pages
+
+
+@pytest.mark.asyncio
+async def test_add_cross_links_non_dict_json_returns_pages_unchanged(
+    tmp_path: Path,
+) -> None:
+    """When AI returns valid JSON that is not a dict (e.g. a list),
+    add_cross_links must return pages unchanged and log a warning."""
+    from docsfy.postprocess import add_cross_links
+
+    pages = {"intro": "# Intro\nContent."}
+    plan = {
+        "navigation": [
+            {
+                "group": "Docs",
+                "pages": [{"slug": "intro", "title": "Intro", "description": ""}],
+            }
+        ]
+    }
+    # parse_json_response returns None for non-dict JSON,
+    # so this tests that None is properly handled with the isinstance check
+    with (
+        patch(
+            "docsfy.postprocess.call_ai_cli",
+            return_value=(True, "not a dict or valid json"),
+        ),
+        patch("docsfy.postprocess.logger") as mock_logger,
+    ):
+        result = await add_cross_links(
+            pages=pages,
+            plan=plan,
+            ai_provider="claude",
+            ai_model="opus",
+            repo_path=tmp_path,
+            project_name="test-project",
+        )
+    assert result == pages
+    # Must have logged a warning about invalid response
+    assert any(
+        "Invalid AI cross-links response" in str(call)
+        for call in mock_logger.warning.call_args_list
+    )

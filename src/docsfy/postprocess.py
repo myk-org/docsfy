@@ -142,8 +142,12 @@ async def _validate_single_page(
         return content
 
     stale_refs = parse_json_array_response(output)
+    if stale_refs is None:
+        logger.warning(
+            f"[{project_name}] Validation returned invalid JSON for page '{slug}', keeping original content"
+        )
+        return content
     if not stale_refs:
-        # Either empty list (no issues) or parse failure — keep original
         return content
 
     exclusions = [
@@ -325,14 +329,20 @@ async def add_cross_links(
             pages_dir=str(pages_dir),
         )
         cli_flags = ["--trust"] if ai_provider == "cursor" else None
-        success, output = await call_ai_cli(
-            prompt=prompt,
-            cwd=repo_path,
-            ai_provider=ai_provider,
-            ai_model=ai_model,
-            ai_cli_timeout=ai_cli_timeout,
-            cli_flags=cli_flags,
-        )
+        try:
+            success, output = await call_ai_cli(
+                prompt=prompt,
+                cwd=repo_path,
+                ai_provider=ai_provider,
+                ai_model=ai_model,
+                ai_cli_timeout=ai_cli_timeout,
+                cli_flags=cli_flags,
+            )
+        except Exception as exc:
+            logger.warning(
+                f"[{project_name}] add_cross_links: AI call raised {exc}, returning pages unchanged"
+            )
+            return pages
     finally:
         shutil.rmtree(pages_dir, ignore_errors=True)
 
@@ -343,9 +353,9 @@ async def add_cross_links(
         return pages
 
     cross_links = parse_json_response(output)
-    if not cross_links:
+    if not isinstance(cross_links, dict):
         logger.warning(
-            f"[{project_name}] add_cross_links: Failed to parse AI cross-links response, returning pages unchanged"
+            f"[{project_name}] add_cross_links: Invalid AI cross-links response, returning pages unchanged"
         )
         return pages
 
