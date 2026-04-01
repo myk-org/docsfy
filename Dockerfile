@@ -73,7 +73,7 @@ RUN mkdir -p /home/appuser/.npm-global \
   && npm install -g @google/gemini-cli @mermaid-js/mermaid-cli
 
 # Verify mermaid-cli works
-RUN printf 'flowchart LR\n  A-->B\n' > /tmp/test.mmd && mmdc -i /tmp/test.mmd -o /tmp/test.svg && rm /tmp/test.mmd /tmp/test.svg
+RUN printf 'flowchart LR\n  A-->B\n' > /tmp/test.mmd && /home/appuser/.npm-global/bin/mmdc -i /tmp/test.mmd -o /tmp/test.svg && rm /tmp/test.mmd /tmp/test.svg
 
 # Switch to root for file copies and permission fixes
 USER root
