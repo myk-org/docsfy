@@ -110,7 +110,23 @@ def _truncate_diff_content(diff_content: str, max_chars: int = _MAX_DIFF_LENGTH)
     )
 
 
-def build_page_prompt(project_name: str, page_title: str, page_description: str) -> str:
+def build_page_prompt(
+    project_name: str,
+    page_title: str,
+    page_description: str,
+    exclusions: list[str] | None = None,
+) -> str:
+    exclusions_block = ""
+    if exclusions:
+        items = "\n".join(f"- {item}" for item in exclusions)
+        exclusions_block = f"""
+
+IMPORTANT: The following references are STALE and must NOT appear in the documentation.
+They were identified as referencing features, files, or modules that no longer exist in the current codebase:
+{items}
+
+Only document features and files that exist in the current codebase."""
+
     return f"""You are a technical documentation writer. Explore this repository to write
 the "{page_title}" page for the {project_name} documentation.
 
@@ -122,7 +138,7 @@ to write comprehensive, accurate documentation. Do NOT rely on the README.
 {_PAGE_WRITING_RULES}
 
 This documentation will be read by end users of the project. Write it to be approachable,
-practical, and easy to follow. Separate llms.txt files are generated for AI consumption.
+practical, and easy to follow. Separate llms.txt files are generated for AI consumption.{exclusions_block}
 
 Start the page with exactly this first line:
 # {page_title}

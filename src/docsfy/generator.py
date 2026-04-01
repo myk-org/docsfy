@@ -157,11 +157,13 @@ async def _generate_full_page_content(
     ai_provider: str,
     ai_model: str,
     ai_cli_timeout: int | None = None,
+    exclusions: list[str] | None = None,
 ) -> str:
     prompt = build_page_prompt(
         project_name=project_name,
         page_title=page_title,
         page_description=page_description,
+        exclusions=exclusions,
     )
     output = await _call_ai_or_raise(
         prompt=prompt,
