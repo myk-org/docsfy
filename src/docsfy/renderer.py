@@ -18,6 +18,7 @@ logger = get_logger(name=__name__)
 
 TEMPLATES_DIR = Path(__file__).parent / "templates"
 STATIC_DIR = Path(__file__).parent / "static"
+PUPPETEER_CONFIG = Path.home() / ".puppeteerrc.json"
 
 
 _jinja_env: Environment | None = None
@@ -333,16 +334,19 @@ def _prerender_mermaid(md_text: str) -> str:
 
         input_file.write_text(mermaid_src, encoding="utf-8")
         try:
+            cmd = [
+                "mmdc",
+                "-i",
+                str(input_file),
+                "-o",
+                str(output_file),
+                "-b",
+                "transparent",
+            ]
+            if PUPPETEER_CONFIG.exists():
+                cmd[1:1] = ["-p", str(PUPPETEER_CONFIG)]
             subprocess.run(
-                [
-                    "mmdc",
-                    "-i",
-                    str(input_file),
-                    "-o",
-                    str(output_file),
-                    "-b",
-                    "transparent",
-                ],
+                cmd,
                 capture_output=True,
                 text=True,
                 check=True,
