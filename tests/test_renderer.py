@@ -373,7 +373,7 @@ def test_render_page_with_version() -> None:
         current_slug="test",
         version="2.1.0",
     )
-    assert "2.1.0" in html
+    assert "Generated from version 2.1.0" in html
     assert "footer-version" in html
 
 
@@ -388,6 +388,7 @@ def test_render_page_without_version() -> None:
         navigation=[],
         current_slug="test",
     )
+    assert "Generated from version" not in html
     assert "footer-version" not in html
 
 
@@ -400,7 +401,7 @@ def test_render_index_with_version() -> None:
         navigation=[],
         version="1.0.0",
     )
-    assert "1.0.0" in html
+    assert "Generated from version 1.0.0" in html
     assert "footer-version" in html
 
 
@@ -423,9 +424,9 @@ def test_render_site_passes_version(_mock_mermaid: Any, tmp_path: Path) -> None:
     output_dir = tmp_path / "site"
     render_site(plan=plan, pages=pages, output_dir=output_dir)
     index_html = (output_dir / "index.html").read_text()
-    assert "3.0.0" in index_html
+    assert "Generated from version 3.0.0" in index_html
     page_html = (output_dir / "intro.html").read_text()
-    assert "3.0.0" in page_html
+    assert "Generated from version 3.0.0" in page_html
 
 
 def test_prerender_mermaid_replaces_block() -> None:

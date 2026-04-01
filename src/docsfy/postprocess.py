@@ -4,6 +4,7 @@ import asyncio
 import json
 import shutil
 import subprocess
+import tempfile
 import uuid
 from configparser import ConfigParser
 from pathlib import Path
@@ -12,8 +13,9 @@ from typing import Any
 from simple_logger.logger import get_logger
 
 from docsfy.ai_client import call_ai_cli, run_parallel_with_limit
-from docsfy.generator import MAX_CONCURRENT_PAGES, _generate_full_page_content
+from docsfy.generator import _generate_full_page_content
 from docsfy.json_parser import parse_json_array_response, parse_json_response
+from docsfy.models import MAX_CONCURRENT_PAGES
 from docsfy.prompts import build_cross_links_prompt, build_validation_prompt
 
 logger = get_logger(name=__name__)
@@ -225,8 +227,7 @@ async def validate_pages(
                     }
 
     job_id = str(uuid.uuid4())
-    job_dir = Path(f"/tmp/docsfy-validation/{job_id}")
-    job_dir.mkdir(parents=True, exist_ok=True)
+    job_dir = Path(tempfile.mkdtemp(prefix=f"docsfy-validation-{job_id}-"))
 
     try:
         coroutines = [
@@ -286,6 +287,7 @@ async def add_cross_links(
         ai_provider: AI provider name.
         ai_model: AI model name.
         repo_path: Root of the repository (used as cwd for AI CLI calls).
+        project_name: Name of the project (used in log prefixes).
         ai_cli_timeout: Timeout in minutes for AI CLI calls.
 
     Returns:
@@ -300,21 +302,23 @@ async def add_cross_links(
                 slug_titles[slug] = page.get("title", slug)
 
     job_id = str(uuid.uuid4())
-    job_dir = Path(f"/tmp/docsfy-crosslinks/{job_id}")
-    pages_dir = job_dir / "pages"
-    pages_dir.mkdir(parents=True, exist_ok=True)
+    pages_dir = Path(tempfile.mkdtemp(prefix=f"docsfy-crosslinks-{job_id}-"))
 
     try:
         # Write manifest
         manifest = [
             {"slug": slug, "title": slug_titles.get(slug, slug)} for slug in pages
         ]
-        manifest_path = job_dir / "manifest.json"
-        manifest_path.write_text(json.dumps(manifest, indent=2), encoding="utf-8")
+        manifest_path = pages_dir / "manifest.json"
+        await asyncio.to_thread(
+            manifest_path.write_text, json.dumps(manifest, indent=2), "utf-8"
+        )
 
         # Write page files
         for slug, content in pages.items():
-            (pages_dir / f"{slug}.md").write_text(content, encoding="utf-8")
+            await asyncio.to_thread(
+                (pages_dir / f"{slug}.md").write_text, content, "utf-8"
+            )
 
         prompt = build_cross_links_prompt(
             manifest_path=str(manifest_path),
@@ -330,7 +334,7 @@ async def add_cross_links(
             cli_flags=cli_flags,
         )
     finally:
-        shutil.rmtree(job_dir, ignore_errors=True)
+        shutil.rmtree(pages_dir, ignore_errors=True)
 
     if not success:
         logger.warning(

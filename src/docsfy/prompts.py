@@ -245,9 +245,12 @@ def build_cross_links_prompt(manifest_path: str, pages_dir: str) -> str:
 Then read ALL the page markdown files in:
 {pages_dir}
 
-For each page, suggest 2-5 related pages based on content overlap, topic relevance,
+For each page, suggest related pages based on content overlap, topic relevance,
 and natural reading flow. Pages that reference similar concepts, APIs, or features
 should be linked together.
+If the manifest has 3 or more pages, return 2-5 unique related slugs.
+If fewer pages exist, return as many unique non-self slugs as are available
+(use [] only when no other page exists).
 
 CRITICAL: Your response must be ONLY a valid JSON object. No text before or after.
 

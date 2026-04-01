@@ -5,6 +5,7 @@ import json
 import re
 import shutil
 import subprocess
+import tempfile
 import uuid
 from pathlib import Path
 from typing import Any
@@ -312,28 +313,37 @@ def _ensure_blank_lines(md_text: str) -> str:
     return "\n".join(result)
 
 
-_MERMAID_BLOCK_RE = re.compile(
-    r"^(```+)mermaid\s*\n(.*?)\n\1\s*$", re.MULTILINE | re.DOTALL
-)
-
-
 def _prerender_mermaid(md_text: str) -> str:
-    """Pre-render Mermaid code blocks to inline SVG."""
+    """Pre-render Mermaid code blocks to inline SVG.
+
+    Iterates line-by-line tracking fence depth (like
+    ``_clean_code_fence_annotations`` does) so that mermaid blocks nested
+    inside an outer fence (e.g. documentation examples) are left untouched.
+    Only top-level (depth-0) mermaid blocks are rendered.  The temporary
+    directory is created lazily -- only when a real mermaid block is found.
+    """
     if not shutil.which("mmdc"):
         logger.debug("mmdc not found, skipping Mermaid pre-rendering")
         return md_text
 
-    job_id = uuid.uuid4().hex[:12]
-    tmp_dir = Path(f"/tmp/docsfy-mermaid/{job_id}")
-    tmp_dir.mkdir(parents=True, exist_ok=True)
+    lines = md_text.split("\n")
+    result: list[str] = []
+    fence_depth = 0
+    opening_fence_len = 0
+    mermaid_fence_len = 0
+    mermaid_lines: list[str] = []
+    in_mermaid = False
+    tmp_dir: Path | None = None
 
-    def _render_block(match: re.Match[str]) -> str:
-        mermaid_src = match.group(2)
+    def _render_mermaid_block(src: str) -> str:
+        nonlocal tmp_dir
+        if tmp_dir is None:
+            tmp_dir = Path(tempfile.mkdtemp(prefix="docsfy-mermaid-"))
         block_id = uuid.uuid4().hex[:8]
         input_file = tmp_dir / f"{block_id}.mmd"
         output_file = tmp_dir / f"{block_id}.svg"
 
-        input_file.write_text(mermaid_src, encoding="utf-8")
+        input_file.write_text(src, encoding="utf-8")
         try:
             cmd = [
                 "mmdc",
@@ -361,14 +371,71 @@ def _prerender_mermaid(md_text: str) -> str:
             FileNotFoundError,
         ) as exc:
             logger.debug(f"Mermaid rendering failed for block: {exc}")
-            return match.group(0)
+            return ""
 
-    result = _MERMAID_BLOCK_RE.sub(_render_block, md_text)
+    for line in lines:
+        stripped = line.lstrip()
 
-    with contextlib.suppress(OSError):
-        shutil.rmtree(tmp_dir)
+        if stripped.startswith("```"):
+            backtick_count = len(stripped) - len(stripped.lstrip("`"))
+            rest = stripped[backtick_count:].strip()
 
-    return result
+            if in_mermaid and backtick_count >= mermaid_fence_len and not rest:
+                # Closing the mermaid fence
+                mermaid_src = "\n".join(mermaid_lines)
+                rendered = _render_mermaid_block(mermaid_src)
+                if rendered:
+                    result.append(rendered)
+                else:
+                    # Rendering failed -- restore original block
+                    result.append("`" * mermaid_fence_len + "mermaid")
+                    result.extend(mermaid_lines)
+                    result.append(line)
+                in_mermaid = False
+                mermaid_lines = []
+                mermaid_fence_len = 0
+                fence_depth = 0
+                opening_fence_len = 0
+                continue
+
+            if in_mermaid:
+                # Inner fence marker inside the mermaid block
+                mermaid_lines.append(line)
+                continue
+
+            if fence_depth == 0:
+                if rest.lower() == "mermaid":
+                    # Top-level mermaid fence opening
+                    in_mermaid = True
+                    mermaid_fence_len = backtick_count
+                    mermaid_lines = []
+                    continue
+                else:
+                    # Non-mermaid fence opening at depth 0
+                    fence_depth = 1
+                    opening_fence_len = backtick_count
+            elif backtick_count >= opening_fence_len and not rest:
+                # Closing the outermost (non-mermaid) fence
+                fence_depth = 0
+                opening_fence_len = 0
+            # else: inner fence marker inside outer block, ignore
+
+        elif in_mermaid:
+            mermaid_lines.append(line)
+            continue
+
+        result.append(line)
+
+    # Handle unclosed mermaid fence at end of input
+    if in_mermaid:
+        result.append("`" * mermaid_fence_len + "mermaid")
+        result.extend(mermaid_lines)
+
+    if tmp_dir is not None:
+        with contextlib.suppress(OSError):
+            shutil.rmtree(tmp_dir)
+
+    return "\n".join(result)
 
 
 def _md_to_html(md_text: str) -> tuple[str, str]:

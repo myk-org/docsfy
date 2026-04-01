@@ -12,6 +12,7 @@ VALID_PROVIDERS = ("claude", "gemini", "cursor")
 DEFAULT_BRANCH = "main"
 DOCSFY_DOCS_URL = "https://myk-org.github.io/docsfy/"
 DOCSFY_REPO_URL = "https://github.com/myk-org/docsfy"
+MAX_CONCURRENT_PAGES = 5
 
 
 class GenerateRequest(BaseModel):

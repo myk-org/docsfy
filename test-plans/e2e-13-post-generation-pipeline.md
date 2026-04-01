@@ -1,7 +1,7 @@
 # E2E UI Tests: Post-Generation Pipeline
 
 > Back to the [main E2E index](e2e-ui-test-plan.md#test-files). Shared execution rules, prerequisites, variables, and environment constraints live there.
-
+>
 > **UI Framework Note:** The app UI is a React SPA using shadcn/ui components and Tailwind CSS. Real-time updates use WebSocket (`/api/ws`).
 
 ---
@@ -227,8 +227,7 @@ agent-browser javascript "Array.from(document.querySelectorAll('.related-pages a
 **Set up WebSocket listener before starting generation:**
 
 ```shell
-agent-browser javascript "window.__pipelineStages = new Set(); const ws = new WebSocket('ws://localhost:8800/api/ws'); ws.onmessage = (e) => { const msg = JSON.parse(e.data); if (msg.current_stage) window.__pipelineStages.add(msg.current_stage); if (msg.progress && msg.progress.current_stage) window.__pipelineStages.add(msg.progress.current_stage); if (msg.status) window.__pipelineStages.add(msg.status); }; window.__pipelineWs = ws;"
-agent-browser wait 1000
+agent-browser javascript "await new Promise((resolve, reject) => { window.__pipelineStages = new Set(); const ws = new WebSocket('ws://localhost:8800/api/ws'); ws.onopen = () => { window.__pipelineWs = ws; resolve('connected'); }; ws.onerror = (e) => reject('ws error'); ws.onmessage = (e) => { const msg = JSON.parse(e.data); if (msg.current_stage) window.__pipelineStages.add(msg.current_stage); if (msg.progress && msg.progress.current_stage) window.__pipelineStages.add(msg.progress.current_stage); if (msg.status) window.__pipelineStages.add(msg.status); }; })"
 ```
 
 **Start generation:**
