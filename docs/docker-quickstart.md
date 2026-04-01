@@ -1,32 +1,30 @@
 # Docker and Compose Quickstart
 
-`docsfy` includes a ready-to-use `Dockerfile` and `docker-compose.yaml`. The provided setup builds the app from this repository, stores runtime data in `./data`, and publishes the web UI on `http://localhost:8000`.
+`docsfy` ships with both a `Dockerfile` and a `docker-compose.yaml`, so you can run it directly from this repository without writing your own container setup. The provided configuration exposes the app on `http://localhost:8000`, stores its SQLite database and generated output under `./data`, and does not require a separate database container.
 
-## Quick start
+By default, one container serves the web UI, the HTTP API, and generated documentation.
 
-1. Create a `.env` file by copying `.env.example`.
-2. Set `ADMIN_KEY` to a strong value with at least 16 characters.
-3. If you are running locally over plain `http://localhost:8000`, set `SECURE_COOKIES=false`.
-4. Start the app from the repository root:
-
-```bash
-docker compose up --build
+```mermaid
+flowchart LR
+  Env[".env"] -->|runtime settings| App["docsfy container"]
+  Browser["Browser"] -->|http://localhost:8000| App
+  Browser -. optional :5173 when DEV_MODE=true .-> App
+  Data["./data on host"] <-->|bind mount to /data| App
 ```
 
-5. Open `http://localhost:8000`.
-6. Sign in with username `admin` and the same value you set for `ADMIN_KEY`.
+## Create `.env`
 
-The shipped `.env.example` looks like this:
+Run these commands from the repository root:
+
+```bash
+cp .env.example .env
+```
+
+Relevant lines from `.env.example`:
 
 ```dotenv
 # Required: Admin password (minimum 16 characters)
 ADMIN_KEY=
-
-# AI provider and model defaults
-# (pydantic_settings reads these case-insensitively)
-AI_PROVIDER=cursor
-AI_MODEL=gpt-5.4-xhigh-fast
-AI_CLI_TIMEOUT=60
 
 # Logging
 LOG_LEVEL=INFO
@@ -41,15 +39,17 @@ SECURE_COOKIES=true
 # DEV_MODE=true
 ```
 
-> **Warning:** `ADMIN_KEY` is required. The app exits at startup if it is missing or shorter than 16 characters.
+The compose file uses `.env`, and the application is also configured to read `.env`-style settings.
 
-> **Warning:** For a normal local browser-based quickstart, change `SECURE_COOKIES` to `false`. With the default `true`, the login cookie is marked secure and will not work correctly on plain `http://localhost:8000`.
+> **Warning:** `ADMIN_KEY` is required and must be at least 16 characters long. The server validates it during startup.
 
-> **Note:** `AI_PROVIDER` and `AI_MODEL` set the defaults for new generations. The supported providers in the codebase are `claude`, `gemini`, and `cursor`.
+> **Warning:** If you are using plain `http://localhost:8000` in a browser, set `SECURE_COOKIES=false`. With the default `true`, the session cookie is marked secure for HTTPS.
 
-## What the provided Compose setup does
+> **Note:** The provided volume mapping assumes `DATA_DIR=/data`. If you change `DATA_DIR`, change the container-side mount path to match.
 
-These are the key parts of `docker-compose.yaml`:
+## Start with Compose
+
+Key lines from `docker-compose.yaml`:
 
 ```yaml
 services:
@@ -63,55 +63,101 @@ services:
       # - "5173:5173"
     volumes:
       - ./data:/data
-      # Uncomment for development (hot reload)
-      # - ./frontend:/app/frontend
     env_file:
       - .env
     environment:
-      # WARNING: ADMIN_KEY must be set in your .env file or shell environment.
-      # An empty ADMIN_KEY will cause the application to reject all admin requests.
       - ADMIN_KEY=${ADMIN_KEY}
-      # Uncomment for development
-      # - DEV_MODE=true
     restart: unless-stopped
 ```
 
-In practice, that means:
+This setup:
 
-- Docker Compose builds the image locally from the repository's `Dockerfile`.
-- Port `8000` is published by default.
-- Your local `./data` directory is mounted into `/data` inside the container.
-- The container reads environment settings from `.env`.
-- The service restarts automatically unless you stop it manually.
+- Builds the image from the repository’s `Dockerfile`.
+- Publishes the main app on port `8000`.
+- Persists runtime data by binding `./data` on the host to `/data` in the container.
+- Loads settings from `.env`.
+- Restarts automatically unless you stop it.
 
-> **Tip:** The first build can take a while. The Dockerfile builds the frontend, installs Python dependencies, and installs the provider CLIs during the image build.
+Start it with:
 
-## Persistent data
+```bash
+mkdir -p data
+docker compose up --build
+```
 
-The application stores its database and project data under `DATA_DIR`, which defaults to `/data`:
+If you prefer detached mode, add `-d`.
+
+Once the container is up:
+
+1. Open `http://localhost:8000/login`.
+2. Sign in with username `admin` and the `ADMIN_KEY` value from `.env`.
+3. Optionally verify the health endpoint:
+
+```bash
+curl http://localhost:8000/health
+```
+
+Expected response:
+
+```json
+{"status":"ok"}
+```
+
+Stop the stack with:
+
+```bash
+docker compose down
+```
+
+> **Tip:** The first build can take a while. The `Dockerfile` builds the frontend, installs Python dependencies, and installs additional runtime tooling during the image build.
+
+> **Note:** After you change `.env`, restart the container so the new settings are picked up.
+
+## Persistent Data
+
+The storage layout is defined in `src/docsfy/storage.py`:
 
 ```python
 DB_PATH = Path(os.getenv("DATA_DIR", "/data")) / "docsfy.db"
 DATA_DIR = Path(os.getenv("DATA_DIR", "/data"))
 PROJECTS_DIR = DATA_DIR / "projects"
+
+return (
+    PROJECTS_DIR
+    / safe_owner
+    / _validate_name(name)
+    / branch
+    / ai_provider
+    / ai_model
+)
 ```
 
-Because Compose mounts `./data:/data`, the container's storage shows up on your host as:
+Generated site output lives one level deeper:
 
-- `./data/docsfy.db` for the SQLite database
-- `./data/projects/` for generated docs and project artifacts
+```python
+def get_project_site_dir(
+    name: str,
+    ai_provider: str = "",
+    ai_model: str = "",
+    owner: str = "",
+    branch: str = DEFAULT_BRANCH,
+) -> Path:
+    return get_project_dir(name, ai_provider, ai_model, owner, branch) / "site"
+```
 
-Generated site output is stored under this layout:
+In practice, the host-mounted `./data` directory contains:
 
-`./data/projects/<owner>/<project>/<branch>/<provider>/<model>/site`
+- `./data/docsfy.db` for the SQLite database.
+- `./data/projects/<owner>/<project>/<branch>/<provider>/<model>/site` for rendered documentation.
+- `./data/projects/.../cache/pages` for cached page data used during generation.
 
-> **Tip:** Recreating the container does not erase your database or generated documentation as long as `./data` stays in place.
+> **Note:** You do not need to create `docsfy.db` yourself. Startup initializes the database and creates the data directories inside `DATA_DIR`.
 
-> **Warning:** If you change `DATA_DIR` in `.env`, also change the container-side mount target in `docker-compose.yaml`. The provided setup assumes `DATA_DIR=/data` together with `./data:/data`.
+> **Note:** Rebuilding or recreating the container does not remove your data as long as `./data` stays in place.
 
-## Exposed ports and health check
+## Exposed Ports and Dev Mode
 
-The Dockerfile exposes the main app port and the optional frontend dev port:
+Relevant lines from `Dockerfile`:
 
 ```dockerfile
 EXPOSE 8000
@@ -124,30 +170,13 @@ HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
 ENTRYPOINT ["/app/entrypoint.sh"]
 ```
 
-What this means:
-
-- `8000` is the main application port. In the default Compose setup, this is the port you use.
-- `5173` is only relevant when you enable frontend development mode.
-- Container health is checked with `GET /health` on port `8000`.
-
-> **Note:** The default setup serves the built frontend from the FastAPI app on port `8000`. You only need port `5173` when you want Vite hot reloading.
-
-## Development mode
-
-The repository also includes a built-in development mode. When `DEV_MODE=true`, `entrypoint.sh` changes how the container starts:
+The startup behavior comes from `entrypoint.sh`:
 
 ```bash
 if [ "$DEV_MODE" = "true" ]; then
-    echo "DEV_MODE enabled - installing frontend dependencies..."
     cd /app/frontend || exit 1
     npm ci
-    echo "Starting Vite dev server on port 5173..."
     npm run dev &
-    VITE_PID=$!
-    # Forward signals to the background Vite process for clean shutdown
-    trap 'kill $VITE_PID 2>/dev/null; wait $VITE_PID 2>/dev/null' SIGTERM SIGINT
-    cd /app
-    echo "Starting FastAPI with hot reload on port 8000..."
     uv run --no-sync uvicorn docsfy.main:app \
         --host 0.0.0.0 --port 8000 \
         --reload --reload-dir /app/src
@@ -157,18 +186,51 @@ else
 fi
 ```
 
-To use this mode:
+What that means in practice:
 
-- Set `DEV_MODE=true` in `.env`.
-- Uncomment `# - "5173:5173"` in `docker-compose.yaml`.
-- Uncomment `# - ./frontend:/app/frontend` in `docker-compose.yaml` if you want frontend hot reload from your local checkout.
+- `8000` is the main port end users need. It serves the app, the API, and generated docs.
+- `5173` is only relevant when `DEV_MODE=true`.
+- In development mode, the container starts a Vite dev server and runs Uvicorn with reload enabled.
+- The image health check probes `GET /health`, which is a public endpoint.
 
-When dev mode is enabled, the Vite server runs on `5173` and the backend still runs on `8000`. The frontend dev server proxies `/api`, `/docs`, and `/health` to `http://localhost:8000`.
+If you enable `DEV_MODE=true`, also publish `5173` so that port is reachable from the host.
 
-> **Tip:** Leave `DEV_MODE` off unless you are actively editing the frontend. For normal local usage, the default `8000` setup is simpler.
+## Run the Dockerfile Directly
 
-## Common gotchas
+If you want to use the `Dockerfile` without Compose, build and run it like this:
 
-- The container exits immediately: check that `ADMIN_KEY` is set and is at least 16 characters long.
-- You can log in, but the UI behaves like you are not signed in: set `SECURE_COOKIES=false` for plain local HTTP.
-- Data is not persisting where you expect: confirm that `docker-compose.yaml` still mounts `./data:/data` and that `DATA_DIR` is still `/data`.
+```bash
+docker build -t docsfy .
+docker run --rm \
+  -p 8000:8000 \
+  --env-file .env \
+  -v "$(pwd)/data:/data" \
+  docsfy
+```
+
+That gives you the same basics as the provided compose setup:
+
+- `--env-file .env` passes your runtime settings into the container.
+- `-v "$(pwd)/data:/data"` preserves the database and generated docs.
+- `-p 8000:8000` publishes the web app.
+
+The image does not copy your host `.env` file into `/app`, so `--env-file .env` is the simplest way to pass the same settings you use with Compose.
+
+If you also enable `DEV_MODE=true`, publish `5173` too.
+
+## Troubleshooting
+
+- The container exits immediately: check that `ADMIN_KEY` is set and at least 16 characters long.
+- The login page loads but you cannot stay signed in on `http://localhost:8000`: set `SECURE_COOKIES=false` for local HTTP.
+- Data is missing after a restart: make sure the bind mount still points to `/data` and still matches `DATA_DIR`.
+- You changed `.env` but nothing changed at runtime: restart the container.
+- You want to inspect logs: run `docker compose logs -f`.
+
+
+## Related Pages
+
+- [Installation](installation.html)
+- [Environment Variables](environment-variables.html)
+- [Deployment and Runtime](deployment-and-runtime.html)
+- [Local Development](local-development.html)
+- [First Run Quickstart](first-run-quickstart.html)

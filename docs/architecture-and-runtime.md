@@ -6,7 +6,7 @@
 - The React dashboard is the control plane. It lets you start runs, watch progress, browse variants, and manage users or access.
 - SQLite stores runtime metadata such as projects, variants, users, sessions, and sharing rules.
 - The filesystem stores generated artifacts such as cached Markdown, rendered HTML, search assets, and download bundles.
-- External AI CLIs do the planning and writing work.
+- External AI CLIs do the planning, page writing, validation, and cross-linking work.
 - The static renderer turns generated Markdown into a browsable site.
 
 That architecture keeps deployment simple: one service, one database file, one data directory, and one place to look when something is generating, ready, failed, or downloadable.
@@ -15,18 +15,12 @@ That architecture keeps deployment simple: one service, one database file, one d
 
 ## The Big Picture
 
-```text
-Browser dashboard or `docsfy` CLI
-                |
-                v
-        FastAPI backend
-  /api/*   /api/ws   /docs/*   SPA routes
-                |
-      +---------+---------+------------------+
-      |                   |                  |
-      v                   v                  v
-  SQLite            filesystem           external tools
-  /data/docsfy.db   /data/projects/...   git + AI provider CLIs
+```mermaid
+flowchart TD
+    A[Browser dashboard or docsfy CLI] --> B[FastAPI backend<br/>API, WebSocket, docs, and SPA routes]
+    B --> C[SQLite<br/>/data/docsfy.db]
+    B --> D[Filesystem<br/>/data/projects/...]
+    B --> E[External tools<br/>git + AI provider CLIs]
 ```
 
 In practice, a generation request looks like this:
@@ -34,10 +28,13 @@ In practice, a generation request looks like this:
 1. You submit a repo URL from the dashboard or run `docsfy generate`.
 2. The backend validates auth, repo source, provider/model, and branch.
 3. It clones the repo or inspects a local admin-only repo path.
-4. It asks an AI CLI to create a documentation plan.
-5. It generates Markdown pages, often in parallel.
-6. It renders a full static site to disk.
-7. It updates SQLite, notifies connected clients over WebSocket, and serves the finished site under `/docs/...`.
+4. It compares the current commit to the newest ready variant so it can choose between a full run, an incremental update, or an immediate `up_to_date` result.
+5. It asks an AI CLI to create a documentation plan, or reuses the existing plan for an incremental run.
+6. It generates Markdown pages, and incremental runs can patch only the affected sections of a page instead of rewriting the whole file.
+7. It validates generated pages against the repository and can regenerate pages that still contain stale references.
+8. It adds a `## Related Pages` section based on AI-suggested cross-links between pages.
+9. If possible, it detects the repository version, renders the static site to disk, and writes search plus LLM export assets.
+10. It updates SQLite, notifies connected clients over WebSocket, and serves the finished site under `/docs/...`.
 
 A specific docs variant is served from a URL shaped like:
 
@@ -95,8 +92,8 @@ server: {
 The dashboard does not render documentation itself. Instead, it works as a control plane:
 
 - It calls `/api/auth/me` to check the current session.
-- It loads `/api/projects` to populate the project tree.
-- It opens `/api/ws` for live progress and status updates.
+- It loads `/api/projects` to populate a hierarchical tree of repository, branch, and provider/model variants. For admins, the tree is grouped by `owner/name` so similarly named repos from different owners stay separate.
+- It opens `/api/ws` for live progress and status updates, then combines `current_stage`, `page_count`, and `plan_json` to show a per-page activity log while a run is in progress.
 - It opens ready docs in a new tab at `/docs/...`.
 - It downloads archives from `/api/projects/.../download`.
 
@@ -240,15 +237,23 @@ async def _call_ai_or_raise(
     return output
 ```
 
-That flow is wrapped in a generation pipeline with clear stages:
+That flow is wrapped in a generation pipeline with clear stages. The backend writes these stage values into project state, and the dashboard uses the same names to render a live activity log.
 
-- `cloning`
-- `planning`
-- `incremental_planning`
-- `generating_pages`
-- `rendering`
+From `frontend/src/lib/constants.ts`:
 
-Those stage names are not just internal labels. They are written into project state and sent to the dashboard so users can see what the system is doing.
+```typescript
+export const GENERATION_STAGES = [
+  'cloning',
+  'planning',
+  'incremental_planning',
+  'generating_pages',
+  'validating',
+  'cross_linking',
+  'rendering',
+] as const
+```
+
+That lets the UI distinguish between page generation, stale-reference validation, and cross-link insertion before rendering begins. A ready variant can also keep `current_stage = up_to_date` when `docsfy` determines that nothing meaningful changed.
 
 For remote repositories, cloning is intentionally shallow and branch-aware. From `src/docsfy/repository.py`:
 
@@ -267,7 +272,7 @@ That small detail has a big runtime effect:
 - If only part of the repo changed, the incremental planner can choose which pages to regenerate and keep the rest from cache.
 - If the newest ready output was built with a different provider or model, `docsfy` can reuse that variant’s artifacts and then replace it only after the new variant is ready.
 
-Page generation is also parallelized. The generator caps page work at five concurrent pages, which is a good balance between speed and keeping provider CLIs manageable.
+Page generation is also parallelized, and incremental runs can update only the affected sections of a page instead of forcing a full rewrite. For pages that need regeneration, `docsfy` can ask the AI for a JSON patch-like set of targeted text replacements and apply those edits to the existing markdown before falling back to a full rewrite. The generator still caps page work at five concurrent pages, which is a good balance between speed and keeping provider CLIs manageable.
 
 > **Tip:** Switching provider or model after a successful run can be much faster than starting over from scratch. `docsfy` will try to reuse previous artifacts when the commit history and variant state allow it.
 
@@ -279,13 +284,18 @@ Once Markdown pages are ready, `docsfy` renders a complete static site with Jinj
 
 The renderer does more than a straight Markdown-to-HTML conversion:
 
+- It pre-renders top-level Mermaid diagrams to inline SVG when `mmdc` is available.
 - It cleans up unusual code-fence annotations that AI output may produce.
 - It inserts missing blank lines so Markdown structures render correctly.
 - It sanitizes dangerous HTML before writing the final page.
+- It filters path-unsafe slugs out of the output and trims navigation to only the pages that were actually rendered.
 - It renders `index.html` plus one HTML page per slug.
 - It also writes `.md` copies of pages alongside the HTML.
 - It builds `search-index.json`, `llms.txt`, and `llms-full.txt`.
+- It can include a detected project version in the generated footer, using `pyproject.toml`, `package.json`, `Cargo.toml`, `setup.cfg`, or the latest Git tag when available.
 - It copies client-side assets for search, theme switching, copy buttons, scrollspy, callout styling, and GitHub metadata.
+
+> **Note:** Mermaid pre-rendering is opportunistic. If `mmdc` is unavailable or a diagram fails to render, `docsfy` keeps the original fenced block instead of failing the whole site render.
 
 From `src/docsfy/renderer.py`:
 
@@ -416,7 +426,7 @@ services:
     restart: unless-stopped
 ```
 
-In normal mode, the container serves FastAPI on port `8000`. In `DEV_MODE=true`, the entrypoint also starts the Vite dev server on `5173` and runs FastAPI with reload, which gives you a faster edit-refresh loop for frontend work.
+In normal mode, the container serves FastAPI on port `8000`. The runtime image also bundles Chromium plus `mermaid-cli`, and the Docker build smoke-tests `mmdc` so Mermaid diagrams can render during site generation without an extra service. In `DEV_MODE=true`, the entrypoint also starts the Vite dev server on `5173` and runs FastAPI with reload, which gives you a faster edit-refresh loop for frontend work.
 
 This architecture makes production easy to reason about:
 
@@ -455,3 +465,12 @@ The pre-commit setup also adds quality and security checks such as:
 > **Note:** This checkout does not include any committed `.github/workflows` files, so the repository’s automation is defined here through local tooling such as `tox.toml`, `frontend` test config, and `.pre-commit-config.yaml`, rather than an in-repo GitHub Actions pipeline.
 
 If you keep one mental model in mind, use this one: FastAPI is the orchestrator, SQLite is the control database, the filesystem holds the generated site, and the AI CLI plus renderer pipeline turns a Git repository into a versioned, shareable documentation variant.
+
+
+## Related Pages
+
+- [Introduction](introduction.html)
+- [Data Storage and Layout](data-storage-and-layout.html)
+- [Generated Output](generated-output.html)
+- [Deployment and Runtime](deployment-and-runtime.html)
+- [WebSocket Protocol](websocket-protocol.html)

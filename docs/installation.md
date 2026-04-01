@@ -16,6 +16,7 @@ You will need:
 - Node.js and npm for the frontend build
 - Git
 - one supported AI provider CLI if you plan to generate docs: `claude`, `gemini`, or `cursor`
+- Chromium plus Mermaid CLI (`mmdc`) if you want local generation to match the container's Mermaid diagram support
 
 The project metadata defines the Python version requirement and the two console entry points:
 
@@ -29,6 +30,28 @@ docsfy = "docsfy.cli.main:main"
 ```
 
 > **Note:** The repository’s container build uses Python 3.12 and Node 20, so Node 20 is a safe choice for local frontend work too.
+
+If you want local generation to match the container's Mermaid diagram support, install Chromium and Mermaid CLI (`mmdc`) too. The runtime image does that with:
+
+```dockerfile
+RUN apt-get update && apt-get install -y --no-install-recommends \
+  bash \
+  git \
+  curl \
+  nodejs \
+  npm \
+  chromium \
+  && rm -rf /var/lib/apt/lists/*
+
+# Puppeteer config for mermaid-cli (must be set before npm install)
+ENV PUPPETEER_EXECUTABLE_PATH="/usr/bin/chromium"
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD="true"
+
+# Configure npm for non-root global installs and install Gemini CLI + mermaid-cli
+RUN mkdir -p /home/appuser/.npm-global \
+  && npm config set prefix '/home/appuser/.npm-global' \
+  && npm install -g @google/gemini-cli @mermaid-js/mermaid-cli@11
+```
 
 ## Install Python dependencies
 
@@ -187,3 +210,12 @@ uv run docsfy health
 ```
 
 If `uv run docsfy health` reports an `ok` status, your local installation is ready to use.
+
+
+## Related Pages
+
+- [Docker and Compose Quickstart](docker-quickstart.html)
+- [Environment Variables](environment-variables.html)
+- [AI Provider Setup](ai-provider-setup.html)
+- [Local Development](local-development.html)
+- [First Run Quickstart](first-run-quickstart.html)

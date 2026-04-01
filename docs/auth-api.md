@@ -1,185 +1,244 @@
 # Authentication API
 
-docsfy supports two authentication styles:
+docsfy supports two ways to authenticate:
 
-- Bearer-token auth for CLI tools, scripts, and direct API calls
-- Session-cookie auth for the built-in browser UI after a successful login
+- Bearer-token authentication for CLI tools, scripts, and direct API clients
+- Session-cookie authentication for the built-in browser UI after a successful login
 
-The same secret appears under different names depending on the client. In the login JSON body it is sent as `api_key`; in direct API requests it is sent as a Bearer token; in the UI it is entered in a password field and exchanged for a browser session.
+The same secret shows up under different names depending on the client. In the login API it is sent as `api_key`, in the web UI it is entered in a password field, and in direct API calls it is sent as a Bearer token.
 
 Actual examples from the codebase:
 
-```28:33:frontend/src/pages/LoginPage.tsx
-    try {
-      await api.post<AuthResponse>('/api/auth/login', {
-        username,
-        api_key: password,
-      })
-      navigate(intendedPath)
+```ts
+await api.post<AuthResponse>('/api/auth/login', {
+  username,
+  api_key: password,
+})
+navigate(intendedPath)
 ```
 
-```15:25:src/docsfy/cli/client.py
-    def __init__(self, server_url: str, username: str, password: str) -> None:
-        self.server_url = server_url.rstrip("/")
-        # username is stored for display/debugging; auth uses password as Bearer token
-        self.username = username
-        self.password = password
-        self._client = httpx.Client(
-            base_url=self.server_url,
-            headers={"Authorization": f"Bearer {self.password}"},
-            timeout=30.0,
-            follow_redirects=False,
-        )
+```python
+self._client = httpx.Client(
+    base_url=self.server_url,
+    headers={"Authorization": f"Bearer {self.password}"},
+    timeout=30.0,
+    follow_redirects=False,
+)
 ```
 
 > **Note:** If you are automating docsfy, you usually do not need to call `POST /api/auth/login` first. Send `Authorization: Bearer <api-key>` on protected requests instead.
 
 ## How Authentication Works
 
-For protected routes, docsfy checks the `Authorization` header first and falls back to the `docsfy_session` cookie. This applies to `/api/*` and `/docs/*`.
+```mermaid
+sequenceDiagram
+    actor Browser
+    participant AuthAPI as Authentication API
+    participant DB as SQLite storage
+    actor CLI as CLI / script
 
-```118:133:src/docsfy/main.py
-        # 1. Check Authorization header (API clients)
-        auth_header = request.headers.get("authorization", "")
-        if auth_header.startswith("Bearer "):
-            logger.debug(f"Auth middleware: Bearer token auth for '{path}'")
-            token = auth_header[7:]
-            if token == settings.admin_key:
-                is_admin = True
-                username = "admin"
-            else:
-                user = await get_user_by_key(token)
+    Browser->>AuthAPI: POST /api/auth/login {username, api_key}
+    AuthAPI->>DB: check ADMIN_KEY or get_user_by_key()
+    AuthAPI->>DB: create_session()
+    AuthAPI-->>Browser: 200 + Set-Cookie: docsfy_session
 
-        # 2. Check session cookie (browser) -- opaque session token
-        if not user and not is_admin:
-            session_token = request.cookies.get("docsfy_session")
-            if session_token:
-                logger.debug(f"Auth middleware: session cookie auth for '{path}'")
+    Browser->>AuthAPI: GET /api/auth/me
+    Note over Browser,AuthAPI: Browser sends docsfy_session automatically
+    AuthAPI->>DB: get_session()
+    AuthAPI-->>Browser: {username, role, is_admin}
+
+    CLI->>AuthAPI: GET /api/status + Authorization: Bearer <api-key>
+    AuthAPI->>DB: get_user_by_key() if token is not ADMIN_KEY
+    AuthAPI-->>CLI: protected response
 ```
 
-A successful browser login creates an HttpOnly `docsfy_session` cookie. The cookie is `SameSite=Strict`, its `Secure` flag follows the `secure_cookies` setting, and its lifetime is 8 hours. The cookie value is an opaque session token, not your raw API key.
+For protected requests, docsfy checks authentication in this order:
 
-```64:80:src/docsfy/api/auth.py
-        session_token = await create_session(username, is_admin=is_admin)
-        response = JSONResponse(
-            content={
-                "username": username,
-                "role": role,
-                "is_admin": is_admin,
-            }
-        )
-        response.set_cookie(
-            "docsfy_session",
-            session_token,
-            httponly=True,
-            samesite="strict",
-            secure=settings.secure_cookies,
-            max_age=SESSION_TTL_SECONDS,
-        )
-        return response
+1. `Authorization: Bearer <token>`
+2. `docsfy_session` cookie
+
+If the Bearer token does not authenticate a user, docsfy falls back to the session cookie.
+
+```python
+auth_header = request.headers.get("authorization", "")
+if auth_header.startswith("Bearer "):
+    token = auth_header[7:]
+    if token == settings.admin_key:
+        is_admin = True
+        username = "admin"
+    else:
+        user = await get_user_by_key(token)
+
+if not user and not is_admin:
+    session_token = request.cookies.get("docsfy_session")
+    if session_token:
+        session = await get_session(session_token)
 ```
 
-The React frontend sends that cookie automatically on same-origin requests, so browser code does not need to read or store the session token itself.
+For database-backed users, cookie-based authentication re-reads the user record on each request. That means deleted users lose access immediately, and role changes take effect on the next request.
 
-> **Tip:** Session-cookie auth is designed for the built-in same-origin web UI. For CLI tools, scripts, and other non-browser clients, use Bearer-token auth.
+The frontend sends the session cookie automatically on same-origin requests:
 
-Unauthenticated requests behave differently depending on what you are calling:
+```ts
+const config: RequestInit = {
+  ...options,
+  credentials: 'same-origin',
+  redirect: 'manual',
+  headers,
+}
+```
+
+A successful login creates an HttpOnly browser cookie with strict same-site behavior and an 8-hour lifetime:
+
+```python
+response.set_cookie(
+    "docsfy_session",
+    session_token,
+    httponly=True,
+    samesite="strict",
+    secure=settings.secure_cookies,
+    max_age=SESSION_TTL_SECONDS,
+)
+```
+
+Because the cookie is `HttpOnly`, frontend JavaScript cannot read it directly. The cookie value is also an opaque session token, not the raw API key you used to sign in.
+
+Unauthenticated requests behave differently depending on the path:
 
 - `/api/*` returns `401` with `{"detail": "Unauthorized"}`
-- HTML requests to `/docs/*` are redirected to `/login`
-- `/api/ws` uses the same auth model, but WebSocket clients pass a Bearer-style token as `?token=<api-key>` or rely on the session cookie
+- HTML requests to `/docs/*` redirect to `/login`
+- `/api/ws` follows the same model and accepts either `?token=<api-key>` or the `docsfy_session` cookie
+
+> **Tip:** Use session cookies for browsers and Bearer tokens for automation. They are different transport mechanisms for the same underlying credentials.
 
 ## Endpoint Reference
 
 ### POST `/api/auth/login`
 
-Creates a browser session from a username/API-key pair.
+Creates a browser session from a username/key pair.
 
-- Auth required: No
-- Request body: JSON object with `username` and `api_key`
-- Success: `200 OK`, returns `username`, `role`, and `is_admin`, and sets the `docsfy_session` cookie
-- Errors: `400` for malformed JSON or non-object bodies, `401` for invalid credentials
-- Roles: `role` can be `admin`, `user`, or `viewer`
-- Admin flag: `is_admin` is `true` for the built-in `admin` user and for database-backed users whose role is `admin`
+- `Auth required:` No
+- `Request body:` JSON object with `username` and `api_key`
+- `Success:` `200 OK` with `username`, `role`, and `is_admin`, plus a `docsfy_session` cookie
+- `400:` Invalid JSON body, or a JSON body that is not an object
+- `401:` Invalid username or password
 
-Special login rules:
+Important rules:
 
-- The built-in admin login requires `username` to be exactly `admin`
-- That built-in admin password is the server's `ADMIN_KEY`
-- Database users must send the username that owns the API key they are using
+- The built-in admin login only works when `username` is exactly `admin` and the submitted secret matches `ADMIN_KEY`.
+- Database-backed users must send the username that owns the submitted key.
+- The built-in `admin` account is special and does not come from the users table.
+- The returned `role` can be `admin`, `user`, or `viewer`.
+- `is_admin` is `true` for the built-in admin and for database-backed users whose role is `admin`.
 
-> **Note:** The UI labels this field as "Password", but the API field name is still `api_key`.
+This endpoint is intentionally public and returns JSON. Bad credentials return `401`; they do not trigger a redirect.
+
+> **Note:** The web UI labels this value as a password, but the API field name is still `api_key`.
 
 ### POST `/api/auth/logout`
 
 Clears the current browser session.
 
-- Auth required: No
-- Request body: none
-- Success: `200 OK` with `{ok: true}`
-- Side effect: if the request includes `docsfy_session`, docsfy deletes the stored session and clears the cookie in the response
-- Bearer-token note: this does not revoke API keys or disable Bearer-token access
+- `Auth required:` No
+- `Request body:` None
+- `Success:` `200 OK` with `{ "ok": true }`
+- `Side effect:` If the request includes `docsfy_session`, docsfy deletes the stored session and clears the cookie in the response
 
-> **Note:** Bearer-token auth is stateless. Rotating a key, not logging out, is how you invalidate it.
+This endpoint does not revoke API keys or disable Bearer-token access. It only clears the session-cookie flow.
+
+> **Note:** `logout` is safe to call even when the session has already expired or the client is no longer authenticated.
 
 ### GET `/api/auth/me`
 
-Returns the identity attached to the current request. This is the current-user endpoint used by the dashboard to confirm who is signed in.
+This is the current-user endpoint. It returns the identity attached to the current request, whether that request was authenticated by a Bearer token or by a session cookie.
 
-- Auth required: Yes, via Bearer token or session cookie
-- Success: `200 OK` with `username`, `role`, and `is_admin`
-- Error: `401 Unauthorized` if the request has no valid token or session
+- `Auth required:` Yes
+- `Success:` `200 OK` with `username`, `role`, and `is_admin`
+- `401:` No valid Bearer token or session cookie
 
-Use this endpoint to:
+The response shape is simple:
+
+```python
+return JSONResponse(
+    content={
+        "username": request.state.username,
+        "role": request.state.role,
+        "is_admin": request.state.is_admin,
+    }
+)
+```
+
+Use `GET /api/auth/me` to:
 
 - confirm that a token or session is still valid
 - determine the active role
-- decide whether to show admin-only features
+- decide whether to show admin-only behavior in a client
 
 ### POST `/api/auth/rotate-key`
 
-Rotates the current user's own API key. In the UI, this is exposed as **Change Password**, but it is rotating the same underlying secret used for Bearer auth.
+Rotates the current user's own key. In the UI this behaves like a change-password action, but it rotates the same secret used for Bearer-token authentication.
 
-- Auth required: Yes, via Bearer token or session cookie
-- Request body: empty body or `{}` to auto-generate a new key, or `{ "new_key": "..." }` to set a custom one
-- Success: `200 OK` with `username` and `new_api_key`
-- Response headers: includes `Cache-Control: no-store`
-- Errors: `400` for malformed JSON, non-object JSON, short custom keys, or built-in `ADMIN_KEY` admins; `401 Unauthorized` if the request is not authenticated
+- `Auth required:` Yes
+- `Request body:` No body or `{}` generates a new random key
+- `Request body:` `{ "new_key": "..." }` sets a custom key
+- `Success:` `200 OK` with `username` and `new_api_key`
+- `Response header:` `Cache-Control: no-store`
+- `400:` Malformed JSON, a non-object JSON body, a short custom key, or the built-in `admin` account authenticated via `ADMIN_KEY`
+- `401:` No valid authentication
 
-The dashboard's change-password flow calls this endpoint and then sends the user back to `/login`:
+Any authenticated database-backed user can rotate their own key, including `viewer`, `user`, and `admin` roles. The one exception is the built-in `admin` login that uses `ADMIN_KEY`.
 
-```340:348:frontend/src/pages/DashboardPage.tsx
-    try {
-      const body = newPassword ? { new_key: newPassword } : {}
-      const data = await api.post<{ new_api_key: string }>('/api/auth/rotate-key', body)
-      await modalAlert({
-        title: 'Password Changed',
-        message: `Your new password is: ${data.new_api_key}\n\nSave it — you'll need it to log in again.`,
-      })
-      wsManager.disconnect()
-      navigate('/login')
+Key rotation invalidates every existing session for that user:
+
+```python
+cursor = await db.execute(
+    "UPDATE users SET api_key_hash = ? WHERE username = ?",
+    (key_hash, username),
+)
+if cursor.rowcount == 0:
+    msg = f"User '{username}' not found"
+    raise ValueError(msg)
+# Invalidate all existing sessions for this user
+await db.execute("DELETE FROM sessions WHERE username = ?", (username,))
+await db.commit()
 ```
 
-What happens after rotation:
+The HTTP response also prevents caching and clears the current browser session:
 
-- The old API key stops working immediately
-- All existing sessions for that user are invalidated
-- The current `docsfy_session` cookie is deleted
-- You must log in again with the new key
-- The returned `new_api_key` is the value you need to save for future logins and API calls
+```python
+response = JSONResponse(
+    content={"username": username, "new_api_key": new_key},
+    headers={"Cache-Control": "no-store"},
+)
+response.delete_cookie(
+    "docsfy_session",
+    httponly=True,
+    samesite="strict",
+    secure=settings.secure_cookies,
+)
+```
+
+After a successful rotation:
+
+- the old key stops working immediately
+- all existing sessions for that user are deleted
+- the current `docsfy_session` cookie is cleared
+- you must sign in again with the new key
 
 > **Warning:** Custom keys must be at least 16 characters long.
 
-> **Warning:** Users signed in as the built-in `admin` account with `ADMIN_KEY` cannot use this endpoint. Change the server's `ADMIN_KEY` instead.
+> **Warning:** The built-in `admin` account cannot use this endpoint. To change that password, change `ADMIN_KEY` in the server configuration instead.
 
 ## Configuration
 
-docsfy reads settings from `.env`. The auth-related settings that matter most are:
+Authentication depends on two settings:
 
-- `ADMIN_KEY`, which is required at startup and must be at least 16 characters long
-- `secure_cookies`, which defaults to `True` and should be set to `False` for local HTTP development without HTTPS
+- `ADMIN_KEY` is required at startup and must be at least 16 characters long
+- `secure_cookies` defaults to `True`; disable it only for local plain-HTTP development
 
-```9:22:src/docsfy/config.py
+The server settings are defined like this:
+
+```python
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=".env",
@@ -196,16 +255,32 @@ class Settings(BaseSettings):
     secure_cookies: bool = True  # Set to False for local HTTP dev
 ```
 
-If you run docsfy with Docker Compose, `ADMIN_KEY` is passed through from `.env`.
+When running with Docker Compose, `ADMIN_KEY` is passed through from the environment:
+
+```yaml
+env_file:
+  - .env
+environment:
+  - ADMIN_KEY=${ADMIN_KEY}
+```
 
 > **Warning:** If `secure_cookies` stays enabled on plain HTTP local development, the browser will not send the session cookie and login will appear not to stick.
 
-> **Warning:** Changing `ADMIN_KEY` is a broader operational change than rotating the built-in admin password. It is also used as the HMAC secret for stored user API keys, so rotating it invalidates existing user keys.
+> **Warning:** `ADMIN_KEY` is more than the built-in admin password. It is also used when hashing stored user keys, so changing it invalidates existing database-backed user keys.
 
-## Practical Takeaways
+## Choosing The Right Flow
 
-- Use Bearer tokens for CLI and automation.
-- Use `POST /api/auth/login` only when you want a browser session.
+- Use Bearer tokens for CLI tools, scripts, and direct API clients.
+- Use `POST /api/auth/login` when you want a browser session for the built-in UI.
 - Use `GET /api/auth/me` to check who the current request is authenticated as.
-- Use `POST /api/auth/rotate-key` to invalidate an existing user key and issue a new one.
-- Use `POST /api/auth/logout` only to clear browser sessions; it does not revoke Bearer tokens.
+- Use `POST /api/auth/rotate-key` when you want to invalidate a user key and issue a new one.
+- Use `POST /api/auth/logout` only to clear browser sessions.
+
+
+## Related Pages
+
+- [Authentication and Roles](authentication-and-roles.html)
+- [User and Access Management](user-and-access-management.html)
+- [Admin API](admin-api.html)
+- [WebSocket Protocol](websocket-protocol.html)
+- [Security Considerations](security-considerations.html)

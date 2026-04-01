@@ -317,3 +317,12 @@ A good pattern is:
 - Rotate lost or exposed keys instead of trying to recover them, because raw keys are not stored.
 
 If you keep those rules in mind, `docsfy`'s auth model stays simple: one secret per account, role-based permissions on top, and short-lived browser sessions for the UI.
+
+
+## Related Pages
+
+- [Authentication API](auth-api.html)
+- [User and Access Management](user-and-access-management.html)
+- [Security Considerations](security-considerations.html)
+- [Projects, Variants, and Ownership](projects-variants-and-ownership.html)
+- [Admin API](admin-api.html)

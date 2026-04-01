@@ -313,3 +313,12 @@ This route accepts the same optional `new_key` field as the admin rotate route. 
 - invalidates the user's existing sessions, so they must log in again with the new key
 
 > **Warning:** The built-in `admin` account cannot use `POST /api/auth/rotate-key`. Manage that credential by changing `ADMIN_KEY` in your deployment instead.
+
+
+## Related Pages
+
+- [User and Access Management](user-and-access-management.html)
+- [Authentication and Roles](authentication-and-roles.html)
+- [Authentication API](auth-api.html)
+- [Projects API](projects-api.html)
+- [Security Considerations](security-considerations.html)

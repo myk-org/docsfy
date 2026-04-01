@@ -10,6 +10,7 @@ It is built for teams that want documentation to stay close to the codebase. Ins
 - Tracks documentation as variants, so the same repository can have separate outputs for different branches, AI providers, AI models, and owners.
 - Serves the latest or a specific variant through authenticated `/docs/...` routes, and can also package the generated site as a downloadable `.tar.gz`.
 - Supports incremental refreshes: if the repository has not changed, docsfy can mark a variant as already up to date; if only part of the repo changed, it can regenerate only the affected pages.
+- Runs a post-generation pipeline that can validate generated pages against the repository, add related-page cross-links, detect a project version for the site footer, and pre-render Mermaid diagrams to SVG when Mermaid CLI is available on the server.
 - Produces a human-friendly static site and companion `llms.txt` / `llms-full.txt` files for AI-oriented consumption.
 
 ## Who it is for
@@ -50,8 +51,9 @@ That is why the dashboard groups a repository into branches and then into provid
 The web app is the easiest way to use docsfy day to day.
 
 - Sign in at `/login` with a username and password/API key.
+- Browse your accessible repositories in a sidebar project tree grouped by repository, branch, and provider/model variant. If you are an admin, same-named repositories stay separated by owner.
 - Start a new generation by entering a repository URL, branch, provider, model, and optional force flag.
-- Watch progress live as docsfy moves through cloning, planning, page generation, and rendering.
+- Watch progress live in the selected variant view as docsfy moves through cloning, planning, page generation, validation, cross-linking, and rendering.
 - Open the finished documentation in the browser, download it, regenerate it with different model settings, abort a run, or delete a variant.
 - If you are an admin, create users and manage access to shared projects without leaving the dashboard.
 
@@ -121,6 +123,9 @@ The generated site includes:
 - copy buttons and language labels on code blocks
 - callout styling for blockquotes such as `> **Note:**`, `> **Warning:**`, and `> **Tip:**`
 - previous/next navigation between pages
+- detected version info in the footer when docsfy can find a version in project metadata or Git tags
+- Mermaid diagrams pre-rendered to SVG when Mermaid CLI is available on the server
+- AI-suggested `## Related Pages` sections when docsfy finds useful cross-page links
 - `llms.txt` and `llms-full.txt` alongside the human-facing site
 
 In practice, that means a finished docsfy build can be used in two different ways:
@@ -155,7 +160,7 @@ Common CLI workflows include:
 - `docsfy abort <project> ...` to stop an active generation
 - `docsfy admin users ...` and `docsfy admin access ...` for admin-only management
 
-If you want live terminal feedback, `docsfy generate` also supports `--watch`, which listens to the same WebSocket progress stream the web app uses.
+If you want live terminal feedback, `docsfy generate` also supports `--watch`, which listens to the same WebSocket progress stream the web app uses and prints stage changes such as `cloning`, `planning`, `generating_pages`, `validating`, `cross_linking`, and `rendering`.
 
 The CLI config file is a small TOML profile store:
 
@@ -206,7 +211,7 @@ Those settings tell docsfy:
 
 The provided Compose setup keeps deployment simple: it reads `.env`, exposes port `8000`, and persists generated output under `./data` mapped to `/data`.
 
-> **Note:** The provided Docker build installs the Claude, Cursor, and Gemini CLIs inside the container. If you use the containerized setup, that is the easiest way to start with all three supported providers.
+> **Note:** The provided Docker build installs the Claude, Cursor, and Gemini CLIs inside the container, plus Chromium and Mermaid CLI (`mmdc`) for diagram rendering. If you use the containerized setup, that is the easiest way to start with all three supported providers and Mermaid diagram rendering in generated sites.
 
 ## Things To Know Before You Start
 
@@ -217,3 +222,12 @@ The provided Compose setup keeps deployment simple: it reads `.env`, exposes por
 - Admins can share access to a project owned by one user with other users or viewers without copying the generated files.
 
 If you want the shortest path to value, start the server, create or obtain a key, generate one repository from the web app or CLI, and then decide whether your team prefers to work from the dashboard, the API, the downloaded static site, or all three.
+
+
+## Related Pages
+
+- [Architecture and Runtime](architecture-and-runtime.html)
+- [First Run Quickstart](first-run-quickstart.html)
+- [Projects, Variants, and Ownership](projects-variants-and-ownership.html)
+- [Generating Documentation](generating-documentation.html)
+- [CLI Workflows](cli-workflows.html)

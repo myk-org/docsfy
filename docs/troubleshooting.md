@@ -154,10 +154,12 @@ VALID_PROVIDERS = ("claude", "gemini", "cursor")
 
 - Make sure you are using one of the supported provider names: `claude`, `gemini`, or `cursor`.
 - If you omitted `ai_provider` or `ai_model`, remember that the server uses its defaults. In this repo those defaults are `cursor` and `gpt-5.4-xhigh-fast`.
-- If you are running outside the official container, make sure the provider CLI is installed and available on `PATH`.
+- Remember that `docsfy` login and provider login are different. Your `docsfy` API key or browser session authenticates you to `docsfy`, but Claude, Gemini, and Cursor still need to be authenticated separately on the server.
+- If you are running outside the official container, make sure the provider CLI is installed and authenticated on `PATH` for the same user that runs `docsfy-server`.
+- A model suggestion in the UI is historical, not a live entitlement check. If a remembered model now fails, verify that the provider CLI still has access to it.
 - If the provider CLI is installed but slow to start, increase `AI_CLI_TIMEOUT`.
 
-The Docker image expects these CLIs to be installed at build time:
+The Docker image installs these CLIs at build time:
 
 ```dockerfile
 RUN /bin/bash -o pipefail -c "curl -fsSL https://claude.ai/install.sh | bash"
@@ -169,7 +171,19 @@ RUN mkdir -p /home/appuser/.npm-global \
 ENV PATH="/home/appuser/.local/bin:/home/appuser/.npm-global/bin:${PATH}"
 ```
 
-> **Warning:** Provider failures happen before cloning. If a run fails instantly, check provider installation, authentication, and `AI_PROVIDER`/`AI_MODEL` first, not just the repo URL.
+In Docker, generation runs the CLIs as this runtime user:
+
+```dockerfile
+# Switch back to non-root user for runtime
+USER appuser
+
+# Ensure CLIs are in PATH
+ENV PATH="/home/appuser/.local/bin:/home/appuser/.npm-global/bin:${PATH}"
+# Set HOME for OpenShift compatibility (random UID has no passwd entry)
+ENV HOME="/home/appuser"
+```
+
+> **Warning:** Provider failures happen before cloning. If a run fails instantly, check provider installation, provider authentication, and `AI_PROVIDER`/`AI_MODEL` first, not just the repo URL.
 
 > **Note:** The `cursor` provider is handled slightly differently: `docsfy` automatically adds `--trust` when it checks and calls the CLI.
 
@@ -242,8 +256,10 @@ docsfy generate https://github.com/myk-org/for-testing-only --branch dev --provi
 
 - `Variant 'project/branch/provider/model' is already being generated`
 - `Cannot delete 'project/provider/model' while generation is in progress. Abort first.`
+- `Cannot delete 'project' while generation is in progress. Abort running variants first.`
 - `Multiple active variants found; use the branch-specific abort endpoint.`
 - `Abort still in progress ... Please retry shortly.`
+- The page count reaches the planned total, but the variant still shows `generating` while the activity log moves through `validating`, `cross_linking`, or `rendering`.
 - A run that was `generating` becomes `error` after a restart.
 
 ### Why it happens
@@ -268,7 +284,22 @@ The same lock also protects delete and abort operations from racing against acti
 - If you only know the project name but more than one variant is active, abort the exact variant instead of aborting by name.
 - If abort says it is still in progress, wait a moment and retry.
 - If abort says the job already finished, refresh status before trying again.
+- If page writing has finished but the variant is still `generating`, check the activity log or `current_stage` before treating it as stuck. `validating`, `cross_linking`, and `rendering` are legitimate post-generation stages.
 - If the server restarted during generation, start a new run. `docsfy` intentionally marks orphaned `generating` jobs as `error` with the message `Server restarted during generation`.
+
+The dashboard activity log uses these stage names directly:
+
+```ts
+export const GENERATION_STAGES = [
+  'cloning',
+  'planning',
+  'incremental_planning',
+  'generating_pages',
+  'validating',
+  'cross_linking',
+  'rendering',
+] as const
+```
 
 Useful CLI commands:
 
@@ -335,10 +366,13 @@ docsfy admin access grant <project> --username <user> --owner <owner>
 docsfy admin access revoke <project> --username <user> --owner <owner>
 ```
 
+Admin cleanup is owner-specific too. If an admin delete call fails with `Project owner is required for admin deletion. Use ?owner=username (or ?owner= for legacy projects)`, rerun the delete against the exact owner namespace.
+
 If the same project name and variant exist under more than one owner, you can also see ambiguity errors such as:
 
 - `Multiple owners found for this variant, please specify owner`
 - `Multiple owners found for this variant (...). Contact an admin to resolve the ambiguity.`
+- `Multiple owners have variants with the same timestamp, please specify owner`
 
 In that case, use the correct owner explicitly or ask an admin to clean up the ambiguous access.
 
@@ -359,17 +393,35 @@ If the CLI reports a redirect such as `Error: Server redirected to /login. Check
 - The dashboard loads, but live status updates never appear.
 - The CLI `--watch` command prints `WebSocket connection failed: ...`.
 - The CLI prints `WebSocket connection closed unexpectedly.` or `Timed out waiting for progress update.`.
-- Browser dev tools show `/api/ws` closing with code `1008`.
+- Browser dev tools show `/api/ws` closing with code `1008` or `1001`.
+- The dashboard still refreshes, but only in roughly 10-second jumps after the socket drops.
 
 ### How it works
 
 - The browser connects to `/api/ws`.
 - The server accepts either a valid `docsfy_session` cookie or `?token=<api-key>`.
 - On connect, the server sends an initial `sync` payload.
-- The server sends `ping` every 30 seconds, expects `pong` within 10 seconds, and closes after 2 missed pongs.
+- The server sends `ping` every 30 seconds, expects `pong` within 10 seconds, and closes after 2 missed pongs with code `1001`.
 - Unauthenticated WebSocket connections are closed with code `1008`.
+- During a live generation, progress can continue past page writing into post-generation stages such as `validating`, `cross_linking`, and `rendering`.
 
-In the browser, `docsfy` retries the WebSocket 3 times and then falls back to polling `/api/projects` every 10 seconds.
+The frontend reconnect logic is:
+
+```ts
+private attemptReconnect(): void {
+  if (this.reconnectAttempts >= this.maxReconnectAttempts) {
+    console.debug('[WS] Falling back to polling')
+    this.startPolling()
+    return
+  }
+  const delay = this.getBackoffDelay()
+  this.reconnectAttempts++
+  console.debug('[WS] Reconnecting, attempt', this.reconnectAttempts)
+  this.reconnectTimer = setTimeout(() => this.connect(true), delay)
+}
+```
+
+In the browser, `docsfy` retries the WebSocket 3 times with backoff, then falls back to polling `/api/projects` every 10 seconds.
 
 > **Tip:** If the dashboard stops updating instantly but still refreshes within about 10 seconds, the polling fallback is probably working exactly as designed.
 
@@ -402,9 +454,19 @@ If `--watch` fails, rerun without it and use `docsfy status <project>` while you
 ### What to check
 
 - If the close code is `1008`, log in again or use a valid API key/token.
+- If the close code is `1001`, the client is missing heartbeat replies or an intermediary is breaking the socket. Custom clients must answer server `ping` messages with a JSON `pong` reply. The built-in browser app and CLI already do this automatically.
 - If the site is served over HTTPS, the browser will use `wss://` automatically.
 - If you are using Vite dev mode, make sure the dev server is running and port `5173` is exposed.
-- If you are using a reverse proxy, confirm it supports WebSocket upgrades for `/api/ws`.
+- If you are using a reverse proxy, confirm it supports WebSocket upgrades for `/api/ws` and does not terminate idle connections too aggressively.
 - If the dashboard works but updates are delayed, wait for the 10-second polling interval before assuming it is stuck.
 
 If none of the sections above fits, capture the exact error text, the provider, model, branch, whether you were using the browser or CLI, and whether `/health` returned `{"status":"ok"}`. Those details usually identify the failing layer very quickly.
+
+
+## Related Pages
+
+- [AI Provider Setup](ai-provider-setup.html)
+- [Local Development](local-development.html)
+- [Authentication and Roles](authentication-and-roles.html)
+- [Tracking Progress and Status](tracking-progress-and-status.html)
+- [WebSocket Protocol](websocket-protocol.html)

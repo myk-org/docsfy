@@ -1,52 +1,40 @@
 # Deployment and Runtime
 
-docsfy is easiest to operate as a single container with a persistent `/data` volume. The provided image already bundles the FastAPI backend, the built React frontend, Git, and the AI provider CLIs it expects at runtime.
+docsfy runs as a single FastAPI service that also serves the built React app and the generated documentation output. In the official container image, the process listens on `8000`, keeps durable state under `/data`, includes the AI and diagram toolchain it needs at runtime, and runs as a non-root user.
 
-For a production deployment, plan for:
-- one writable data volume, usually mounted at `/data`
-- one strong `ADMIN_KEY`
-- outbound access to your Git host and the AI services used by your chosen provider CLI
-- HTTPS plus WebSocket support on `/api/ws`
-- a single app instance unless you add your own distributed coordination
+## Runtime Configuration
 
-## Minimal Container Deployment
+| Setting | What it controls | Default |
+|---|---|---|
+| `ADMIN_KEY` | Required startup credential; also used when hashing stored user API keys | required |
+| `DATA_DIR` | Root directory for the SQLite database and stored artifacts | `/data` |
+| `SECURE_COOKIES` | Whether the browser session cookie uses the `Secure` flag | `true` |
+| `AI_PROVIDER` / `AI_MODEL` | Server defaults when a request omits provider/model | `cursor` / `gpt-5.4-xhigh-fast` |
+| `AI_CLI_TIMEOUT` | Default timeout for AI CLI calls | `60` |
+| `DEV_MODE` | Container-only switch that starts Vite alongside the backend | off |
 
-The repository already includes a working `docker-compose.yaml`:
+If you install the Python package directly, the packaged server launcher reads `HOST`, `PORT`, and `DEBUG` from the environment:
 
-```yaml
-services:
-  docsfy:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    ports:
-      - "8000:8000"
-      # Uncomment for development (DEV_MODE=true)
-      # - "5173:5173"
-    volumes:
-      - ./data:/data
-      # Uncomment for development (hot reload)
-      # - ./frontend:/app/frontend
-    env_file:
-      - .env
-    environment:
-      # WARNING: ADMIN_KEY must be set in your .env file or shell environment.
-      # An empty ADMIN_KEY will cause the application to reject all admin requests.
-      - ADMIN_KEY=${ADMIN_KEY}
-      # Uncomment for development
-      # - DEV_MODE=true
-    restart: unless-stopped
+```303:309:src/docsfy/main.py
+def run() -> None:
+    import uvicorn
+
+    reload = os.getenv("DEBUG", "").lower() == "true"
+    host = os.getenv("HOST", "127.0.0.1")
+    port = int(os.getenv("PORT", "8000"))
+    uvicorn.run("docsfy.main:app", host=host, port=port, reload=reload)
 ```
 
-In production, the most important part is the `./data:/data` mount. Without persistent storage, user accounts, sessions, project metadata, and generated documentation disappear when the container is replaced.
-
-> **Note:** This repository ships a `Dockerfile` and `docker-compose.yaml`, but it does not include in-repo GitHub Actions workflows, Helm charts, or Kubernetes manifests. If you deploy to another platform, you will supply that platform-specific automation yourself.
+That launcher is separate from the `docsfy` CLI, which is a client for the HTTP API.
 
 ## Entrypoint Modes
 
-The container always starts through `entrypoint.sh`, and that script has two modes:
+In the official container, startup is controlled by `/app/entrypoint.sh`. By default it starts only the backend. If you explicitly set `DEV_MODE=true`, the same image becomes a dev container: it installs frontend dependencies, starts Vite on `5173`, and runs Uvicorn with reload enabled.
 
-```bash
+```1:21:entrypoint.sh
+#!/bin/bash
+set -e
+
 if [ "$DEV_MODE" = "true" ]; then
     echo "DEV_MODE enabled - installing frontend dependencies..."
     cd /app/frontend || exit 1
@@ -67,129 +55,99 @@ else
 fi
 ```
 
-### Production mode
+For production, the important behavior is simple:
 
-With `DEV_MODE` unset, the container runs one Uvicorn process on `0.0.0.0:8000`. This is the normal deployment mode.
+- The backend listens on `0.0.0.0:8000` inside the container.
+- `5173` only matters when `DEV_MODE=true`.
+- The official image already includes the built frontend bundle, so FastAPI can serve the dashboard directly.
 
-### Development mode
+> **Warning:** The official container hardcodes its internal listener to `8000`. If you want a different internal port, override the command or entrypoint. Otherwise, change only the published port at your container runtime, ingress, or load balancer.
 
-With `DEV_MODE=true`, the container starts:
-- FastAPI with hot reload on port `8000`
-- the Vite frontend dev server on port `5173`
+> **Note:** FastAPI's Swagger/ReDoc endpoints are disabled in this app. In docsfy, the `/docs/...` path is reserved for generated documentation output.
 
-The frontend dev server is configured for container-friendly access and proxies API traffic back to FastAPI:
+## Startup Behavior
 
-```ts
-const API_TARGET = process.env.API_TARGET || 'http://localhost:8000'
+On process start, docsfy validates `ADMIN_KEY`, initializes or migrates the database under `DATA_DIR`, clears in-memory generation bookkeeping, and removes expired session rows.
 
-export default defineConfig({
-  server: {
-    host: '0.0.0.0',
-    port: 5173,
-    proxy: {
-      '/api': {
-        target: API_TARGET,
-        changeOrigin: true,
-        ws: true,
-      },
-      '/docs': {
-        target: API_TARGET,
-        changeOrigin: true,
-      },
-      '/health': {
-        target: API_TARGET,
-        changeOrigin: true,
-      },
-    },
-  },
-})
+```44:58:src/docsfy/main.py
+@asynccontextmanager
+async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+    settings = get_settings()
+    if not settings.admin_key:
+        logger.error("ADMIN_KEY environment variable is required")
+        raise SystemExit(1)
+
+    if len(settings.admin_key) < 16:
+        logger.error("ADMIN_KEY must be at least 16 characters long")
+        raise SystemExit(1)
+
+    _generating.clear()
+    await init_db(data_dir=settings.data_dir)
+    await cleanup_expired_sessions()
+    yield
 ```
 
-Use port `8000` in production. Use port `5173` only when you intentionally want the development workflow.
+A few production details are worth knowing:
 
-If you run docsfy outside the container, the packaged `docsfy-server` entrypoint calls `docsfy.main:run` and uses:
-- `HOST`, default `127.0.0.1`
-- `PORT`, default `8000`
-- `DEBUG=true` to enable reload
+- Database creation and schema migration happen automatically at startup.
+- If the previous process died while a job was still active, the next startup rewrites that stored row from `generating` to `error` so it does not look permanently stuck.
+- Expired sessions are removed during startup. The code comments note that long-lived deployments do not yet run periodic session cleanup in the background.
+- Browser logins use the `docsfy_session` cookie with `HttpOnly`, `SameSite=Strict`, and a `Secure` flag controlled by `SECURE_COOKIES`. The default session lifetime is 8 hours.
 
-That is separate from the container entrypoint. The container always binds `0.0.0.0:8000` itself.
+For production browser access, keep `SECURE_COOKIES=true` and serve docsfy over HTTPS.
 
-## Required Runtime Configuration
+## Request Flow
 
-The server reads its settings from environment variables, with built-in `.env` support. The example in `.env.example` is:
+docsfy keeps the source checkout ephemeral but keeps the results durable.
 
-```dotenv
-# Required: Admin password (minimum 16 characters)
-ADMIN_KEY=
+```mermaid
+sequenceDiagram
+    participant User as Browser / CLI
+    participant API as docsfy FastAPI
+    participant Git as Git source
+    participant AI as AI CLI
+    participant Data as /data
+    participant WS as WebSocket clients
 
-# AI provider and model defaults
-# (pydantic_settings reads these case-insensitively)
-AI_PROVIDER=cursor
-AI_MODEL=gpt-5.4-xhigh-fast
-AI_CLI_TIMEOUT=60
+    User->>API: POST /api/generate
+    API->>AI: Verify provider CLI is available
 
-# Logging
-LOG_LEVEL=INFO
+    alt Remote repository
+        API->>Git: Shallow clone into temp directory
+    else Local repository path
+        API->>Git: Read existing local checkout in place
+    end
 
-# Data directory for database and generated docs
-DATA_DIR=/data
+    API->>AI: Create doc outline and page content
+    API->>Data: Write cached page markdown
+    API->>Data: Write final HTML site + plan.json
+    API->>Data: Update SQLite project metadata
+    API-->>WS: Push sync/progress updates
 
-# Cookie security (set to false for local HTTP development)
-SECURE_COOKIES=true
-
-# Development mode: starts Vite dev server on port 5173 alongside FastAPI
-# DEV_MODE=true
+    User->>API: Open dashboard or docs URL
+    API->>Data: Read stored site files
+    API-->>User: Serve HTML or download archive
 ```
 
-The production-critical settings are:
+In practice, that means:
 
-- `ADMIN_KEY`
-  Required. The application exits at startup if it is missing or shorter than 16 characters.
-- `DATA_DIR`
-  Defaults to `/data`. This is where docsfy keeps its SQLite database and generated artifacts.
-- `SECURE_COOKIES`
-  Defaults to `true`, which is what you want behind HTTPS.
-- `AI_PROVIDER`, `AI_MODEL`, `AI_CLI_TIMEOUT`
-  Set the server defaults for generation requests when the caller does not provide them explicitly.
-- `LOG_LEVEL`
-  Controls backend log verbosity.
+- A generation request accepts either a remote `repo_url` or a local `repo_path`.
+- For remote sources, docsfy uses a temporary shallow clone for that run and discards it afterward.
+- For local sources, docsfy reads the existing checkout in place instead of copying it.
+- Before doing expensive work, docsfy checks that the selected AI CLI is available.
+- If a ready variant already exists, docsfy can reuse cached artifacts, skip unnecessary work when the commit SHA is unchanged, or update only the parts that actually need to change.
+- Once written to disk, the site is served from stored files at `/docs/<project>/<branch>/<provider>/<model>/...`, and the latest-ready shortcut `/docs/<project>/...` can resolve to the newest ready variant.
+- Download endpoints create a `tar.gz` archive from the stored `site` directory; they do not regenerate content on demand.
 
-> **Warning:** `ADMIN_KEY` is more than just the admin login secret. docsfy also uses it as the HMAC secret for stored user API keys. Rotating `ADMIN_KEY` invalidates existing user API keys, so users will need new keys after the change.
+> **Warning:** `repo_path` is an absolute filesystem path and is only allowed for admin-triggered requests. In containers, that path must exist inside the container filesystem, so you need an explicit bind mount or volume for the repository if you plan to use that mode.
 
-> **Tip:** Leave `SECURE_COOKIES=true` in production. Only set it to `false` for plain-HTTP local development.
-
-## What The Running Service Does
-
-A single FastAPI application serves all of these:
-
-- the React SPA at `/`, `/login`, and other client-side routes
-- the JSON API under `/api/*`
-- generated documentation under `/docs/*`
-- the public health endpoint at `/health`
-- the WebSocket endpoint at `/api/ws`
-
-A few practical details matter in production:
-
-- The SPA shell itself is served without server-side auth, and the frontend handles login state client-side.
-- API routes and generated docs are authenticated.
-- Unauthenticated browser requests for `/docs/...` are redirected to `/login`.
-- Unauthenticated API requests return `401`.
-- Variant-specific docs live at `/docs/<project>/<branch>/<provider>/<model>/...`.
-- `/docs/<project>/...` resolves to the latest ready variant the current user is allowed to access.
-
-The frontend uses root-relative URLs such as `/api`, `/docs`, `/assets`, `/health`, and `/api/ws`. The simplest deployment is therefore one host at the site root.
-
-> **Tip:** If you put docsfy behind a reverse proxy or ingress, make sure `/api/ws` supports WebSocket upgrades. The browser uses WebSockets for live generation updates and only falls back to polling after reconnect attempts fail.
+The checked-in Compose file only persists `/data`; it does not mount source repositories into the container. If you want `repo_path` generation in that setup, add a separate mount.
 
 ## Persistent Storage
 
-docsfy stores its durable state in a SQLite database plus per-project directories under `DATA_DIR`:
+`DATA_DIR` is the only location that must be persistent across restarts and redeployments. By default, that is `/data`.
 
-```python
-DB_PATH = Path(os.getenv("DATA_DIR", "/data")) / "docsfy.db"
-DATA_DIR = Path(os.getenv("DATA_DIR", "/data"))
-PROJECTS_DIR = DATA_DIR / "projects"
-
+```525:582:src/docsfy/storage.py
 def get_project_dir(
     name: str,
     ai_provider: str = "",
@@ -197,6 +155,26 @@ def get_project_dir(
     owner: str = "",
     branch: str = DEFAULT_BRANCH,
 ) -> Path:
+    if not branch:
+        msg = "branch is required for project directory paths"
+        raise ValueError(msg)
+    if not ai_provider or not ai_model:
+        msg = "ai_provider and ai_model are required for project directory paths"
+        raise ValueError(msg)
+    # Sanitize path segments to prevent traversal
+    for segment_name, segment in [
+        ("branch", branch),
+        ("ai_provider", ai_provider),
+        ("ai_model", ai_model),
+    ]:
+        if (
+            "/" in segment
+            or "\\" in segment
+            or ".." in segment
+            or segment.startswith(".")
+        ):
+            msg = f"Invalid {segment_name}: '{segment}'"
+            raise ValueError(msg)
     safe_owner = _validate_owner(owner)
     return (
         PROJECTS_DIR
@@ -206,165 +184,153 @@ def get_project_dir(
         / ai_provider
         / ai_model
     )
+
+def get_project_site_dir(
+    name: str,
+    ai_provider: str = "",
+    ai_model: str = "",
+    owner: str = "",
+    branch: str = DEFAULT_BRANCH,
+) -> Path:
+    return get_project_dir(name, ai_provider, ai_model, owner, branch) / "site"
+
+def get_project_cache_dir(
+    name: str,
+    ai_provider: str = "",
+    ai_model: str = "",
+    owner: str = "",
+    branch: str = DEFAULT_BRANCH,
+) -> Path:
+    return (
+        get_project_dir(name, ai_provider, ai_model, owner, branch) / "cache" / "pages"
+    )
 ```
 
-In practice, that means you should expect this layout:
+A single deployment root contains both metadata and artifacts:
 
-- `DATA_DIR/docsfy.db`
-  Stores users, sessions, projects, access grants, and generation metadata.
-- `DATA_DIR/projects/<owner>/<project>/<branch>/<provider>/<model>/plan.json`
-  Stores the current documentation plan.
-- `DATA_DIR/projects/<owner>/<project>/<branch>/<provider>/<model>/cache/pages/*.md`
-  Stores cached page markdown used for incremental regeneration.
-- `DATA_DIR/projects/<owner>/<project>/<branch>/<provider>/<model>/site/`
-  Stores the rendered static site that docsfy serves and downloads.
+- `${DATA_DIR}/docsfy.db`: SQLite database for projects, users, access grants, and sessions
+- `${DATA_DIR}/projects/<owner>/<project>/<branch>/<provider>/<model>/plan.json`: stored document outline for that variant
+- `${DATA_DIR}/projects/<owner>/<project>/<branch>/<provider>/<model>/cache/pages/*.md`: cached page markdown
+- `${DATA_DIR}/projects/<owner>/<project>/<branch>/<provider>/<model>/site/`: final static site served by docsfy
 
-The rendered `site/` directory includes the published HTML plus supporting files such as:
-- `index.html`
-- one `*.html` file per page
-- one `*.md` file per page
-- `search-index.json`
-- `llms.txt`
-- `llms-full.txt`
-- `assets/`
-- `.nojekyll`
+The site writer creates a self-contained output tree under `site/`, including `index.html`, per-page `*.html`, per-page `*.md`, `assets/`, `search-index.json`, `llms.txt`, `llms-full.txt`, and `.nojekyll`.
 
-Remote Git checkouts are not persistent. docsfy clones remote repositories into a temporary directory, generates the docs, and then deletes that clone. Only the SQLite data, cached markdown, plan JSON, and rendered site stay on disk.
+The checked-in Compose file mounts the persistent directory exactly where the app expects it:
 
-Downloads are also temporary. When someone requests a download, docsfy creates a `tar.gz` archive from the rendered `site/` directory, streams it to the client, and removes the temporary archive afterward.
-
-## Runtime Behavior
-
-### Generation lifecycle
-
-A generation request becomes an in-process background task. The normal flow is:
-
-1. create or update the project row with status `generating`
-2. check that the selected AI CLI is available
-3. clone the remote repo or open the local repo path
-4. run `planning` or `incremental_planning`
-5. generate page markdown into the cache
-6. render the static site into `site/`
-7. mark the variant `ready`
-
-At runtime, you will see a mix of terminal statuses and current stages:
-
-- terminal statuses: `ready`, `error`, `aborted`
-- in-progress stages: `cloning`, `planning`, `incremental_planning`, `generating_pages`, `rendering`, `up_to_date`
-
-docsfy also tries to avoid unnecessary work:
-
-- remote repos are shallow-cloned first
-- old history is fetched only if needed for diff-based regeneration
-- cached page markdown is reused when incremental generation is possible
-- `force=true` clears cached page output and forces a full regeneration
-- provider/model variants can sometimes reuse existing artifacts for the same repo and branch
-
-### Local repositories vs remote repositories
-
-The generate API supports two source types:
-
-- `repo_url` for a normal remote Git repository
-- `repo_path` for an existing local Git checkout
-
-`repo_path` is intentionally restricted. It must be an absolute path, it must contain a `.git` directory, and only admins can use it. For most hosted deployments, `repo_url` is the normal choice.
-
-### Live updates and sessions
-
-The browser uses `/api/ws` for live project updates. The server sends a heartbeat ping every 30 seconds, waits up to 10 seconds for a pong, and closes the connection after repeated missed pongs.
-
-The frontend also has a fallback path: if WebSocket reconnect attempts keep failing, it switches to polling `/api/projects`.
-
-Browser login uses a `docsfy_session` cookie with these runtime characteristics:
-
-- `HttpOnly`
-- `SameSite=Strict`
-- `Secure` when `SECURE_COOKIES=true`
-- 8-hour lifetime
-
-The CLI does not use browser sessions. It authenticates with Bearer tokens and can hit the same server endpoints directly.
-
-> **Note:** Expired browser sessions stop working immediately, but expired session rows are only cleaned from the database during application startup. Long-running instances may accumulate old session rows until the next restart.
-
-> **Warning:** Generation jobs are not externalized to a queue or worker service. They live in the app process in an in-memory task registry. If the process restarts, active generations are lost. On the next startup, docsfy marks any leftover `generating` rows as `error` with the message `Server restarted during generation`.
-
-> **Warning:** Out of the box, docsfy is a single-instance deployment model. Active generation tracking and WebSocket connection state are both in memory, and the repository only ships SQLite storage. If you scale beyond one app instance, you will need your own strategy for shared job coordination, routing, and storage semantics.
-
-## Health Checks
-
-docsfy exposes a very small health endpoint:
-
-```python
-@app.get("/health")
-async def health() -> dict[str, str]:
-    return {"status": "ok"}
+```1:15:docker-compose.yaml
+services:
+  docsfy:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+      # Uncomment for development (DEV_MODE=true)
+      # - "5173:5173"
+    volumes:
+      - ./data:/data
+      # Uncomment for development (hot reload)
+      # - ./frontend:/app/frontend
+    env_file:
+      - .env
 ```
 
-The container image uses that endpoint directly:
+> **Tip:** If you back up `/data`, you back up both the SQLite metadata and every generated variant. You do not need to preserve remote Git working copies, because docsfy recreates those in temporary directories when needed.
 
-```dockerfile
-HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
-  CMD curl -f http://localhost:8000/health || exit 1
-```
+## Health Checks And Live Connections
 
-This is a good fit for container liveness or readiness probes because it tells you whether the web process is up and serving requests.
+The built-in liveness endpoint is `GET /health`, and it returns `{"status":"ok"}`. The official image wires its container health probe to that endpoint, and the CLI's `docsfy health` command calls the same URL.
 
-If you configure the CLI, `docsfy health` checks the same endpoint.
+That endpoint is intentionally shallow. It confirms that the web process is up, but it does not prove that:
 
-> **Note:** `/health` is intentionally lightweight. It does not verify SQLite writes, outbound Git access, or AI provider CLI availability. Treat it as a process health check, not a full dependency check.
+- your `DATA_DIR` volume is writable
+- the selected AI CLI is installed and usable
+- Chromium and Mermaid CLI are present if you rely on Mermaid-to-SVG conversion
+- your reverse proxy is correctly forwarding WebSocket upgrades
 
-## Non-Root Execution
+The dashboard also relies on a WebSocket connection at `/api/ws` for live sync and status updates. The server sends an initial sync message immediately after connect, then uses a 30-second heartbeat. It waits 10 seconds for each pong and closes the socket after 2 missed pongs.
 
-The container is built to run as a non-root user by default:
+> **Tip:** Use `/health` as a liveness probe. If you want a stronger readiness check, add an external probe that also verifies `/data` write access and the AI CLI(s) you expect to use.
 
-```dockerfile
+If you deploy behind Nginx, Traefik, Caddy, HAProxy, a cloud load balancer, or Kubernetes ingress, make sure `/api/ws` supports WebSocket upgrade and that idle timeouts are comfortably longer than the heartbeat interval.
+
+In `DEV_MODE=true`, Vite proxies `/api`, `/docs`, and `/health` to the backend on `8000`, so local frontend development still talks to the same server process.
+
+## Non-Root Containers And Runtime Toolchain
+
+The official image is designed to run without root privileges and to remain compatible with OpenShift-style arbitrary UIDs in group `0`. It also keeps its runtime dependencies in the final image because docsfy really uses them after startup.
+
+```49:133:Dockerfile
+# Create non-root user, data directory, and set permissions
+# OpenShift runs containers as a random UID in the root group (GID 0)
 RUN useradd --create-home --shell /bin/bash -g 0 appuser \
   && mkdir -p /data \
   && chown appuser:0 /data \
   && chmod -R g+w /data
 
-# Switch to non-root user for runtime
+# ...
+
+# Puppeteer config for mermaid-cli (must be set before npm install)
+ENV PUPPETEER_EXECUTABLE_PATH="/usr/bin/chromium"
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD="true"
+
+# Puppeteer needs --no-sandbox in Docker (non-root user, no user namespaces)
+RUN printf '{"args":["--no-sandbox","--disable-setuid-sandbox"]}\n' > /home/appuser/.puppeteerrc.json
+
+# Install Claude Code CLI (installs to ~/.local/bin)
+RUN /bin/bash -o pipefail -c "curl -fsSL https://claude.ai/install.sh | bash"
+
+# Install Cursor Agent CLI (installs to ~/.local/bin)
+RUN /bin/bash -o pipefail -c "curl -fsSL https://cursor.com/install | bash"
+
+# Configure npm for non-root global installs and install Gemini CLI + mermaid-cli
+RUN mkdir -p /home/appuser/.npm-global \
+  && npm config set prefix '/home/appuser/.npm-global' \
+  && npm install -g @google/gemini-cli @mermaid-js/mermaid-cli@11
+
+# ...
+
+# Make /app group-writable for OpenShift compatibility
+RUN chmod -R g+w /app
+
+# Make appuser home accessible by OpenShift arbitrary UID
+RUN find /home/appuser -type d -exec chmod g=u {} + \
+  && npm cache clean --force 2>/dev/null; \
+  rm -rf /home/appuser/.npm/_cacache
+
+# Switch back to non-root user for runtime
 USER appuser
 
 # Ensure CLIs are in PATH
 ENV PATH="/home/appuser/.local/bin:/home/appuser/.npm-global/bin:${PATH}"
 # Set HOME for OpenShift compatibility (random UID has no passwd entry)
 ENV HOME="/home/appuser"
+
+HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
+  CMD curl -f http://localhost:8000/health || exit 1
+
+ENTRYPOINT ["/app/entrypoint.sh"]
 ```
 
-That gives you a few useful guarantees:
+A few practical consequences follow from that image design:
 
-- the normal runtime user is `appuser`, not `root`
-- `/data` is writable without running the container as root
-- the image is prepared for OpenShift-style arbitrary UIDs in group `0`
-- the CLI tools installed into the home directory remain reachable through `PATH`
+- `git` is a runtime dependency because docsfy fetches repositories and computes diffs during generation.
+- `nodejs`, `npm`, `chromium`, and `mmdc` stay in the runtime image because Mermaid diagrams can be converted to inline SVG while the site is being written.
+- The AI provider CLIs are runtime dependencies, not optional build extras. If you build your own image, include the providers you plan to use.
+- The container expects `/data` to be writable by the effective non-root user or by an arbitrary UID that is a member of group `0`.
+- Browser-based deployments should keep `SECURE_COOKIES=true` and place docsfy behind HTTPS so session cookies are accepted by the browser.
 
-The Dockerfile also makes `/app` and the `appuser` home directory group-writable for OpenShift compatibility, so platforms that override the UID still have a better chance of working without image changes.
+> **Note:** Mermaid SVG conversion is conditional in code. If `mmdc` is missing, docsfy skips that conversion step. The official image installs `@mermaid-js/mermaid-cli` and Chromium so diagrams work out of the box.
 
-> **Tip:** Whatever platform you use, make sure the mounted `DATA_DIR` is writable by the UID and GID that will actually run the process. If the volume is read-only or owned by the wrong user/group, docsfy will not be able to initialize its database or write generated sites.
+> **Warning:** If your persistent volume is mounted read-only, or with ownership and permissions that block the effective UID/GID, docsfy will fail when it tries to create `docsfy.db`, write page cache files, or store the final site under `site/`.
 
-## Container Expectations
+> **Tip:** The official image is a good reference even if you do not use Docker directly. If you deploy with systemd, Podman, Kubernetes, or another platform, replicate the same assumptions: port `8000`, persistent `DATA_DIR`, non-root execution, Git available, and the provider and diagram toolchain installed in the runtime environment.
 
-The provided runtime image is intentionally not a minimal Python-only image. It includes the tools docsfy needs while it is running:
 
-- `git` for cloning and diffing repositories
-- `bash`, `curl`, `nodejs`, and `npm`
-- provider CLIs installed at image build time:
-  - Claude Code CLI
-  - Cursor CLI
-  - Gemini CLI
+## Related Pages
 
-That has two practical consequences:
-
-- the selected provider CLI must still be available on `PATH` at runtime
-- the container needs outbound network access to both your Git host and the provider services used by that CLI
-
-If you build your own image or run docsfy outside the provided container, keep these requirements in place:
-
-- install `git`
-- install the AI provider CLIs you plan to support
-- make sure the frontend is already built into `frontend/dist` unless you are intentionally running `DEV_MODE=true`
-- keep a writable `DATA_DIR`
-- keep WebSocket support available at `/api/ws`
-
-If a required AI CLI is missing, docsfy does not silently degrade. The generation request fails and the variant is marked `error`.
+- [Architecture and Runtime](architecture-and-runtime.html)
+- [Docker and Compose Quickstart](docker-quickstart.html)
+- [Environment Variables](environment-variables.html)
+- [Data Storage and Layout](data-storage-and-layout.html)
+- [Security Considerations](security-considerations.html)

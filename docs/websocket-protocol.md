@@ -1,18 +1,18 @@
 # WebSocket Protocol
 
-`/api/ws` is docsfy's real-time update stream. Connect once, authenticate, read the initial `sync` snapshot, then apply live `progress` and `status_change` updates as work continues.
+`/api/ws` is docsfy's real-time update stream. Connect once, authenticate, read the initial `sync` snapshot, then apply live `progress` and `status_change` messages as generation runs or project visibility changes.
 
-For most clients, the right mental model is simple:
+For most clients, the mental model is simple:
 
-- WebSocket gives you live updates for everything the current user is allowed to see.
 - `sync` is the full snapshot and source of truth.
-- `progress` and `status_change` are incremental updates for a single variant.
+- `progress` reports in-flight work for one variant.
+- `status_change` reports terminal states for one variant.
 - `ping` / `pong` keeps the connection alive.
-- If the socket is unavailable, fall back to polling `GET /api/projects`.
+- `GET /api/projects` is the HTTP fallback path the built-in frontend uses when it cannot stay on WebSocket.
 
-## Endpoint
+## Connection Model
 
-The built-in frontend connects to the same host as the app and automatically chooses `ws://` or `wss://` based on the page URL:
+The built-in frontend opens a same-origin socket and chooses `ws://` or `wss://` from the current page URL:
 
 ```ts
 const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
@@ -22,107 +22,112 @@ this.ws = new WebSocket(url)
 
 That means:
 
-- If you are serving docsfy over HTTPS, use `wss://`.
-- If you are serving docsfy over plain HTTP, use `ws://`.
-- The official frontend uses a same-origin connection to `/api/ws`.
+- If docsfy is served over HTTPS, the frontend uses `wss://`.
+- If docsfy is served over plain HTTP, the frontend uses `ws://`.
+- The official UI connects to the same host that served the page.
+
+There is no subscribe message or per-project room selection. One connection receives every update the authenticated user is allowed to see.
+
+```mermaid
+sequenceDiagram
+    participant Client
+    participant WS as /api/ws
+    participant Jobs as Generation pipeline
+    participant API as /api/projects
+
+    Client->>WS: Connect with session cookie or ?token=
+    WS-->>Client: sync
+    loop Every 30s
+        WS-->>Client: {"type":"ping"}
+        Client-->>WS: {"type":"pong"}
+    end
+    Jobs-->>WS: progress / status_change / sync
+    WS-->>Client: Live updates
+    alt WebSocket closes abnormally
+        Client->>WS: Retry with backoff
+        Client->>API: Poll /api/projects every 10s after retries are exhausted
+        API-->>Client: projects + known_models + known_branches
+    end
+```
 
 ## Authentication
 
-docsfy supports two WebSocket authentication paths.
+docsfy supports two authentication paths for `/api/ws`.
 
-### 1. Session cookie
+### Session Cookie
 
-This is the normal browser flow.
+This is the normal browser flow:
 
 1. Log in with `POST /api/auth/login`.
-2. docsfy sets the `docsfy_session` cookie.
+2. docsfy sets a `docsfy_session` cookie.
 3. Open `/api/ws` on the same origin.
-4. The browser automatically sends the cookie during the WebSocket handshake.
+4. The browser sends the cookie during the WebSocket handshake.
 
-The session cookie is:
+The login handler sets the cookie like this:
+
+```python
+response.set_cookie(
+    "docsfy_session",
+    session_token,
+    httponly=True,
+    samesite="strict",
+    secure=settings.secure_cookies,
+    max_age=SESSION_TTL_SECONDS,
+)
+```
+
+In the current codebase, that means browser sessions are:
 
 - `HttpOnly`
 - `SameSite=Strict`
-- `Secure` when `SECURE_COOKIES=true`
-- an opaque session token, not your raw API key
+- controlled by `SECURE_COOKIES` for the `Secure` flag
 - valid for 8 hours by default
+- backed by an opaque session token, not the raw API key
 
-> **Tip:** For browser-based integrations, prefer the session-cookie flow. It avoids putting API keys in URLs and matches how the official frontend works.
+> **Tip:** For browser integrations, use the session-cookie flow. It matches the built-in frontend and keeps raw API keys out of the WebSocket URL.
 
-### 2. `?token=` query parameter
+> **Warning:** If you are running docsfy on plain `http://localhost`, set `SECURE_COOKIES=false`. Otherwise the browser will not send the secure session cookie, and `/api/ws` will not authenticate.
 
-You can also authenticate by passing the raw admin key or a user's API key in the WebSocket URL:
+### `?token=` Query Parameter
 
-`/api/ws?token=<API_KEY>`
+Direct clients can authenticate with the admin key or a user's API key by putting it in the URL query string.
 
-This is useful for direct programmatic clients and test clients.
-
-An actual token-authenticated connection from the codebase:
+The CLI watcher does exactly that:
 
 ```python
-with sync_client.websocket_connect(f"/api/ws?token={TEST_ADMIN_KEY}") as ws:
-    data = ws.receive_json()
-    assert data["type"] == "sync"
+ws_url = (
+    server_url.rstrip("/").replace("https://", "wss://").replace("http://", "ws://")
+)
+ws_url = f"{ws_url}/api/ws?{urlencode({'token': password})}"
 ```
 
-> **Warning:** `?token=` puts the credential in the URL. URLs can show up in logs, browser history, and monitoring tools. Prefer the session-cookie flow for browser use.
+> **Warning:** `?token=` puts the credential in the URL. URLs can end up in logs, browser history, proxies, and monitoring tools. Prefer the session-cookie flow in browser-based code.
 
-> **Note:** The REST API accepts `Authorization: Bearer ...`, but `/api/ws` does not read that header. WebSocket auth is handled by the session cookie or the `token` query parameter.
+> **Note:** REST requests can use `Authorization: Bearer <token>`, but `/api/ws` does not authenticate that way. The WebSocket handler checks the `docsfy_session` cookie and the `token` query parameter.
 
-### What happens on auth failure?
+### Auth Failures
 
-If the connection is not authenticated, the server closes it with code `1008` (`policy violation`).
+If the handshake is not authenticated, the server closes the socket with code `1008`.
 
-In browser-based tooling, you may see either the `1008` close code or a generic connection error, depending on the client and runtime.
+Some browser tooling reports a generic connection error instead of surfacing the close code directly, so failed browser tests may show either a close code or a plain error.
 
-## Connection model
+## Message Types
 
-A single WebSocket connection gives you all updates the authenticated user is allowed to receive. There is no subscribe message, room selection, or per-project topic negotiation.
-
-The server behavior is:
-
-1. Authenticate the connection.
-2. Accept the WebSocket.
-3. Register the connection under the current user.
-4. Send an immediate `sync` message.
-5. Start the heartbeat loop.
-6. Continue sending `progress`, `status_change`, and occasional additional `sync` messages.
-
-The only client message docsfy expects is:
-
-```json
-{"type":"pong"}
-```
-
-Malformed client messages are ignored, and message types other than `pong` are not used by the server.
-
-Multiple simultaneous connections for the same user are supported, so multiple tabs can all receive the same updates.
-
-### Who receives which updates?
-
-docsfy delivers WebSocket updates to:
-
-- admins
-- the project owner
-- users who have been granted access to that project
-
-If an admin grants or revokes access, docsfy does not send a special `access_change` event. Instead, it sends a fresh `sync` to the affected user so the client can replace its local state.
-
-## Message reference
-
-| Message | When it is sent | What it contains |
+| Message | When it is sent | Key fields |
 | --- | --- | --- |
-| `sync` | Immediately after connect, and whenever the server wants a full resync | Full project snapshot: `projects`, `known_models`, `known_branches` |
-| `progress` | While a generation is in progress | Variant identity plus in-flight status and optional progress fields |
-| `status_change` | When a variant reaches a terminal state | Variant identity plus final status and optional final metadata |
+| `sync` | Immediately after connect, and again when the server wants a full resync | `projects`, `known_models`, `known_branches` |
+| `progress` | While a generation is still running | `name`, `branch`, `provider`, `model`, `owner`, `status`, plus optional progress fields |
+| `status_change` | When a variant reaches a terminal state | `name`, `branch`, `provider`, `model`, `owner`, `status`, plus optional final metadata |
 | `ping` | Heartbeat from server | `{ "type": "ping" }` |
 | `pong` | Heartbeat reply from client | `{ "type": "pong" }` |
 
+Client messages are minimal: the server only expects `pong`. Malformed client messages are ignored.
+
 ## `sync`
 
-`sync` is the full replacement payload. When you receive it, you should treat it as the latest authoritative snapshot for the current user.
+`sync` is the full replacement payload. If you are writing a client, treat it as the latest authoritative snapshot for the current user.
 
-The official frontend type is:
+The frontend types define it like this:
 
 ```ts
 export interface SyncMessage {
@@ -133,20 +138,22 @@ export interface SyncMessage {
 }
 ```
 
-A few important details:
+A few practical details:
 
-- `projects` is the live list of accessible variants, including `generating`, `ready`, `error`, and `aborted` entries.
-- `known_models` is grouped by provider and only includes models from `ready` projects.
-- `known_branches` is grouped by project name and only includes branches from `ready` projects.
-- `sync` uses the same underlying payload builder as `GET /api/projects`.
+- `projects` is the same live project list returned by `GET /api/projects`.
+- `projects` can include variants in `generating`, `ready`, `error`, and `aborted`.
+- `known_models` and `known_branches` are helper maps used by the UI for provider/model and branch pickers.
+- Both helper maps are built from `ready` projects, not in-progress ones.
+- The server sends `sync` immediately on connect.
+- The server also uses `sync` after broader consistency changes such as terminal status updates, deletes, variant replacement, and access grants or revokes.
 
-> **Tip:** If you already handle the `GET /api/projects` response, you are almost done handling `sync`. The only extra field is `type: "sync"`.
+> **Tip:** If you already know how to handle `GET /api/projects`, you already know how to handle `sync`. The only extra field is `type: "sync"`.
 
 ## `progress`
 
-`progress` is sent while work is still running. This is how docsfy reports that a generation has started and how far it has gotten.
+`progress` is the in-flight message. It reports that a generation is still running and adds whatever progress fields are available so far.
 
-The server builds the message like this:
+The backend builds the payload like this:
 
 ```python
 message: dict[str, Any] = {
@@ -168,17 +175,26 @@ if error_message is not None:
     message["error_message"] = error_message
 ```
 
-In practice:
+In the current backend, `progress.status` is used for the running state, so you should expect `status: "generating"` here.
 
-- `status` will be `generating`
-- `current_stage` can move through `cloning`, `planning`, `incremental_planning`, `generating_pages`, and `rendering`
-- `page_count` increases as pages are generated
-- `plan_json` can appear before page generation finishes, so clients can show planned structure early
-- `error_message` can appear if there is an in-flight problem worth surfacing
+The stage names currently used by docsfy are:
 
-`plan_json` is a serialized JSON string, not an already-parsed object.
+- `cloning`
+- `planning`
+- `incremental_planning`
+- `generating_pages`
+- `validating`
+- `cross_linking`
+- `rendering`
 
-One subtle but important point: the transition into generation is reported as `progress`, not `status_change`.
+What the optional fields mean:
+
+- `current_stage`: the backend's current phase, when one is known
+- `page_count`: pages generated so far
+- `plan_json`: the saved documentation plan as a JSON string
+- `error_message`: an in-flight error detail when the backend has one to surface
+
+`plan_json` is a serialized string, not a pre-parsed object.
 
 ## `status_change`
 
@@ -188,7 +204,7 @@ One subtle but important point: the transition into generation is reported as `p
 - `error`
 - `aborted`
 
-The message always includes the variant identity:
+The message always identifies a specific variant with:
 
 - `name`
 - `branch`
@@ -204,13 +220,22 @@ It may also include:
 - `last_commit_sha`
 - `error_message`
 
-After a terminal `status_change`, the server also triggers a full `sync`. That gives clients a fast single-variant update first, followed by a full consistency pass.
+A few useful expectations:
 
-> **Note:** `sync.projects` uses `ai_provider` and `ai_model` because it contains full `Project` records. Incremental WebSocket messages use `provider` and `model`. The official frontend maps between those field names when applying updates.
+- Successful runs end with `status: "ready"`.
+- A run that turns out to need no work still ends as `ready`.
+- Failed or user-cancelled runs end as `error` or `aborted`.
+- After a terminal `status_change`, the backend also sends a full `sync`.
 
-## Matching updates to a variant
+If docsfy finds that a variant is already current, the later `sync` can show `current_stage: "up_to_date"` in the stored project record even though the terminal WebSocket message is still just `status: "ready"`.
 
-When you receive `progress` or `status_change`, match them using the full variant identity:
+> **Warning:** `sync.projects` uses `ai_provider` and `ai_model` because it carries full `Project` records. `progress` and `status_change` use `provider` and `model`. If you merge incremental updates into `Project` objects, map those field names explicitly.
+
+Because terminal updates are followed by `sync`, client handlers should be idempotent. Apply the newest state; do not assume messages are exactly-once events.
+
+## Matching Updates To A Variant
+
+Use the full variant identity when applying `progress` or `status_change`:
 
 - `name`
 - `branch`
@@ -218,15 +243,17 @@ When you receive `progress` or `status_change`, match them using the full varian
 - `model`
 - `owner`
 
-That is the safest way to distinguish:
+That is what lets you safely distinguish:
 
-- different branches of the same repo
-- different providers or models for the same repo
-- different owners who generated the same repo name
+- different branches of the same repository
+- different provider/model outputs for the same repository
+- different owners who generated the same repository name
 
-## Heartbeat: `ping` and `pong`
+The built-in CLI watcher uses this exact approach when it filters incoming updates.
 
-The server sends heartbeat pings on a fixed interval:
+## Heartbeat: `ping` And `pong`
+
+The server keeps the socket alive with a heartbeat:
 
 ```python
 _WS_HEARTBEAT_INTERVAL = 30
@@ -234,14 +261,14 @@ _WS_PONG_TIMEOUT = 10
 _WS_MAX_MISSED_PONGS = 2
 ```
 
-That means:
+In practice, that means:
 
 - the server sends `{"type": "ping"}` every 30 seconds
 - the client should reply with `{"type": "pong"}`
-- the server waits up to 10 seconds for each pong
+- the server waits up to 10 seconds for the reply
 - after 2 missed pongs, the server closes the connection with code `1001`
 
-The official frontend handles heartbeat like this:
+The built-in frontend replies like this:
 
 ```ts
 if (isPingMessage(parsed)) {
@@ -250,68 +277,117 @@ if (isPingMessage(parsed)) {
 }
 ```
 
-If you are writing your own client, implement the same behavior. You do not need to send periodic pings yourself unless your environment requires it for other reasons.
+You do not need to send your own periodic pings unless your runtime or infrastructure requires it for some other reason.
 
-## Polling fallback
+## Who Receives Updates?
 
-WebSocket is the preferred path, but docsfy's frontend is designed to keep working if the socket is unavailable.
+WebSocket delivery is based on access control, not subscriptions.
 
-The built-in behavior is:
+docsfy sends relevant project updates to:
 
-- reconnect after non-normal closes
-- try up to 3 reconnects
-- use exponential backoff
-- fall back to polling `GET /api/projects` every 10 seconds
-- stop polling once WebSocket reconnects successfully
+- admins
+- the project owner
+- users who have been granted access to that project
 
-The actual fallback code converts the polling result into a synthetic `sync` message:
+That has a few consequences:
+
+- Admins see all variants.
+- Non-admin users see their own variants plus shared variants they have been granted access to.
+- If an admin grants or revokes access, the affected user receives a fresh `sync` rather than a special `access_change` message.
+- Multiple simultaneous connections for the same user are supported, so multiple browser tabs can all receive the same updates.
+
+## Polling Fallback Expectations
+
+The dashboard does not depend on WebSocket alone.
+
+On first load, it fetches the current project list over HTTP with `GET /api/projects`. After that, it opens `/api/ws` and prefers live push updates. If the socket closes abnormally, the built-in frontend retries a few times and then shifts to polling.
+
+The retry and fallback logic is:
 
 ```ts
-const data = await api.get<ProjectsResponse>('/api/projects')
-const syncMessage: WebSocketMessage = {
-  type: 'sync' as const,
-  projects: data.projects,
-  known_models: data.known_models,
-  known_branches: data.known_branches,
+this.ws.onclose = (event) => {
+  console.debug('[WS] Disconnected, code:', event.code)
+  if (event.code !== 1000) this.attemptReconnect()
 }
-this.handlers.forEach(handler => handler(syncMessage))
+
+private attemptReconnect(): void {
+  if (this.reconnectAttempts >= this.maxReconnectAttempts) {
+    console.debug('[WS] Falling back to polling')
+    this.startPolling()
+    return
+  }
+  const delay = this.getBackoffDelay()
+  this.reconnectAttempts++
+  console.debug('[WS] Reconnecting, attempt', this.reconnectAttempts)
+  this.reconnectTimer = setTimeout(() => this.connect(true), delay)
+}
+
+private startPolling(): void {
+  if (this.pollingTimer) return
+  this.pollingTimer = setInterval(async () => {
+    try {
+      const data = await api.get<ProjectsResponse>('/api/projects')
+      const syncMessage: WebSocketMessage = {
+        type: 'sync' as const,
+        projects: data.projects,
+        known_models: data.known_models,
+        known_branches: data.known_branches,
+      }
+      this.handlers.forEach(handler => handler(syncMessage))
+    } catch {
+      /* ignore polling errors */
+    }
+  }, WS_POLLING_FALLBACK_MS)
+}
 ```
 
-In the current frontend, the reconnect timing is effectively:
+With the current frontend defaults, that means:
 
-- attempt 1 after 1 second
-- attempt 2 after 2 seconds
-- attempt 3 after 4 seconds
-- then polling every 10 seconds
+- close code `1000` is treated as a normal disconnect, so the manager does not retry
+- other closes trigger up to 3 reconnect attempts
+- the reconnect backoff is 1 second, then 2 seconds, then 4 seconds
+- after retries are exhausted, the dashboard polls `GET /api/projects` every 10 seconds
+- polling results are turned into synthetic `sync` messages before they reach the rest of the UI
 
-> **Tip:** Treat `GET /api/projects` as the official fallback for `/api/ws`. If your client can already apply `sync`, you can reuse that same code path for polling recovery.
+The dashboard also has two extra best-effort refresh paths:
 
-The dashboard also does a best-effort HTTP refresh if it receives an incremental update for a variant it does not yet have locally. That helps clients recover from edge cases where a new variant exists on the server before the local list has caught up.
+- When you start a generation, it waits 5 seconds and fetches `/api/projects` if the new variant still has not appeared in local state.
+- If it receives a `progress` or `status_change` message for a variant it does not have locally yet, it fetches `/api/projects` to resync.
 
-## Configuration that affects WebSocket behavior
+> **Note:** In fallback mode, the UI remains usable, but updates arrive on the polling interval instead of immediately.
 
-The most relevant environment settings are:
+## Configuration That Affects `/api/ws`
 
-```env
-# Required: Admin password (minimum 16 characters)
-ADMIN_KEY=
+The settings that matter most are the admin key and cookie security:
 
-# Cookie security (set to false for local HTTP development)
-SECURE_COOKIES=true
+```python
+class Settings(BaseSettings):
+    admin_key: str = ""  # Required — validated at startup
+    secure_cookies: bool = True  # Set to False for local HTTP dev
 ```
 
-`SECURE_COOKIES` matters for browser-based WebSocket auth because the official frontend relies on the `docsfy_session` cookie.
+In practice:
 
-- In production, leave `SECURE_COOKIES=true` and use HTTPS/WSS.
-- For local plain-HTTP development, docsfy lets you disable the `Secure` flag if needed.
+- `ADMIN_KEY` is required and must be at least 16 characters long.
+- `SECURE_COOKIES` controls whether browser session cookies use the `Secure` flag.
+- Browser-based WebSocket auth depends on that session cookie, so HTTPS/WSS is the right production setup.
 
-## Practical client checklist
+> **Tip:** Keep `SECURE_COOKIES=true` in production. Only turn it off for plain-HTTP local development.
 
-- Open one connection to `/api/ws` per active client session.
-- Authenticate with the session cookie or `?token=<API_KEY>`.
+## Practical Client Checklist
+
+- Open one `/api/ws` connection per active client session.
+- Authenticate with the session cookie or `?token=<api-key>`.
 - Treat the first `sync` as your initial state.
-- Use `name + branch + provider + model + owner` to match incremental updates.
+- Match `progress` and `status_change` by `name + branch + provider + model + owner`.
 - Reply to every `ping` with `pong`.
-- Fall back to `GET /api/projects` if the socket cannot stay connected.
+- Reuse your `GET /api/projects` handler for fallback, since that is the same payload shape the official frontend turns into `sync`.
 
-If you follow that pattern, your client will behave the same way as docsfy's official frontend.
+
+## Related Pages
+
+- [Tracking Progress and Status](tracking-progress-and-status.html)
+- [Projects API](projects-api.html)
+- [Authentication API](auth-api.html)
+- [CLI Workflows](cli-workflows.html)
+- [Local Development](local-development.html)

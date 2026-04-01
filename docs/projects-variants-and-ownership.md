@@ -82,32 +82,39 @@ Branches are first-class variant fields. `main` and `dev` are different variants
 
 Docsfy is deliberately strict about branch names because the branch appears in URLs and directory paths:
 
-```28:46:src/docsfy/models.py
-branch: str = Field(
-    default=DEFAULT_BRANCH, description="Git branch to generate docs from"
-)
+```18:48:src/docsfy/models.py
+class GenerateRequest(BaseModel):
+    # ... other request fields omitted ...
 
-@field_validator("branch")
-@classmethod
-def validate_branch(cls, v: str) -> str:
-    if "/" in v:
-        msg = (
-            f"Invalid branch name: '{v}'. Branch names cannot contain slashes "
-            "— use hyphens instead (e.g., release-1.x)."
-        )
-        raise ValueError(msg)
-    if not re.match(r"^[a-zA-Z0-9][a-zA-Z0-9._-]*$", v):
-        msg = f"Invalid branch name: '{v}'"
-        raise ValueError(msg)
+    branch: str = Field(
+        default=DEFAULT_BRANCH, description="Git branch to generate docs from"
+    )
+
+    @field_validator("branch")
+    @classmethod
+    def validate_branch(cls, v: str) -> str:
+        if "/" in v:
+            msg = (
+                f"Invalid branch name: '{v}'. Branch names cannot contain slashes "
+                "— use hyphens instead (e.g., release-1.x)."
+            )
+            raise ValueError(msg)
+        if not re.match(r"^[a-zA-Z0-9][a-zA-Z0-9._-]*$", v):
+            msg = f"Invalid branch name: '{v}'"
+            raise ValueError(msg)
+        if ".." in v:
+            msg = f"Invalid branch name: '{v}'"
+            raise ValueError(msg)
+        return v
 ```
 
 In practice:
 
 - If you omit `branch`, docsfy uses `main`
 - Good branch names include `main`, `dev`, `release-1.x`, and `v2.0.1`
-- Rejected branch names include `release/v2.0`, `.hidden`, and `../etc/passwd`
+- Rejected branch names include `release/v2.0`, `.hidden`, `../etc/passwd`, and `release..candidate`
 
-> **Warning:** Branch names cannot contain `/`. If your Git workflow normally uses slash-based branch names, use a hyphenated version such as `release-1.x` when generating docs with docsfy.
+> **Warning:** Branch names cannot contain `/`, and docsfy also rejects `..` anywhere in the name. If your Git workflow normally uses slash-based branch names, use a hyphenated version such as `release-1.x` when generating docs with docsfy.
 
 If you want a stable link to a specific branch, use the fully qualified variant URL, such as `/docs/for-testing-only/dev/gemini/gemini-2.5-flash/`.
 
@@ -169,43 +176,76 @@ A few behaviors are worth knowing:
 - If the server restarts while a variant is still generating, docsfy resets that orphaned row to `error`.
 - A `ready` variant can still carry metadata such as `last_commit_sha`, `page_count`, `last_generated`, and `plan_json`.
 
-> **Note:** While a run is active, `current_stage` can move through values like `cloning`, `incremental_planning`, `planning`, `generating_pages`, and `rendering`. A ready variant can also keep `current_stage = up_to_date` when docsfy determines nothing meaningful changed.
+> **Note:** While a run is active, `current_stage` can move through values like `cloning`, `incremental_planning`, `planning`, `generating_pages`, `validating`, `cross_linking`, and `rendering`. The `validating` and `cross_linking` stages come from the post-generation pipeline that runs after page writing and before the final render. A ready variant can also keep `current_stage = up_to_date` when docsfy determines nothing meaningful changed.
 
 ## What “Latest” Means
 
-When you use a generic project route such as `/docs/<project>/` or `/api/projects/<project>/download`, docsfy does not assume `main`, and it does not prefer one model name over another. It chooses the newest **ready** variant by `last_generated`.
+When you use a generic project route such as `/docs/<project>/` or `/api/projects/<project>/download`, docsfy does not assume `main`, and it does not prefer one model name over another. It resolves the newest **ready** variant the current caller can actually access, using `last_generated`.
 
-```604:618:src/docsfy/storage.py
-async def get_latest_variant(
-    name: str, owner: str | None = None, branch: str | None = None
-) -> dict[str, str | int | None] | None:
-    """Get the most recently generated ready variant for a repo."""
-    async with aiosqlite.connect(DB_PATH) as db:
-        db.row_factory = aiosqlite.Row
-        query = "SELECT * FROM projects WHERE name = ? AND status = 'ready'"
-        # ...
-        query += " ORDER BY last_generated DESC LIMIT 1"
+```mermaid
+flowchart TD
+  A[Generic project route] --> B{Admin?}
+  B -->|Yes| C[Newest ready variant across all owners]
+  B -->|No| D[Collect own newest ready variant]
+  C --> G[Serve or download that variant]
+  D --> E[Collect newest ready variant from each shared owner]
+  E --> F{Single newest timestamp?}
+  F -->|Yes| G
+  F -->|No, tie| H[Return 409 instead of guessing]
 ```
+
+For non-admin users, the helper that resolves "latest" makes that owner-aware behavior explicit:
+
+```1078:1123:src/docsfy/api/projects.py
+async def _resolve_latest_accessible_variant(
+    username: str, name: str
+) -> dict[str, Any] | None:
+    candidates: list[dict[str, Any]] = []
+
+    owned = await get_latest_variant(name, owner=username)
+    if owned:
+        candidates.append(owned)
+
+    accessible = await get_user_accessible_projects(username)
+    for proj_name, proj_owner in accessible:
+        if proj_name == name and proj_owner:
+            variant = await get_latest_variant(name, owner=proj_owner)
+            if variant:
+                candidates.append(variant)
+
+    def _sort_key(v: dict[str, Any]) -> str:
+        return str(v.get("last_generated") or "")
+
+    candidates.sort(key=_sort_key, reverse=True)
+    newest = _sort_key(candidates[0])
+    tied = [c for c in candidates if _sort_key(c) == newest]
+    if len(tied) > 1:
+        raise HTTPException(
+            status_code=409,
+            detail="Multiple owners have variants with the same timestamp, please specify owner",
+        )
+    return candidates[0]
+```
+
+Admins still use plain `get_latest_variant()` across all owners; the owner-aware merge above applies to non-admin callers.
 
 That leads to a few important rules:
 
 - Only `ready` variants are candidates.
 - Latest resolution is based on `last_generated`, not on branch name, Git commit age, or model name.
 - Generic project routes can point to any branch. If `dev` was generated after `main`, the generic route can serve `dev`.
+- Admins can resolve latest across all owners.
+- Non-admin users resolve latest across their own variants plus any owner-scoped project grants they can access.
+- For non-admin callers, if two accessible owners tie on the newest timestamp, the generic route fails with `409` instead of guessing.
 - Variant-specific routes do not use latest resolution. They stay pinned to the exact `branch / provider / model` you requested.
-- If no ready variant exists yet, the generic docs/download route fails instead of guessing.
+- If no ready accessible variant exists yet, the generic docs/download route fails instead of guessing.
 
 This is the split to keep in mind:
 
 - Moving target: `/docs/<project>/`
 - Pinned variant: `/docs/<project>/<branch>/<provider>/<model>/`
 
-> **Warning:** `/docs/<project>/` and `/api/projects/<project>/download` are moving targets. Use fully qualified variant URLs when you need stable links, reproducible downloads, or branch-specific documentation.
-
-Access still applies during latest resolution:
-
-- Admins can resolve latest across all owners.
-- Non-admin users resolve latest across their own and explicitly shared projects only.
+> **Warning:** `/docs/<project>/` and `/api/projects/<project>/download` are moving targets. Use fully qualified variant URLs when you need stable links, reproducible downloads, or branch-specific documentation. In multi-owner admin workflows, add `?owner=<username>` to the exact-variant route when you need one specific owner.
 
 ## Cross-Model And Cross-Provider Replacement
 
@@ -277,7 +317,7 @@ Within that variant directory, docsfy keeps the rendered site and the cached pag
 
 ## Choosing The Right URL
 
-Use the generic project URL when you want “whatever is newest and ready”:
+Use the generic project URL when you want “whatever is newest, ready, and accessible to the current caller”:
 
 - `/docs/<project>/`
 - `/api/projects/<project>/download`
@@ -288,4 +328,15 @@ Use the variant-specific URL when you want something pinned and reproducible:
 - `/api/projects/<project>/<branch>/<provider>/<model>`
 - `/api/projects/<project>/<branch>/<provider>/<model>/download`
 
-If you remember just one rule, make it this one: **generic project URLs follow the latest ready variant, while variant-specific URLs stay pinned to the exact branch, provider, and model you asked for.**
+> **Tip:** In multi-owner admin workflows, add `?owner=<username>` to the exact-variant docs or download route when you need one specific owner.
+
+If you remember just one rule, make it this one: **generic project URLs follow the latest ready accessible variant, while variant-specific URLs stay pinned to the exact branch, provider, and model you asked for.**
+
+
+## Related Pages
+
+- [Variants, Branches, and Regeneration](variants-branches-and-regeneration.html)
+- [User and Access Management](user-and-access-management.html)
+- [Data Storage and Layout](data-storage-and-layout.html)
+- [Viewing, Downloading, and Hosting Docs](viewing-downloading-and-hosting-docs.html)
+- [Projects API](projects-api.html)

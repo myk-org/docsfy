@@ -175,3 +175,12 @@ If a config-related command fails, these are the most common causes:
 - `No server configured`: set `[default].server`, use `--server`, or pass `--host` and credentials directly.
 - `Server profile '...' not found`: fix the `--server` value or your `[default].server` setting.
 - TOML parse error: fix the syntax in `~/.config/docsfy/config.toml` and run the command again.
+
+
+## Related Pages
+
+- [CLI Workflows](cli-workflows.html)
+- [CLI Command Reference](cli-command-reference.html)
+- [Installation](installation.html)
+- [Authentication and Roles](authentication-and-roles.html)
+- [Authentication API](auth-api.html)

@@ -1,134 +1,230 @@
 # Generated Output
 
-Every successful `docsfy` run produces a self-contained static documentation bundle for one variant: project, branch, AI provider, and AI model. That bundle is what `docsfy` serves under `/docs/...`, what the download API returns as a `.tar.gz`, and what you can publish on any static file host.
+Every successful `docsfy` generation produces one self-contained static documentation bundle for one variant: project, branch, AI provider, and AI model. That bundle is what `docsfy` serves under `/docs/...`, what the download endpoints return as a `.tar.gz`, and what you can publish on any static host.
 
-For people, the primary output is the HTML site. The extra text artifacts such as `llms.txt` and `llms-full.txt` are there for AI and automation workflows.
+The bundle is built for two audiences at once: people browsing HTML pages and tools that prefer plain text. That is why each generation includes rendered HTML, matching Markdown copies, built-in search data, and the `llms.txt` / `llms-full.txt` artifacts.
 
-> **Note:** The published output is the variant’s `site/` directory. `docsfy` also keeps internal generation files such as `plan.json` and cached page Markdown under `cache/pages/`, but those support regeneration rather than the public site.
+> **Note:** The public output is the variant’s `site/` directory. Internal files such as `plan.json` and `cache/pages/*.md` live beside it to support regeneration, but they are not part of the published site.
 
-## Published files
+## What Gets Published
 
-Each successful generation publishes the same core set of artifacts:
-
-| Artifact | What it contains | What it is for |
+| Artifact | What it contains | Why it exists |
 | --- | --- | --- |
-| `index.html` | The docs homepage | Landing page with project title, tagline, and navigation groups |
-| `<slug>.html` | One rendered HTML page per generated doc page | Human-friendly browsing |
-| `<slug>.md` | One Markdown copy per generated doc page | Reuse, downloads, text-based workflows, AI tooling |
-| `search-index.json` | JSON search data | Client-side search in the published site |
-| `llms.txt` | Compact index of Markdown pages | Lightweight AI-friendly map of the docs |
-| `llms-full.txt` | All page Markdown concatenated into one file | Single-file ingestion for LLMs and other text tools |
-| `assets/` | CSS and JavaScript bundle | Theme, search, code copy buttons, callouts, TOC highlighting, sidebar behavior, and GitHub badge support |
-| `.nojekyll` | Empty marker file | Prevents Jekyll processing on GitHub Pages-style hosting |
+| `index.html` | The docs homepage | Landing page, grouped navigation, first-page jump-off |
+| `<slug>.html` | One rendered page per generated doc page | Normal browser reading and sharing |
+| `<slug>.md` | A Markdown copy of each page | Reuse, diffing, text-first workflows, automation |
+| `search-index.json` | Search data | Client-side search in the published site |
+| `llms.txt` | A compact Markdown index | Lightweight map of the documentation |
+| `llms-full.txt` | All page Markdown in one file | Single-file ingestion for LLMs or other text pipelines |
+| `assets/` | Static CSS and JavaScript | Theme, search, callouts, copy buttons, TOC highlighting, sidebar behavior |
+| `.nojekyll` | Empty marker file | Prevents Jekyll processing on GitHub Pages-style hosts |
 
-The renderer in `src/docsfy/renderer.py` writes those published files directly:
+The renderer writes the public bundle directly:
 
-```python
-(output_dir / ".nojekyll").touch()
+```599:688:src/docsfy/renderer.py
+def render_site(plan: dict[str, Any], pages: dict[str, str], output_dir: Path) -> None:
+    if output_dir.exists():
+        shutil.rmtree(output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+    assets_dir = output_dir / "assets"
+    assets_dir.mkdir(exist_ok=True)
 
-(output_dir / "index.html").write_text(index_html, encoding="utf-8")
+    # Prevent GitHub Pages from running Jekyll
+    (output_dir / ".nojekyll").touch()
 
-(output_dir / f"{slug}.html").write_text(page_html, encoding="utf-8")
-(output_dir / f"{slug}.md").write_text(md_content, encoding="utf-8")
+    # ... copy files from src/docsfy/static/ into assets/ ...
 
-search_index = _build_search_index(valid_pages, plan)
-(output_dir / "search-index.json").write_text(
-    json.dumps(search_index), encoding="utf-8"
-)
+    (output_dir / "index.html").write_text(index_html, encoding="utf-8")
+    (output_dir / f"{slug}.html").write_text(page_html, encoding="utf-8")
+    (output_dir / f"{slug}.md").write_text(md_content, encoding="utf-8")
 
-llms_txt = _build_llms_txt(plan, navigation=filtered_navigation)
-(output_dir / "llms.txt").write_text(llms_txt, encoding="utf-8")
-
-llms_full_txt = _build_llms_full_txt(
-    plan, valid_pages, navigation=filtered_navigation
-)
-(output_dir / "llms-full.txt").write_text(llms_full_txt, encoding="utf-8")
+    (output_dir / "search-index.json").write_text(
+        json.dumps(search_index), encoding="utf-8"
+    )
+    (output_dir / "llms.txt").write_text(llms_txt, encoding="utf-8")
+    (output_dir / "llms-full.txt").write_text(llms_full_txt, encoding="utf-8")
 ```
 
-> **Note:** `docsfy` recreates the entire `site/` directory on each render. If a page disappears in a newer generation, its old published files do not stay behind.
+> **Note:** `render_site()` deletes and recreates the entire `site/` directory before writing the new bundle. If a page existed in an older generation but not the new one, the old files do not linger.
 
-## What the bundle looks like
-
-A generated site is a flat static bundle. Page filenames come from page slugs, so you get files like `introduction.html` and `introduction.md` at the site root.
+This repository’s checked-in `docs/` directory is a real example of the published shape:
 
 ```text
-site/
-  .nojekyll
+docs/
   index.html
-  introduction.html
-  introduction.md
-  quickstart.html
-  quickstart.md
-  search-index.json
+  generated-output.html
+  generated-output.md
   llms.txt
   llms-full.txt
+  search-index.json
   assets/
     style.css
-    theme.js
     search.js
     copy.js
     callouts.js
     scrollspy.js
-    codelabels.js
+    theme.js
     github.js
 ```
 
-The exact page filenames depend on the generated navigation and page slugs.
+> **Warning:** Page slugs are flat filenames. If a slug contains `/`, `\`, a leading `.`, or `..`, docsfy skips it instead of creating nested directories or unsafe paths.
 
-> **Warning:** `docsfy` only publishes path-safe page slugs. Slugs containing `/`, `\`, leading `.`, or `..` are treated as unsafe and skipped, so published pages are always flat files rather than nested directories.
+```620:637:src/docsfy/renderer.py
+# Filter out invalid slugs
+valid_pages: dict[str, str] = {}
+for slug, content in pages.items():
+    if "/" in slug or "\\" in slug or slug.startswith(".") or ".." in slug:
+        logger.warning(f"Skipping invalid slug: {slug}")
+    else:
+        valid_pages[slug] = content
 
-## HTML pages
-
-The HTML output is meant for people first. `index.html` is a real homepage, not just a redirect. It shows the project name, tagline, grouped navigation, and a “Get Started” link to the first page. Each generated page becomes its own `<slug>.html` file, with sidebar navigation, previous/next links, a footer, and an optional “On this page” table of contents.
-
-The HTML pages pull their behavior from the generated `assets/` directory. In `src/docsfy/templates/_doc_base.html`, the published bundle includes:
-
-```html
-<script src="assets/theme.js"></script>
-<script src="assets/search.js"></script>
-<script src="assets/copy.js"></script>
-<script src="assets/callouts.js"></script>
-<script src="assets/scrollspy.js"></script>
-<script src="assets/codelabels.js"></script>
-<script src="assets/github.js"></script>
+# Filter navigation to only include pages that exist in valid_pages
+filtered_navigation: list[dict[str, Any]] = []
+for group in navigation:
+    filtered_pages = [
+        page
+        for page in group.get("pages", [])
+        if page.get("slug", "") in valid_pages
+    ]
 ```
 
-The page renderer also turns Markdown into HTML with fenced code blocks, syntax highlighting, tables, and a heading-based TOC:
+## How A Generation Becomes A Bundle
 
-```python
-md = markdown.Markdown(
-    extensions=["fenced_code", "codehilite", "tables", "toc"],
-    extension_configs={
-        "codehilite": {"css_class": "highlight", "guess_lang": False},
-        "toc": {"toc_depth": "2-3"},
-    },
+Before the site is rendered, docsfy runs a short post-generation pipeline. In practice, it looks like this:
+
+```mermaid
+flowchart LR
+  A[Generated page markdown] --> B[Validate pages]
+  B --> C[Add related-page links]
+  C --> D[Detect version]
+  D --> E[Render static site]
+  E --> F[index.html]
+  E --> G[slug.html + slug.md]
+  E --> H[search-index.json]
+  E --> I[llms.txt + llms-full.txt]
+  E --> J[assets/ + .nojekyll]
+```
+
+The backend implements that sequence explicitly:
+
+```981:1052:src/docsfy/api/projects.py
+# --- Post-generation pipeline ---
+await update_and_notify(
+    gen_key,
+    project_name,
+    ai_provider,
+    ai_model,
+    status="generating",
+    owner=owner,
+    branch=branch,
+    current_stage="validating",
+    page_count=len(pages),
 )
-md_text = _clean_code_fence_annotations(md_text)
-md_text = _ensure_blank_lines(md_text)
-content_html = _sanitize_html(md.convert(md_text))
+pages = await validate_pages(...)
+
+await update_and_notify(
+    gen_key,
+    project_name,
+    ai_provider,
+    ai_model,
+    status="generating",
+    owner=owner,
+    branch=branch,
+    current_stage="cross_linking",
+    page_count=len(pages),
+)
+pages = await add_cross_links(...)
+
+version = detect_version(repo_dir)
+if version:
+    plan["version"] = version
+
+await update_and_notify(... current_stage="rendering", page_count=len(pages))
+site_dir = get_project_site_dir(
+    project_name, ai_provider, ai_model, owner, branch=branch
+)
+render_site(plan=plan, pages=pages, output_dir=site_dir)
 ```
 
-In practice, that means the published site includes:
+## HTML Pages, Assets, And Search
 
-- a sidebar with section links
-- a theme toggle
-- keyboard-driven search
-- code copy buttons
-- code language labels
-- “On this page” navigation for level 2 and level 3 headings
-- styled callouts such as `> **Note:**`, `> **Warning:**`, and `> **Tip:**`
+`index.html` is a real landing page, not just a redirect. Each page slug also gets a standalone `<slug>.html` file with previous/next navigation and, when headings exist, an `On this page` table of contents.
 
-`docsfy` also sanitizes the generated HTML before writing it, removing script tags, forms, embedded objects, inline event handlers, and unsafe URLs.
+Markdown is rendered with fenced code blocks, syntax highlighting, tables, and a TOC built from `##` and `###` headings:
 
-> **Tip:** If you want output that can be hosted almost anywhere, this is exactly what `docsfy` produces: plain HTML, CSS, JavaScript, JSON, and Markdown files.
+```441:455:src/docsfy/renderer.py
+def _md_to_html(md_text: str) -> tuple[str, str]:
+    """Convert markdown to HTML. Returns (content_html, toc_html)."""
+    md = markdown.Markdown(
+        extensions=["fenced_code", "codehilite", "tables", "toc"],
+        extension_configs={
+            "codehilite": {"css_class": "highlight", "guess_lang": False},
+            "toc": {"toc_depth": "2-3"},
+        },
+    )
+    md_text = _prerender_mermaid(md_text)
+    md_text = _clean_code_fence_annotations(md_text)
+    md_text = _ensure_blank_lines(md_text)
+    content_html = _sanitize_html(md.convert(md_text))
+    toc_html = getattr(md, "toc", "")
+    return content_html, toc_html
+```
 
-## Search index
+```15:39:src/docsfy/templates/page.html
+<nav class="page-nav">
+    {% if prev_page %}
+    <a href="{{ prev_page.slug }}.html" class="page-nav-link page-nav-prev">
+        <span class="page-nav-label">Previous</span>
+        <span class="page-nav-title">{{ prev_page.title }}</span>
+    </a>
+    {% endif %}
+    {% if next_page %}
+    <a href="{{ next_page.slug }}.html" class="page-nav-link page-nav-next">
+        <span class="page-nav-label">Next</span>
+        <span class="page-nav-title">{{ next_page.title }}</span>
+    </a>
+    {% endif %}
+</nav>
+{% if toc %}
+<aside class="toc-sidebar">
+    <div class="toc-container">
+        <h3>On this page</h3>
+        {{ toc | safe }}
+    </div>
+</aside>
+{% endif %}
+```
 
-`docsfy` ships search as part of the static bundle. There is no separate search service to run.
+If a page uses the standard blockquote callout forms such as `> **Note:**`, `> **Warning:**`, or `> **Tip:**`, the published bundle styles them automatically:
 
-The generator writes `search-index.json` with one entry per page:
+```1:25:src/docsfy/static/callouts.js
+(function() {
+  var blockquotes = document.querySelectorAll('blockquote');
+  blockquotes.forEach(function(bq) {
+    var firstStrong = bq.querySelector('strong');
+    if (!firstStrong) return;
 
-```python
+    var text = firstStrong.textContent.toLowerCase().replace(':', '').trim();
+    var type = null;
+
+    if (text === 'note' || text === 'info') {
+      type = 'note';
+    } else if (text === 'warning' || text === 'caution') {
+      type = 'warning';
+    } else if (text === 'tip' || text === 'hint') {
+      type = 'tip';
+    }
+
+    if (type) {
+      bq.classList.add('callout', 'callout-' + type);
+    }
+  });
+})();
+```
+
+Search is fully self-contained. There is no separate search server to run. The renderer writes `search-index.json`, and the browser loads that file directly.
+
+```518:524:src/docsfy/renderer.py
 index.append(
     {
         "slug": slug,
@@ -138,124 +234,113 @@ index.append(
 )
 ```
 
-The published search UI then loads that file in the browser and matches against both titles and content:
-
-```javascript
+```18:19:src/docsfy/static/search.js
 fetch('search-index.json').then(function(r) { return r.json(); })
   .then(function(data) { index = data; }).catch(function() {});
+```
 
+```74:80:src/docsfy/static/search.js
 var matches = index.filter(function(item) {
   return item.title.toLowerCase().includes(q) || item.content.toLowerCase().includes(q);
 }).slice(0, 10);
+
+matches.forEach(function(m, i) {
+  var div = document.createElement('a');
+  div.href = m.slug + '.html';
 ```
 
-That gives you a few useful guarantees:
+> **Note:** The search index stores only the first 2,000 characters of each page. That keeps the bundle small, but very deep matches later in a long page may not appear in the built-in search results.
 
-- search works from the static bundle alone
-- page titles are searchable
-- page body text is searchable
-- results are capped at 10 matches per query in the UI
+## Markdown Copies And LLM-Friendly Files
 
-> **Note:** The built-in search index stores the page title plus the first 2,000 characters of each page. That keeps the bundle small, but very deep matches later in a long page may not appear in search results.
+For every `guide.html`, you also get `guide.md` in the same bundle. Those Markdown files are part of the public output, not just an internal cache. They are what `llms.txt` links to, and they are what `llms-full.txt` concatenates.
 
-## Markdown and LLM-friendly text files
+This repository’s generated `llms.txt` is a good real-world example of the format:
 
-### Markdown copies
+```1:10:docs/llms.txt
+# docsfy
 
-For every published HTML page, `docsfy` also publishes a Markdown copy beside it. If you have `quickstart.html`, you also have `quickstart.md` in the same `site/` directory.
+> AI-powered documentation generator that turns Git repositories into shareable static docs sites.
 
-Those Markdown copies are useful when you want to:
+## Overview
 
-- inspect the raw generated content without HTML wrapping
-- diff generated content in a cleaner format
-- reuse the docs in another publishing workflow
-- feed the output into external tools that prefer text over HTML
+- [Introduction](introduction.md): Explain what docsfy does, who it is for, and the main workflows exposed through the web app, HTTP API, generated sites, and CLI.
+- [Architecture and Runtime](architecture-and-runtime.md): Describe how the FastAPI backend, React dashboard, SQLite storage, AI CLI integrations, and static site renderer work together.
+- [Projects, Variants, and Ownership](projects-variants-and-ownership.md): Define the core data model: owners, repository names, branches, provider and model variants, statuses, and latest-variant resolution.
+- [Generated Output](generated-output.md): Show what docsfy publishes for each generation, including static HTML pages, Markdown copies, search index files, and LLM-friendly artifacts.
+```
 
-This is separate from the internal page cache used during regeneration. The `site/*.md` files are part of the public output bundle.
+`llms-full.txt` takes the next step and combines every page into one file with a source label before each page’s content:
 
-### `llms.txt`
-
-`llms.txt` is a compact index of the docs. It is grouped by navigation section and links to the published Markdown page copies, not the HTML pages.
-
-This is how `src/docsfy/renderer.py` builds it:
-
-```python
+```582:595:src/docsfy/renderer.py
 for group in nav:
-    lines.extend([f"## {group.get('group', '')}", ""])
     for page in group.get("pages", []):
-        desc = page.get("description", "")
-        page_title = page.get("title", "")
-        page_slug = page.get("slug", "")
-        if desc:
-            lines.append(f"- [{page_title}]({page_slug}.md): {desc}")
-        else:
-            lines.append(f"- [{page_title}]({page_slug}.md)")
+        slug = page.get("slug", "")
+        content = pages.get(slug, "")
+        lines.extend(
+            [
+                f"Source: {slug}.md",
+                "",
+                content,
+                "",
+                "---",
+                "",
+            ]
+        )
 ```
 
-That format makes `llms.txt` useful as a lightweight map of the generated docs: page titles, descriptions, and direct links to the Markdown copies.
+The published homepage also makes both files easy to discover:
 
-### `llms-full.txt`
-
-`llms-full.txt` is the single-file version. It concatenates every published page’s Markdown into one document, with a source label before each page:
-
-```python
-lines.extend(
-    [
-        f"Source: {slug}.md",
-        "",
-        content,
-        "",
-        "---",
-        "",
-    ]
-)
+```18:27:src/docsfy/templates/index.html
+<div class="llm-docs-content">
+    <strong>AI-friendly documentation</strong>
+    <p>This documentation is optimized for AI consumption.</p>
+    <div class="llm-docs-links">
+        <a href="llms.txt">llms.txt</a> — structured index
+        <span class="llm-docs-sep">·</span>
+        <a href="llms-full.txt">llms-full.txt</a> — complete docs in one file
+    </div>
+</div>
 ```
 
-If you want the entire documentation set in one file, this is the artifact to use.
+> **Tip:** Use `llms.txt` when you want a small table of contents you can crawl page by page. Use `llms-full.txt` when you want one file to hand to an LLM, a batch text-processing job, or another ingestion pipeline.
 
-The generated site makes both files easy to discover. In `src/docsfy/templates/_doc_base.html`, they are exposed as alternate text resources:
+## Where The Files Live And How To Get Them
 
-```html
-<link rel="alternate" type="text/plain" title="LLM Documentation Index" href="llms.txt">
-<link rel="alternate" type="text/plain" title="LLM Full Documentation" href="llms-full.txt">
+By default, docsfy stores runtime data under `/data`, and the provided Compose file binds host `./data` into that location:
+
+```13:17:.env.example
+# Data directory for database and generated docs
+DATA_DIR=/data
+
+# Cookie security (set to false for local HTTP development)
+SECURE_COOKIES=true
 ```
 
-> **Tip:** Use `llms.txt` when you want a small index you can crawl page by page. Use `llms-full.txt` when you want one file to hand to an LLM, a RAG ingestion job, or any other text-processing pipeline.
+```10:11:docker-compose.yaml
+volumes:
+  - ./data:/data
+```
 
-## Where output lives
+On disk, one variant lives in a branch/provider/model-aware directory, and the published site is the `site/` child of that variant:
 
-By default, `docsfy` stores generated data under `/data`. The published site for a variant lives under that root in a branch/provider/model-aware path.
-
-From `src/docsfy/config.py`:
-
-```python
-class Settings(BaseSettings):
-    model_config = SettingsConfigDict(
-        env_file=".env",
-        env_file_encoding="utf-8",
-        extra="ignore",
+```525:581:src/docsfy/storage.py
+def get_project_dir(
+    name: str,
+    ai_provider: str = "",
+    ai_model: str = "",
+    owner: str = "",
+    branch: str = DEFAULT_BRANCH,
+) -> Path:
+    return (
+        PROJECTS_DIR
+        / safe_owner
+        / _validate_name(name)
+        / branch
+        / ai_provider
+        / ai_model
     )
 
-    admin_key: str = ""
-    ai_provider: str = "cursor"
-    ai_model: str = "gpt-5.4-xhigh-fast"
-    ai_cli_timeout: int = Field(default=60, gt=0)
-    log_level: str = "INFO"
-    data_dir: str = "/data"
-```
-
-From `docker-compose.yaml`:
-
-```yaml
-services:
-  docsfy:
-    volumes:
-      - ./data:/data
-```
-
-And from `src/docsfy/storage.py`:
-
-```python
 def get_project_site_dir(
     name: str,
     ai_provider: str = "",
@@ -266,47 +351,62 @@ def get_project_site_dir(
     return get_project_dir(name, ai_provider, ai_model, owner, branch) / "site"
 ```
 
-With the default configuration, that means a published site ends up at a path like this:
+With the default settings, that means the published bundle lives at:
 
-```text
-/data/projects/<owner>/<project>/<branch>/<provider>/<model>/site/
-```
+`/data/projects/<owner>/<project>/<branch>/<provider>/<model>/site/`
 
-This is why generated output is variant-aware: branch, provider, and model are part of the output identity, not just labels in the UI.
+Docsfy serves any file inside that directory, not just `index.html`. In other words, the same route family that serves HTML pages can also serve `llms.txt`, `llms-full.txt`, `search-index.json`, or files under `assets/`.
 
-> **Note:** The default Docker setup already mounts `./data` into `/data`, so generated bundles persist outside the container without extra setup.
-
-## Browsing and downloading output
-
-`docsfy` exposes published output in two useful ways:
-
-- browse a specific variant under `/docs/<project>/<branch>/<provider>/<model>/`
-- browse the latest accessible variant under `/docs/<project>/`
-
-The route definitions in `src/docsfy/main.py` are:
-
-```python
+```200:268:src/docsfy/main.py
 @app.get("/docs/{project}/{branch}/{provider}/{model}/{path:path}")
-async def serve_variant_docs(
-    request: Request,
-    project: str,
-    branch: str,
-    provider: str,
-    model: str,
-    path: str = "index.html",
-) -> FileResponse:
-```
+async def serve_variant_docs(...):
+    ...
+    site_dir = get_project_site_dir(project, provider, model, proj_owner, branch=branch)
+    file_path = site_dir / path
+    ...
+    return FileResponse(file_path)
 
-```python
 @app.get("/docs/{project}/{path:path}")
-async def serve_docs(
-    request: Request, project: str, path: str = "index.html"
-) -> FileResponse:
+async def serve_docs(...):
+    """Serve the most recently generated variant."""
+    ...
+    site_dir = get_project_site_dir(
+        project,
+        str(latest["ai_provider"]),
+        str(latest["ai_model"]),
+        latest_owner,
+        branch=latest_branch,
+    )
+    file_path = site_dir / path
+    ...
+    return FileResponse(file_path)
 ```
 
-You can also download the published site bundle as a `.tar.gz`. The CLI wraps the download API and uses predictable archive names:
+That means a URL like `/docs/<project>/<branch>/<provider>/<model>/llms.txt` is just as real as `/docs/<project>/<branch>/<provider>/<model>/index.html`.
 
-```python
+> **Warning:** The short `/docs/<project>/...` and `/api/projects/<name>/download` routes are not pinned to one branch or model. They return the newest ready variant you can access. If you care about one exact build, use the fully qualified variant route.
+
+Downloads are built from `site_dir` only, so the archive contains the published static bundle rather than caches or planning metadata. The CLI either saves that archive or extracts it into the directory you pass with `--output`.
+
+```374:409:src/docsfy/api/projects.py
+async def _stream_tarball(site_dir: Path, archive_name: str) -> StreamingResponse:
+    """Create a tar.gz archive and stream it as a response."""
+    ...
+    def _create_archive() -> None:
+        with tarfile.open(tar_path, mode="w:gz") as tar:
+            tar.add(str(site_dir), arcname=archive_name)
+
+    ...
+    return StreamingResponse(
+        _stream_and_cleanup(),
+        media_type="application/gzip",
+        headers={
+            "Content-Disposition": f'attachment; filename="{archive_name}-docs.tar.gz"'
+        },
+    )
+```
+
+```301:321:src/docsfy/cli/projects.py
 if branch and provider and model:
     url_path = (
         f"/api/projects/{name}/{branch}/{provider}/{model}/download{owner_qs}"
@@ -315,29 +415,86 @@ if branch and provider and model:
 else:
     url_path = f"/api/projects/{name}/download{owner_qs}"
     archive_name = f"{name}-docs.tar.gz"
+
+if output:
+    client.download(url_path, tmp_path)
+    output_dir = Path(output)
+    output_dir.mkdir(parents=True, exist_ok=True)
+    with tarfile.open(tmp_path, "r:gz") as tar:
+        tar.extractall(path=output_dir, filter="data")
+    typer.echo(f"Extracted to {output_dir}")
 ```
 
-Example CLI usage:
+> **Note:** Extracting a download gives you a top-level folder inside your target directory. The tarball is created with an explicit archive name, so you should expect one nested directory rather than loose files at the extraction root.
 
-```shell
-docsfy download my-repo -b main -p cursor -m gpt-5
-docsfy download my-repo -b main -p cursor -m gpt-5 -o ./site-copy
+## What Can Appear Inside The Published Pages
+
+The final HTML pages can include a little more than a raw Markdown render:
+
+- docsfy can validate generated pages, detect stale references, and regenerate a page before the final render.
+- It can append a `## Related Pages` section with links to other generated pages.
+- It can detect a project version and show it in the footer.
+- It can pre-render top-level Mermaid diagrams to inline SVG when `mmdc` is available.
+
+The related-pages section is appended as plain Markdown links to other generated HTML pages:
+
+```402:404:src/docsfy/postprocess.py
+if link_items:
+    related_section = "\n\n## Related Pages\n\n" + "\n".join(link_items)
+    updated[slug] = updated[slug] + related_section
 ```
 
-The first command saves the archive in your current directory. The second downloads and extracts the bundle into `./site-copy`.
+Version detection checks common project metadata files and Git tags, then the footer renders the version if one was found:
 
-If you omit branch, provider, and model, `docsfy` downloads the latest accessible variant instead.
+```38:43:src/docsfy/postprocess.py
+def detect_version(repo_path: Path) -> str | None:
+    """Auto-detect project version from common sources.
 
-> **Note:** The download archive contains the published `site/` bundle. It is the static output you can browse or deploy, not the full internal project directory with caches and planning metadata.
+    Checks in order: pyproject.toml, package.json, Cargo.toml, setup.cfg, git tags.
+    Returns the first version found, or None.
+    """
+```
 
-## What users should expect
+```82:89:src/docsfy/templates/_doc_base.html
+<footer class="page-footer">
+    {% if version %}
+    <span class="footer-version">Generated from version {{ version }}</span>
+    <span class="footer-sep">&middot;</span>
+    {% endif %}
+    Generated with <a href="{{ docsfy_repo_url }}" target="_blank" rel="noopener">docs<span class="brand-accent">fy</span></a>
+    <span class="footer-sep">&middot;</span>
+    <span class="footer-llm">LLM-friendly: <a href="llms.txt">llms.txt</a> &middot; <a href="llms-full.txt">llms-full.txt</a></span>
+</footer>
+```
 
-When a generation is ready, you should expect more than a single HTML file. `docsfy` publishes a complete static docs package:
+Mermaid rendering is opportunistic rather than brittle: if `mmdc` is installed, docsfy turns top-level Mermaid fences into inline SVG; if not, or if rendering fails, it keeps the original Mermaid block instead of failing the page.
 
-- a browsable HTML site
-- raw Markdown copies of every page
-- a client-side search index
-- compact and full-text LLM artifacts
-- a bundle that is easy to serve, archive, and redeploy
+```325:327:src/docsfy/renderer.py
+if not shutil.which("mmdc"):
+    logger.debug("mmdc not found, skipping Mermaid pre-rendering")
+    return md_text
+```
 
-That mix is what makes `docsfy` practical in day-to-day use: one generation gives you polished docs for people and portable text artifacts for everything else.
+```383:393:src/docsfy/renderer.py
+if in_mermaid and backtick_count >= mermaid_fence_len and not rest:
+    mermaid_src = "\n".join(mermaid_lines)
+    rendered = _render_mermaid_block(mermaid_src)
+    if rendered:
+        result.append(rendered)
+    else:
+        # Rendering failed -- restore original block
+        result.append("`" * mermaid_fence_len + "mermaid")
+        result.extend(mermaid_lines)
+        result.append(line)
+```
+
+> **Tip:** If you want a version in the footer, keep version metadata in a standard place such as `pyproject.toml`, `package.json`, `Cargo.toml`, or `setup.cfg`, or tag the repository.
+
+
+## Related Pages
+
+- [Viewing, Downloading, and Hosting Docs](viewing-downloading-and-hosting-docs.html)
+- [Data Storage and Layout](data-storage-and-layout.html)
+- [Architecture and Runtime](architecture-and-runtime.html)
+- [Generating Documentation](generating-documentation.html)
+- [Deployment and Runtime](deployment-and-runtime.html)

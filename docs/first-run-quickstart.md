@@ -1,17 +1,36 @@
 # First Run Quickstart
 
-`docsfy` is a FastAPI service with a built-in React UI. On a first run, the simplest flow is: set `ADMIN_KEY`, start the service, sign in as the built-in `admin`, create any extra users you need, and launch a first generation against a real Git repository.
+`docsfy` ships with a built-in admin account and a browser UI. On a fresh install, the fastest path is:
 
-## What You Need
+1. Set `ADMIN_KEY` and local runtime settings.
+2. Start the service.
+3. Sign in as `admin`.
+4. Create any additional users.
+5. Start your first documentation generation.
+6. Open the generated site or download it.
 
-- One admin secret for `ADMIN_KEY`
-- A remote Git repository URL over HTTPS or SSH
-- One usable AI provider: `claude`, `gemini`, or `cursor`
-- Docker and Docker Compose if you want the quickest startup path
+## Before You Start
 
-The shipped `.env.example` shows the core runtime settings:
+Choose one runtime path:
 
-```env
+- Docker Compose: the simplest first run.
+- From source: Python `3.12+`, `uv`, Node.js, npm, Git, and at least one supported provider CLI.
+
+The current codebase exposes these two entry points:
+
+```toml
+[project.scripts]
+docsfy-server = "docsfy.main:run"
+docsfy = "docsfy.cli.main:main"
+```
+
+> **Note:** `docsfy-server` runs the web service. `docsfy` is the client CLI for health checks, generation, and admin tasks.
+
+## 1. Configure `.env`
+
+Start from the shipped `.env.example`:
+
+```dotenv
 # Required: Admin password (minimum 16 characters)
 ADMIN_KEY=
 
@@ -34,13 +53,21 @@ SECURE_COOKIES=true
 # DEV_MODE=true
 ```
 
-> **Warning:** `docsfy` will exit on startup if `ADMIN_KEY` is missing or shorter than 16 characters.
+Set these before your first launch:
 
-> **Warning:** For plain `http://localhost` development, set `SECURE_COOKIES=false`. With secure cookies enabled, the browser will not keep the login session on HTTP.
+- `ADMIN_KEY`: required, and it must be at least 16 characters.
+- `SECURE_COOKIES=false`: use this for plain `http://localhost` development.
+- `AI_PROVIDER` and `AI_MODEL`: optional server-wide defaults for new generations.
 
-## 1. Start The Service
+> **Warning:** If `ADMIN_KEY` is empty or shorter than 16 characters, the server exits at startup.
 
-The included `docker-compose.yaml` is the fastest first-run path. It exposes port `8000`, loads your `.env`, and keeps the database plus generated documentation under `./data`:
+> **Warning:** If you keep `SECURE_COOKIES=true` on plain local HTTP, sign-in will appear to work but the browser session will not stick.
+
+## 2. Start the Service
+
+### Recommended: Docker Compose
+
+The included Compose file already builds the app, publishes port `8000`, and persists data under `./data`:
 
 ```yaml
 services:
@@ -50,161 +77,255 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8000:8000"
-      # Uncomment for development (DEV_MODE=true)
-      # - "5173:5173"
     volumes:
       - ./data:/data
-      # Uncomment for development (hot reload)
-      # - ./frontend:/app/frontend
     env_file:
       - .env
     environment:
-      # WARNING: ADMIN_KEY must be set in your .env file or shell environment.
-      # An empty ADMIN_KEY will cause the application to reject all admin requests.
       - ADMIN_KEY=${ADMIN_KEY}
+    restart: unless-stopped
 ```
 
 From the repository root:
 
-1. Copy `.env.example` to `.env`.
-2. Set a real `ADMIN_KEY`.
-3. If you are using plain local HTTP, set `SECURE_COOKIES=false`.
-4. Run `docker compose up`.
-5. Open `http://localhost:8000/health` and confirm the service returns `{"status":"ok"}`.
+```bash
+docker compose up --build
+```
 
-> **Tip:** The first build can take a little while. The container image builds the frontend and installs the bundled Claude, Cursor, and Gemini CLIs.
+Then check the health endpoint:
 
-> **Tip:** If you run `docsfy-server` directly instead of using the container, build the frontend first. In production mode the backend serves `frontend/dist`, and without it the app returns: `Frontend not built. Run: cd frontend && npm run build`.
+```bash
+curl http://localhost:8000/health
+```
 
-## 2. Sign In As Admin
+Expected response:
 
-Open `http://localhost:8000/login` and use:
+```json
+{"status":"ok"}
+```
+
+> **Tip:** On this path, your database and generated docs live on the host in `./data`, because Compose mounts `./data:/data`.
+
+### Alternative: run from source
+
+If you want to run without Docker, install the Python environment, build the frontend, then start the server:
+
+```bash
+uv sync --frozen --no-dev
+cd frontend
+npm ci
+npm run build
+cd ..
+uv run docsfy-server
+```
+
+By default, `docsfy-server` binds to `127.0.0.1:8000`. You can override that at launch time:
+
+```bash
+HOST=0.0.0.0 PORT=8000 DEBUG=true uv run docsfy-server
+```
+
+> **Note:** When FastAPI serves the web app itself, it expects a built `frontend/dist`. Build the frontend before starting `docsfy-server`.
+
+## First-Run Flow
+
+```mermaid
+sequenceDiagram
+  participant You
+  participant UI as Browser UI
+  participant API as docsfy server
+  participant DB as SQLite/data dir
+  participant AI as Provider CLI
+
+  You->>API: Start service
+  API->>DB: Initialize database and storage
+  You->>UI: Open /login
+  UI->>API: POST /api/auth/login
+  API-->>UI: Session cookie
+  You->>UI: Create users if needed
+  UI->>API: POST /api/admin/users
+  API->>DB: Store user and hashed key
+  You->>UI: Start first generation
+  UI->>API: POST /api/generate
+  API->>AI: Check provider CLI and generate docs
+  API->>DB: Track status and output paths
+  API-->>UI: Live progress over /api/ws
+  UI-->>You: Ready docs, download, and status details
+```
+
+## 3. Sign In as Admin
+
+Open `http://localhost:8000/login`.
+
+Use:
 
 - Username: `admin`
-- Password: your `ADMIN_KEY`
+- Password: the value of `ADMIN_KEY`
 
-The built-in admin account comes from environment configuration, not from the users table.
+The browser UI submits the same fields the API expects:
 
-> **Note:** The web UI calls this value a password. The API and CLI use the same secret as an API key or Bearer token.
+```json
+{
+  "username": "admin",
+  "api_key": "<ADMIN_KEY>"
+}
+```
 
-> **Note:** `admin` is a reserved username. Do not try to create a normal user named `admin`.
+A successful login creates a browser session cookie and takes you to the dashboard.
 
-After sign-in, you land on the dashboard. As an admin you can start generations, view every project, open the `Users` panel, and manage sharing from the `Access` panel.
+> **Note:** In the web UI the secret is labeled as a password. In the API and CLI, the same value is treated as an API key or bearer token.
 
-## 3. Create Users If You Need Them
+> **Note:** The built-in `admin` account comes from the environment, not the database.
 
-If you are the only operator, you can skip this section and start generating as `admin`.
+## 4. Create Users If You Need Them
 
-If other people will use the system, create named accounts from the `Users` panel. `docsfy` supports three roles:
+If you are the only operator, you can skip this section and generate docs as `admin`.
 
-| Role | Best used for | Can generate | Can manage users/access |
+If other people will use the system, open `Users` from the admin section of the dashboard and create named accounts. The available roles are:
+
+| Role | What it is for | Can start generations | Can manage users and access |
 | --- | --- | --- | --- |
 | `admin` | full operators | Yes | Yes |
 | `user` | day-to-day doc generation | Yes | No |
-| `viewer` | read-only access | No | No |
+| `viewer` | read-only access to docs | No | No |
 
-For a first non-admin account, choose `user`.
+A user creation request uses this shape:
 
-> **Warning:** Generated passwords/API keys are shown once when a user is created or rotated. Save them before you dismiss the message.
-
-If you prefer the CLI, the repository already exercises commands like these:
-
-```shell
-docsfy admin users list
-docsfy admin users create cli-test-user --role user
+```json
+{"username": "alice", "role": "user"}
 ```
 
-> **Note:** Projects belong to the account that starts the generation. If one user creates docs and another user needs to see them, grant access from the `Access` panel after the project exists.
+If you prefer the CLI, configure it once with `uv run docsfy config init`, then use:
 
-## 4. Start Your First Documentation Generation
+```bash
+uv run docsfy admin users list
+uv run docsfy admin users create alice --role user
+```
+
+When a user is created, `docsfy` returns a generated credential once. Auto-generated user keys start with `docsfy_`.
+
+> **Warning:** Save the generated password/API key before you dismiss it. Creation and key rotation responses are intentionally marked `Cache-Control: no-store`.
+
+> **Tip:** Start with `user` for most people. Use `viewer` for people who only need to read generated docs.
+
+> **Tip:** If you want a second human administrator for day-to-day work, create a normal database-backed user with role `admin`.
+
+If you generate documentation as one account and want another account to view it, share the project afterward from `Access`. Access is granted per project name and owner.
+
+## 5. Start Your First Documentation Generation
 
 From the dashboard, click `New Generation` and fill in:
 
-- `Repository URL`: a remote Git URL over HTTPS or SSH
-- `Branch`: `main` is the default
-- `Provider`: `claude`, `gemini`, or `cursor`
-- `Model`: the model you want for that provider
-- `Force full regeneration`: leave this off for a true first run
+- `Repository URL`
+- `Branch`
+- `Provider`
+- `Model`
+- `Force full regeneration`
 
-A good first test target is the same repository used in this project’s own test plans: `https://github.com/myk-org/for-testing-only`.
+The web app sends these fields when you click `Generate`:
 
-The CLI test plan uses this exact command:
-
-```shell
-docsfy generate https://github.com/myk-org/for-testing-only --provider gemini --model gemini-2.5-flash --force
+```json
+{
+  "repo_url": "https://github.com/myk-org/for-testing-only",
+  "branch": "main",
+  "ai_provider": "gemini",
+  "ai_model": "gemini-2.5-flash",
+  "force": false
+}
 ```
 
-If you want to stay in the UI, the same values make a good first run:
+For a smooth first run:
 
-- Repository URL: `https://github.com/myk-org/for-testing-only`
-- Branch: `main`
-- Provider/model: either your configured defaults, or a known working pair such as `gemini` / `gemini-2.5-flash`
+- Use a normal remote Git URL over HTTPS or SSH.
+- Choose both provider and model explicitly on a fresh system.
+- Leave `Force full regeneration` off for the very first run unless you are retrying a failed attempt.
 
-If you do not override the server defaults, `docsfy` falls back to:
+A known small test target used by the repository's own end-to-end plans is:
 
-- Provider: `cursor`
-- Model: `gpt-5.4-xhigh-fast`
+```text
+https://github.com/myk-org/for-testing-only
+```
 
-> **Note:** Branch names cannot contain `/`. Use names like `main`, `dev`, or `release-1.x`.
+> **Note:** Provider choices in the current codebase are `claude`, `gemini`, and `cursor`.
 
-After you click `Generate`, `docsfy` creates a project variant immediately and runs the job in the background. In the dashboard you should see:
+> **Note:** Model suggestions and branch suggestions come from completed generations. On a brand-new instance, it is normal to type the model manually.
 
-- A new project entry in the sidebar
-- Status `Generating`
-- Real-time progress updates
-- Activity log stages such as `cloning`, `planning`, `generating_pages`, and `rendering`
+> **Warning:** Branch names cannot contain `/`. Use names like `main`, `dev`, or `release-1.x`, not `release/1.x`.
 
-When the run finishes, the detail view shows:
+> **Warning:** For a normal first run, prefer `repo_url`. Local `repo_path` generation is admin-only, and in Docker the path must exist inside the container filesystem.
 
-- `Ready` status
-- Page count
-- Last generated time
-- Last commit SHA
+## 6. Watch Progress
+
+As soon as the request is accepted, the dashboard creates a variant and switches to live progress updates over `/api/ws`.
+
+The statuses you will see are:
+
+- `generating`
+- `ready`
+- `error`
+- `aborted`
+
+A typical first run moves through these stages:
+
+- `cloning`
+- `planning`
+- `generating_pages`
+- `validating`
+- `cross_linking`
+- `rendering`
+
+If the project already matches the last generated commit, `docsfy` can finish immediately as up to date.
+
+> **Note:** The progress bar only appears after planning, because the server does not know the total page count until the documentation plan exists.
+
+> **Tip:** If the status stays `Generating` after all pages are counted, the run is usually in one of the final stages such as validation, cross-linking, or rendering. It is only finished when the status changes to `Ready`.
+
+## 7. Open or Download the Result
+
+When the run reaches `Ready`, the detail view shows:
+
+- the final page count
+- the last generated time
+- the commit SHA
 - `View Documentation`
 - `Download`
 
-> **Tip:** The direct docs URL includes the project, branch, provider, and model: `/docs/<project>/<branch>/<provider>/<model>/`. The shorter `/docs/<project>/` route serves the latest ready variant you can access.
+Variant-specific URLs follow this pattern:
 
-## 5. Optional: Connect The CLI To The Same Server
-
-If you have the `docsfy` CLI installed locally, create a reusable connection profile. The example `config.toml` included in this repo looks like this:
-
-```toml
-[default]
-server = "dev"
-
-[servers.dev]
-url = "http://localhost:8000"
-username = "admin"
-password = "<your-dev-key>"
-
-[servers.prod]
-url = "https://docsfy.example.com"
-username = "admin"
-password = "<your-prod-key>"
+```text
+/docs/<project>/<branch>/<provider>/<model>/
+/api/projects/<project>/<branch>/<provider>/<model>/download
 ```
 
-You can create a local profile interactively and then test it:
+If you used the default Compose setup, the rendered site is also written to disk here:
 
-```shell
-docsfy config init
-docsfy health
+```text
+./data/projects/<owner>/<project>/<branch>/<provider>/<model>/site/
 ```
 
-For the built-in admin account, the CLI `password` field is your `ADMIN_KEY`. For a normal user, it is that user’s API key or password.
+That same `./data` directory also contains the SQLite database at `./data/docsfy.db`.
 
-> **Warning:** `~/.config/docsfy/config.toml` contains credentials. Keep it private.
+> **Note:** Generated docs are authenticated routes. Open them from a logged-in browser session or an API client that sends valid credentials.
 
-## 6. If The First Run Fails
+## 8. Common First-Run Problems
 
-If a project moves to `Error`, open the variant detail view and read the error message shown there. On a first run, the usual causes are:
+If the first run does not work, check these first:
 
-- `ADMIN_KEY` is missing or too short
-- `SECURE_COOKIES` is still `true` while you are using plain `http://localhost`
-- The selected AI provider is not usable in that runtime environment
-- The repository URL is invalid or unreachable
-- The signed-in account is a `viewer`, which is read-only and cannot generate
+- The service exits immediately: `ADMIN_KEY` is missing or too short.
+- Login does not persist in the browser: `SECURE_COOKIES` is still `true` while you are using plain `http://localhost`.
+- Generation fails right away: the selected provider CLI is not usable in that runtime environment.
+- The request is rejected before generation starts: the repository URL is invalid, points to a private network, or is not reachable from the server.
+- The `Generate` action is missing: the signed-in account is a `viewer`, which cannot start or regenerate documentation.
 
-> **Note:** The Docker image installs the Claude Code CLI, Cursor Agent CLI, and Gemini CLI at build time. That gives you the binaries, but the provider you choose still needs to be usable in that environment or generation will fail early.
+> **Tip:** The Docker image installs the Claude, Cursor, and Gemini CLIs during the image build. That gives you the executables, but you still need a provider/model combination that is usable from that runtime.
 
-Once your first run succeeds, the next practical step is to create named `user` accounts for everyday work and keep the built-in `admin` account for setup, access control, and recovery.
+Once your first generation succeeds, the next practical step is to create named `user` accounts for everyday work and keep the built-in `admin` account for setup, sharing, and recovery.
+
+
+## Related Pages
+
+- [Docker and Compose Quickstart](docker-quickstart.html)
+- [User and Access Management](user-and-access-management.html)
+- [Generating Documentation](generating-documentation.html)
+- [Tracking Progress and Status](tracking-progress-and-status.html)
+- [Viewing, Downloading, and Hosting Docs](viewing-downloading-and-hosting-docs.html)

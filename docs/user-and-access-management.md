@@ -143,23 +143,68 @@ A grant only succeeds when:
 
 ## How shared projects appear for non-admin users
 
-For non-admin users, shared projects are mixed into the normal project list. There is no separate **Shared Projects** section.
+For non-admin users, shared projects are still mixed into the normal project list. There is no separate **Shared Projects** section.
 
-What that looks like in practice:
+What changed is that docsfy now merges shared variants into the same project view for a given project name:
 
-- a regular `user` sees their own projects plus any projects an admin has granted to them
+- a regular `user` sees owned projects plus any projects an admin has granted to them
 - a `viewer` sees assigned projects, but not generation or destructive actions
-- admins see project groups separated by `owner/project-name`
-- non-admins see the project by name only, so shared projects feel like part of their normal workspace
+- admins still see separate project groups by `owner/project-name`
+- non-admins see one project entry per project name, even when some variants are owned and others are shared
 
-Shared access lets non-admins open documentation and download ready variants they are allowed to see. Access checks are enforced on the server as well as in the UI.
+The project-details API makes that merge explicit:
+
+```python
+variants = await list_variants(name, owner=request.state.username)
+# Always merge shared variants so they appear alongside owned ones
+seen: set[tuple[str, str, str, str]] = {
+    (
+        str(v.get("owner", "")),
+        str(v.get("branch", DEFAULT_BRANCH)),
+        str(v.get("ai_provider", "")),
+        str(v.get("ai_model", "")),
+    )
+    for v in variants
+}
+accessible = await get_user_accessible_projects(request.state.username)
+for proj_name, proj_owner in accessible:
+    if proj_name == name and proj_owner:
+        shared_variants = await list_variants(name, owner=proj_owner)
+        for sv in shared_variants:
+            key = (
+                str(sv.get("owner", "")),
+                str(sv.get("branch", DEFAULT_BRANCH)),
+                str(sv.get("ai_provider", "")),
+                str(sv.get("ai_model", "")),
+            )
+            if key not in seen:
+                seen.add(key)
+                variants.append(sv)
+```
+
+The sidebar keeps admins and non-admins intentionally different. The grouping rule in the tree component is a single line:
+
+```ts
+const groupKey = isAdmin ? `${p.owner}/${p.name}` : p.name
+```
+
+```mermaid
+flowchart LR
+  A[Owned variants] --> C[Visible variants for one project name]
+  B[Granted shared variants] --> C
+  C --> D[Non-admin sidebar groups by project name]
+  C --> E[Admin sidebar groups by owner/project-name]
+```
+
+Shared access still lets non-admins open documentation and download ready variants they are allowed to see. Access checks are enforced on the server as well as in the UI.
 
 Important behavior to know:
 
-- If access is revoked, the project disappears from the recipient's dashboard.
-- Direct docs and download URLs start returning `404` after access is revoked.
-- Users do not delete another person's shared variant. Delete and abort operations are limited to variants they own.
+- If access is granted or revoked while the dashboard is open, the visible project list updates without a manual refresh.
+- If access is revoked, direct docs and download URLs start returning `404`.
+- Non-admin users still do not delete or abort another person's shared variant. Delete and abort actions stay limited to variants they own.
 - New generations always run under the signed-in user, even if they start from a repository that was originally shared with them.
+- Shortcut routes such as `/docs/{project}/` and `/api/projects/{name}/download` choose the latest ready variant the signed-in user can access, whether that variant is owned or shared.
 
 > **Note:** docsfy intentionally returns `404` for projects you do not own and have not been granted. That hides whether the project exists at all.
 
@@ -217,3 +262,12 @@ Remove shared access:
 ```bash
 docsfy admin access revoke my-repo --username alice --owner admin
 ```
+
+
+## Related Pages
+
+- [Authentication and Roles](authentication-and-roles.html)
+- [Admin API](admin-api.html)
+- [Authentication API](auth-api.html)
+- [Projects, Variants, and Ownership](projects-variants-and-ownership.html)
+- [Security Considerations](security-considerations.html)

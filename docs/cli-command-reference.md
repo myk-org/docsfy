@@ -138,8 +138,8 @@ docsfy generate https://github.com/myk-org/for-testing-only --branch dev --provi
 
 What you can expect:
 - The CLI prints the derived project name, resolved branch, and initial status.
-- With `--watch`, it listens for live progress updates such as `cloning`, `planning`, `incremental_planning`, `generating_pages`, and `rendering`.
-- Final statuses are `ready`, `error`, or `aborted`.
+- With `--watch`, it listens for live progress updates such as `cloning`, `planning`, `incremental_planning`, `generating_pages`, `validating`, `cross_linking`, and `rendering`.
+- Final statuses are `ready`, `error`, or `aborted`. A `ready` result can also mean docsfy determined the target variant was already up to date and skipped regeneration work.
 
 > **Tip:** `generate` takes a repository URL, but `status`, `delete`, `abort`, and `download` use the derived project name. For `https://github.com/myk-org/for-testing-only`, that name is `for-testing-only`.
 
@@ -149,7 +149,7 @@ What you can expect:
 
 > **Warning:** Branch names cannot contain slashes. Use names like `release-1.x`, not `release/1.x`.
 
-> **Warning:** The CLI `generate` command expects a Git repository URL, not a local filesystem path. The validated URL shapes are standard HTTPS remotes like `https://github.com/org/repo.git` and SSH remotes like `git@github.com:org/repo.git`.
+> **Warning:** The CLI `generate` command expects a Git repository URL, not a local filesystem path. Standard HTTPS remotes like `https://github.com/org/repo.git` and SSH remotes like `git@github.com:org/repo.git` are accepted, but the server rejects repository URLs that point to `localhost` or private-network addresses.
 
 ## `list`
 
@@ -198,20 +198,22 @@ Useful fields in the output include:
 - Current stage
 - Error message, when present
 
+> **Note:** A `ready` variant can still show `Stage: up_to_date` when docsfy determines that nothing meaningful changed and no regeneration work was needed.
+
 > **Note:** `--owner` is mainly useful for admins when you are querying one fully qualified variant and need to disambiguate between multiple owners.
 
 > **Tip:** If you want one exact variant, provide all three selectors together: `--branch`, `--provider`, and `--model`.
 
 ## `delete`
 
-`docsfy delete` removes either one exact variant or every variant for a project.
+`docsfy delete` removes either one exact variant or every variant for a project within one owner scope.
 
 Common options:
 - `--branch`, `-b`: Variant branch
 - `--provider`, `-p`: Variant provider
 - `--model`, `-m`: Variant model
-- `--owner`: Project owner, required for admin deletion of someone else's project
-- `--all`: Delete all variants for the project
+- `--owner`: Project owner. Required on admin deletes because delete routes are owner-scoped, even when the rest of the variant is fully specified.
+- `--all`: Delete all variants for the project within that owner scope
 - `--yes`, `-y`: Skip the confirmation prompt
 
 Examples:
@@ -347,3 +349,12 @@ When scripting:
 - `docsfy status --json` returns either one variant object or a `{name, variants}` object, depending on whether you fully qualified the variant
 - HTTP and API failures are printed as `Error (<status>): ...` and return a non-zero exit code
 - If you decline a confirmation prompt, the CLI prints `Aborted.` and exits without making changes
+
+
+## Related Pages
+
+- [CLI Workflows](cli-workflows.html)
+- [CLI Configuration](cli-configuration.html)
+- [Generating Documentation](generating-documentation.html)
+- [Viewing, Downloading, and Hosting Docs](viewing-downloading-and-hosting-docs.html)
+- [Projects API](projects-api.html)

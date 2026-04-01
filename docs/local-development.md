@@ -324,3 +324,12 @@ For container-based frontend development:
 - Backend-served UI check: build the SPA with `npm run build`, then browse to `http://localhost:8000`.
 - `DEV_MODE` is for the container entrypoint workflow.
 - The Vite proxy is what makes `/api`, `/docs`, `/health`, and `/api/ws` work from `http://localhost:5173` without extra CORS setup.
+
+
+## Related Pages
+
+- [Installation](installation.html)
+- [Environment Variables](environment-variables.html)
+- [Docker and Compose Quickstart](docker-quickstart.html)
+- [Deployment and Runtime](deployment-and-runtime.html)
+- [Testing and Quality Checks](testing-and-quality-checks.html)

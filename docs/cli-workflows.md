@@ -23,7 +23,7 @@ You will be prompted for:
 
 ```text
 Profile name [dev]:
-Server URL: http://localhost:8800
+Server URL: http://localhost:8000
 Username: admin
 Password:
 ```
@@ -37,7 +37,7 @@ The CLI stores profiles in `~/.config/docsfy/config.toml`. The structure looks l
 server = "dev"
 
 [servers.dev]
-url = "http://localhost:8800"
+url = "http://localhost:8000"
 username = "admin"
 password = "<ADMIN_KEY>"
 ```
@@ -83,7 +83,7 @@ docsfy health
 A healthy server responds with output like this:
 
 ```text
-Server: http://localhost:8800
+Server: http://localhost:8000
 Status: ok
 ```
 
@@ -99,6 +99,8 @@ This command is useful for confirming that:
 Use `generate` to start a new documentation run for a Git repository.
 
 The CLI takes a Git URL as its argument. HTTPS and SSH URLs are both supported, including forms like `https://github.com/org/repo.git` and `git@github.com:org/repo.git`.
+
+> **Warning:** Repository URLs that point to `localhost` or other private-network addresses are rejected. Local `repo_path` generation exists in the API, but it is an admin-only workflow and is not a CLI argument format.
 
 ### Start a Standard Generation
 
@@ -132,13 +134,58 @@ Add `--watch` to keep the command attached and stream progress as the server wor
 docsfy generate https://github.com/myk-org/for-testing-only --branch dev --provider gemini --model gemini-2.5-flash --force --watch
 ```
 
-While a generation is running, docsfy can report stages such as:
+While a generation is running, `docsfy generate --watch` can report stages such as:
 - `cloning`
 - `planning`
 - `incremental_planning`
 - `generating_pages`
+- `validating`
+- `cross_linking`
 - `rendering`
-- `up_to_date`
+
+A typical full or incremental run looks like this:
+
+```mermaid
+flowchart LR
+  cloning --> planning
+  cloning --> incremental_planning
+  planning --> generating_pages
+  incremental_planning --> generating_pages
+  generating_pages --> validating
+  validating --> cross_linking
+  cross_linking --> rendering
+  rendering --> ready
+```
+
+The post-generation stages are reported directly by the backend pipeline:
+
+```python
+await update_and_notify(
+    gen_key,
+    project_name,
+    ai_provider,
+    ai_model,
+    status="generating",
+    owner=owner,
+    branch=branch,
+    current_stage="validating",
+    page_count=len(pages),
+)
+
+await update_and_notify(
+    gen_key,
+    project_name,
+    ai_provider,
+    ai_model,
+    status="generating",
+    owner=owner,
+    branch=branch,
+    current_stage="cross_linking",
+    page_count=len(pages),
+)
+```
+
+If docsfy determines that the selected commit is already covered by the current docs, the run still ends as `ready`, but `current_stage` can be `up_to_date` instead of moving through the long-running pipeline.
 
 The watch session exits when the variant reaches a terminal state such as `ready`, `error`, or `aborted`.
 
@@ -146,7 +193,14 @@ The watch session exits when the variant reaches a terminal state such as `ready
 
 ### When to Use `--force`
 
-By default, docsfy can reuse existing plans, cached pages, or unchanged artifacts when the target variant is already up to date. Use `--force` when you want a clean full pass.
+By default, docsfy uses the freshest ready variant on the same branch as its baseline, even if that baseline was produced with a different provider or model. A non-force run can therefore:
+- finish immediately as `ready` with `current_stage = up_to_date` when the commit is unchanged
+- keep the existing plan and regenerate only the pages affected by the Git diff
+- reuse another provider/model variant as the baseline and replace that older baseline after the new variant succeeds
+
+Use `--force` when you want a clean full pass, or when you want the older provider/model output to remain alongside the new one instead of being treated as a reusable baseline.
+
+> **Tip:** If you are comparing two providers or models side by side, run the second generation with `--force`. A non-force provider/model switch may reuse and then replace the previous baseline variant.
 
 If you submit the same `project/branch/provider/model` while it is already generating, the server returns a conflict instead of starting a duplicate job.
 
@@ -320,7 +374,19 @@ docsfy download test-repo --branch main --provider claude --model opus --output 
 
 If `./site` does not exist yet, docsfy creates it for you.
 
-> **Note:** `docsfy download PROJECT` chooses the newest ready variant available to you. If you care about the exact branch or model, pass `--branch`, `--provider`, and `--model`.
+The archive is extracted as-is, so you get a top-level project or variant directory inside `./site` rather than loose files at the root. For the exact-variant example above, that means `index.html`, `assets/`, and `.nojekyll` land under `./site/test-repo-main-claude-opus/`.
+
+If you want the generated files directly at the root of your target directory, flatten the extracted folder:
+
+```shell
+mv <output_dir>/<project>-<branch>-<provider>-<model>/* <output_dir>/
+mv <output_dir>/<project>-<branch>-<provider>-<model>/.* <output_dir>/ 2>/dev/null
+rmdir <output_dir>/<project>-<branch>-<provider>-<model>
+```
+
+> **Tip:** This is especially useful when you want `index.html` to sit directly in a publishable `docs/` directory for GitHub Pages or another static host.
+
+> **Note:** `docsfy download PROJECT` chooses the newest ready variant available to you. If you need one exact branch/provider/model combination, or if the default choice is ambiguous across owners, rerun with `--branch`, `--provider`, and `--model`. If you are an admin and still need one specific owner's variant, add `--owner` as well.
 
 > **Warning:** Downloads only work for `ready` variants. If a run is still `generating`, or ended in `error` or `aborted`, check `docsfy status` first.
 
@@ -419,8 +485,20 @@ docsfy admin access revoke my-repo --username alice --owner admin
 ## Common CLI Errors
 
 - `No server configured`: run `docsfy config init`, or pass connection options such as `--server`.
+- `Repository URL must not target localhost or private networks`: use a public Git remote that the docsfy server can reach.
 - `Write access required`: the authenticated account is a `viewer`.
 - `Variant not ready`: the target variant is not in `ready` state yet. Use `docsfy status PROJECT`.
 - `Multiple active variants found; use the branch-specific abort endpoint.`: rerun `docsfy abort` with `--branch`, `--provider`, and `--model`.
-- `Multiple owners found for this variant, please specify owner`: rerun the exact-variant command with `--owner`.
+- `Abort still in progress for '...'`: wait a moment and retry the abort.
+- `Multiple owners found for this variant, please specify owner`: if you are an admin, rerun the exact-variant command with `--owner`.
+- `Multiple owners have variants with the same timestamp, please specify owner`: rerun `docsfy download` with `--branch`, `--provider`, and `--model`; if you are an admin, add `--owner`.
 - `No projects found.`: the account has no owned projects and no granted access yet.
+
+
+## Related Pages
+
+- [CLI Command Reference](cli-command-reference.html)
+- [CLI Configuration](cli-configuration.html)
+- [Generating Documentation](generating-documentation.html)
+- [Tracking Progress and Status](tracking-progress-and-status.html)
+- [Viewing, Downloading, and Hosting Docs](viewing-downloading-and-hosting-docs.html)

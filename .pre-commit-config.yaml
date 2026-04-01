@@ -20,7 +20,9 @@ repos:
       - id: debug-statements
       - id: trailing-whitespace
         args: [--markdown-linebreak-ext=md]
+        exclude: ^docs/
       - id: end-of-file-fixer
+        exclude: ^docs/
       - id: check-ast
       - id: check-builtin-literals
       - id: check-toml
@@ -39,6 +41,7 @@ repos:
     rev: v1.5.0
     hooks:
       - id: detect-secrets
+        exclude: ^docs/
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.15.8
@@ -50,6 +53,7 @@ repos:
     rev: v8.30.0
     hooks:
       - id: gitleaks
+        exclude: ^docs/
 
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: v1.19.1

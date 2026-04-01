@@ -118,7 +118,7 @@ Here is the practical outcome:
 | Different commit SHA, changed files, saved plan is available | Runs the incremental pipeline |
 | `force=true` or no usable baseline/diff/plan | Falls back to a full regeneration from scratch |
 
-An up-to-date run still ends in `ready`. The difference is that the stage is `up_to_date`, and the ready view in the UI shows "Documentation is already up to date."
+An up-to-date run still ends in `ready`. The difference is that docsfy sets `current_stage` to `up_to_date` and returns before planning, page generation, validation, cross-linking, version detection, and rendering. In the ready view, that is what drives the "Documentation is already up to date." message.
 
 ## Incremental Updates
 
@@ -161,6 +161,8 @@ That lets docsfy surgically replace only the changed block in an existing page. 
 
 Incremental updates also preserve doc structure when they can. The repository's E2E tests verify that after an incremental run, the saved `plan_json` can remain unchanged while page content updates to the new commit.
 
+After page updates finish, docsfy still runs the same post-generation pipeline as a full run. It validates the resulting pages, adds cross-page links, detects a version when one can be found, and only then renders the final site. Incremental regeneration is therefore selective about which pages it rewrites, but not about the final quality checks that happen before the variant becomes `ready`.
+
 ## When docsfy Falls Back To A Full Regeneration
 
 A full regeneration of the whole variant happens when docsfy cannot trust the incremental path.
@@ -179,7 +181,9 @@ Whole-variant full regeneration happens when:
 
 When docsfy does a full regeneration, it clears stale cached page files first so removed pages do not linger on disk or show up in the rendered site by accident.
 
-There is also a smaller, page-level fallback inside an otherwise incremental run. If an individual page update cannot be safely applied, docsfy regenerates just that page in full. That happens when:
+There is also a smaller, page-level fallback inside an otherwise incremental or post-processing run.
+
+During incremental page updates, if an individual page update cannot be safely applied, docsfy regenerates just that page in full. That happens when:
 
 - the incremental page response is not valid JSON,
 - an `old_text` block is missing from the existing page,
@@ -187,11 +191,15 @@ There is also a smaller, page-level fallback inside an otherwise incremental run
 - patch blocks overlap,
 - the AI call for that page fails.
 
+During the later validation stage, docsfy can also regenerate a single page in full when it detects stale references in that page's content.
+
+> **Note:** The post-generation pipeline is fail-soft. If validation or cross-linking fails, docsfy logs a warning and continues with the current page set instead of falling back to a whole-variant rebuild. Version detection is also best-effort, so rendering continues even when no version can be detected.
+
 So there are really three levels of fallback:
 
 - no work at all because the variant is already up to date,
-- incremental run with selective page updates,
-- full regeneration of one page or of the whole variant when safety checks fail.
+- selective regeneration, including full rewrites of individual pages when needed,
+- full regeneration of the whole variant when the reuse path is unsafe.
 
 ## What You Will See While It Runs
 
@@ -202,18 +210,29 @@ While a generation is in progress, the main `status` value is one of:
 - `error`
 - `aborted`
 
-During `generating`, docsfy also tracks a more specific `current_stage`. The stages used in code are:
+During `generating`, docsfy also tracks a more specific `current_stage`. The front end tracks the active generation stages with this constant:
 
-- `cloning`
-- `incremental_planning`
-- `planning`
-- `generating_pages`
-- `rendering`
-- `up_to_date`
+```ts
+export const GENERATION_STAGES = [
+  'cloning',
+  'planning',
+  'incremental_planning',
+  'generating_pages',
+  'validating',
+  'cross_linking',
+  'rendering',
+] as const
+```
+
+A given run uses either `planning` or `incremental_planning`, not both. `validating` and `cross_linking` are post-generation stages that run after page writing succeeds and before the final render step, alongside best-effort version detection.
+
+Those same stage names flow through WebSocket updates, so the dashboard activity log can show when docsfy has moved past page writing into post-processing.
+
+`up_to_date` is different. It is not part of the active generation stage list. Instead, docsfy sets `status="ready"` with `current_stage="up_to_date"` when a non-force run discovers there is nothing to regenerate.
 
 On a forced full regeneration, docsfy resets the page count to `0` before rebuilding. Once the plan is ready, the UI can show progress as generated pages count up toward the total pages in the plan.
 
-If you use the CLI with `--watch`, or the web dashboard, those stage changes are how you can tell whether docsfy is taking the fast incremental path or doing a full rebuild.
+If you use the CLI with `--watch`, or the web dashboard, those stage changes are how you can tell whether docsfy is taking the fast incremental path, running post-generation checks, or doing a full rebuild.
 
 ## Practical Examples
 
@@ -240,3 +259,12 @@ Open or download an exact variant instead of "whatever is latest":
 ```
 
 > **Tip:** When you bookmark docs, automate downloads, or share links with teammates, prefer the full variant URL. That keeps the result stable even after someone generates a newer branch or model for the same repository.
+
+
+## Related Pages
+
+- [Projects, Variants, and Ownership](projects-variants-and-ownership.html)
+- [Generating Documentation](generating-documentation.html)
+- [Tracking Progress and Status](tracking-progress-and-status.html)
+- [Data Storage and Layout](data-storage-and-layout.html)
+- [Projects API](projects-api.html)

@@ -1,22 +1,34 @@
 # Viewing, Downloading, and Hosting Docs
 
-Once a variant reaches `ready`, you can open it through docsfy, download it as a `tar.gz`, or publish the generated static site somewhere else.
+A `ready` variant is one generated docs build for a specific project, branch, AI provider, and AI model. Once a variant is ready, you can browse it through docsfy, download it as a `.tar.gz`, or publish the generated static site somewhere else.
 
-In docsfy, a "variant" is one generated docs build for a specific project, branch, provider, and model.
+Project-level URLs are convenience URLs. They follow the latest ready variant you can access. Variant-specific URLs stay pinned to one exact build.
+
+```mermaid
+flowchart LR
+  A["Ready variant"] --> B["/docs/{project}/..."]
+  A --> C["/docs/{project}/{branch}/{provider}/{model}/..."]
+  A --> D["/api/projects/{project}/download"]
+  A --> E["/api/projects/{project}/{branch}/{provider}/{model}/download"]
+  A --> F["site/ directory on disk"]
+  D --> G[".tar.gz archive"]
+  E --> G
+  F --> H["Static host or web server"]
+```
 
 ## Open Docs
 
-Use an explicit variant URL when you want one exact build:
-
-- `/docs/<project>/<branch>/<provider>/<model>/`
-- `/docs/<project>/<branch>/<provider>/<model>/index.html`
-
-Use the latest route when you want "whatever is newest and ready" for a project:
+Use a project-level route when you want the current docs for a repository:
 
 - `/docs/<project>/`
 - `/docs/<project>/index.html`
 
-The repository exercises both URL shapes directly:
+Use a variant-specific route when you need a stable link to one exact branch/provider/model build:
+
+- `/docs/<project>/<branch>/<provider>/<model>/`
+- `/docs/<project>/<branch>/<provider>/<model>/index.html`
+
+The integration tests exercise both route shapes directly:
 
 ```127:149:tests/test_integration.py
 # Check docs are served via variant-specific route
@@ -44,40 +56,53 @@ assert response.status_code == 200
 assert response.headers["content-type"] == "application/gzip"
 ```
 
-If you open docs from the dashboard, the app builds an explicit variant URL and includes `?owner=` when it needs to disambiguate the owner:
+The same docs base URL can serve other published files too: page HTML, `llms.txt`, `llms-full.txt`, and files under `assets/`. The end-to-end suite explicitly opens `llms.txt` and `llms-full.txt` at `/docs/for-testing-only/main/gemini/gemini-2.5-flash/llms.txt` and `/docs/for-testing-only/main/gemini/gemini-2.5-flash/llms-full.txt`.
 
-```366:367:frontend/src/components/shared/VariantDetail.tsx
-const docsUrl = `/docs/${project.name}/${project.branch}/${project.ai_provider}/${project.ai_model}/?owner=${encodeURIComponent(project.owner)}`
-const downloadUrl = `/api/projects/${project.name}/${project.branch}/${project.ai_provider}/${project.ai_model}/download?owner=${encodeURIComponent(project.owner)}`
-```
+> **Tip:** Use `/docs/<project>/` for a moving "current docs" link. Use the full variant URL for release docs, reviews, QA, or anything that must keep pointing to the same build.
 
-If you're an admin or working with shared docs, keep that `?owner=` query string when the UI gives it to you. It helps docsfy resolve the correct variant when the same project name exists under multiple owners.
+> **Warning:** `/docs/<project>/` is not a shortcut for `main`. If a newer `ready` variant is generated for a different branch, provider, or model, that URL can start serving the newer build.
 
-Any generated file under the docs base URL is available the same way. That includes page files like `introduction.html`, text outputs like `llms.txt`, and support files under `assets/`.
+> **Note:** `/docs/...` requires authentication. Browser requests for HTML redirect to `/login` when you are signed out. API-style requests return `401`.
 
-> **Tip:** Use the latest route for a bookmark like "current docs", and the explicit route for review links, release docs, or anything else that must stay pinned to one build.
-
-> **Warning:** The latest route follows the newest `ready` variant. If you regenerate docs with a different branch, provider, or model, the same latest URL can point to a different build.
-
-> **Note:** `/docs/*` requires authentication. Browser requests for HTML are redirected to `/login` when you are not signed in. API-style requests return `401`, and users without access receive `404`.
-
-> **Note:** The branch is part of the URL path. docsfy accepts names like `main`, `dev`, or `release-1.x`, but not names with `/` such as `release/1.x`.
+> **Note:** The branch name is part of the path. Branches like `main`, `dev`, and `release-1.x` work. Branch names with `/` do not.
 
 ## Download Tarballs
 
 docsfy exposes two download endpoints:
 
+- `/api/projects/<project>/download` for the latest ready variant you can access
 - `/api/projects/<project>/<branch>/<provider>/<model>/download` for one exact variant
-- `/api/projects/<project>/download` for the latest ready variant
 
-Downloads only work for `ready` variants. The response is a gzip-compressed tar archive.
+The server creates the archive directly from the rendered `site/` directory:
 
-The archive filename is:
+```374:409:src/docsfy/api/projects.py
+async def _stream_tarball(site_dir: Path, archive_name: str) -> StreamingResponse:
+    """Create a tar.gz archive and stream it as a response."""
+    tmp = tempfile.NamedTemporaryFile(suffix=".tar.gz", delete=False)
+    tar_path = Path(tmp.name)
+    tmp.close()
 
-- explicit variant: `<project>-<branch>-<provider>-<model>-docs.tar.gz`
-- latest route: `<project>-docs.tar.gz`
+    def _create_archive() -> None:
+        with tarfile.open(tar_path, mode="w:gz") as tar:
+            tar.add(str(site_dir), arcname=archive_name)
 
-A real test-plan example downloads a variant archive, extracts it, and inspects the generated files:
+    # ... stream the file, then clean up the temporary archive ...
+
+    return StreamingResponse(
+        _stream_and_cleanup(),
+        media_type="application/gzip",
+        headers={
+            "Content-Disposition": f'attachment; filename="{archive_name}-docs.tar.gz"'
+        },
+    )
+```
+
+That gives you predictable archive names:
+
+- project-level download: `<project>-docs.tar.gz`
+- variant-specific download: `<project>-<branch>-<provider>-<model>-docs.tar.gz`
+
+When you extract the archive, it contains a single top-level folder named after the selected project or variant. A real e2e test downloads and extracts one of these archives like this:
 
 ```78:84:test-plans/e2e-08-cross-model-updates.md
 curl -s -L -H "Authorization: Bearer $ADMIN_KEY" \
@@ -88,14 +113,28 @@ tar -xzf "$CROSS_PROVIDER_ROOT/baseline.tar.gz" --strip-components=1 -C "$CROSS_
 ls "$CROSS_PROVIDER_ROOT/baseline"
 ```
 
-The archive contains a top-level directory. If you want the files placed directly into an existing target directory, extract it with `tar --strip-components=1` as shown above.
+If you want the site files placed directly into a target directory, `tar --strip-components=1` is the simplest way to drop the archive's top-level folder during extraction.
 
-If you prefer the CLI, set up a server profile with `docsfy config init` or create `~/.config/docsfy/config.toml` like this:
+> **Note:** Downloads only work for `ready` variants. An explicit variant download returns `400` until that variant is ready, and the project-level route returns `404` if no ready variant exists.
 
-```7:25:config.toml.example
+> **Note:** The archive contains the published `site/` bundle. It does not include internal generation files such as `plan.json` or `cache/pages/`.
+
+## Download With The CLI
+
+The CLI wraps the same download endpoints. The repository ships an example config file for `~/.config/docsfy/config.toml`:
+
+```1:25:config.toml.example
+# docsfy CLI configuration
+# Copy to ~/.config/docsfy/config.toml or run: docsfy config init
+#
+# SECURITY: This file contains passwords. Keep it private:
+#   chmod 600 ~/.config/docsfy/config.toml
+
+# Default server to use when --server is not specified
 [default]
 server = "dev"
 
+# Server profiles -- add as many as you need
 [servers.dev]
 url = "http://localhost:8000"
 username = "admin"
@@ -112,22 +151,60 @@ username = "deployer"
 password = "<your-staging-key>"
 ```
 
-Then use:
+The download logic in the CLI shows the two main behaviors: variant selectors are all-or-nothing, and `--output` extracts instead of saving the `.tar.gz`:
 
-- `docsfy download my-repo` to save the latest ready archive in your current directory
-- `docsfy download my-repo --branch main --provider cursor --model gpt-5` to save one explicit variant
-- `docsfy download my-repo --branch main --provider cursor --model gpt-5 --output ./docs` to download and extract in one step
-- `docsfy download ... --owner <username>` when you are an admin targeting another owner's variant
+```287:327:src/docsfy/cli/projects.py
+# Require all variant selectors together, or none
+variant_opts = [branch, provider, model]
+if any(variant_opts) and not all(variant_opts):
+    typer.echo(
+        "Specify --branch, --provider, and --model together to download a specific variant, "
+        "or omit all three to download the default variant.",
+        err=True,
+    )
+    raise typer.Exit(code=1)
 
-> **Note:** For explicit CLI downloads, `--branch`, `--provider`, and `--model` are all-or-nothing. If you specify one, you must specify all three.
+# ... choose latest or pinned download URL and archive name ...
+
+if output:
+    # Download to a temp file and extract
+    with tempfile.NamedTemporaryFile(suffix=".tar.gz", delete=False) as tmp:
+        tmp_path = Path(tmp.name)
+
+    try:
+        client.download(url_path, tmp_path)
+        output_dir = Path(output)
+        output_dir.mkdir(parents=True, exist_ok=True)
+        with tarfile.open(tmp_path, "r:gz") as tar:
+            tar.extractall(path=output_dir, filter="data")
+        typer.echo(f"Extracted to {output_dir}")
+    finally:
+        tmp_path.unlink(missing_ok=True)
+else:
+    dest = Path.cwd() / archive_name
+    client.download(url_path, dest)
+    typer.echo(f"Downloaded to {dest}")
+```
+
+In practice:
+
+- `docsfy download <project>` saves the latest ready archive in your current directory.
+- Add `--branch`, `--provider`, and `--model` together to pin the download to one exact variant.
+- Add `--output <dir>` to extract the archive instead of keeping the tarball.
+
+> **Note:** Keep `~/.config/docsfy/config.toml` private. The shipped example explicitly warns that it contains passwords.
+
+> **Note:** The CLI extracts the archive as-is. If the archive contains a top-level folder, that folder remains inside your chosen `--output` directory.
 
 ## Host The Static Site
 
-docsfy also writes the rendered site to disk. The path is `${DATA_DIR}/projects/<owner>/<project>/<branch>/<provider>/<model>/site`.
+If you are happy letting docsfy serve the docs, you do not need any extra publish step. `/docs/...` already serves the generated `site/` bundle. Only use the rest of this section when you want to publish that bundle somewhere else.
 
-By default `DATA_DIR` is `/data`. In the provided Compose setup, that directory is persisted from the host:
+Every ready variant is written to disk at `$DATA_DIR/projects/<owner>/<project>/<branch>/<provider>/<model>/site`. `DATA_DIR` defaults to `/data`.
 
-```1:22:docker-compose.yaml
+In the provided Compose setup, `/data` is persisted from the host filesystem:
+
+```1:16:docker-compose.yaml
 services:
   docsfy:
     build:
@@ -145,23 +222,26 @@ services:
       - .env
 ```
 
-With that setup, a typical host-side path looks like `./data/projects/<owner>/<project>/<branch>/<provider>/<model>/site`.
+With that setup, the host-side path is typically `./data/projects/<owner>/<project>/<branch>/<provider>/<model>/site`.
 
-The renderer writes a self-contained static site. Here is the relevant output from the actual render step:
+The renderer recreates that directory and writes the published files directly into it:
 
-```471:551:src/docsfy/renderer.py
+```600:688:src/docsfy/renderer.py
+if output_dir.exists():
+    shutil.rmtree(output_dir)
+output_dir.mkdir(parents=True, exist_ok=True)
+assets_dir = output_dir / "assets"
+assets_dir.mkdir(exist_ok=True)
+
 # Prevent GitHub Pages from running Jekyll
 (output_dir / ".nojekyll").touch()
 
-# ... static files are copied into assets/
+if STATIC_DIR.exists():
+    for static_file in STATIC_DIR.iterdir():
+        if static_file.is_file():
+            shutil.copy2(static_file, assets_dir / static_file.name)
 
-index_html = render_index(
-    project_name, tagline, filtered_navigation, repo_url=repo_url
-)
 (output_dir / "index.html").write_text(index_html, encoding="utf-8")
-
-# ... one HTML page and one Markdown page per slug
-
 (output_dir / f"{slug}.html").write_text(page_html, encoding="utf-8")
 (output_dir / f"{slug}.md").write_text(md_content, encoding="utf-8")
 
@@ -170,31 +250,47 @@ search_index = _build_search_index(valid_pages, plan)
     json.dumps(search_index), encoding="utf-8"
 )
 
+llms_txt = _build_llms_txt(plan, navigation=filtered_navigation)
 (output_dir / "llms.txt").write_text(llms_txt, encoding="utf-8")
+
+llms_full_txt = _build_llms_full_txt(
+    plan, valid_pages, navigation=filtered_navigation
+)
 (output_dir / "llms-full.txt").write_text(llms_full_txt, encoding="utf-8")
 ```
 
-In practice, keep these files together when you publish:
+When you publish the folder elsewhere, keep these pieces together:
 
 - `index.html`
-- every generated page `.html` file
+- every generated page `*.html`
 - `assets/`
 - `search-index.json`
 - `.nojekyll`
-- `llms.txt` and `llms-full.txt`
-- any generated page `.md` files if you want the Markdown copies too
+- `llms.txt`
+- `llms-full.txt`
+- page `*.md` files if you want the Markdown copies too
 
-You can publish the `site/` directory with any static host or web server. There is no built-in publish workflow in this repository, so publishing is simply a matter of copying or syncing that directory to your hosting platform.
+This repository gives you the generated files and the runtime mounts, but not a dedicated static-site deployment pipeline. Publishing is simply a matter of copying or syncing the `site/` directory to your static host or web server and serving `index.html` as the entry point.
 
-Because the output is plain static HTML, CSS, and JavaScript, you can host it without the docsfy backend once generation is finished. Start at `index.html` and serve the directory as-is.
+> **Tip:** GitHub Pages is a good fit for the exported site because docsfy writes `.nojekyll` automatically.
 
-> **Tip:** GitHub Pages is a good fit for the published output because docsfy writes `.nojekyll` automatically.
+> **Warning:** Treat `site/` as build output. docsfy deletes and recreates it on every render, so manual edits there will be overwritten by the next generation.
 
-> **Warning:** When you publish the `site/` directory outside docsfy, docsfy’s authentication and ownership checks no longer protect it. If the docs should stay private, enforce access control at your static host or CDN.
+> **Warning:** If you publish the `site/` directory outside docsfy, docsfy's authentication and access checks no longer protect it. Use your static host, CDN, or proxy for access control if the docs must stay private.
 
 ## Quick Reference
 
-- Use `/docs/<project>/` for a moving "latest ready docs" link.
-- Use `/docs/<project>/<branch>/<provider>/<model>/` for a stable, exact variant.
-- Use `/api/projects/.../download` or `docsfy download ...` when you need an archive to inspect, diff, or publish elsewhere.
-- Use the `site/` directory when you want to host the docs as a standalone static website.
+- Use `/docs/<project>/` for a moving browser link to the latest ready docs you can access.
+- Use `/docs/<project>/<branch>/<provider>/<model>/` for a pinned browser link to one exact variant.
+- Use `/api/projects/<project>/download` for a moving latest archive.
+- Use `/api/projects/<project>/<branch>/<provider>/<model>/download` for a pinned archive.
+- Use `$DATA_DIR/projects/<owner>/<project>/<branch>/<provider>/<model>/site` when you want to host the generated site outside docsfy.
+
+
+## Related Pages
+
+- [Generated Output](generated-output.html)
+- [Projects API](projects-api.html)
+- [CLI Workflows](cli-workflows.html)
+- [Data Storage and Layout](data-storage-and-layout.html)
+- [Variants, Branches, and Regeneration](variants-branches-and-regeneration.html)
