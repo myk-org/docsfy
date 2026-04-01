@@ -447,7 +447,8 @@ def test_prerender_mermaid_replaces_block() -> None:
             args=[], returncode=0, stdout="", stderr=""
         )
         result = _prerender_mermaid(md)
-    assert "mermaid-diagram" in result and "<svg>" in result
+    assert "mermaid-diagram" in result
+    assert "<svg>" in result
 
 
 def test_prerender_mermaid_no_mermaid_blocks() -> None:

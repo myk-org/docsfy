@@ -13,7 +13,7 @@ from typing import Any
 from simple_logger.logger import get_logger
 
 from docsfy.ai_client import call_ai_cli, run_parallel_with_limit
-from docsfy.generator import _generate_full_page_content
+from docsfy.generator import generate_full_page_content
 from docsfy.json_parser import parse_json_array_response, parse_json_response
 from docsfy.models import MAX_CONCURRENT_PAGES
 from docsfy.prompts import build_cross_links_prompt, build_validation_prompt
@@ -118,11 +118,11 @@ async def _validate_single_page(
     """Validate a single page and regenerate if stale references are found.
 
     Writes page content to a temp file, calls AI to check for stale references,
-    and regenerates content via _generate_full_page_content if issues are found.
+    and regenerates content via generate_full_page_content if issues are found.
     Returns the (possibly updated) page content.
     """
     temp_file = job_dir / f"{slug}.md"
-    temp_file.write_text(content, encoding="utf-8")
+    await asyncio.to_thread(temp_file.write_text, content, "utf-8")
 
     prompt = build_validation_prompt(str(temp_file))
     cli_flags = ["--trust"] if ai_provider == "cursor" else None
@@ -165,7 +165,7 @@ async def _validate_single_page(
             "\n".join(exclusions),
             encoding="utf-8",
         )
-        new_content = await _generate_full_page_content(
+        new_content = await generate_full_page_content(
             repo_path=repo_path,
             project_name=project_name,
             page_title=page_title,

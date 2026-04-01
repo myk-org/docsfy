@@ -147,7 +147,7 @@ def _apply_incremental_page_updates(existing_content: str, raw_text: str) -> str
     return "".join(parts)
 
 
-async def _generate_full_page_content(
+async def generate_full_page_content(
     repo_path: Path,
     project_name: str,
     page_title: str,
@@ -297,7 +297,7 @@ async def generate_page(
                     f"[{_label}] Incremental update failed for page '{slug}', "
                     f"falling back to full page generation: {exc}"
                 )
-                output = await _generate_full_page_content(
+                output = await generate_full_page_content(
                     repo_path=repo_path,
                     project_name=prompt_project_name,
                     page_title=title,
@@ -307,7 +307,7 @@ async def generate_page(
                     ai_cli_timeout=ai_cli_timeout,
                 )
         else:
-            output = await _generate_full_page_content(
+            output = await generate_full_page_content(
                 repo_path=repo_path,
                 project_name=prompt_project_name,
                 page_title=title,

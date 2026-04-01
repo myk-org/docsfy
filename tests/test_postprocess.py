@@ -146,7 +146,7 @@ async def test_validate_pages_with_stale_references(tmp_path: Path) -> None:
     with (
         patch("docsfy.postprocess.call_ai_cli", return_value=(True, stale_refs)),
         patch(
-            "docsfy.postprocess._generate_full_page_content",
+            "docsfy.postprocess.generate_full_page_content",
             return_value=regen_content,
         ),
     ):
@@ -323,7 +323,7 @@ async def test_validate_pages_non_cursor_no_trust_flag(tmp_path: Path) -> None:
 
 @pytest.mark.asyncio
 async def test_validate_pages_passes_timeout_to_regen(tmp_path: Path) -> None:
-    """When regenerating, ai_cli_timeout must be forwarded to _generate_full_page_content."""
+    """When regenerating, ai_cli_timeout must be forwarded to generate_full_page_content."""
     from docsfy.postprocess import validate_pages
 
     pages = {"intro": "# Intro\nOld content."}
@@ -340,7 +340,7 @@ async def test_validate_pages_passes_timeout_to_regen(tmp_path: Path) -> None:
     with (
         patch("docsfy.postprocess.call_ai_cli", return_value=(True, stale_refs)),
         patch(
-            "docsfy.postprocess._generate_full_page_content",
+            "docsfy.postprocess.generate_full_page_content",
             return_value=regen_content,
         ) as mock_regen,
     ):
@@ -470,7 +470,7 @@ async def test_validate_single_page_empty_exclusions_returns_original(
             "docsfy.postprocess.call_ai_cli",
             return_value=(True, stale_refs_no_reference),
         ),
-        patch("docsfy.postprocess._generate_full_page_content") as mock_regen,
+        patch("docsfy.postprocess.generate_full_page_content") as mock_regen,
     ):
         result = await validate_pages(
             pages=pages,
