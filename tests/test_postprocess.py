@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+import json
 import subprocess
 from pathlib import Path
 from unittest.mock import patch
+
+import pytest
 
 
 def test_detect_version_pyproject_toml(tmp_path: Path) -> None:
@@ -80,3 +83,152 @@ def test_detect_version_none_when_no_sources(tmp_path: Path) -> None:
     with patch("docsfy.postprocess.subprocess.run") as mock_run:
         mock_run.side_effect = subprocess.CalledProcessError(128, "git")
         assert detect_version(tmp_path) is None
+
+
+@pytest.mark.asyncio
+async def test_validate_pages_no_issues(tmp_path: Path) -> None:
+    from docsfy.postprocess import validate_pages
+
+    pages = {"intro": "# Introduction\nThis is valid content."}
+    with patch("docsfy.postprocess.call_ai_cli", return_value=(True, "[]")):
+        result = await validate_pages(
+            pages=pages,
+            repo_path=tmp_path,
+            ai_provider="claude",
+            ai_model="opus",
+            cache_dir=tmp_path / "cache",
+            project_name="test",
+        )
+    assert result == pages
+
+
+@pytest.mark.asyncio
+async def test_validate_pages_with_stale_references(tmp_path: Path) -> None:
+    from docsfy.postprocess import validate_pages
+
+    pages = {"intro": "# Introduction\nUses the old HTML reports feature."}
+    plan = {
+        "navigation": [
+            {
+                "group": "Docs",
+                "pages": [
+                    {
+                        "slug": "intro",
+                        "title": "Introduction",
+                        "description": "Overview of the project",
+                    },
+                ],
+            }
+        ]
+    }
+    stale_refs = json.dumps(
+        [{"reference": "HTML reports feature", "reason": "removed in v2"}]
+    )
+    regen_content = "# Introduction\nUses the new React dashboard."
+    with patch("docsfy.postprocess.call_ai_cli", return_value=(True, stale_refs)):
+        with patch("docsfy.generator.call_ai_cli", return_value=(True, regen_content)):
+            result = await validate_pages(
+                pages=pages,
+                repo_path=tmp_path,
+                ai_provider="claude",
+                ai_model="opus",
+                cache_dir=tmp_path / "cache",
+                project_name="test",
+                plan=plan,
+            )
+    assert "React dashboard" in result["intro"]
+
+
+@pytest.mark.asyncio
+async def test_validate_pages_ai_failure_preserves_pages(tmp_path: Path) -> None:
+    from docsfy.postprocess import validate_pages
+
+    pages = {"intro": "# Introduction\nOriginal content."}
+    with patch("docsfy.postprocess.call_ai_cli", return_value=(False, "AI error")):
+        result = await validate_pages(
+            pages=pages,
+            repo_path=tmp_path,
+            ai_provider="claude",
+            ai_model="opus",
+            cache_dir=tmp_path / "cache",
+            project_name="test",
+        )
+    assert result == pages
+
+
+@pytest.mark.asyncio
+async def test_add_cross_links(tmp_path: Path) -> None:
+    from docsfy.postprocess import add_cross_links
+
+    pages = {
+        "intro": "# Introduction\nOverview content.",
+        "config": "# Configuration\nConfig content.",
+        "api": "# API Reference\nAPI content.",
+    }
+    plan = {
+        "navigation": [
+            {
+                "group": "Docs",
+                "pages": [
+                    {
+                        "slug": "intro",
+                        "title": "Introduction",
+                        "description": "Overview",
+                    },
+                    {
+                        "slug": "config",
+                        "title": "Configuration",
+                        "description": "Config guide",
+                    },
+                    {
+                        "slug": "api",
+                        "title": "API Reference",
+                        "description": "API docs",
+                    },
+                ],
+            }
+        ]
+    }
+    cross_links_json = json.dumps(
+        {
+            "intro": ["config", "api"],
+            "config": ["intro"],
+            "api": ["intro", "config"],
+        }
+    )
+    with patch("docsfy.postprocess.call_ai_cli", return_value=(True, cross_links_json)):
+        result = await add_cross_links(
+            pages=pages,
+            plan=plan,
+            ai_provider="claude",
+            ai_model="opus",
+            repo_path=tmp_path,
+        )
+    assert "## Related Pages" in result["intro"]
+    assert "[Configuration](config.html)" in result["intro"]
+    assert "[API Reference](api.html)" in result["intro"]
+    assert "## Related Pages" in result["api"]
+
+
+@pytest.mark.asyncio
+async def test_add_cross_links_ai_failure_preserves_pages(tmp_path: Path) -> None:
+    from docsfy.postprocess import add_cross_links
+
+    pages = {"intro": "# Introduction\nContent."}
+    plan = {
+        "navigation": [
+            {
+                "group": "Docs",
+                "pages": [{"slug": "intro", "title": "Intro", "description": ""}],
+            }
+        ]
+    }
+    with patch("docsfy.postprocess.call_ai_cli", return_value=(False, "AI error")):
+        result = await add_cross_links(
+            pages=pages,
+            plan=plan,
+            ai_provider="claude",
+            ai_model="opus",
+            repo_path=tmp_path,
+        )
+    assert result == pages
