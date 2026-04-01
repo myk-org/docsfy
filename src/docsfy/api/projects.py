@@ -30,6 +30,7 @@ from docsfy.models import (
     VALID_PROVIDERS,
     GenerateRequest,
 )
+from docsfy.postprocess import add_cross_links, detect_version, validate_pages
 from docsfy.renderer import render_site
 from docsfy.repository import (
     clone_repo,
@@ -976,6 +977,59 @@ async def _generate_from_path(
         branch=branch,
         on_page_generated=_on_page_generated,
     )
+
+    # --- Post-generation pipeline ---
+    try:
+        await update_and_notify(
+            gen_key,
+            project_name,
+            ai_provider,
+            ai_model,
+            status="generating",
+            owner=owner,
+            branch=branch,
+            current_stage="validating",
+            page_count=len(pages),
+        )
+        pages = await validate_pages(
+            pages=pages,
+            repo_path=repo_dir,
+            ai_provider=ai_provider,
+            ai_model=ai_model,
+            cache_dir=cache_dir,
+            project_name=project_name,
+            plan=plan,
+        )
+    except Exception as exc:
+        logger.warning(f"[{project_name}] Validation stage failed: {exc}")
+
+    try:
+        await update_and_notify(
+            gen_key,
+            project_name,
+            ai_provider,
+            ai_model,
+            status="generating",
+            owner=owner,
+            branch=branch,
+            current_stage="cross_linking",
+            page_count=len(pages),
+        )
+        pages = await add_cross_links(
+            pages=pages,
+            plan=plan,
+            ai_provider=ai_provider,
+            ai_model=ai_model,
+            repo_path=repo_dir,
+        )
+    except Exception as exc:
+        logger.warning(f"[{project_name}] Cross-linking stage failed: {exc}")
+
+    version = detect_version(repo_dir)
+    if version:
+        plan["version"] = version
+        logger.info(f"[{project_name}] Detected project version: {version}")
+    # --- End post-generation pipeline ---
 
     await update_and_notify(
         gen_key,
