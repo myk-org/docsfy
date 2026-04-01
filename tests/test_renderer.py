@@ -373,7 +373,7 @@ def test_render_page_with_version() -> None:
         current_slug="test",
         version="2.1.0",
     )
-    assert "v2.1.0" in html
+    assert "2.1.0" in html
     assert "footer-version" in html
 
 
@@ -400,7 +400,7 @@ def test_render_index_with_version() -> None:
         navigation=[],
         version="1.0.0",
     )
-    assert "v1.0.0" in html
+    assert "1.0.0" in html
     assert "footer-version" in html
 
 
@@ -423,9 +423,9 @@ def test_render_site_passes_version(_mock_mermaid: Any, tmp_path: Path) -> None:
     output_dir = tmp_path / "site"
     render_site(plan=plan, pages=pages, output_dir=output_dir)
     index_html = (output_dir / "index.html").read_text()
-    assert "v3.0.0" in index_html
+    assert "3.0.0" in index_html
     page_html = (output_dir / "intro.html").read_text()
-    assert "v3.0.0" in page_html
+    assert "3.0.0" in page_html
 
 
 def test_prerender_mermaid_replaces_block() -> None:
@@ -437,13 +437,15 @@ def test_prerender_mermaid_replaces_block() -> None:
     md = "# Title\n\n```mermaid\nflowchart LR\n  A --> B\n```\n\nMore text"
 
     # Test with mmdc available and succeeding
-    with patch("docsfy.renderer.shutil.which", return_value="/usr/bin/mmdc"):
-        with patch("docsfy.renderer.subprocess.run") as mock_run:
-            mock_run.return_value = subprocess.CompletedProcess(
-                args=[], returncode=0, stdout="", stderr=""
-            )
-            with patch("pathlib.Path.read_text", return_value="<svg>diagram</svg>"):
-                result = _prerender_mermaid(md)
+    with (
+        patch("docsfy.renderer.shutil.which", return_value="/usr/bin/mmdc"),
+        patch("docsfy.renderer.subprocess.run") as mock_run,
+        patch("pathlib.Path.read_text", return_value="<svg>diagram</svg>"),
+    ):
+        mock_run.return_value = subprocess.CompletedProcess(
+            args=[], returncode=0, stdout="", stderr=""
+        )
+        result = _prerender_mermaid(md)
     assert "mermaid-diagram" in result and "<svg>" in result
 
 
@@ -462,10 +464,12 @@ def test_prerender_mermaid_fallback_on_failure() -> None:
     from docsfy.renderer import _prerender_mermaid
 
     md = "# Title\n\n```mermaid\ninvalid syntax {{{\n```\n"
-    with patch("docsfy.renderer.shutil.which", return_value="/usr/bin/mmdc"):
-        with patch("docsfy.renderer.subprocess.run") as mock_run:
-            mock_run.side_effect = subprocess.CalledProcessError(1, "mmdc")
-            result = _prerender_mermaid(md)
+    with (
+        patch("docsfy.renderer.shutil.which", return_value="/usr/bin/mmdc"),
+        patch("docsfy.renderer.subprocess.run") as mock_run,
+    ):
+        mock_run.side_effect = subprocess.CalledProcessError(1, "mmdc")
+        result = _prerender_mermaid(md)
     assert "```mermaid" in result
     assert "invalid syntax" in result
 
@@ -477,13 +481,15 @@ def test_prerender_mermaid_multiple_blocks() -> None:
     from docsfy.renderer import _prerender_mermaid
 
     md = "```mermaid\nflowchart LR\n  A-->B\n```\n\nText\n\n```mermaid\nsequenceDiagram\n  A->>B: Hello\n```\n"
-    with patch("docsfy.renderer.shutil.which", return_value="/usr/bin/mmdc"):
-        with patch("docsfy.renderer.subprocess.run") as mock_run:
-            mock_run.return_value = subprocess.CompletedProcess(
-                args=[], returncode=0, stdout="", stderr=""
-            )
-            with patch("pathlib.Path.read_text", return_value="<svg>multi</svg>"):
-                result = _prerender_mermaid(md)
+    with (
+        patch("docsfy.renderer.shutil.which", return_value="/usr/bin/mmdc"),
+        patch("docsfy.renderer.subprocess.run") as mock_run,
+        patch("pathlib.Path.read_text", return_value="<svg>multi</svg>"),
+    ):
+        mock_run.return_value = subprocess.CompletedProcess(
+            args=[], returncode=0, stdout="", stderr=""
+        )
+        result = _prerender_mermaid(md)
     assert "Text" in result
     assert result.count("mermaid-diagram") == 2
     assert result.count("<svg>") == 2

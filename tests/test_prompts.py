@@ -130,20 +130,21 @@ def test_page_prompt_includes_mermaid_instructions() -> None:
 def test_page_prompt_with_exclusions() -> None:
     from docsfy.prompts import build_page_prompt
 
-    exclusions = ["HTML reports feature", "legacy dashboard"]
     prompt = build_page_prompt(
-        "test-repo", "Overview", "Project overview", exclusions=exclusions
+        "test-repo",
+        "Overview",
+        "Project overview",
+        exclusions_path="/tmp/docsfy-validation/abc/intro_exclusions.txt",
     )
-    assert "HTML reports feature" in prompt
-    assert "legacy dashboard" in prompt
-    assert "must NOT appear" in prompt.lower() or "stale" in prompt.lower()
+    assert "/tmp/docsfy-validation/abc/intro_exclusions.txt" in prompt
+    assert "deny-list" in prompt.lower() or "stale" in prompt.lower()
 
 
 def test_page_prompt_without_exclusions() -> None:
     from docsfy.prompts import build_page_prompt
 
     prompt = build_page_prompt("test-repo", "Overview", "Project overview")
-    assert "stale" not in prompt.lower()
+    assert "deny-list" not in prompt.lower()
 
 
 def test_validation_prompt() -> None:

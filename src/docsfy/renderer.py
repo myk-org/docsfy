@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import contextlib
 import json
 import re
 import shutil
@@ -364,10 +365,8 @@ def _prerender_mermaid(md_text: str) -> str:
 
     result = _MERMAID_BLOCK_RE.sub(_render_block, md_text)
 
-    try:
+    with contextlib.suppress(OSError):
         shutil.rmtree(tmp_dir)
-    except OSError:
-        pass
 
     return result
 

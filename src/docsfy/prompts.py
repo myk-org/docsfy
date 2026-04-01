@@ -114,17 +114,16 @@ def build_page_prompt(
     project_name: str,
     page_title: str,
     page_description: str,
-    exclusions: list[str] | None = None,
+    exclusions_path: str | None = None,
 ) -> str:
     exclusions_block = ""
-    if exclusions:
-        items = "\n".join(f"- {item}" for item in exclusions)
+    if exclusions_path:
         exclusions_block = f"""
 
-IMPORTANT: The following references are STALE and must NOT appear in the documentation.
-They were identified as referencing features, files, or modules that no longer exist in the current codebase:
-{items}
+IMPORTANT: Before writing, read the stale-reference deny-list at:
+{exclusions_path}
 
+Do not mention any reference listed in that file.
 Only document features and files that exist in the current codebase."""
 
     return f"""You are a technical documentation writer. Explore this repository to write
@@ -258,4 +257,7 @@ Output format:
   "another-slug": ["related-slug-3", "related-slug-4", "related-slug-5"]
 }}
 
-Every slug in the output must come from the manifest. Do not invent page slugs."""
+Every slug in the output must come from the manifest. Do not invent page slugs.
+Do not include a page's own slug in its related list.
+Do not repeat slugs within a related list.
+Return an entry for every manifest slug."""

@@ -612,6 +612,9 @@ function buildLogEntries(project: Project): LogEntry[] {
   const stages = [...GENERATION_STAGES]
   const currentIdx = stages.indexOf((project.current_stage || '') as typeof GENERATION_STAGES[number])
 
+  const cloneIdx = stages.indexOf('cloning')
+  const planIdx = stages.indexOf('planning')
+  const incrementalPlanIdx = stages.indexOf('incremental_planning')
   const genPagesIdx = stages.indexOf('generating_pages')
   const validatingIdx = stages.indexOf('validating')
   const crossLinkIdx = stages.indexOf('cross_linking')
@@ -631,23 +634,23 @@ function buildLogEntries(project: Project): LogEntry[] {
     : 0
 
   // Cloning
-  if (currentIdx > 0) {
+  if (currentIdx > cloneIdx) {
     entries.push({ id: 'clone', type: 'done', message: 'Cloned repository', timestamp: Date.now() })
-  } else if (currentIdx === 0) {
+  } else if (currentIdx === cloneIdx) {
     entries.push({ id: 'clone', type: 'active', message: 'Cloning repository...', timestamp: Date.now() })
   }
 
-  // Planning (covers both 'planning' and 'incremental_planning' at indices 1 and 2)
-  if (currentIdx > 2) {
+  // Planning (covers both 'planning' and 'incremental_planning')
+  if (currentIdx > incrementalPlanIdx) {
     entries.push({
       id: 'plan',
       type: 'done',
       message: `Planned documentation structure (${totalPages} pages)`,
       timestamp: Date.now(),
     })
-  } else if (currentIdx === 1) {
+  } else if (currentIdx === planIdx) {
     entries.push({ id: 'plan', type: 'active', message: 'Planning documentation structure...', timestamp: Date.now() })
-  } else if (currentIdx === 2) {
+  } else if (currentIdx === incrementalPlanIdx) {
     entries.push({ id: 'plan', type: 'active', message: 'Planning incremental update...', timestamp: Date.now() })
   }
 

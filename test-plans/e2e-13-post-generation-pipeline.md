@@ -358,7 +358,7 @@ echo "Generation wall-clock time: ${ELAPSED}s"
 
 **Record the result in `UI-TESTS-RESULTS.md`** using this format:
 
-```
+```markdown
 | 27.7 | Performance baseline (post-pipeline) | PASS | Wall-clock: Xs. Pre-pipeline baseline: Ys. Overhead: Zs (P%). |
 ```
 

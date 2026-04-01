@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import json
 import shutil
 import subprocess
@@ -156,6 +157,12 @@ async def _validate_single_page(
     )
 
     try:
+        exclusions_file = job_dir / f"{slug}_exclusions.txt"
+        await asyncio.to_thread(
+            exclusions_file.write_text,
+            "\n".join(exclusions),
+            encoding="utf-8",
+        )
         new_content = await _generate_full_page_content(
             repo_path=repo_path,
             project_name=project_name,
@@ -164,10 +171,12 @@ async def _validate_single_page(
             ai_provider=ai_provider,
             ai_model=ai_model,
             ai_cli_timeout=ai_cli_timeout,
-            exclusions=exclusions,
+            exclusions_path=str(exclusions_file),
         )
-        cache_dir.mkdir(parents=True, exist_ok=True)
-        (cache_dir / f"{slug}.md").write_text(new_content, encoding="utf-8")
+        await asyncio.to_thread(cache_dir.mkdir, parents=True, exist_ok=True)
+        await asyncio.to_thread(
+            (cache_dir / f"{slug}.md").write_text, new_content, encoding="utf-8"
+        )
         return new_content
     except Exception as exc:
         logger.warning(f"[{project_name}] Regeneration failed for page '{slug}': {exc}")
@@ -244,7 +253,7 @@ async def validate_pages(
         shutil.rmtree(job_dir, ignore_errors=True)
 
     updated: dict[str, str] = {}
-    for (slug, _), result in zip(pages.items(), results):
+    for (slug, _), result in zip(pages.items(), results, strict=True):
         if isinstance(result, Exception):
             logger.warning(
                 f"[{project_name}] Validation failed for page '{slug}': {result}"

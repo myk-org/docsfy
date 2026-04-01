@@ -77,7 +77,7 @@ RUN /bin/bash -o pipefail -c "curl -fsSL https://cursor.com/install | bash"
 # Configure npm for non-root global installs and install Gemini CLI + mermaid-cli
 RUN mkdir -p /home/appuser/.npm-global \
   && npm config set prefix '/home/appuser/.npm-global' \
-  && npm install -g @google/gemini-cli @mermaid-js/mermaid-cli
+  && npm install -g @google/gemini-cli @mermaid-js/mermaid-cli@11
 
 # Verify mermaid-cli works
 RUN printf 'flowchart LR\n  A-->B\n' > /tmp/test.mmd && /home/appuser/.npm-global/bin/mmdc -p /home/appuser/.puppeteerrc.json -i /tmp/test.mmd -o /tmp/test.svg && rm /tmp/test.mmd /tmp/test.svg

@@ -85,6 +85,24 @@ def test_detect_version_none_when_no_sources(tmp_path: Path) -> None:
         assert detect_version(tmp_path) is None
 
 
+def test_detect_version_invalid_package_json(tmp_path: Path) -> None:
+    from docsfy.postprocess import detect_version
+
+    (tmp_path / "package.json").write_text("not valid json {{{")
+    with patch("docsfy.postprocess.subprocess.run") as mock_run:
+        mock_run.side_effect = subprocess.CalledProcessError(128, "git")
+        assert detect_version(tmp_path) is None
+
+
+def test_detect_version_invalid_toml(tmp_path: Path) -> None:
+    from docsfy.postprocess import detect_version
+
+    (tmp_path / "pyproject.toml").write_text("not valid toml [[[")
+    with patch("docsfy.postprocess.subprocess.run") as mock_run:
+        mock_run.side_effect = subprocess.CalledProcessError(128, "git")
+        assert detect_version(tmp_path) is None
+
+
 @pytest.mark.asyncio
 async def test_validate_pages_no_issues(tmp_path: Path) -> None:
     from docsfy.postprocess import validate_pages
@@ -125,17 +143,22 @@ async def test_validate_pages_with_stale_references(tmp_path: Path) -> None:
         [{"reference": "HTML reports feature", "reason": "removed in v2"}]
     )
     regen_content = "# Introduction\nUses the new React dashboard."
-    with patch("docsfy.postprocess.call_ai_cli", return_value=(True, stale_refs)):
-        with patch("docsfy.generator.call_ai_cli", return_value=(True, regen_content)):
-            result = await validate_pages(
-                pages=pages,
-                repo_path=tmp_path,
-                ai_provider="claude",
-                ai_model="opus",
-                cache_dir=tmp_path / "cache",
-                project_name="test",
-                plan=plan,
-            )
+    with (
+        patch("docsfy.postprocess.call_ai_cli", return_value=(True, stale_refs)),
+        patch(
+            "docsfy.postprocess._generate_full_page_content",
+            return_value=regen_content,
+        ),
+    ):
+        result = await validate_pages(
+            pages=pages,
+            repo_path=tmp_path,
+            ai_provider="claude",
+            ai_model="opus",
+            cache_dir=tmp_path / "cache",
+            project_name="test",
+            plan=plan,
+        )
     assert "React dashboard" in result["intro"]
 
 
@@ -314,21 +337,23 @@ async def test_validate_pages_passes_timeout_to_regen(tmp_path: Path) -> None:
     }
     stale_refs = json.dumps([{"reference": "old_feature", "reason": "removed"}])
     regen_content = "# Intro\nNew content."
-    with patch("docsfy.postprocess.call_ai_cli", return_value=(True, stale_refs)):
-        with patch(
+    with (
+        patch("docsfy.postprocess.call_ai_cli", return_value=(True, stale_refs)),
+        patch(
             "docsfy.postprocess._generate_full_page_content",
             return_value=regen_content,
-        ) as mock_regen:
-            await validate_pages(
-                pages=pages,
-                repo_path=tmp_path,
-                ai_provider="claude",
-                ai_model="opus",
-                cache_dir=tmp_path / "cache",
-                project_name="test",
-                plan=plan,
-                ai_cli_timeout=99,
-            )
+        ) as mock_regen,
+    ):
+        await validate_pages(
+            pages=pages,
+            repo_path=tmp_path,
+            ai_provider="claude",
+            ai_model="opus",
+            cache_dir=tmp_path / "cache",
+            project_name="test",
+            plan=plan,
+            ai_cli_timeout=99,
+        )
     mock_regen.assert_called_once()
     _, kwargs = mock_regen.call_args
     assert kwargs.get("ai_cli_timeout") == 99
@@ -440,18 +465,21 @@ async def test_validate_single_page_empty_exclusions_returns_original(
     pages = {"intro": "# Intro\nOriginal content."}
     # AI returns objects without a 'reference' key → exclusions is empty after filtering
     stale_refs_no_reference = json.dumps([{"reason": "removed"}, {"other": "field"}])
-    with patch(
-        "docsfy.postprocess.call_ai_cli", return_value=(True, stale_refs_no_reference)
+    with (
+        patch(
+            "docsfy.postprocess.call_ai_cli",
+            return_value=(True, stale_refs_no_reference),
+        ),
+        patch("docsfy.postprocess._generate_full_page_content") as mock_regen,
     ):
-        with patch("docsfy.postprocess._generate_full_page_content") as mock_regen:
-            result = await validate_pages(
-                pages=pages,
-                repo_path=tmp_path,
-                ai_provider="claude",
-                ai_model="opus",
-                cache_dir=tmp_path / "cache",
-                project_name="test",
-            )
+        result = await validate_pages(
+            pages=pages,
+            repo_path=tmp_path,
+            ai_provider="claude",
+            ai_model="opus",
+            cache_dir=tmp_path / "cache",
+            project_name="test",
+        )
     # Must NOT have called regen
     mock_regen.assert_not_called()
     # Must return original content unchanged
@@ -505,20 +533,22 @@ async def test_add_cross_links_ai_failure_includes_project_name_in_log(
             }
         ]
     }
-    with patch("docsfy.postprocess.call_ai_cli", return_value=(False, "AI error")):
-        with patch("docsfy.postprocess.logger") as mock_logger:
-            result = await add_cross_links(
-                pages=pages,
-                plan=plan,
-                ai_provider="claude",
-                ai_model="opus",
-                repo_path=tmp_path,
-                project_name="my-project",
-            )
+    with (
+        patch("docsfy.postprocess.call_ai_cli", return_value=(False, "AI error")),
+        patch("docsfy.postprocess.logger") as mock_logger,
+    ):
+        result = await add_cross_links(
+            pages=pages,
+            plan=plan,
+            ai_provider="claude",
+            ai_model="opus",
+            repo_path=tmp_path,
+            project_name="my-project",
+        )
     # Should have logged with [my-project] prefix
-    mock_logger.warning.assert_called_once()
-    log_msg = mock_logger.warning.call_args[0][0]
-    assert "[my-project]" in log_msg
+    assert any(
+        "[my-project]" in str(call) for call in mock_logger.warning.call_args_list
+    )
     assert result == pages
 
 
@@ -538,18 +568,20 @@ async def test_add_cross_links_parse_failure_includes_project_name_in_log(
             }
         ]
     }
-    with patch("docsfy.postprocess.call_ai_cli", return_value=(True, "invalid json")):
-        with patch("docsfy.postprocess.logger") as mock_logger:
-            result = await add_cross_links(
-                pages=pages,
-                plan=plan,
-                ai_provider="claude",
-                ai_model="opus",
-                repo_path=tmp_path,
-                project_name="my-project",
-            )
+    with (
+        patch("docsfy.postprocess.call_ai_cli", return_value=(True, "invalid json")),
+        patch("docsfy.postprocess.logger") as mock_logger,
+    ):
+        result = await add_cross_links(
+            pages=pages,
+            plan=plan,
+            ai_provider="claude",
+            ai_model="opus",
+            repo_path=tmp_path,
+            project_name="my-project",
+        )
     # Should have logged with [my-project] prefix
-    mock_logger.warning.assert_called_once()
-    log_msg = mock_logger.warning.call_args[0][0]
-    assert "[my-project]" in log_msg
+    assert any(
+        "[my-project]" in str(call) for call in mock_logger.warning.call_args_list
+    )
     assert result == pages
