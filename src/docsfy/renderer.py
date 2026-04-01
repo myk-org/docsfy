@@ -3,6 +3,8 @@ from __future__ import annotations
 import json
 import re
 import shutil
+import subprocess
+import uuid
 from pathlib import Path
 from typing import Any
 
@@ -308,6 +310,64 @@ def _ensure_blank_lines(md_text: str) -> str:
     return "\n".join(result)
 
 
+_MERMAID_BLOCK_RE = re.compile(
+    r"^(```+)mermaid\s*\n(.*?)\n\1\s*$", re.MULTILINE | re.DOTALL
+)
+
+
+def _prerender_mermaid(md_text: str) -> str:
+    """Pre-render Mermaid code blocks to inline SVG."""
+    if not shutil.which("mmdc"):
+        logger.debug("mmdc not found, skipping Mermaid pre-rendering")
+        return md_text
+
+    job_id = uuid.uuid4().hex[:12]
+    tmp_dir = Path(f"/tmp/docsfy-mermaid/{job_id}")
+    tmp_dir.mkdir(parents=True, exist_ok=True)
+
+    def _render_block(match: re.Match[str]) -> str:
+        mermaid_src = match.group(2)
+        block_id = uuid.uuid4().hex[:8]
+        input_file = tmp_dir / f"{block_id}.mmd"
+        output_file = tmp_dir / f"{block_id}.svg"
+
+        input_file.write_text(mermaid_src, encoding="utf-8")
+        try:
+            subprocess.run(
+                [
+                    "mmdc",
+                    "-i",
+                    str(input_file),
+                    "-o",
+                    str(output_file),
+                    "-b",
+                    "transparent",
+                ],
+                capture_output=True,
+                text=True,
+                check=True,
+                timeout=30,
+            )
+            svg_content = output_file.read_text(encoding="utf-8")
+            return f'<div class="mermaid-diagram">{svg_content}</div>'
+        except (
+            subprocess.CalledProcessError,
+            subprocess.TimeoutExpired,
+            FileNotFoundError,
+        ) as exc:
+            logger.debug(f"Mermaid rendering failed for block: {exc}")
+            return match.group(0)
+
+    result = _MERMAID_BLOCK_RE.sub(_render_block, md_text)
+
+    try:
+        shutil.rmtree(tmp_dir)
+    except OSError:
+        pass
+
+    return result
+
+
 def _md_to_html(md_text: str) -> tuple[str, str]:
     """Convert markdown to HTML. Returns (content_html, toc_html)."""
     md = markdown.Markdown(
@@ -317,6 +377,7 @@ def _md_to_html(md_text: str) -> tuple[str, str]:
             "toc": {"toc_depth": "2-3"},
         },
     )
+    md_text = _prerender_mermaid(md_text)
     md_text = _clean_code_fence_annotations(md_text)
     md_text = _ensure_blank_lines(md_text)
     content_html = _sanitize_html(md.convert(md_text))

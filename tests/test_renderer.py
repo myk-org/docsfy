@@ -423,6 +423,56 @@ def test_render_site_passes_version(tmp_path: Path) -> None:
     assert "v3.0.0" in page_html
 
 
+def test_prerender_mermaid_replaces_block() -> None:
+    import subprocess
+    from unittest.mock import patch
+
+    from docsfy.renderer import _prerender_mermaid
+
+    md = "# Title\n\n```mermaid\nflowchart LR\n  A --> B\n```\n\nMore text"
+
+    # Test with mmdc available and succeeding
+    with patch("docsfy.renderer.shutil.which", return_value="/usr/bin/mmdc"):
+        with patch("docsfy.renderer.subprocess.run") as mock_run:
+            mock_run.return_value = subprocess.CompletedProcess(
+                args=[], returncode=0, stdout="", stderr=""
+            )
+            with patch("pathlib.Path.read_text", return_value="<svg>diagram</svg>"):
+                result = _prerender_mermaid(md)
+    assert "mermaid-diagram" in result and "<svg>" in result
+
+
+def test_prerender_mermaid_no_mermaid_blocks() -> None:
+    from docsfy.renderer import _prerender_mermaid
+
+    md = "# Title\n\n```python\nprint('hello')\n```\n"
+    result = _prerender_mermaid(md)
+    assert result == md
+
+
+def test_prerender_mermaid_fallback_on_failure() -> None:
+    import subprocess
+    from unittest.mock import patch
+
+    from docsfy.renderer import _prerender_mermaid
+
+    md = "# Title\n\n```mermaid\ninvalid syntax {{{\n```\n"
+    with patch("docsfy.renderer.shutil.which", return_value="/usr/bin/mmdc"):
+        with patch("docsfy.renderer.subprocess.run") as mock_run:
+            mock_run.side_effect = subprocess.CalledProcessError(1, "mmdc")
+            result = _prerender_mermaid(md)
+    assert "```mermaid" in result
+    assert "invalid syntax" in result
+
+
+def test_prerender_mermaid_multiple_blocks() -> None:
+    from docsfy.renderer import _prerender_mermaid
+
+    md = "```mermaid\nflowchart LR\n  A-->B\n```\n\nText\n\n```mermaid\nsequenceDiagram\n  A->>B: Hello\n```\n"
+    result = _prerender_mermaid(md)
+    assert "Text" in result
+
+
 def test_search_index_generated(tmp_path: Path) -> None:
     from docsfy.renderer import render_site
 
