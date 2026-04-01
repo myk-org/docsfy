@@ -22,3 +22,13 @@ export const SIDEBAR_WIDTH_KEY = 'docsfy-sidebar-width'
 export const SIDEBAR_MIN_WIDTH = 180
 export const SIDEBAR_MAX_WIDTH = 500
 export const SIDEBAR_DEFAULT_WIDTH = 256
+
+export const GENERATION_STAGES = [
+  'cloning',
+  'planning',
+  'incremental_planning',
+  'generating_pages',
+  'validating',
+  'cross_linking',
+  'rendering',
+] as const

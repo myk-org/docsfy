@@ -10,7 +10,7 @@ from docsfy.ai_client import call_ai_cli, run_parallel_with_limit
 from docsfy.json_parser import parse_json_array_response, parse_json_response
 from pydantic import ValidationError
 
-from docsfy.models import DEFAULT_BRANCH, DocPlan
+from docsfy.models import DEFAULT_BRANCH, MAX_CONCURRENT_PAGES, DocPlan
 from docsfy.prompts import (
     build_incremental_page_prompt,
     build_incremental_planner_prompt,
@@ -19,8 +19,6 @@ from docsfy.prompts import (
 )
 
 logger = get_logger(name=__name__)
-
-MAX_CONCURRENT_PAGES = 5
 
 
 def is_unsafe_slug(slug: str) -> bool:
@@ -149,7 +147,7 @@ def _apply_incremental_page_updates(existing_content: str, raw_text: str) -> str
     return "".join(parts)
 
 
-async def _generate_full_page_content(
+async def generate_full_page_content(
     repo_path: Path,
     project_name: str,
     page_title: str,
@@ -157,11 +155,13 @@ async def _generate_full_page_content(
     ai_provider: str,
     ai_model: str,
     ai_cli_timeout: int | None = None,
+    exclusions_path: str | None = None,
 ) -> str:
     prompt = build_page_prompt(
         project_name=project_name,
         page_title=page_title,
         page_description=page_description,
+        exclusions_path=exclusions_path,
     )
     output = await _call_ai_or_raise(
         prompt=prompt,
@@ -297,7 +297,7 @@ async def generate_page(
                     f"[{_label}] Incremental update failed for page '{slug}', "
                     f"falling back to full page generation: {exc}"
                 )
-                output = await _generate_full_page_content(
+                output = await generate_full_page_content(
                     repo_path=repo_path,
                     project_name=prompt_project_name,
                     page_title=title,
@@ -307,7 +307,7 @@ async def generate_page(
                     ai_cli_timeout=ai_cli_timeout,
                 )
         else:
-            output = await _generate_full_page_content(
+            output = await generate_full_page_content(
                 repo_path=repo_path,
                 project_name=prompt_project_name,
                 page_title=title,

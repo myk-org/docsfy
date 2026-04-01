@@ -89,3 +89,12 @@ When adding new code:
 - When modifying existing behavior: update the affected test steps, expected results, and URLs
 - When changing URL patterns: update ALL e2e test files that reference those URLs
 - The e2e test index is `test-plans/e2e-ui-test-plan.md` — update the Summary table when adding new tests
+
+## AI Prompt Design (GOLDEN RULE)
+
+**NEVER blow up prompts with content.** All AI prompts must contain instructions only — never embed file contents, file trees, page content, or large data structures in the prompt text.
+
+- Write data to temp files and tell the AI where to read them
+- The AI CLI runs with `cwd` access to the repo — it can explore files itself
+- Prompts should be short instructions: what to do, where to find input, what format to return
+- This applies to ALL prompts: planning, page generation, validation, cross-linking, everything

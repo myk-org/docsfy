@@ -115,3 +115,55 @@ def test_build_incremental_page_prompt_truncates_large_diff() -> None:
     assert "truncated" in prompt.lower()
     assert "do not guess" in prompt.lower()
     assert len(prompt) < len(large_diff)  # prompt must be shorter than raw diff
+
+
+def test_page_prompt_includes_mermaid_instructions() -> None:
+    from docsfy.prompts import build_page_prompt
+
+    prompt = build_page_prompt(
+        "test-repo", "Architecture", "System architecture overview"
+    )
+    assert "mermaid" in prompt.lower()
+    assert "flowchart" in prompt.lower() or "sequence" in prompt.lower()
+
+
+def test_page_prompt_with_exclusions() -> None:
+    from docsfy.prompts import build_page_prompt
+
+    prompt = build_page_prompt(
+        "test-repo",
+        "Overview",
+        "Project overview",
+        exclusions_path="/tmp/docsfy-validation/abc/intro_exclusions.txt",
+    )
+    assert "/tmp/docsfy-validation/abc/intro_exclusions.txt" in prompt
+    assert "deny-list" in prompt.lower() or "stale" in prompt.lower()
+
+
+def test_page_prompt_without_exclusions() -> None:
+    from docsfy.prompts import build_page_prompt
+
+    prompt = build_page_prompt("test-repo", "Overview", "Project overview")
+    assert "deny-list" not in prompt.lower()
+
+
+def test_validation_prompt() -> None:
+    from docsfy.prompts import build_validation_prompt
+
+    prompt = build_validation_prompt("/tmp/docsfy-validation/abc123/intro.md")
+    assert "/tmp/docsfy-validation/abc123/intro.md" in prompt
+    assert "json" in prompt.lower()
+    assert "stale" in prompt.lower() or "exist" in prompt.lower()
+
+
+def test_cross_links_prompt() -> None:
+    from docsfy.prompts import build_cross_links_prompt
+
+    prompt = build_cross_links_prompt(
+        "/tmp/docsfy-crosslinks/abc123/manifest.json",
+        "/tmp/docsfy-crosslinks/abc123/",
+    )
+    assert "/tmp/docsfy-crosslinks/abc123/manifest.json" in prompt
+    assert "/tmp/docsfy-crosslinks/abc123/" in prompt
+    assert "json" in prompt.lower()
+    assert "related" in prompt.lower()

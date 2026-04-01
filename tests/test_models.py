@@ -132,3 +132,21 @@ def test_generate_request_branch_allows_dots_and_hyphens() -> None:
     assert req.branch == "release-v2.0"
     req2 = GenerateRequest(repo_url="https://github.com/org/repo.git", branch="v2.0.1")
     assert req2.branch == "v2.0.1"
+
+
+def test_doc_plan_version_field() -> None:
+    from docsfy.models import DocPlan
+
+    # version is optional, defaults to None
+    plan = DocPlan(project_name="test", tagline="A test")
+    assert plan.version is None
+
+    # version can be set
+    plan_with_version = DocPlan(project_name="test", tagline="A test", version="1.2.3")
+    assert plan_with_version.version == "1.2.3"
+
+    # version survives model_dump round-trip
+    data = plan_with_version.model_dump()
+    assert data["version"] == "1.2.3"
+    restored = DocPlan(**data)
+    assert restored.version == "1.2.3"

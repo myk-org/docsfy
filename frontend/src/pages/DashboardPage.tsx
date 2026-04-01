@@ -25,7 +25,7 @@ import UsersPanel from '@/components/admin/UsersPanel'
 import AccessPanel from '@/components/admin/AccessPanel'
 import { api } from '@/lib/api'
 import { wsManager } from '@/lib/websocket'
-import { TOAST_DEFAULT_MS, TOAST_ERROR_MS, WS_POLLING_FALLBACK_MS, SELECTED_VIEW_KEY, SIDEBAR_COLLAPSED_KEY } from '@/lib/constants'
+import { TOAST_DEFAULT_MS, TOAST_ERROR_MS, WS_POLLING_FALLBACK_MS, SELECTED_VIEW_KEY, SIDEBAR_COLLAPSED_KEY, GENERATION_STAGES } from '@/lib/constants'
 import type {
   Project,
   AuthResponse,
@@ -609,8 +609,16 @@ function SidebarItem({
 
 function buildLogEntries(project: Project): LogEntry[] {
   const entries: LogEntry[] = []
-  const stages = ['cloning', 'planning', 'incremental_planning', 'generating_pages', 'rendering']
-  const currentIdx = stages.indexOf(project.current_stage || '')
+  const stages = [...GENERATION_STAGES]
+  const currentIdx = stages.indexOf((project.current_stage || '') as typeof GENERATION_STAGES[number])
+
+  const cloneIdx = stages.indexOf('cloning')
+  const planIdx = stages.indexOf('planning')
+  const incrementalPlanIdx = stages.indexOf('incremental_planning')
+  const genPagesIdx = stages.indexOf('generating_pages')
+  const validatingIdx = stages.indexOf('validating')
+  const crossLinkIdx = stages.indexOf('cross_linking')
+  const renderIdx = stages.indexOf('rendering')
 
   let plan: DocPlan | null = null
   if (project.plan_json) {
@@ -626,28 +634,28 @@ function buildLogEntries(project: Project): LogEntry[] {
     : 0
 
   // Cloning
-  if (currentIdx > 0) {
+  if (currentIdx > cloneIdx) {
     entries.push({ id: 'clone', type: 'done', message: 'Cloned repository', timestamp: Date.now() })
-  } else if (currentIdx === 0) {
+  } else if (currentIdx === cloneIdx) {
     entries.push({ id: 'clone', type: 'active', message: 'Cloning repository...', timestamp: Date.now() })
   }
 
-  // Planning (covers both 'planning' and 'incremental_planning' at indices 1 and 2)
-  if (currentIdx > 2) {
+  // Planning (covers both 'planning' and 'incremental_planning')
+  if (currentIdx > incrementalPlanIdx) {
     entries.push({
       id: 'plan',
       type: 'done',
       message: `Planned documentation structure (${totalPages} pages)`,
       timestamp: Date.now(),
     })
-  } else if (currentIdx === 1) {
+  } else if (currentIdx === planIdx) {
     entries.push({ id: 'plan', type: 'active', message: 'Planning documentation structure...', timestamp: Date.now() })
-  } else if (currentIdx === 2) {
+  } else if (currentIdx === incrementalPlanIdx) {
     entries.push({ id: 'plan', type: 'active', message: 'Planning incremental update...', timestamp: Date.now() })
   }
 
   // Page generation entries
-  if (plan && currentIdx >= 3) {
+  if (plan && currentIdx >= genPagesIdx) {
     let pageIdx = 0
     for (const group of plan.navigation) {
       for (const page of group.pages) {
@@ -659,7 +667,7 @@ function buildLogEntries(project: Project): LogEntry[] {
             message: `Generated page ${pageIdx} of ${totalPages}: ${page.title}`,
             timestamp: Date.now(),
           })
-        } else if (pageIdx === project.page_count + 1 && project.status === 'generating' && currentIdx === 3) {
+        } else if (pageIdx === project.page_count + 1 && project.status === 'generating' && currentIdx === genPagesIdx) {
           entries.push({
             id: `page-${pageIdx}`,
             type: 'active',
@@ -678,10 +686,24 @@ function buildLogEntries(project: Project): LogEntry[] {
     }
   }
 
+  // Validating (stage after page generation)
+  if (currentIdx > validatingIdx) {
+    entries.push({ id: 'validate', type: 'done', message: 'Validated documentation against codebase', timestamp: Date.now() })
+  } else if (currentIdx === validatingIdx) {
+    entries.push({ id: 'validate', type: 'active', message: 'Validating documentation against codebase...', timestamp: Date.now() })
+  }
+
+  // Cross-linking
+  if (currentIdx > crossLinkIdx) {
+    entries.push({ id: 'crosslink', type: 'done', message: 'Added cross-page links', timestamp: Date.now() })
+  } else if (currentIdx === crossLinkIdx) {
+    entries.push({ id: 'crosslink', type: 'active', message: 'Adding cross-page links...', timestamp: Date.now() })
+  }
+
   // Rendering
-  if (currentIdx > 4 || (project.status === 'ready' && currentIdx >= 4)) {
+  if (currentIdx > renderIdx || (project.status === 'ready' && currentIdx >= renderIdx)) {
     entries.push({ id: 'render', type: 'done', message: 'Rendered documentation site', timestamp: Date.now() })
-  } else if (currentIdx === 4) {
+  } else if (currentIdx === renderIdx) {
     entries.push({ id: 'render', type: 'active', message: 'Rendering documentation site...', timestamp: Date.now() })
   }
 

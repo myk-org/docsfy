@@ -69,6 +69,7 @@ _PAGE_WRITING_RULES = """Write in markdown format. Include:
 - Clear explanations
 - Code examples from the actual codebase (not made up)
 - Configuration snippets where relevant
+- Where architecture, data flow, or component relationships would benefit from a visual, include a Mermaid diagram using a ```mermaid code block. Use flowchart, sequence, or class diagrams as appropriate.
 
 Use these callout formats for special content:
 - Notes: > **Note:** text
@@ -109,7 +110,22 @@ def _truncate_diff_content(diff_content: str, max_chars: int = _MAX_DIFF_LENGTH)
     )
 
 
-def build_page_prompt(project_name: str, page_title: str, page_description: str) -> str:
+def build_page_prompt(
+    project_name: str,
+    page_title: str,
+    page_description: str,
+    exclusions_path: str | None = None,
+) -> str:
+    exclusions_block = ""
+    if exclusions_path:
+        exclusions_block = f"""
+
+IMPORTANT: Before writing, read the stale-reference deny-list at:
+{exclusions_path}
+
+Do not mention any reference listed in that file.
+Only document features and files that exist in the current codebase."""
+
     return f"""You are a technical documentation writer. Explore this repository to write
 the "{page_title}" page for the {project_name} documentation.
 
@@ -121,7 +137,7 @@ to write comprehensive, accurate documentation. Do NOT rely on the README.
 {_PAGE_WRITING_RULES}
 
 This documentation will be read by end users of the project. Write it to be approachable,
-practical, and easy to follow. Separate llms.txt files are generated for AI consumption.
+practical, and easy to follow. Separate llms.txt files are generated for AI consumption.{exclusions_block}
 
 Start the page with exactly this first line:
 # {page_title}
@@ -190,3 +206,61 @@ Instructions:
 
 When writing "new_text", follow these content rules:
 {_PAGE_WRITING_RULES}"""
+
+
+VALIDATION_SCHEMA = """[
+  {
+    "reference": "string - the stale reference found",
+    "reason": "string - why it is considered stale"
+  }
+]"""
+
+
+def build_validation_prompt(page_temp_path: str) -> str:
+    return f"""You are a documentation quality validator. Read the documentation page at:
+{page_temp_path}
+
+Then explore this repository thoroughly. Verify that ALL referenced files, features,
+modules, classes, functions, and tools actually exist in the current codebase.
+
+Check for:
+- File paths that do not exist
+- Function or class names that are not defined
+- Features described that have been removed or replaced
+- Module names that do not exist
+- CLI commands or flags that are not implemented
+
+CRITICAL: Your response must be ONLY a valid JSON array. No text before or after.
+
+If all references are valid, return exactly: []
+
+If stale references are found, return:
+{VALIDATION_SCHEMA}"""
+
+
+def build_cross_links_prompt(manifest_path: str, pages_dir: str) -> str:
+    return f"""You are a documentation cross-linking assistant. Read the page manifest at:
+{manifest_path}
+
+Then read ALL the page markdown files in:
+{pages_dir}
+
+For each page, suggest related pages based on content overlap, topic relevance,
+and natural reading flow. Pages that reference similar concepts, APIs, or features
+should be linked together.
+If the manifest has 3 or more pages, return 2-5 unique related slugs.
+If fewer pages exist, return as many unique non-self slugs as are available
+(use [] only when no other page exists).
+
+CRITICAL: Your response must be ONLY a valid JSON object. No text before or after.
+
+Output format:
+{{
+  "page-slug": ["related-slug-1", "related-slug-2"],
+  "another-slug": ["related-slug-3", "related-slug-4", "related-slug-5"]
+}}
+
+Every slug in the output must come from the manifest. Do not invent page slugs.
+Do not include a page's own slug in its related list.
+Do not repeat slugs within a related list.
+Return an entry for every manifest slug."""
