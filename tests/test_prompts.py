@@ -115,3 +115,13 @@ def test_build_incremental_page_prompt_truncates_large_diff() -> None:
     assert "truncated" in prompt.lower()
     assert "do not guess" in prompt.lower()
     assert len(prompt) < len(large_diff)  # prompt must be shorter than raw diff
+
+
+def test_page_prompt_includes_mermaid_instructions() -> None:
+    from docsfy.prompts import build_page_prompt
+
+    prompt = build_page_prompt(
+        "test-repo", "Architecture", "System architecture overview"
+    )
+    assert "mermaid" in prompt.lower()
+    assert "flowchart" in prompt.lower() or "sequence" in prompt.lower()

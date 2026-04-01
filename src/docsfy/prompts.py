@@ -69,6 +69,7 @@ _PAGE_WRITING_RULES = """Write in markdown format. Include:
 - Clear explanations
 - Code examples from the actual codebase (not made up)
 - Configuration snippets where relevant
+- Where architecture, data flow, or component relationships would benefit from a visual, include a Mermaid diagram using a ```mermaid code block. Use flowchart, sequence, or class diagrams as appropriate.
 
 Use these callout formats for special content:
 - Notes: > **Note:** text
