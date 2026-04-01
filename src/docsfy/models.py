@@ -103,3 +103,4 @@ class DocPlan(BaseModel):
     project_name: str
     tagline: str = ""
     navigation: list[NavGroup] = Field(default_factory=list)
+    version: str | None = None
