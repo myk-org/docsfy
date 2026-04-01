@@ -999,6 +999,7 @@ async def _generate_from_path(
             cache_dir=cache_dir,
             project_name=project_name,
             plan=plan,
+            ai_cli_timeout=ai_cli_timeout,
         )
     except Exception as exc:
         logger.warning(f"[{project_name}] Validation stage failed: {exc}")
@@ -1021,6 +1022,7 @@ async def _generate_from_path(
             ai_provider=ai_provider,
             ai_model=ai_model,
             repo_path=repo_dir,
+            ai_cli_timeout=ai_cli_timeout,
         )
     except Exception as exc:
         logger.warning(f"[{project_name}] Cross-linking stage failed: {exc}")

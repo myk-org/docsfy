@@ -110,6 +110,7 @@ async def _validate_single_page(
     page_title: str,
     page_description: str,
     job_dir: Path,
+    ai_cli_timeout: int | None = None,
 ) -> str:
     """Validate a single page and regenerate if stale references are found.
 
@@ -121,11 +122,14 @@ async def _validate_single_page(
     temp_file.write_text(content, encoding="utf-8")
 
     prompt = build_validation_prompt(str(temp_file))
+    cli_flags = ["--trust"] if ai_provider == "cursor" else None
     success, output = await call_ai_cli(
         prompt=prompt,
         cwd=repo_path,
         ai_provider=ai_provider,
         ai_model=ai_model,
+        ai_cli_timeout=ai_cli_timeout,
+        cli_flags=cli_flags,
     )
 
     if not success:
@@ -144,6 +148,9 @@ async def _validate_single_page(
     ]
     exclusions = [e for e in exclusions if e]
 
+    if not exclusions:
+        return content
+
     logger.info(
         f"[{project_name}] Page '{slug}' has {len(exclusions)} stale references, regenerating"
     )
@@ -156,6 +163,7 @@ async def _validate_single_page(
             page_description=page_description,
             ai_provider=ai_provider,
             ai_model=ai_model,
+            ai_cli_timeout=ai_cli_timeout,
             exclusions=exclusions,
         )
         cache_dir.mkdir(parents=True, exist_ok=True)
@@ -174,6 +182,7 @@ async def validate_pages(
     cache_dir: Path,
     project_name: str,
     plan: dict[str, Any] | None = None,
+    ai_cli_timeout: int | None = None,
 ) -> dict[str, str]:
     """Validate all pages for stale references and regenerate any that have issues.
 
@@ -189,6 +198,7 @@ async def validate_pages(
         cache_dir: Directory where cached pages are stored.
         project_name: Name of the project (used for logging and regeneration prompts).
         plan: Optional documentation plan containing page titles/descriptions.
+        ai_cli_timeout: Timeout in minutes for AI CLI calls.
 
     Returns:
         Updated mapping of slug -> markdown content (unchanged pages or regenerated).
@@ -222,6 +232,7 @@ async def validate_pages(
                 page_title=slug_meta.get(slug, {}).get("title", slug),
                 page_description=slug_meta.get(slug, {}).get("description", ""),
                 job_dir=job_dir,
+                ai_cli_timeout=ai_cli_timeout,
             )
             for slug, content in pages.items()
         ]
@@ -251,6 +262,7 @@ async def add_cross_links(
     ai_provider: str,
     ai_model: str,
     repo_path: Path,
+    ai_cli_timeout: int | None = None,
 ) -> dict[str, str]:
     """Add cross-reference links between related pages.
 
@@ -264,6 +276,7 @@ async def add_cross_links(
         ai_provider: AI provider name.
         ai_model: AI model name.
         repo_path: Root of the repository (used as cwd for AI CLI calls).
+        ai_cli_timeout: Timeout in minutes for AI CLI calls.
 
     Returns:
         Updated mapping of slug -> markdown content with cross-links appended.
@@ -297,11 +310,14 @@ async def add_cross_links(
             manifest_path=str(manifest_path),
             pages_dir=str(pages_dir),
         )
+        cli_flags = ["--trust"] if ai_provider == "cursor" else None
         success, output = await call_ai_cli(
             prompt=prompt,
             cwd=repo_path,
             ai_provider=ai_provider,
             ai_model=ai_model,
+            ai_cli_timeout=ai_cli_timeout,
+            cli_flags=cli_flags,
         )
     finally:
         shutil.rmtree(job_dir, ignore_errors=True)
