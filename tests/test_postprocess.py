@@ -448,7 +448,7 @@ async def test_add_cross_links_non_cursor_no_trust_flag(tmp_path: Path) -> None:
         )
     mock_cli.assert_called_once()
     _, kwargs = mock_cli.call_args
-    assert kwargs.get("cli_flags") is None
+    assert "cli_flags" not in kwargs or kwargs["cli_flags"] is None
 
 
 # --- Fix 2: Guard against empty exclusions ---
