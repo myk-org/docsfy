@@ -105,6 +105,7 @@ async def test_get_models_includes_valid_providers(client: AsyncClient) -> None:
     from docsfy.models import VALID_PROVIDERS
 
     response = await client.get("/api/models")
+    assert response.status_code == 200
     data = response.json()
     assert data["providers"] == list(VALID_PROVIDERS)
 

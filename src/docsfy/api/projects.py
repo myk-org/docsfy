@@ -1156,7 +1156,11 @@ async def get_models_endpoint() -> dict[str, Any]:
     No authentication required -- this is a discovery endpoint.
     """
     settings = get_settings()
-    known_models = await get_known_models()
+    try:
+        known_models = await get_known_models()
+    except Exception as exc:
+        logger.warning(f"/api/models: failed to load known_models: {exc}")
+        known_models = {}
     return {
         "providers": list(VALID_PROVIDERS),
         "default_provider": settings.ai_provider,

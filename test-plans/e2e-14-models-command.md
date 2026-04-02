@@ -1,7 +1,6 @@
 # E2E Tests: Models Command
 
 > Back to the [main E2E index](e2e-ui-test-plan.md#test-files). Shared execution rules, prerequisites, variables, and environment constraints live there.
-
 > **Note:** These tests exercise the `docsfy models` CLI command and the `GET /api/models` API endpoint. The server must be running at `http://localhost:8800`.
 
 ---
@@ -11,6 +10,7 @@
 ### Prerequisites
 
 Set up the CLI configuration:
+
 ```shell
 export DOCSFY_SERVER="http://localhost:8800"
 export DOCSFY_API_KEY="<ADMIN_KEY>"
@@ -19,6 +19,7 @@ export DOCSFY_API_KEY="<ADMIN_KEY>"
 ### 28.1 Models returns providers list with defaults marked
 
 **Commands:**
+
 ```shell
 docsfy models
 ```
@@ -34,6 +35,7 @@ docsfy models
 ### 28.2 Models filters to single provider
 
 **Commands:**
+
 ```shell
 docsfy models --provider cursor
 ```
@@ -49,6 +51,7 @@ docsfy models --provider cursor
 ### 28.3 Models with invalid provider returns error
 
 **Commands:**
+
 ```shell
 docsfy models --provider invalid
 echo "Exit code: $?"
@@ -63,11 +66,13 @@ echo "Exit code: $?"
 ### 28.4 Models JSON output returns valid JSON
 
 **Commands:**
+
 ```shell
 docsfy models --json
 ```
 
 **Check:**
+
 ```shell
 docsfy models --json | python3 -c "import sys,json; data=json.load(sys.stdin); assert 'providers' in data; assert 'default_provider' in data; assert 'default_model' in data; assert 'known_models' in data; print('Valid JSON with all required keys')"
 ```
@@ -85,11 +90,13 @@ docsfy models --json | python3 -c "import sys,json; data=json.load(sys.stdin); a
 ### 28.5 Models JSON output with provider filter
 
 **Commands:**
+
 ```shell
 docsfy models --json --provider gemini
 ```
 
 **Check:**
+
 ```shell
 docsfy models --json --provider gemini | python3 -c "import sys,json; data=json.load(sys.stdin); assert data['providers'] == ['gemini'], f'Expected [\"gemini\"], got {data[\"providers\"]}'; assert list(data['known_models'].keys()) == ['gemini'], f'Expected only gemini key in known_models, got {list(data[\"known_models\"].keys())}'; print('Filtered JSON is correct')"
 ```
@@ -104,6 +111,7 @@ docsfy models --json --provider gemini | python3 -c "import sys,json; data=json.
 ### 28.6 API endpoint is accessible without authentication
 
 **Commands:**
+
 ```shell
 curl -s -o /dev/null -w "%{http_code}" "$DOCSFY_SERVER/api/models"
 ```
@@ -113,6 +121,7 @@ curl -s -o /dev/null -w "%{http_code}" "$DOCSFY_SERVER/api/models"
 - No `Authorization` header is required
 
 **Verify response body:**
+
 ```shell
 curl -s "$DOCSFY_SERVER/api/models" | python3 -c "import sys,json; data=json.load(sys.stdin); assert 'providers' in data; assert 'default_provider' in data; assert 'default_model' in data; assert 'known_models' in data; print('API response is valid')"
 ```
@@ -128,6 +137,7 @@ curl -s "$DOCSFY_SERVER/api/models" | python3 -c "import sys,json; data=json.loa
 **Precondition:** At least one generation must have completed successfully. If no prior test has generated docs, trigger one first.
 
 **Check for existing completed generation:**
+
 ```shell
 COMPLETED=$(curl -s "$DOCSFY_SERVER/api/models" | python3 -c "
 import sys, json
@@ -140,6 +150,7 @@ echo "Known models count: $COMPLETED"
 ```
 
 If 0, generate docs to populate known_models:
+
 ```shell
 if [ "$COMPLETED" = "0" ]; then
   docsfy generate https://github.com/myk-org/for-testing-only --provider gemini --model gemini-2.5-flash --force
@@ -153,6 +164,7 @@ fi
 ```
 
 **Verify known_models contains data:**
+
 ```shell
 curl -s "$DOCSFY_SERVER/api/models" | python3 -c "
 import sys, json
@@ -179,6 +191,7 @@ print(f'gemini models: {gemini_models}')
 ### 28.8 Cleanup
 
 **Delete any generation created by test 28.7:**
+
 ```shell
 docsfy delete for-testing-only --branch main --provider gemini --model gemini-2.5-flash --yes 2>/dev/null || true
 ```
