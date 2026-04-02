@@ -1149,6 +1149,22 @@ async def build_projects_payload(username: str, is_admin: bool) -> dict[str, Any
     }
 
 
+@router.get("/models")
+async def get_models_endpoint() -> dict[str, Any]:
+    """Return available AI providers, server defaults, and known models.
+
+    No authentication required -- this is a discovery endpoint.
+    """
+    settings = get_settings()
+    known_models = await get_known_models()
+    return {
+        "providers": list(VALID_PROVIDERS),
+        "default_provider": settings.ai_provider,
+        "default_model": settings.ai_model,
+        "known_models": known_models,
+    }
+
+
 @router.get("/status")
 @router.get("/projects")
 async def status(request: Request) -> dict[str, Any]:

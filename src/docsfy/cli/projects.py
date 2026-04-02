@@ -4,7 +4,7 @@ import json
 import tarfile
 import tempfile
 from pathlib import Path
-from typing import Any, Optional
+from typing import Annotated, Any, Optional
 
 import typer
 
@@ -327,3 +327,49 @@ def download(
             typer.echo(f"Downloaded to {dest}")
     finally:
         client.close()
+
+
+def models(
+    provider: Annotated[
+        Optional[str],
+        typer.Option("--provider", "-P", help="Filter by provider"),
+    ] = None,
+) -> None:
+    """List available AI providers and known models."""
+    from docsfy.cli.main import get_client
+
+    client = get_client()
+    try:
+        data = client.get_models()
+    finally:
+        client.close()
+
+    providers = data.get("providers", [])
+    default_provider = data.get("default_provider", "")
+    default_model = data.get("default_model", "")
+    known = data.get("known_models", {})
+
+    if provider:
+        if provider not in providers:
+            typer.echo(f"Unknown provider: {provider}")
+            raise typer.Exit(1)
+        providers = [provider]
+
+    for p in providers:
+        label = f"Provider: {p}"
+        if p == default_provider:
+            label += " (default)"
+        typer.echo(label)
+
+        models_list = known.get(p, [])
+        if not models_list:
+            typer.echo("  (no models used yet)")
+        else:
+            for m in models_list:
+                suffix = (
+                    "  (default)"
+                    if p == default_provider and m == default_model
+                    else ""
+                )
+                typer.echo(f"  {m}{suffix}")
+        typer.echo()

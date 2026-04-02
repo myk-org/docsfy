@@ -313,6 +313,84 @@ class TestGenerate:
         assert "dev" in result.output
 
 
+class TestModels:
+    def test_models_lists_providers(self, mock_client: MagicMock) -> None:
+        mock_client.get_models.return_value = {
+            "providers": ["claude", "gemini", "cursor"],
+            "default_provider": "cursor",
+            "default_model": "gpt-5.4-xhigh-fast",
+            "known_models": {
+                "cursor": ["gpt-5.4-xhigh-fast"],
+                "claude": ["sonnet-4"],
+            },
+        }
+        result = runner.invoke(app, ["models"])
+        assert result.exit_code == 0
+        assert "claude" in result.output
+        assert "gemini" in result.output
+        assert "cursor" in result.output
+
+    def test_models_shows_default_markers(self, mock_client: MagicMock) -> None:
+        mock_client.get_models.return_value = {
+            "providers": ["claude", "cursor"],
+            "default_provider": "cursor",
+            "default_model": "gpt-5.4-xhigh-fast",
+            "known_models": {
+                "cursor": ["gpt-5.4-xhigh-fast", "gpt-4"],
+            },
+        }
+        result = runner.invoke(app, ["models"])
+        assert result.exit_code == 0
+        # Provider marked as default
+        assert "Provider: cursor (default)" in result.output
+        # Model marked as default
+        assert "gpt-5.4-xhigh-fast  (default)" in result.output
+        # Non-default model has no marker
+        lines = result.output.strip().split("\n")
+        gpt4_lines = [line for line in lines if "gpt-4" in line]
+        assert gpt4_lines
+        assert "(default)" not in gpt4_lines[0]
+
+    def test_models_filter_by_provider(self, mock_client: MagicMock) -> None:
+        mock_client.get_models.return_value = {
+            "providers": ["claude", "gemini", "cursor"],
+            "default_provider": "cursor",
+            "default_model": "gpt-5.4-xhigh-fast",
+            "known_models": {
+                "claude": ["sonnet-4"],
+                "cursor": ["gpt-5.4-xhigh-fast"],
+            },
+        }
+        result = runner.invoke(app, ["models", "--provider", "claude"])
+        assert result.exit_code == 0
+        assert "claude" in result.output
+        assert "cursor" not in result.output.lower().replace("provider: cursor", "")
+        # Only claude provider section should appear
+        assert "Provider: claude" in result.output
+
+    def test_models_filter_unknown_provider(self, mock_client: MagicMock) -> None:
+        mock_client.get_models.return_value = {
+            "providers": ["claude", "gemini", "cursor"],
+            "default_provider": "cursor",
+            "default_model": "gpt-5.4-xhigh-fast",
+            "known_models": {},
+        }
+        result = runner.invoke(app, ["models", "--provider", "invalid"])
+        assert result.exit_code == 1
+        assert "Unknown provider" in result.output
+
+    def test_models_no_models_yet(self, mock_client: MagicMock) -> None:
+        mock_client.get_models.return_value = {
+            "providers": ["claude", "gemini", "cursor"],
+            "default_provider": "cursor",
+            "default_model": "gpt-5.4-xhigh-fast",
+            "known_models": {},
+        }
+        result = runner.invoke(app, ["models"])
+        assert result.exit_code == 0
+        assert "(no models used yet)" in result.output
+
+
 class TestDownload:
     def test_download_to_file(self, mock_client: MagicMock, tmp_path: Path) -> None:
         # Mock the download method to write fake data
