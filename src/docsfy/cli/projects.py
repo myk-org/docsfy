@@ -334,6 +334,10 @@ def models(
         Optional[str],
         typer.Option("--provider", "-P", help="Filter by provider"),
     ] = None,
+    json_output: Annotated[
+        bool,
+        typer.Option("--json", "-j", help="Output as JSON"),
+    ] = False,
 ) -> None:
     """List available AI providers and known models."""
     from docsfy.cli.main import get_client
@@ -353,6 +357,21 @@ def models(
         if provider not in providers:
             typer.echo(f"Unknown provider: {provider}")
             raise typer.Exit(1)
+
+    if json_output:
+        if provider:
+            filtered = {
+                "providers": [provider],
+                "default_provider": default_provider,
+                "default_model": default_model,
+                "known_models": {provider: known.get(provider, [])},
+            }
+            typer.echo(json.dumps(filtered, indent=2))
+        else:
+            typer.echo(json.dumps(data, indent=2))
+        return
+
+    if provider:
         providers = [provider]
 
     for p in providers:

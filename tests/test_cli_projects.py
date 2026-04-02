@@ -390,6 +390,42 @@ class TestModels:
         assert result.exit_code == 0
         assert "(no models used yet)" in result.output
 
+    def test_models_json_output(self, mock_client: MagicMock) -> None:
+        api_data = {
+            "providers": ["claude", "gemini", "cursor"],
+            "default_provider": "cursor",
+            "default_model": "gpt-5.4-xhigh-fast",
+            "known_models": {
+                "cursor": ["gpt-5.4-xhigh-fast"],
+                "claude": ["sonnet-4"],
+            },
+        }
+        mock_client.get_models.return_value = api_data
+        result = runner.invoke(app, ["models", "--json"])
+        assert result.exit_code == 0
+        data = json.loads(result.output)
+        assert data == api_data
+
+    def test_models_json_filtered_by_provider(self, mock_client: MagicMock) -> None:
+        mock_client.get_models.return_value = {
+            "providers": ["claude", "gemini", "cursor"],
+            "default_provider": "cursor",
+            "default_model": "gpt-5.4-xhigh-fast",
+            "known_models": {
+                "cursor": ["gpt-5.4-xhigh-fast"],
+                "claude": ["sonnet-4"],
+            },
+        }
+        result = runner.invoke(app, ["models", "--json", "--provider", "claude"])
+        assert result.exit_code == 0
+        data = json.loads(result.output)
+        assert data["providers"] == ["claude"]
+        assert data["default_provider"] == "cursor"
+        assert data["default_model"] == "gpt-5.4-xhigh-fast"
+        assert data["known_models"] == {"claude": ["sonnet-4"]}
+        # Must not contain other providers' models
+        assert "cursor" not in data["known_models"]
+
 
 class TestDownload:
     def test_download_to_file(self, mock_client: MagicMock, tmp_path: Path) -> None:
