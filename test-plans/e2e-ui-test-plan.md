@@ -164,6 +164,7 @@ Each linked sub-file contains only the detailed test bodies for its assigned sec
 | [e2e-11-websocket.md](e2e-11-websocket.md) | 23 | WebSocket Connection, Auth, Real-time Updates |
 | [e2e-12-cli.md](e2e-12-cli.md) | 24 | CLI Commands (config, generate, list, status, admin) |
 | [e2e-13-post-generation-pipeline.md](e2e-13-post-generation-pipeline.md) | 27 | Post-Generation Pipeline (version footer, Mermaid diagrams, related pages, validation/cross-linking stages, performance) |
+| [e2e-14-models-command.md](e2e-14-models-command.md) | 28 | Models Command (CLI providers/models listing, JSON output, API endpoint, known_models) |
 | [e2e-09-cleanup.md](e2e-09-cleanup.md) | 21 | Cleanup and Teardown |
 
 **`e2e-09-cleanup.md` must always be executed last, after all other test files.**
@@ -200,4 +201,5 @@ Each linked sub-file contains only the detailed test bodies for its assigned sec
 | 25 | Sidebar Collapse Toggle Position | 25.1-25.4 |
 | 26 | Dialog Theme Consistency | 26.1-26.2 |
 | 27 | Post-Generation Pipeline | 27.1-27.8 |
+| 28 | Models Command | 28.1-28.8 |
 | 21 | Cleanup and Teardown | 21.1-21.5 |

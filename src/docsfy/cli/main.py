@@ -65,7 +65,7 @@ def main_callback(
 
 # Import standalone commands after app is defined to avoid circular imports
 from docsfy.cli.generate import generate  # noqa: E402
-from docsfy.cli.projects import abort, delete, download, list_projects, status  # noqa: E402
+from docsfy.cli.projects import abort, delete, download, list_projects, models, status  # noqa: E402
 
 app.command("generate")(generate)
 app.command("list")(list_projects)
@@ -73,6 +73,7 @@ app.command("status")(status)
 app.command("delete")(delete)
 app.command("abort")(abort)
 app.command("download")(download)
+app.command("models")(models)
 
 
 @app.command("health")

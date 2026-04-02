@@ -42,6 +42,11 @@ class DocsfyClient:
         self._check_error(response)
         return response
 
+    def get_models(self) -> dict[str, Any]:
+        """Fetch available AI providers and known models."""
+        response = self.get("/api/models")
+        return response.json()
+
     def download(self, path: str, output_path: Path) -> None:
         """Stream-download a file to the given path using atomic write."""
         import tempfile

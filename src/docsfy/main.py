@@ -83,6 +83,8 @@ class AuthMiddleware(BaseHTTPMiddleware):
             "/api/auth/login/",
             "/api/auth/logout",
             "/api/auth/logout/",
+            "/api/models",
+            "/api/models/",
             "/api/ws",
             "/health",
             "/login",
