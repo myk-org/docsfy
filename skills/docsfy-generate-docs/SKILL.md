@@ -11,13 +11,14 @@ Generate AI-powered documentation for a Git repository using the docsfy CLI. The
 
 ## Prerequisites (MANDATORY - check before anything else)
 
-### 1. docsfy CLI installed
+### 1. Check docsfy CLI
 
 ```bash
 docsfy --help
 ```
 
-If not found: `uv tool install docsfy`
+If not found, use `uvx docsfy` as the command prefix for all `docsfy` commands in this document.
+If `uvx` is also not available: `uv tool install docsfy`
 
 ### 2. Server is alive
 
@@ -26,7 +27,7 @@ docsfy health
 ```
 
 If health check fails, inform the user that the docsfy server is not reachable and stop. The user may need to:
-- Start the server: `docsfy-server`
+- Start the server: `docsfy-server` (or `uvx --from docsfy docsfy-server`)
 - Check their config: `docsfy config show`
 - Set up a profile: `docsfy config init`
 
@@ -105,6 +106,8 @@ Display:
 
 ## Quick Reference
 
+> If `docsfy` is not installed, prefix commands with `uvx` (e.g., `uvx docsfy health`).
+
 | Command | Purpose |
 |---------|---------|
 | `docsfy generate <url> --watch` | Generate docs with live progress |
@@ -126,3 +129,4 @@ Display:
 | Forgetting `--watch` flag | Always use `--watch` for real-time progress |
 | Downloading before ready | Check status is `ready` before downloading |
 | Leaving nested download folder | Flatten after download — move files to output root |
+| Assuming docsfy is installed | Use `uvx docsfy` when CLI is missing but uv is available |

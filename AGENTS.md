@@ -1,1 +1,1 @@
-/home/myakove/git/docsfy/CLAUDE.md
+CLAUDE.md
