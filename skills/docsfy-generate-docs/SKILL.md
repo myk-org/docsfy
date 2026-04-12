@@ -11,13 +11,18 @@ Generate AI-powered documentation for a Git repository using the docsfy CLI. The
 
 ## Prerequisites (MANDATORY - check before anything else)
 
-### 1. docsfy CLI installed
+### 1. docsfy CLI available
+
+Check if `docsfy` is installed:
 
 ```bash
 docsfy --help
 ```
 
-If not found: `uv tool install docsfy`
+- If found: use `docsfy` as the command throughout this workflow.
+- If NOT found: use `uvx docsfy` instead — this runs docsfy on-the-fly via uv without requiring installation. Verify `uvx` is available (`uvx --help`). If neither `docsfy` nor `uvx` is available, inform the user they need to install either docsfy (`uv tool install docsfy`) or uv (which provides `uvx`).
+
+**For the rest of this document, `docsfy` refers to whichever command is available (`docsfy` or `uvx docsfy`).** All example commands show `docsfy` — substitute `uvx docsfy` if that's what's being used.
 
 ### 2. Server is alive
 
@@ -26,7 +31,7 @@ docsfy health
 ```
 
 If health check fails, inform the user that the docsfy server is not reachable and stop. The user may need to:
-- Start the server: `docsfy-server`
+- Start the server: `docsfy-server` (or `uvx --from docsfy docsfy-server` if not installed — note: `docsfy-server` is a separate entry point in the same package; bare `uvx docsfy-server` will not work)
 - Check their config: `docsfy config show`
 - Set up a profile: `docsfy config init`
 
@@ -105,6 +110,8 @@ Display:
 
 ## Quick Reference
 
+> **Note:** If `docsfy` is not installed, replace `docsfy` with `uvx docsfy` in all commands below.
+
 | Command | Purpose |
 |---------|---------|
 | `docsfy generate <url> --watch` | Generate docs with live progress |
@@ -126,3 +133,4 @@ Display:
 | Forgetting `--watch` flag | Always use `--watch` for real-time progress |
 | Downloading before ready | Check status is `ready` before downloading |
 | Leaving nested download folder | Flatten after download — move files to output root |
+| Requiring docsfy installation in containers | Use `uvx docsfy` when docsfy isn't installed but uv is available |
