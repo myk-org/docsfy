@@ -413,17 +413,17 @@ async def validate_pages(
     job_id = str(uuid.uuid4())
     job_dir = Path(tempfile.mkdtemp(prefix=f"docsfy-validation-{job_id}-"))
 
-    # Write page manifest for cross-referencing
-    manifest_path: Path | None = None
-    if slug_meta:
-        manifest_lines = [
-            f"- [{meta.get('title', s)}]({s}.html) \u2014 {meta.get('description', '')}"
-            for s, meta in slug_meta.items()
-        ]
-        manifest_path = job_dir / "pages.txt"
-        manifest_path.write_text("\n".join(manifest_lines), encoding="utf-8")
-
     try:
+        # Write page manifest for cross-referencing
+        manifest_path: Path | None = None
+        if slug_meta:
+            manifest_lines = [
+                f"- [{meta.get('title', s)}]({s}.html) \u2014 {meta.get('description', '')}"
+                for s, meta in slug_meta.items()
+            ]
+            manifest_path = job_dir / "pages.txt"
+            manifest_path.write_text("\n".join(manifest_lines), encoding="utf-8")
+
         coroutines = [
             _validate_single_page(
                 slug=slug,
