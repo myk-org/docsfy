@@ -272,6 +272,7 @@ def build_page_prompt(
     page_description: str,
     page_type: str = "guide",
     exclusions_path: str | None = None,
+    other_pages: list[dict[str, str]] | None = None,
 ) -> str:
     writing_rules = _get_writing_rules(page_type)
     exclusions_block = ""
@@ -283,6 +284,21 @@ IMPORTANT: Before writing, read the stale-reference deny-list at:
 
 Do not mention any reference listed in that file.
 Only document features and files that exist in the current codebase."""
+
+    pages_block = ""
+    if other_pages:
+        page_list = "\n".join(
+            f"- [{p['title']}]({p['slug']}.html) \u2014 {p.get('description', '')}"
+            for p in other_pages
+        )
+        pages_block = f"""
+
+AVAILABLE PAGES FOR CROSS-REFERENCES (use these exact titles and slugs when linking):
+{page_list}
+
+When referencing another page, ALWAYS use a markdown link with the exact slug:
+  See [Page Title](page-slug.html) for details.
+Do NOT write plain text like "See Page Title" \u2014 always make it a clickable link."""
 
     return f"""You are a technical documentation writer. Explore this repository to write
 the "{page_title}" page for the {project_name} documentation.
@@ -299,7 +315,7 @@ ANTI-REDUNDANCY: This page should OWN its topic exclusively. Do NOT duplicate co
 that belongs on other pages. Instead, link to them: "See [Page Title](page-slug.html)".
 
 This documentation will be read by end users of the project. Separate llms.txt files
-are generated for AI consumption.{exclusions_block}
+are generated for AI consumption.{exclusions_block}{pages_block}
 
 Start the page with exactly this first line:
 # {page_title}

@@ -207,6 +207,7 @@ async def generate_full_page_content(
     ai_cli_timeout: int | None = None,
     exclusions_path: str | None = None,
     page_type: str = "guide",
+    other_pages: list[dict[str, str]] | None = None,
 ) -> str:
     prompt = build_page_prompt(
         project_name=project_name,
@@ -214,6 +215,7 @@ async def generate_full_page_content(
         page_description=page_description,
         page_type=page_type,
         exclusions_path=exclusions_path,
+        other_pages=other_pages,
     )
     output = await _call_ai_or_raise(
         prompt=prompt,
@@ -326,6 +328,7 @@ async def generate_page(
     branch: str = DEFAULT_BRANCH,
     on_page_generated: Callable[[int], Awaitable[None]] | None = None,
     page_type: str = "guide",
+    other_pages: list[dict[str, str]] | None = None,
 ) -> str:
     _label = project_name or repo_path.name
     prompt_project_name = project_name or repo_path.name
@@ -373,6 +376,7 @@ async def generate_page(
                     ai_model=ai_model,
                     ai_cli_timeout=ai_cli_timeout,
                     page_type=page_type,
+                    other_pages=other_pages,
                 )
         else:
             output = await generate_full_page_content(
@@ -384,6 +388,7 @@ async def generate_page(
                 ai_model=ai_model,
                 ai_cli_timeout=ai_cli_timeout,
                 page_type=page_type,
+                other_pages=other_pages,
             )
     except RuntimeError as exc:
         logger.warning(f"[{_label}] Failed to generate page '{slug}': {exc}")
@@ -459,6 +464,12 @@ async def generate_all_pages(
                 }
             )
 
+    # Build other_pages list for cross-referencing in each page prompt
+    all_page_meta = [
+        {"slug": p["slug"], "title": p["title"], "description": p["description"]}
+        for p in all_pages
+    ]
+
     _existing_pages = existing_pages or {}
     coroutines = [
         generate_page(
@@ -479,6 +490,7 @@ async def generate_all_pages(
             diff_content=diff_content,
             branch=branch,
             on_page_generated=on_page_generated,
+            other_pages=[m for m in all_page_meta if m["slug"] != p["slug"]],
         )
         for p in all_pages
     ]

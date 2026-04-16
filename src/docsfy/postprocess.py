@@ -253,6 +253,7 @@ async def _validate_single_page(
     job_dir: Path,
     ai_cli_timeout: int | None = None,
     page_type: str = "guide",
+    other_pages: list[dict[str, str]] | None = None,
 ) -> str:
     """Validate a single page and regenerate if stale references are found.
 
@@ -317,6 +318,7 @@ async def _validate_single_page(
             ai_cli_timeout=ai_cli_timeout,
             exclusions_path=str(exclusions_file),
             page_type=page_type,
+            other_pages=other_pages,
         )
         cache_file = _confined_path(cache_dir, f"{slug}.md")
         await asyncio.to_thread(cache_file.write_text, new_content, encoding="utf-8")
@@ -369,6 +371,15 @@ async def validate_pages(
                         "type": _page_type if _page_type in PAGE_TYPES else "guide",
                     }
 
+    all_page_meta = [
+        {
+            "slug": s,
+            "title": meta.get("title", s),
+            "description": meta.get("description", ""),
+        }
+        for s, meta in slug_meta.items()
+    ]
+
     job_id = str(uuid.uuid4())
     job_dir = Path(tempfile.mkdtemp(prefix=f"docsfy-validation-{job_id}-"))
 
@@ -387,6 +398,7 @@ async def validate_pages(
                 job_dir=job_dir,
                 ai_cli_timeout=ai_cli_timeout,
                 page_type=slug_meta.get(slug, {}).get("type", "guide"),
+                other_pages=[m for m in all_page_meta if m["slug"] != slug],
             )
             for slug, content in pages.items()
         ]
