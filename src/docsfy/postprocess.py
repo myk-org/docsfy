@@ -46,6 +46,9 @@ def fix_broken_internal_links(
     # Also add slugs from pages dict (in case plan is incomplete)
     valid_slugs.update(pages.keys())
 
+    # Lowercase for case-insensitive matching
+    valid_slugs_lower = {s.lower() for s in valid_slugs}
+
     # Pattern: [link text](slug.html) — internal links only (no http://, no /)
     link_pattern = re.compile(
         r"\[([^\]]+)\]\(([a-zA-Z0-9_-]+)\.html(?:#[^\s)\"]*)?(?:\s*\"[^\"]*\")?\)"
@@ -57,7 +60,7 @@ def fix_broken_internal_links(
         def _replace_link(match: re.Match[str]) -> str:
             link_text = match.group(1)
             target_slug = match.group(2)
-            if target_slug in valid_slugs:
+            if target_slug.lower() in valid_slugs_lower:
                 return match.group(0)  # Keep valid links
             logger.info(
                 f"[{_label}] Removing broken link to '{target_slug}.html' "

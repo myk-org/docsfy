@@ -370,3 +370,60 @@ async def test_run_incremental_planner_returns_all_on_bad_json(
         )
 
     assert result == ["all"]
+
+
+def test_strip_ai_artifacts_removes_think_blocks() -> None:
+    from docsfy.generator import _strip_ai_artifacts
+
+    text = (
+        "# Title\n\nContent here.\n\n<think>Some AI reasoning</think>\n\nMore content."
+    )
+    result = _strip_ai_artifacts(text)
+    assert "<think>" not in result
+    assert "</think>" not in result
+    assert "# Title" in result
+    assert "More content." in result
+
+
+def test_strip_ai_artifacts_removes_orphan_think_tags() -> None:
+    from docsfy.generator import _strip_ai_artifacts
+
+    text = "# Title\n\nContent.\n</think>\nMore."
+    result = _strip_ai_artifacts(text)
+    assert "</think>" not in result
+    assert "# Title" in result
+
+
+def test_strip_ai_artifacts_removes_tail_commentary() -> None:
+    from docsfy.generator import _strip_ai_artifacts
+
+    text = (
+        "# Title\n\n" + "Content line.\n" * 50 + "\nWait - the user said something else"
+    )
+    result = _strip_ai_artifacts(text)
+    assert "Wait -" not in result
+    assert "# Title" in result
+    assert "Content line." in result
+
+
+def test_strip_ai_artifacts_preserves_legitimate_content() -> None:
+    from docsfy.generator import _strip_ai_artifacts
+
+    # "I should" appears in legitimate prose early in the document.
+    # Text must exceed 500 chars so "I should" falls outside the tail window.
+    text = (
+        "# Guide\n\nI should mention that Docker is required.\n\n"
+        "## Next Steps\n\n" + "More content here.\n" * 30
+    )
+    result = _strip_ai_artifacts(text)
+    assert "I should mention that Docker is required." in result
+    assert "## Next Steps" in result
+    assert "More content here." in result
+
+
+def test_strip_ai_artifacts_empty_and_short_text() -> None:
+    from docsfy.generator import _strip_ai_artifacts
+
+    assert _strip_ai_artifacts("") == ""
+    assert _strip_ai_artifacts("# Title") == "# Title"
+    assert _strip_ai_artifacts("Short content.") == "Short content."

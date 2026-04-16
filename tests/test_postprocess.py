@@ -1048,3 +1048,90 @@ async def test_add_cross_links_fallback_to_slug_for_unknown_pages(
         )
     # Should have a link using slug as the fallback title, because extra is in `pages`
     assert "[extra](extra.html)" in result["intro"]
+
+
+def test_fix_broken_internal_links_removes_invalid() -> None:
+    from docsfy.postprocess import fix_broken_internal_links
+
+    pages = {
+        "intro": "See [Setup Guide](setup.html) and [FAQ](faq.html) for details.",
+    }
+    plan = {
+        "navigation": [
+            {"group": "Start", "pages": [{"slug": "intro", "title": "Intro"}]}
+        ]
+    }
+    result = fix_broken_internal_links(pages, plan, project_name="test")
+    # "setup" and "faq" are not in the plan, links should be removed but text kept
+    assert "[Setup Guide](setup.html)" not in result["intro"]
+    assert "[FAQ](faq.html)" not in result["intro"]
+    assert "Setup Guide" in result["intro"]
+    assert "FAQ" in result["intro"]
+
+
+def test_fix_broken_internal_links_keeps_valid() -> None:
+    from docsfy.postprocess import fix_broken_internal_links
+
+    pages = {
+        "intro": "See [Quick Start](quickstart.html) for details.",
+        "quickstart": "# Quick Start",
+    }
+    plan = {
+        "navigation": [
+            {
+                "group": "Start",
+                "pages": [
+                    {"slug": "intro", "title": "Intro"},
+                    {"slug": "quickstart", "title": "Quick Start"},
+                ],
+            }
+        ]
+    }
+    result = fix_broken_internal_links(pages, plan, project_name="test")
+    assert "[Quick Start](quickstart.html)" in result["intro"]
+
+
+def test_fix_broken_internal_links_handles_anchors() -> None:
+    from docsfy.postprocess import fix_broken_internal_links
+
+    pages = {
+        "intro": "See [Config](config.html#advanced) for details.",
+        "config": "# Config",
+    }
+    plan = {
+        "navigation": [
+            {
+                "group": "Start",
+                "pages": [
+                    {"slug": "intro", "title": "Intro"},
+                    {"slug": "config", "title": "Config"},
+                ],
+            }
+        ]
+    }
+    result = fix_broken_internal_links(pages, plan, project_name="test")
+    # config exists in plan, link should be preserved
+    assert "config.html#advanced" in result["intro"]
+
+
+def test_fix_broken_internal_links_case_insensitive() -> None:
+    from docsfy.postprocess import fix_broken_internal_links
+
+    pages = {
+        "intro": "See [Quick Start](QuickStart.html) for details.",
+        "quickstart": "# Quick Start",
+    }
+    plan = {
+        "navigation": [
+            {
+                "group": "Start",
+                "pages": [
+                    {"slug": "intro", "title": "Intro"},
+                    {"slug": "quickstart", "title": "Quick Start"},
+                ],
+            }
+        ]
+    }
+    result = fix_broken_internal_links(pages, plan, project_name="test")
+    # Case-insensitive: QuickStart matches quickstart
+    assert "QuickStart.html" in result["intro"]

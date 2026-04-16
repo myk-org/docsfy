@@ -124,7 +124,8 @@ STRUCTURE (in this order):
 
 CONTENT RULES:
 - Lead with examples. Show the command/code BEFORE explaining what it does.
-- Use code examples from the actual codebase (not made up).
+- Use code examples from the actual codebase (not made up). User-facing commands and config are fine;
+  internal source tree layout and module/class names are what to avoid.
 - Use comparison tables when showing "before/after" or "old way vs new way."
 - Progressive disclosure: simple first, advanced later. The user should be productive after reading just the first half.
 - Do NOT include internal implementation details, architecture, or source code structure.

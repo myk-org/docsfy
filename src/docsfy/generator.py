@@ -64,7 +64,7 @@ def _strip_ai_artifacts(text: str) -> str:
     - Self-referential AI commentary at the end (e.g., "Wait - the user said...",
       "Let me refine:", "I should NOT include...")
     """
-    # Remove <think>...</think> blocks (including multiline, handles nesting)
+    # Remove <think>...</think> blocks (including multiline)
     while "<think>" in text and "</think>" in text:
         text = re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL)
 
@@ -80,7 +80,7 @@ def _strip_ai_artifacts(text: str) -> str:
     tail_offset = max(0, len(text) - 500)
     for marker in _AI_COMMENTARY_END_MARKERS:
         idx = text.find(marker, tail_offset)
-        if idx > 0:
+        if idx >= 0:
             text = text[:idx]
             break  # Only apply the first match
 
