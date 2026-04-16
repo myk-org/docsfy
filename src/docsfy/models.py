@@ -99,6 +99,13 @@ class DocPage(BaseModel):
     description: str = ""
     type: PageType = "guide"
 
+    @field_validator("type", mode="before")
+    @classmethod
+    def normalize_type(cls, v: str) -> str:
+        if isinstance(v, str):
+            return v.lower()
+        return v
+
 
 class NavGroup(BaseModel):
     group: str

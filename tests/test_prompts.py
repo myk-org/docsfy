@@ -96,7 +96,8 @@ def test_build_incremental_page_prompt() -> None:
     assert "ignore" in prompt.lower()
     assert "escaped newlines" in prompt.lower()
     assert "\\\\n" in prompt
-    assert "actual codebase" in prompt.lower()
+    assert "match the page's existing tone" in prompt.lower()
+    assert "page type: guide" in prompt.lower()
     assert "> **note:** text" in prompt.lower()
 
 

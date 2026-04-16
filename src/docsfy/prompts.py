@@ -68,7 +68,7 @@ CRITICAL RULES:
 - Do NOT create an "Introduction" or "Overview" page — fold that into the Getting Started quickstart page
 - Do NOT put API details, internal code, or architecture in User Guides — that belongs in Reference or Internals
 - Do NOT create pages that only describe what something IS — every page should help users DO something
-- Keep total page count between 8 and 15 for most projects
+- Aim for 8 to 15 pages for most projects, but adjust based on project complexity
 - The tagline should describe what the project does FOR THE USER, not what it is technically
   Good: "Turn any Git repo into a polished documentation site in minutes"
   Bad: "AI-powered documentation generator using FastAPI and React"
@@ -212,6 +212,21 @@ def _get_writing_rules(page_type: str) -> str:
     return rules_map[page_type]
 
 
+_INCREMENTAL_WRITING_RULES = {
+    "guide": "Match the page's existing tone. For new_text: lead with examples, use short paragraphs, prefer bullet lists and numbered steps, avoid internal implementation details.",
+    "reference": "Match the page's existing tone. For new_text: be precise and scannable, use tables for parameters, include code examples, avoid narrative explanations.",
+    "recipe": "Match the page's existing tone. For new_text: keep recipes self-contained and copy-paste ready, short explanations only.",
+    "concept": "Match the page's existing tone. For new_text: connect concepts to user-visible effects, use diagrams where helpful, avoid deep code walkthroughs.",
+}
+
+
+def _get_incremental_writing_rules(page_type: str) -> str:
+    """Return condensed writing rules for incremental page updates."""
+    if page_type not in _INCREMENTAL_WRITING_RULES:
+        page_type = "guide"
+    return _INCREMENTAL_WRITING_RULES[page_type]
+
+
 INCREMENTAL_PAGE_UPDATE_SCHEMA = """{
   "updates": [
     {
@@ -296,6 +311,7 @@ Your task is to update the existing "{page_title}" documentation page by editing
 Do NOT rewrite the whole page. Do NOT return the whole page.
 
 Page description: {page_description}
+Page type: {page_type}
 
 Changed files in the repository:
 {chr(10).join(f"- {f}" for f in changed_files)}
@@ -341,7 +357,12 @@ Instructions:
 - Do NOT add explanations, comments, markdown fences, or any text outside the JSON object
 
 When writing "new_text", follow these content rules:
-{_get_writing_rules(page_type)}"""
+{_get_incremental_writing_rules(page_type)}
+
+Use these callout formats:
+- Notes: > **Note:** text
+- Warnings: > **Warning:** text
+- Tips: > **Tip:** text"""
 
 
 VALIDATION_SCHEMA = """[
