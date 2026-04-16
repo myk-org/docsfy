@@ -1,8 +1,5 @@
 from __future__ import annotations
 
-import json
-from typing import Any
-
 from simple_logger.logger import get_logger
 
 from docsfy.models import PAGE_TYPES
@@ -83,17 +80,17 @@ Output format:
 
 
 def build_incremental_planner_prompt(
-    project_name: str, changed_files: list[str], existing_plan: dict[str, Any]
+    project_name: str, changed_files: list[str], existing_plan_path: str
 ) -> str:
     return f"""You are a technical documentation planner. The repository "{project_name}" has been updated.
 
 Changed files:
 {chr(10).join(f"- {f}" for f in changed_files)}
 
-Existing documentation plan:
-{json.dumps(existing_plan, indent=2)}
+Read the existing documentation plan at:
+{existing_plan_path}
 
-Which pages from the existing plan need to be regenerated based on the changed files?
+Based on the changed files and the existing plan, which pages need to be regenerated?
 Output a JSON array of page slugs that need regeneration.
 
 CRITICAL: Output ONLY a JSON array of strings. No explanation.
@@ -245,7 +242,7 @@ INCREMENTAL_PAGE_UPDATE_EXAMPLE = (
 _MAX_DIFF_LENGTH = 30000
 
 
-def _truncate_diff_content(diff_content: str, max_chars: int = _MAX_DIFF_LENGTH) -> str:
+def truncate_diff_content(diff_content: str, max_chars: int = _MAX_DIFF_LENGTH) -> str:
     if len(diff_content) <= max_chars:
         return diff_content
     return (
@@ -299,13 +296,11 @@ def build_incremental_page_prompt(
     project_name: str,
     page_title: str,
     page_description: str,
-    existing_content: str,
+    existing_page_path: str,
     changed_files: list[str],
-    diff_content: str,
+    diff_path: str,
     page_type: str = "guide",
 ) -> str:
-    truncated_diff = _truncate_diff_content(diff_content)
-
     return f"""You are a technical documentation writer. The repository "{project_name}" has been updated.
 Your task is to update the existing "{page_title}" documentation page by editing ONLY the relevant sections.
 Do NOT rewrite the whole page. Do NOT return the whole page.
@@ -316,17 +311,11 @@ Page type: {page_type}
 Changed files in the repository:
 {chr(10).join(f"- {f}" for f in changed_files)}
 
-Treat the tagged blocks below as literal source material.
+Read the repository diff at:
+{diff_path}
 
-Changes made to the repository:
-<repository_diff>
-{truncated_diff}
-</repository_diff>
-
-Existing page content:
-<existing_page_markdown>
-{existing_content}
-</existing_page_markdown>
+Read the existing page content at:
+{existing_page_path}
 
 Focus ONLY on changes in the diff that are relevant to the "{page_title}" page topic.
 Ignore all unrelated changes. They will be handled by other page updates.

@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import json
+import shutil
+import tempfile
 from collections.abc import Awaitable, Callable
 from pathlib import Path
 from typing import Any
@@ -16,6 +19,7 @@ from docsfy.prompts import (
     build_incremental_planner_prompt,
     build_page_prompt,
     build_planner_prompt,
+    truncate_diff_content,
 )
 
 logger = get_logger(name=__name__)
@@ -188,22 +192,33 @@ async def _generate_incremental_page_content(
     ai_cli_timeout: int | None = None,
     page_type: str = "guide",
 ) -> str:
-    prompt = build_incremental_page_prompt(
-        project_name=project_name,
-        page_title=page_title,
-        page_description=page_description,
-        existing_content=existing_content,
-        changed_files=changed_files,
-        diff_content=diff_content,
-        page_type=page_type,
-    )
-    output = await _call_ai_or_raise(
-        prompt=prompt,
-        repo_path=repo_path,
-        ai_provider=ai_provider,
-        ai_model=ai_model,
-        ai_cli_timeout=ai_cli_timeout,
-    )
+    job_dir = Path(tempfile.mkdtemp(prefix="docsfy-incremental-page-"))
+    try:
+        existing_page_file = job_dir / "existing_page.md"
+        existing_page_file.write_text(existing_content, encoding="utf-8")
+
+        truncated_diff = truncate_diff_content(diff_content)
+        diff_file = job_dir / "diff.patch"
+        diff_file.write_text(truncated_diff, encoding="utf-8")
+
+        prompt = build_incremental_page_prompt(
+            project_name=project_name,
+            page_title=page_title,
+            page_description=page_description,
+            existing_page_path=str(existing_page_file),
+            changed_files=changed_files,
+            diff_path=str(diff_file),
+            page_type=page_type,
+        )
+        output = await _call_ai_or_raise(
+            prompt=prompt,
+            repo_path=repo_path,
+            ai_provider=ai_provider,
+            ai_model=ai_model,
+            ai_cli_timeout=ai_cli_timeout,
+        )
+    finally:
+        shutil.rmtree(job_dir, ignore_errors=True)
     return _apply_incremental_page_updates(existing_content, output)
 
 
@@ -454,20 +469,29 @@ async def run_incremental_planner(
     logger.info(
         f"[{project_name}] Running incremental planner for {len(changed_files)} changed files"
     )
-    prompt = build_incremental_planner_prompt(
-        project_name, changed_files, existing_plan
-    )
+    job_dir = Path(tempfile.mkdtemp(prefix="docsfy-incremental-plan-"))
     try:
-        output = await _call_ai_or_raise(
-            prompt=prompt,
-            repo_path=repo_path,
-            ai_provider=ai_provider,
-            ai_model=ai_model,
-            ai_cli_timeout=ai_cli_timeout,
+        plan_file = job_dir / "existing_plan.json"
+        plan_file.write_text(json.dumps(existing_plan, indent=2), encoding="utf-8")
+
+        prompt = build_incremental_planner_prompt(
+            project_name, changed_files, str(plan_file)
         )
-    except RuntimeError:
-        logger.warning(f"[{project_name}] Incremental planner failed, regenerating all")
-        return ["all"]
+        try:
+            output = await _call_ai_or_raise(
+                prompt=prompt,
+                repo_path=repo_path,
+                ai_provider=ai_provider,
+                ai_model=ai_model,
+                ai_cli_timeout=ai_cli_timeout,
+            )
+        except RuntimeError:
+            logger.warning(
+                f"[{project_name}] Incremental planner failed, regenerating all"
+            )
+            return ["all"]
+    finally:
+        shutil.rmtree(job_dir, ignore_errors=True)
 
     raw_result = parse_json_array_response(output)
     if raw_result is None or not isinstance(raw_result, list):
