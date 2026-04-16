@@ -16,7 +16,7 @@ from simple_logger.logger import get_logger
 from docsfy.ai_client import call_ai_cli, run_parallel_with_limit
 from docsfy.generator import generate_full_page_content
 from docsfy.json_parser import parse_json_array_response, parse_json_response
-from docsfy.models import MAX_CONCURRENT_PAGES, PAGE_TYPES
+from docsfy.models import PAGE_TYPES
 from docsfy.prompts import build_cross_links_prompt, build_validation_prompt
 
 logger = get_logger(name=__name__)
@@ -403,8 +403,10 @@ async def validate_pages(
             for slug, content in pages.items()
         ]
 
+        from docsfy.config import get_settings
+
         results = await run_parallel_with_limit(
-            coroutines, max_concurrency=MAX_CONCURRENT_PAGES
+            coroutines, max_concurrency=get_settings().max_concurrent_pages
         )
     finally:
         shutil.rmtree(job_dir, ignore_errors=True)
