@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 import shutil
 import tempfile
 from collections.abc import Awaitable, Callable
@@ -41,6 +42,19 @@ def _strip_ai_preamble(text: str) -> str:
     return text
 
 
+_AI_COMMENTARY_END_MARKERS = (
+    "\nWait -",
+    "\nWait,",
+    "\nLet me refine",
+    "\nLet me remove",
+    "\nI should ",
+    "\nI'll also ",
+    "\nI'll remove",
+    "\nSo I should",
+    "\n`</think>`",
+)
+
+
 def _strip_ai_artifacts(text: str) -> str:
     """Strip AI thinking/reasoning artifacts from generated content.
 
@@ -50,10 +64,9 @@ def _strip_ai_artifacts(text: str) -> str:
     - Self-referential AI commentary at the end (e.g., "Wait - the user said...",
       "Let me refine:", "I should NOT include...")
     """
-    import re
-
-    # Remove <think>...</think> blocks (including multiline)
-    text = re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL)
+    # Remove <think>...</think> blocks (including multiline, handles nesting)
+    while "<think>" in text and "</think>" in text:
+        text = re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL)
 
     # Remove orphan </think> tags
     text = re.sub(r"</think>", "", text)
@@ -63,20 +76,9 @@ def _strip_ai_artifacts(text: str) -> str:
 
     # Strip self-referential AI commentary from the end
     # These patterns indicate the AI started "thinking out loud" after the content
-    end_markers = [
-        "\nWait -",
-        "\nWait,",
-        "\nLet me refine",
-        "\nLet me remove",
-        "\nI should ",
-        "\nI'll also ",
-        "\nI'll remove",
-        "\nSo I should",
-        "\n`</think>`",
-    ]
-    for marker in end_markers:
+    for marker in _AI_COMMENTARY_END_MARKERS:
         idx = text.find(marker)
-        if idx > 0:
+        if idx > 0:  # Don't truncate if marker is at the very start
             text = text[:idx]
 
     return text.strip()
