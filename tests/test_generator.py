@@ -427,3 +427,15 @@ def test_strip_ai_artifacts_empty_and_short_text() -> None:
     assert _strip_ai_artifacts("") == ""
     assert _strip_ai_artifacts("# Title") == "# Title"
     assert _strip_ai_artifacts("Short content.") == "Short content."
+
+
+def test_strip_ai_artifacts_marker_at_tail_boundary() -> None:
+    """Regression test: marker at idx==0 of the tail window must still be stripped."""
+    from docsfy.generator import _strip_ai_artifacts
+
+    # Create text exactly 500 chars + a marker right at the tail boundary
+    padding = "x" * 500
+    text = padding + "\nWait - this is AI commentary"
+    result = _strip_ai_artifacts(text)
+    assert "Wait -" not in result
+    assert result == padding
