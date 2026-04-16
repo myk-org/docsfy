@@ -21,6 +21,9 @@ from docsfy.prompts import build_cross_links_prompt, build_validation_prompt
 
 logger = get_logger(name=__name__)
 
+# Regex to identify code fences and inline code that should be skipped
+_CODE_BLOCK_RE = re.compile(r"(```[\s\S]*?```|`[^`\n]+`)")
+
 
 def fix_broken_internal_links(
     pages: dict[str, str],
@@ -82,8 +85,15 @@ def fix_broken_internal_links(
             )
             return link_text  # Remove the link, keep the text
 
-        new_content = link_pattern.sub(_replace_link, content)
-        updated[slug] = new_content
+        # Split content into code and non-code segments, only fix links in non-code
+        parts = _CODE_BLOCK_RE.split(content)
+        new_parts: list[str] = []
+        for part in parts:
+            if _CODE_BLOCK_RE.match(part):
+                new_parts.append(part)  # Code segment, keep as-is
+            else:
+                new_parts.append(link_pattern.sub(_replace_link, part))
+        updated[slug] = "".join(new_parts)
 
     return updated
 
@@ -128,9 +138,6 @@ def linkify_plain_references(
         r"(?!\]\()",  # Not followed by ]( (already a link)
         re.IGNORECASE,
     )
-
-    # Regex to identify code fences and inline code that should NOT be linkified
-    _CODE_BLOCK_RE = re.compile(r"(```[\s\S]*?```|`[^`\n]+`)")
 
     updated: dict[str, str] = {}
     for page_slug, content in pages.items():
