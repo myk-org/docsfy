@@ -21,8 +21,8 @@
     --text-secondary: #57534e;
     --text-tertiary: #78716c;
     --text-inverse: #ffffff;
-    --text-link: #ea580c;
-    --text-link-hover: #c2410c;
+    --text-link: #c2410c;
+    --text-link-hover: #9a3412;
     --text-code: #92400e;
     --text-code-block: #d4d4d8;
 
@@ -32,9 +32,10 @@
     --border-focus: #ea580c;
 
     /* Accent */
-    --accent: #ea580c;
+    --accent: #c2410c;
     --accent-light: #fff7ed;
-    --accent-hover: #c2410c;
+    --accent-hover: #9a3412;
+    --accent-contrast: #ffffff;
 
     /* Callouts */
     --callout-note-bg: #eff6ff;
@@ -105,6 +106,7 @@
     --accent: #fb923c;
     --accent-light: rgba(251, 146, 60, 0.1);
     --accent-hover: #fdba74;
+    --accent-contrast: #1c1917;
 
     --callout-note-bg: #172554;
     --callout-note-border: #3b82f6;
@@ -240,7 +242,7 @@ a:hover {
 #search-input:focus {
     border-color: var(--border-focus);
     /* Accent-derived focus ring; intentionally static for broad browser support */
-    box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.12);
+    box-shadow: 0 0 0 3px rgba(194, 65, 12, 0.15);
 }
 
 .search-results {
@@ -712,7 +714,7 @@ blockquote:not(.callout-note):not(.callout-warning):not(.callout-tip):not(.callo
     color: var(--text-link);
     text-decoration: underline;
     /* Accent-derived underline; intentionally static for broad browser support */
-    text-decoration-color: rgba(234, 88, 12, 0.3);
+    text-decoration-color: rgba(194, 65, 12, 0.3);
     text-underline-offset: 2px;
     transition: color var(--transition-fast), text-decoration-color var(--transition-fast);
 }
@@ -818,7 +820,7 @@ details > ol:last-child {
     display: inline-block;
     padding: 10px 24px;
     background: var(--accent);
-    color: white;
+    color: var(--accent-contrast);
     border-radius: 6px;
     font-size: 0.9375rem;
     font-weight: 600;
@@ -828,7 +830,7 @@ details > ol:last-child {
 
 .index-cta:hover {
     background: var(--accent-hover);
-    color: white;
+    color: var(--accent-contrast);
     text-decoration: none;
 }
 

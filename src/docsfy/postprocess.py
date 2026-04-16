@@ -51,7 +51,7 @@ def fix_broken_internal_links(
 
     # Pattern: [link text](slug.html) — internal links only (no http://, no /)
     link_pattern = re.compile(
-        r"\[([^\]]+)\]\(([a-zA-Z0-9_-]+)\.html(?:#[^\s)\"]*)?(?:\s*\"[^\"]*\")?\)"
+        r"\[([^\]]+)\]\(((?!\.)[a-zA-Z0-9._-]+)\.html(?:#[^\s)\"]*)?(?:\s*\"[^\"]*\")?\)"
     )
 
     updated: dict[str, str] = {}

@@ -1227,3 +1227,46 @@ def test_linkify_plain_references_longest_match_first() -> None:
     result = linkify_plain_references(pages, plan, project_name="test")
     # Should match the longer "CLI Command Reference", not just "CLI"
     assert "[CLI Command Reference](cli-ref.html)" in result["intro"]
+
+
+def test_fix_broken_internal_links_dotted_slug_valid() -> None:
+    from docsfy.postprocess import fix_broken_internal_links
+
+    pages = {
+        "intro": "See [API v2](api.v2.html) for details.",
+        "api.v2": "# API v2",
+    }
+    plan = {
+        "navigation": [
+            {
+                "group": "Ref",
+                "pages": [
+                    {"slug": "intro", "title": "Intro"},
+                    {"slug": "api.v2", "title": "API v2"},
+                ],
+            }
+        ]
+    }
+    result = fix_broken_internal_links(pages, plan, project_name="test")
+    assert "[API v2](api.v2.html)" in result["intro"]
+
+
+def test_fix_broken_internal_links_dotted_slug_broken() -> None:
+    from docsfy.postprocess import fix_broken_internal_links
+
+    pages = {
+        "intro": "See [Old API](api.v1.html) for details.",
+    }
+    plan = {
+        "navigation": [
+            {
+                "group": "Ref",
+                "pages": [
+                    {"slug": "intro", "title": "Intro"},
+                ],
+            }
+        ]
+    }
+    result = fix_broken_internal_links(pages, plan, project_name="test")
+    assert "[Old API](api.v1.html)" not in result["intro"]
+    assert "Old API" in result["intro"]
