@@ -358,11 +358,7 @@ Instructions:
 
 When writing "new_text", follow these content rules:
 {_get_incremental_writing_rules(page_type)}
-
-Use these callout formats:
-- Notes: > **Note:** text
-- Warnings: > **Warning:** text
-- Tips: > **Tip:** text"""
+{_CALLOUT_FORMATS}"""
 
 
 VALIDATION_SCHEMA = """[

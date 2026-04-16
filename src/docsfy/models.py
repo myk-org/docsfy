@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
-from typing import Literal, get_args
+from typing import Any, Literal, get_args
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
@@ -101,9 +101,9 @@ class DocPage(BaseModel):
 
     @field_validator("type", mode="before")
     @classmethod
-    def normalize_type(cls, v: str) -> str:
+    def normalize_type(cls, v: Any) -> Any:
         if isinstance(v, str):
-            return v.lower()
+            return v.strip().lower()
         return v
 
 

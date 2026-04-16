@@ -150,3 +150,24 @@ def test_doc_plan_version_field() -> None:
     assert data["version"] == "1.2.3"
     restored = DocPlan(**data)
     assert restored.version == "1.2.3"
+
+
+def test_docpage_type_case_normalization() -> None:
+    from docsfy.models import DocPage
+
+    page = DocPage(slug="test", title="Test", type="Guide")
+    assert page.type == "guide"
+
+    page2 = DocPage(slug="test", title="Test", type="REFERENCE")
+    assert page2.type == "reference"
+
+    page3 = DocPage(slug="test", title="Test", type=" Recipe ")
+    assert page3.type == "recipe"
+
+
+def test_docpage_type_invalid_rejected() -> None:
+    import pytest
+    from docsfy.models import DocPage
+
+    with pytest.raises(Exception):
+        DocPage(slug="test", title="Test", type="invalid")
