@@ -118,6 +118,8 @@ STRUCTURE (in this order):
 3. Quick example: Show the simplest working example FIRST, before any explanation.
 4. Step-by-step: Walk through the common use case with clear steps.
 5. Advanced usage: AFTER the basics, cover advanced options, edge cases, or alternatives.
+   Wrap this section in a collapsible block using <details><summary>Advanced Usage</summary>...</details>
+   so it doesn't overwhelm users who only need the basics.
 6. Troubleshooting: Common problems and solutions (only if relevant, keep brief).
 
 CONTENT RULES:
@@ -126,6 +128,9 @@ CONTENT RULES:
 - Use comparison tables when showing "before/after" or "old way vs new way."
 - Progressive disclosure: simple first, advanced later. The user should be productive after reading just the first half.
 - Do NOT include internal implementation details, architecture, or source code structure.
+  Examples of things to EXCLUDE: Python class names like `MyClass`, module paths like `src/pkg/module.py`,
+  config class references like `(app.config.Settings)`, entry point definitions from pyproject.toml.
+  Users don't need to know WHERE the code lives — only HOW to use the tool.
 - Do NOT show raw API request/response payloads unless this page is specifically about the API.
 - Do NOT duplicate content that belongs on other pages — link to them instead with: "See [Page Title](page-slug.html)"
 - Write for humans who want to GET THINGS DONE, not understand internals.

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import re
 import shutil
 import subprocess
 import tempfile
@@ -19,6 +20,53 @@ from docsfy.models import MAX_CONCURRENT_PAGES, PAGE_TYPES
 from docsfy.prompts import build_cross_links_prompt, build_validation_prompt
 
 logger = get_logger(name=__name__)
+
+
+def fix_broken_internal_links(
+    pages: dict[str, str],
+    plan: dict[str, Any],
+    project_name: str = "",
+) -> dict[str, str]:
+    """Remove or fix internal links that point to non-existent pages.
+
+    AI-generated content often includes links to pages that were not part of
+    the documentation plan (hallucinated page names). This function finds all
+    internal .html links and removes those that don't match any plan slug.
+    """
+    _label = project_name or "unknown"
+
+    # Build set of valid slugs from the plan
+    valid_slugs: set[str] = set()
+    for group in plan.get("navigation", []):
+        for page in group.get("pages", []):
+            slug = page.get("slug", "")
+            if slug:
+                valid_slugs.add(slug)
+
+    # Also add slugs from pages dict (in case plan is incomplete)
+    valid_slugs.update(pages.keys())
+
+    # Pattern: [link text](slug.html) — internal links only (no http://, no /)
+    link_pattern = re.compile(r"\[([^\]]+)\]\(([a-zA-Z0-9_-]+)\.html\)")
+
+    updated: dict[str, str] = {}
+    for slug, content in pages.items():
+
+        def _replace_link(match: re.Match[str]) -> str:
+            link_text = match.group(1)
+            target_slug = match.group(2)
+            if target_slug in valid_slugs:
+                return match.group(0)  # Keep valid links
+            logger.info(
+                f"[{_label}] Removing broken link to '{target_slug}.html' "
+                f"in page '{slug}'"
+            )
+            return link_text  # Remove the link, keep the text
+
+        new_content = link_pattern.sub(_replace_link, content)
+        updated[slug] = new_content
+
+    return updated
 
 
 def _confined_path(base: Path, relative_name: str) -> Path:

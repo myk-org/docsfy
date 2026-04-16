@@ -30,7 +30,12 @@ from docsfy.models import (
     VALID_PROVIDERS,
     GenerateRequest,
 )
-from docsfy.postprocess import add_cross_links, detect_version, validate_pages
+from docsfy.postprocess import (
+    add_cross_links,
+    detect_version,
+    fix_broken_internal_links,
+    validate_pages,
+)
 from docsfy.renderer import render_site
 from docsfy.repository import (
     clone_repo,
@@ -1016,6 +1021,7 @@ async def _generate_from_path(
             current_stage="cross_linking",
             page_count=len(pages),
         )
+        pages = fix_broken_internal_links(pages, plan, project_name=project_name)
         pages = await add_cross_links(
             pages=pages,
             plan=plan,

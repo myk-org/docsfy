@@ -847,6 +847,7 @@ details > ol:last-child {
     border: 1px solid var(--border-primary);
     border-radius: 12px;
     padding: 24px;
+    align-self: start;
     transition: border-color var(--transition-fast),
                 background-color var(--transition-normal);
 }

@@ -41,6 +41,47 @@ def _strip_ai_preamble(text: str) -> str:
     return text
 
 
+def _strip_ai_artifacts(text: str) -> str:
+    """Strip AI thinking/reasoning artifacts from generated content.
+
+    Removes:
+    - <think>...</think> blocks anywhere in the text
+    - </think> orphan closing tags
+    - Self-referential AI commentary at the end (e.g., "Wait - the user said...",
+      "Let me refine:", "I should NOT include...")
+    """
+    import re
+
+    # Remove <think>...</think> blocks (including multiline)
+    text = re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL)
+
+    # Remove orphan </think> tags
+    text = re.sub(r"</think>", "", text)
+
+    # Remove orphan <think> tags
+    text = re.sub(r"<think>", "", text)
+
+    # Strip self-referential AI commentary from the end
+    # These patterns indicate the AI started "thinking out loud" after the content
+    end_markers = [
+        "\nWait -",
+        "\nWait,",
+        "\nLet me refine",
+        "\nLet me remove",
+        "\nI should ",
+        "\nI'll also ",
+        "\nI'll remove",
+        "\nSo I should",
+        "\n`</think>`",
+    ]
+    for marker in end_markers:
+        idx = text.find(marker)
+        if idx > 0:
+            text = text[:idx]
+
+    return text.strip()
+
+
 async def _call_ai_or_raise(
     prompt: str,
     repo_path: Path,
@@ -176,7 +217,7 @@ async def generate_full_page_content(
         ai_model=ai_model,
         ai_cli_timeout=ai_cli_timeout,
     )
-    return _strip_ai_preamble(output)
+    return _strip_ai_artifacts(_strip_ai_preamble(output))
 
 
 async def _generate_incremental_page_content(
