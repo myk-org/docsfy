@@ -11,7 +11,7 @@
   if (stored) {
     document.documentElement.setAttribute('data-theme', stored);
   } else {
-    document.documentElement.setAttribute('data-theme', 'dark');
+    document.documentElement.setAttribute('data-theme', 'light');
   }
   if (toggle) toggle.addEventListener('click', function() {
     var current = document.documentElement.getAttribute('data-theme');
