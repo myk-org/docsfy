@@ -49,6 +49,11 @@ def fix_broken_internal_links(
     # Lowercase for case-insensitive matching
     valid_slugs_lower = {s.lower() for s in valid_slugs}
 
+    # Build canonical slug casing lookup
+    slug_to_canonical: dict[str, str] = {}
+    for s in valid_slugs:
+        slug_to_canonical[s.lower()] = s
+
     # Pattern: [link text](slug.html) — internal links only (no http://, no /)
     link_pattern = re.compile(
         r"\[([^\]]+)\]\(((?!\.)[a-zA-Z0-9._-]+)\.html(?:#[^\s)\"]*)?(?:\s*\"[^\"]*\")?\)"
@@ -60,8 +65,17 @@ def fix_broken_internal_links(
         def _replace_link(match: re.Match[str], _slug: str = slug) -> str:
             link_text = match.group(1)
             target_slug = match.group(2)
-            if target_slug.lower() in valid_slugs_lower:
-                return match.group(0)  # Keep valid links
+            target_lower = target_slug.lower()
+            if target_lower in valid_slugs_lower:
+                # Rewrite to canonical slug casing for case-sensitive hosts
+                canonical = slug_to_canonical.get(target_lower, target_slug)
+                if canonical != target_slug:
+                    # Preserve any anchor/title suffix from the original match
+                    full_match = match.group(0)
+                    return full_match.replace(
+                        f"({target_slug}.html", f"({canonical}.html"
+                    )
+                return match.group(0)  # Already correct casing
             logger.info(
                 f"[{_label}] Removing broken link to '{target_slug}.html' "
                 f"in page '{_slug}'"
@@ -111,7 +125,8 @@ def linkify_plain_references(
         r"(?<!\[)"  # Not preceded by [
         r"([Ss]ee\s+)"  # "See " or "see "
         r"(" + title_alternatives + r")"  # One of the page titles
-        r"(?!\]\()"  # Not followed by ]( (already a link)
+        r"(?!\]\()",  # Not followed by ]( (already a link)
+        re.IGNORECASE,
     )
 
     updated: dict[str, str] = {}

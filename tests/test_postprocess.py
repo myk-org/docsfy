@@ -1133,8 +1133,9 @@ def test_fix_broken_internal_links_case_insensitive() -> None:
         ]
     }
     result = fix_broken_internal_links(pages, plan, project_name="test")
-    # Case-insensitive: QuickStart matches quickstart
-    assert "QuickStart.html" in result["intro"]
+    # Case-insensitive match rewrites to canonical slug casing
+    assert "quickstart.html" in result["intro"]
+    assert "QuickStart.html" not in result["intro"]
 
 
 def test_linkify_plain_references_converts_see_pattern() -> None:

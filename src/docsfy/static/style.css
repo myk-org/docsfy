@@ -36,6 +36,8 @@
     --accent-light: #fff7ed;
     --accent-hover: #9a3412;
     --accent-contrast: #ffffff;
+    --accent-focus-ring: rgba(194, 65, 12, 0.15);
+    --accent-underline: rgba(194, 65, 12, 0.3);
 
     /* Callouts */
     --callout-note-bg: #eff6ff;
@@ -107,6 +109,8 @@
     --accent-light: rgba(251, 146, 60, 0.1);
     --accent-hover: #fdba74;
     --accent-contrast: #1c1917;
+    --accent-focus-ring: rgba(251, 146, 60, 0.15);
+    --accent-underline: rgba(251, 146, 60, 0.3);
 
     --callout-note-bg: #172554;
     --callout-note-border: #3b82f6;
@@ -241,8 +245,7 @@ a:hover {
 
 #search-input:focus {
     border-color: var(--border-focus);
-    /* Accent-derived focus ring; intentionally static for broad browser support */
-    box-shadow: 0 0 0 3px rgba(194, 65, 12, 0.15);
+    box-shadow: 0 0 0 3px var(--accent-focus-ring);
 }
 
 .search-results {
@@ -710,8 +713,7 @@ blockquote:not(.callout-note):not(.callout-warning):not(.callout-tip):not(.callo
 .article-body a {
     color: var(--text-link);
     text-decoration: underline;
-    /* Accent-derived underline; intentionally static for broad browser support */
-    text-decoration-color: rgba(194, 65, 12, 0.3);
+    text-decoration-color: var(--accent-underline);
     text-underline-offset: 2px;
     transition: color var(--transition-fast), text-decoration-color var(--transition-fast);
 }
@@ -779,6 +781,10 @@ details summary::-webkit-details-marker {
 
 details > *:not(summary) {
     padding: 0 16px;
+}
+
+details > *:not(summary):first-of-type {
+    padding-top: 16px;
 }
 
 details > p:last-child,
