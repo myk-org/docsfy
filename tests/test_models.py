@@ -167,7 +167,8 @@ def test_docpage_type_case_normalization() -> None:
 
 def test_docpage_type_invalid_rejected() -> None:
     import pytest
+    from pydantic import ValidationError
     from docsfy.models import DocPage
 
-    with pytest.raises(Exception):
+    with pytest.raises(ValidationError):
         DocPage(slug="test", title="Test", type="invalid")
