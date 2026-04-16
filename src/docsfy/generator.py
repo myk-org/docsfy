@@ -74,12 +74,15 @@ def _strip_ai_artifacts(text: str) -> str:
     # Remove orphan <think> tags
     text = re.sub(r"<think>", "", text)
 
-    # Strip self-referential AI commentary from the end
-    # These patterns indicate the AI started "thinking out loud" after the content
+    # Only scan the tail of the output for self-referential AI commentary.
+    # These markers only appear at the very end when the AI "thinks out loud"
+    # after finishing. Scanning the full text risks truncating legitimate prose.
+    tail_offset = max(0, len(text) - 500)
     for marker in _AI_COMMENTARY_END_MARKERS:
-        idx = text.find(marker)
-        if idx > 0:  # Don't truncate if marker is at the very start
+        idx = text.find(marker, tail_offset)
+        if idx > 0:
             text = text[:idx]
+            break  # Only apply the first match
 
     return text.strip()
 
