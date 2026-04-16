@@ -208,9 +208,9 @@ _WRITING_RULES_MAP: dict[str, str] = {
     "recipe": _RECIPE_WRITING_RULES,
     "concept": _CONCEPT_WRITING_RULES,
 }
-assert set(_WRITING_RULES_MAP) == set(PAGE_TYPES), (
-    f"Writing rules must cover all page types: {set(PAGE_TYPES) - set(_WRITING_RULES_MAP)} missing"
-)
+if set(_WRITING_RULES_MAP) != set(PAGE_TYPES):
+    _missing = set(PAGE_TYPES) - set(_WRITING_RULES_MAP)
+    raise RuntimeError(f"Writing rules must cover all page types: {_missing} missing")
 
 
 def _get_writing_rules(page_type: str) -> str:
@@ -227,9 +227,11 @@ _INCREMENTAL_WRITING_RULES: dict[str, str] = {
     "recipe": "Match the page's existing tone. For new_text: keep recipes self-contained and copy-paste ready, short explanations only.",
     "concept": "Match the page's existing tone. For new_text: connect concepts to user-visible effects, use diagrams where helpful, avoid deep code walkthroughs.",
 }
-assert set(_INCREMENTAL_WRITING_RULES) == set(PAGE_TYPES), (
-    f"Incremental writing rules must cover all page types: {set(PAGE_TYPES) - set(_INCREMENTAL_WRITING_RULES)} missing"
-)
+if set(_INCREMENTAL_WRITING_RULES) != set(PAGE_TYPES):
+    _missing = set(PAGE_TYPES) - set(_INCREMENTAL_WRITING_RULES)
+    raise RuntimeError(
+        f"Incremental writing rules must cover all page types: {_missing} missing"
+    )
 
 
 def _get_incremental_writing_rules(page_type: str) -> str:

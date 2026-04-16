@@ -467,41 +467,41 @@ async def generate_all_pages(
 
     # Write page manifest once for cross-referencing (GOLDEN RULE: don't inline in prompts)
     pages_manifest_dir = Path(tempfile.mkdtemp(prefix="docsfy-pages-manifest-"))
-    pages_manifest_path = pages_manifest_dir / "pages.txt"
-    manifest_lines = [
-        f"- [{p['title']}]({p['slug']}.html) \u2014 {p['description']}"
-        for p in all_pages
-    ]
-    pages_manifest_path.write_text("\n".join(manifest_lines), encoding="utf-8")
-
-    _existing_pages = existing_pages or {}
-    coroutines = [
-        generate_page(
-            repo_path=repo_path,
-            slug=p["slug"],
-            title=p["title"],
-            description=p["description"],
-            cache_dir=cache_dir,
-            page_type=p["type"],
-            ai_provider=ai_provider,
-            ai_model=ai_model,
-            ai_cli_timeout=ai_cli_timeout,
-            use_cache=use_cache,
-            project_name=project_name,
-            owner=owner,
-            existing_content=_existing_pages.get(p["slug"]),
-            changed_files=changed_files,
-            diff_content=diff_content,
-            branch=branch,
-            on_page_generated=on_page_generated,
-            other_pages_path=str(pages_manifest_path),
-        )
-        for p in all_pages
-    ]
-
-    from docsfy.config import get_settings
-
     try:
+        pages_manifest_path = pages_manifest_dir / "pages.txt"
+        manifest_lines = [
+            f"- [{p['title']}]({p['slug']}.html) \u2014 {p['description']}"
+            for p in all_pages
+        ]
+        pages_manifest_path.write_text("\n".join(manifest_lines), encoding="utf-8")
+
+        _existing_pages = existing_pages or {}
+        coroutines = [
+            generate_page(
+                repo_path=repo_path,
+                slug=p["slug"],
+                title=p["title"],
+                description=p["description"],
+                cache_dir=cache_dir,
+                page_type=p["type"],
+                ai_provider=ai_provider,
+                ai_model=ai_model,
+                ai_cli_timeout=ai_cli_timeout,
+                use_cache=use_cache,
+                project_name=project_name,
+                owner=owner,
+                existing_content=_existing_pages.get(p["slug"]),
+                changed_files=changed_files,
+                diff_content=diff_content,
+                branch=branch,
+                on_page_generated=on_page_generated,
+                other_pages_path=str(pages_manifest_path),
+            )
+            for p in all_pages
+        ]
+
+        from docsfy.config import get_settings
+
         results = await run_parallel_with_limit(
             coroutines, max_concurrency=get_settings().max_concurrent_pages
         )

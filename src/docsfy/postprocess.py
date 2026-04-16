@@ -398,10 +398,16 @@ async def validate_pages(
                 slug = page.get("slug", "")
                 if slug:
                     _page_type = page.get("type", "guide")
+                    if _page_type not in PAGE_TYPES:
+                        logger.warning(
+                            f"[{project_name}] Unknown page type '{_page_type}' for slug '{slug}', "
+                            f"falling back to 'guide'"
+                        )
+                        _page_type = "guide"
                     slug_meta[slug] = {
                         "title": page.get("title", slug),
                         "description": page.get("description", ""),
-                        "type": _page_type if _page_type in PAGE_TYPES else "guide",
+                        "type": _page_type,
                     }
 
     job_id = str(uuid.uuid4())
