@@ -195,26 +195,34 @@ CONTENT RULES:
 )
 
 
+_WRITING_RULES_MAP: dict[str, str] = {
+    "guide": _GUIDE_WRITING_RULES,
+    "reference": _REFERENCE_WRITING_RULES,
+    "recipe": _RECIPE_WRITING_RULES,
+    "concept": _CONCEPT_WRITING_RULES,
+}
+assert set(_WRITING_RULES_MAP) == set(PAGE_TYPES), (
+    f"Writing rules must cover all page types: {set(PAGE_TYPES) - set(_WRITING_RULES_MAP)} missing"
+)
+
+
 def _get_writing_rules(page_type: str) -> str:
     """Return writing rules based on page type."""
-    rules_map = {
-        "guide": _GUIDE_WRITING_RULES,
-        "reference": _REFERENCE_WRITING_RULES,
-        "recipe": _RECIPE_WRITING_RULES,
-        "concept": _CONCEPT_WRITING_RULES,
-    }
-    if page_type not in rules_map:
+    if page_type not in _WRITING_RULES_MAP:
         logger.warning(f"Unknown page type '{page_type}', falling back to 'guide'")
         page_type = "guide"
-    return rules_map[page_type]
+    return _WRITING_RULES_MAP[page_type]
 
 
-_INCREMENTAL_WRITING_RULES = {
+_INCREMENTAL_WRITING_RULES: dict[str, str] = {
     "guide": "Match the page's existing tone. For new_text: lead with examples, use short paragraphs, prefer bullet lists and numbered steps, avoid internal implementation details.",
     "reference": "Match the page's existing tone. For new_text: be precise and scannable, use tables for parameters, include code examples, avoid narrative explanations.",
     "recipe": "Match the page's existing tone. For new_text: keep recipes self-contained and copy-paste ready, short explanations only.",
     "concept": "Match the page's existing tone. For new_text: connect concepts to user-visible effects, use diagrams where helpful, avoid deep code walkthroughs.",
 }
+assert set(_INCREMENTAL_WRITING_RULES) == set(PAGE_TYPES), (
+    f"Incremental writing rules must cover all page types: {set(PAGE_TYPES) - set(_INCREMENTAL_WRITING_RULES)} missing"
+)
 
 
 def _get_incremental_writing_rules(page_type: str) -> str:
