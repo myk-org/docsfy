@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
-from typing import Literal
+from typing import Literal, get_args
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
@@ -89,14 +89,15 @@ class GenerateRequest(BaseModel):
         return "unknown"
 
 
-PAGE_TYPES = ("guide", "reference", "recipe", "concept")
+PageType = Literal["guide", "reference", "recipe", "concept"]
+PAGE_TYPES: tuple[str, ...] = get_args(PageType)
 
 
 class DocPage(BaseModel):
     slug: str
     title: str
     description: str = ""
-    type: Literal["guide", "reference", "recipe", "concept"] = "guide"
+    type: PageType = "guide"
 
 
 class NavGroup(BaseModel):

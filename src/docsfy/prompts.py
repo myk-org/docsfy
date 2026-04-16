@@ -3,7 +3,16 @@ from __future__ import annotations
 import json
 from typing import Any
 
-PLAN_SCHEMA = """{
+from simple_logger.logger import get_logger
+
+from docsfy.models import PAGE_TYPES
+
+logger = get_logger(name=__name__)
+
+_PAGE_TYPE_VALUES = ", ".join(PAGE_TYPES)
+
+PLAN_SCHEMA = (
+    """{
   "project_name": "string - project name",
   "tagline": "string - one-line project description (what it does for the user, not what it is)",
   "navigation": [
@@ -14,12 +23,15 @@ PLAN_SCHEMA = """{
           "slug": "string - URL-friendly page identifier",
           "title": "string - human-readable page title",
           "description": "string - brief description of what this page covers",
-          "type": "string - one of: guide, reference, recipe, concept"
+          "type": "string - one of: """
+    + _PAGE_TYPE_VALUES
+    + """"
         }
       ]
     }
   ]
 }"""
+)
 
 
 def build_planner_prompt(project_name: str) -> str:
@@ -93,7 +105,14 @@ If no pages need regeneration, output: []
 """
 
 
-_GUIDE_WRITING_RULES = """Write a task-oriented guide in markdown format. Follow these rules strictly:
+_CALLOUT_FORMATS = """
+Use these callout formats:
+- Notes: > **Note:** text
+- Warnings: > **Warning:** text
+- Tips: > **Tip:** text"""
+
+_GUIDE_WRITING_RULES = (
+    """Write a task-oriented guide in markdown format. Follow these rules strictly:
 
 STRUCTURE (in this order):
 1. Opening: Start with 1-2 sentences about WHAT THE USER WANTS TO ACCOMPLISH and WHY.
@@ -115,14 +134,12 @@ CONTENT RULES:
 - Write for humans who want to GET THINGS DONE, not understand internals.
 - Use short paragraphs (2-3 sentences max).
 - Prefer bullet lists and numbered steps over long prose.
-- Where architecture, data flow, or component relationships would benefit from a visual, include a Mermaid diagram using a ```mermaid code block. Use flowchart, sequence, or class diagrams as appropriate.
+- Where architecture, data flow, or component relationships would benefit from a visual, include a Mermaid diagram using a ```mermaid code block. Use flowchart, sequence, or class diagrams as appropriate."""
+    + _CALLOUT_FORMATS
+)
 
-Use these callout formats:
-- Notes: > **Note:** text
-- Warnings: > **Warning:** text
-- Tips: > **Tip:** text"""
-
-_REFERENCE_WRITING_RULES = """Write a structured reference page in markdown format. Follow these rules strictly:
+_REFERENCE_WRITING_RULES = (
+    """Write a structured reference page in markdown format. Follow these rules strictly:
 
 STRUCTURE:
 - Organize by resource, endpoint, command, or configuration key.
@@ -137,14 +154,12 @@ CONTENT RULES:
 - Do NOT include narrative explanations or tutorials — that belongs in User Guides.
 - Do NOT explain WHY something works the way it does — just document WHAT it does.
 - Use code blocks generously.
-- Group related items under clear headings.
+- Group related items under clear headings."""
+    + _CALLOUT_FORMATS
+)
 
-Use these callout formats:
-- Notes: > **Note:** text
-- Warnings: > **Warning:** text
-- Tips: > **Tip:** text"""
-
-_RECIPE_WRITING_RULES = """Write a collection of practical recipes in markdown format. Follow these rules strictly:
+_RECIPE_WRITING_RULES = (
+    """Write a collection of practical recipes in markdown format. Follow these rules strictly:
 
 STRUCTURE for each recipe:
 1. Recipe title (## heading)
@@ -159,14 +174,12 @@ CONTENT RULES:
 - Order recipes from most common to least common.
 - Do NOT include long explanations — link to the relevant guide page instead.
 - Practical over theoretical. If it can't be copy-pasted, it's not a recipe.
-- Include real values and realistic examples, not abstract placeholders.
+- Include real values and realistic examples, not abstract placeholders."""
+    + _CALLOUT_FORMATS
+)
 
-Use these callout formats:
-- Notes: > **Note:** text
-- Warnings: > **Warning:** text
-- Tips: > **Tip:** text"""
-
-_CONCEPT_WRITING_RULES = """Write an explanatory page in markdown format. Follow these rules strictly:
+_CONCEPT_WRITING_RULES = (
+    """Write an explanatory page in markdown format. Follow these rules strictly:
 
 STRUCTURE:
 1. Opening: What is this concept and WHY should the user care?
@@ -180,23 +193,23 @@ CONTENT RULES:
 - Use diagrams (Mermaid) for architecture, data flow, or relationships.
 - Do NOT go deeper than the user needs — this is not a code walkthrough.
 - Where architecture, data flow, or component relationships would benefit from a visual, include a Mermaid diagram using a ```mermaid code block.
-- Use clear, approachable language — avoid jargon where possible.
-
-Use these callout formats:
-- Notes: > **Note:** text
-- Warnings: > **Warning:** text
-- Tips: > **Tip:** text"""
+- Use clear, approachable language — avoid jargon where possible."""
+    + _CALLOUT_FORMATS
+)
 
 
 def _get_writing_rules(page_type: str) -> str:
     """Return writing rules based on page type."""
+    if page_type not in PAGE_TYPES:
+        logger.warning(f"Unknown page type '{page_type}', falling back to 'guide'")
+        page_type = "guide"
     rules_map = {
         "guide": _GUIDE_WRITING_RULES,
         "reference": _REFERENCE_WRITING_RULES,
         "recipe": _RECIPE_WRITING_RULES,
         "concept": _CONCEPT_WRITING_RULES,
     }
-    return rules_map.get(page_type, _GUIDE_WRITING_RULES)
+    return rules_map[page_type]
 
 
 INCREMENTAL_PAGE_UPDATE_SCHEMA = """{

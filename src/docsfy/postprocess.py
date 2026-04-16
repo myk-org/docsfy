@@ -15,7 +15,7 @@ from simple_logger.logger import get_logger
 from docsfy.ai_client import call_ai_cli, run_parallel_with_limit
 from docsfy.generator import generate_full_page_content
 from docsfy.json_parser import parse_json_array_response, parse_json_response
-from docsfy.models import MAX_CONCURRENT_PAGES
+from docsfy.models import MAX_CONCURRENT_PAGES, PAGE_TYPES
 from docsfy.prompts import build_cross_links_prompt, build_validation_prompt
 
 logger = get_logger(name=__name__)
@@ -128,6 +128,7 @@ async def _validate_single_page(
     page_description: str,
     job_dir: Path,
     ai_cli_timeout: int | None = None,
+    page_type: str = "guide",
 ) -> str:
     """Validate a single page and regenerate if stale references are found.
 
@@ -191,6 +192,7 @@ async def _validate_single_page(
             ai_model=ai_model,
             ai_cli_timeout=ai_cli_timeout,
             exclusions_path=str(exclusions_file),
+            page_type=page_type,
         )
         cache_file = _confined_path(cache_dir, f"{slug}.md")
         await asyncio.to_thread(cache_file.write_text, new_content, encoding="utf-8")
@@ -236,9 +238,11 @@ async def validate_pages(
             for page in group.get("pages", []):
                 slug = page.get("slug", "")
                 if slug:
+                    _page_type = page.get("type", "guide")
                     slug_meta[slug] = {
                         "title": page.get("title", slug),
                         "description": page.get("description", ""),
+                        "type": _page_type if _page_type in PAGE_TYPES else "guide",
                     }
 
     job_id = str(uuid.uuid4())
@@ -258,6 +262,7 @@ async def validate_pages(
                 page_description=slug_meta.get(slug, {}).get("description", ""),
                 job_dir=job_dir,
                 ai_cli_timeout=ai_cli_timeout,
+                page_type=slug_meta.get(slug, {}).get("type", "guide"),
             )
             for slug, content in pages.items()
         ]

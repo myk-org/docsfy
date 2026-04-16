@@ -10,7 +10,7 @@ from docsfy.ai_client import call_ai_cli, run_parallel_with_limit
 from docsfy.json_parser import parse_json_array_response, parse_json_response
 from pydantic import ValidationError
 
-from docsfy.models import DEFAULT_BRANCH, MAX_CONCURRENT_PAGES, DocPlan
+from docsfy.models import DEFAULT_BRANCH, MAX_CONCURRENT_PAGES, PAGE_TYPES, DocPlan
 from docsfy.prompts import (
     build_incremental_page_prompt,
     build_incremental_planner_prompt,
@@ -393,7 +393,9 @@ async def generate_all_pages(
                     "slug": slug,
                     "title": title,
                     "description": page.get("description", ""),
-                    "type": page.get("type", "guide"),
+                    "type": page.get("type", "guide")
+                    if page.get("type") in PAGE_TYPES
+                    else "guide",
                 }
             )
 
