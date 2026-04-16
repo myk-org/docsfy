@@ -272,7 +272,7 @@ def build_page_prompt(
     page_description: str,
     page_type: str = "guide",
     exclusions_path: str | None = None,
-    other_pages: list[dict[str, str]] | None = None,
+    other_pages_path: str | None = None,
 ) -> str:
     writing_rules = _get_writing_rules(page_type)
     exclusions_block = ""
@@ -286,17 +286,14 @@ Do not mention any reference listed in that file.
 Only document features and files that exist in the current codebase."""
 
     pages_block = ""
-    if other_pages:
-        page_list = "\n".join(
-            f"- [{p['title']}]({p['slug']}.html) \u2014 {p.get('description', '')}"
-            for p in other_pages
-        )
+    if other_pages_path:
         pages_block = f"""
 
-AVAILABLE PAGES FOR CROSS-REFERENCES (use these exact titles and slugs when linking):
-{page_list}
+AVAILABLE PAGES FOR CROSS-REFERENCES:
+Read the page manifest at: {other_pages_path}
+Each line has format: [Page Title](page-slug.html) \u2014 description
 
-When referencing another page, ALWAYS use a markdown link with the exact slug:
+When referencing another page, ALWAYS use a markdown link with the exact slug from that file:
   See [Page Title](page-slug.html) for details.
 Do NOT write plain text like "See Page Title" \u2014 always make it a clickable link."""
 

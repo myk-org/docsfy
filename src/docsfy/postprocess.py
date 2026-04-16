@@ -129,6 +129,9 @@ def linkify_plain_references(
         re.IGNORECASE,
     )
 
+    # Regex to identify code fences and inline code that should NOT be linkified
+    _CODE_BLOCK_RE = re.compile(r"(```[\s\S]*?```|`[^`\n]+`)")
+
     updated: dict[str, str] = {}
     for page_slug, content in pages.items():
 
@@ -146,9 +149,24 @@ def linkify_plain_references(
             target_slug = title_to_slug[canonical_title]
             if target_slug == _page_slug:
                 return match.group(0)  # Don't self-link
-            return f"{see_prefix}[{canonical_title}]({target_slug}.html)"
+            # Escape markdown special chars in the title for safe link text
+            safe_title = (
+                canonical_title.replace("\\", "\\\\")
+                .replace("[", "\\[")
+                .replace("]", "\\]")
+            )
+            return f"{see_prefix}[{safe_title}]({target_slug}.html)"
 
-        new_content = pattern.sub(_replace, content)
+        # Split content into code and non-code segments, only linkify non-code
+        parts = _CODE_BLOCK_RE.split(content)
+        new_parts: list[str] = []
+        for i, part in enumerate(parts):
+            if _CODE_BLOCK_RE.match(part):
+                new_parts.append(part)  # Code segment, keep as-is
+            else:
+                new_parts.append(pattern.sub(_replace, part))
+        new_content = "".join(new_parts)
+
         if new_content != content:
             link_count = new_content.count(".html)") - content.count(".html)")
             if link_count > 0:
@@ -268,7 +286,7 @@ async def _validate_single_page(
     job_dir: Path,
     ai_cli_timeout: int | None = None,
     page_type: str = "guide",
-    other_pages: list[dict[str, str]] | None = None,
+    other_pages_path: str | None = None,
 ) -> str:
     """Validate a single page and regenerate if stale references are found.
 
@@ -333,7 +351,7 @@ async def _validate_single_page(
             ai_cli_timeout=ai_cli_timeout,
             exclusions_path=str(exclusions_file),
             page_type=page_type,
-            other_pages=other_pages,
+            other_pages_path=other_pages_path,
         )
         cache_file = _confined_path(cache_dir, f"{slug}.md")
         await asyncio.to_thread(cache_file.write_text, new_content, encoding="utf-8")
@@ -386,17 +404,16 @@ async def validate_pages(
                         "type": _page_type if _page_type in PAGE_TYPES else "guide",
                     }
 
-    all_page_meta = [
-        {
-            "slug": s,
-            "title": meta.get("title", s),
-            "description": meta.get("description", ""),
-        }
-        for s, meta in slug_meta.items()
-    ]
-
     job_id = str(uuid.uuid4())
     job_dir = Path(tempfile.mkdtemp(prefix=f"docsfy-validation-{job_id}-"))
+
+    # Write page manifest for cross-referencing
+    manifest_lines = [
+        f"- [{meta.get('title', s)}]({s}.html) \u2014 {meta.get('description', '')}"
+        for s, meta in slug_meta.items()
+    ]
+    manifest_path = job_dir / "pages.txt"
+    manifest_path.write_text("\n".join(manifest_lines), encoding="utf-8")
 
     try:
         coroutines = [
@@ -413,7 +430,7 @@ async def validate_pages(
                 job_dir=job_dir,
                 ai_cli_timeout=ai_cli_timeout,
                 page_type=slug_meta.get(slug, {}).get("type", "guide"),
-                other_pages=[m for m in all_page_meta if m["slug"] != slug],
+                other_pages_path=str(manifest_path),
             )
             for slug, content in pages.items()
         ]

@@ -207,7 +207,7 @@ async def generate_full_page_content(
     ai_cli_timeout: int | None = None,
     exclusions_path: str | None = None,
     page_type: str = "guide",
-    other_pages: list[dict[str, str]] | None = None,
+    other_pages_path: str | None = None,
 ) -> str:
     prompt = build_page_prompt(
         project_name=project_name,
@@ -215,7 +215,7 @@ async def generate_full_page_content(
         page_description=page_description,
         page_type=page_type,
         exclusions_path=exclusions_path,
-        other_pages=other_pages,
+        other_pages_path=other_pages_path,
     )
     output = await _call_ai_or_raise(
         prompt=prompt,
@@ -328,7 +328,7 @@ async def generate_page(
     branch: str = DEFAULT_BRANCH,
     on_page_generated: Callable[[int], Awaitable[None]] | None = None,
     page_type: str = "guide",
-    other_pages: list[dict[str, str]] | None = None,
+    other_pages_path: str | None = None,
 ) -> str:
     _label = project_name or repo_path.name
     prompt_project_name = project_name or repo_path.name
@@ -376,7 +376,7 @@ async def generate_page(
                     ai_model=ai_model,
                     ai_cli_timeout=ai_cli_timeout,
                     page_type=page_type,
-                    other_pages=other_pages,
+                    other_pages_path=other_pages_path,
                 )
         else:
             output = await generate_full_page_content(
@@ -388,7 +388,7 @@ async def generate_page(
                 ai_model=ai_model,
                 ai_cli_timeout=ai_cli_timeout,
                 page_type=page_type,
-                other_pages=other_pages,
+                other_pages_path=other_pages_path,
             )
     except RuntimeError as exc:
         logger.warning(f"[{_label}] Failed to generate page '{slug}': {exc}")
@@ -464,11 +464,14 @@ async def generate_all_pages(
                 }
             )
 
-    # Build other_pages list for cross-referencing in each page prompt
-    all_page_meta = [
-        {"slug": p["slug"], "title": p["title"], "description": p["description"]}
+    # Write page manifest once for cross-referencing (GOLDEN RULE: don't inline in prompts)
+    pages_manifest_dir = Path(tempfile.mkdtemp(prefix="docsfy-pages-manifest-"))
+    pages_manifest_path = pages_manifest_dir / "pages.txt"
+    manifest_lines = [
+        f"- [{p['title']}]({p['slug']}.html) \u2014 {p['description']}"
         for p in all_pages
     ]
+    pages_manifest_path.write_text("\n".join(manifest_lines), encoding="utf-8")
 
     _existing_pages = existing_pages or {}
     coroutines = [
@@ -490,16 +493,19 @@ async def generate_all_pages(
             diff_content=diff_content,
             branch=branch,
             on_page_generated=on_page_generated,
-            other_pages=[m for m in all_page_meta if m["slug"] != p["slug"]],
+            other_pages_path=str(pages_manifest_path),
         )
         for p in all_pages
     ]
 
     from docsfy.config import get_settings
 
-    results = await run_parallel_with_limit(
-        coroutines, max_concurrency=get_settings().max_concurrent_pages
-    )
+    try:
+        results = await run_parallel_with_limit(
+            coroutines, max_concurrency=get_settings().max_concurrent_pages
+        )
+    finally:
+        shutil.rmtree(pages_manifest_dir, ignore_errors=True)
     pages: dict[str, str] = {}
     for page_info, result in zip(all_pages, results):
         if isinstance(result, Exception):
