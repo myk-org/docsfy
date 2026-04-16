@@ -156,11 +156,13 @@ async def generate_full_page_content(
     ai_model: str,
     ai_cli_timeout: int | None = None,
     exclusions_path: str | None = None,
+    page_type: str = "guide",
 ) -> str:
     prompt = build_page_prompt(
         project_name=project_name,
         page_title=page_title,
         page_description=page_description,
+        page_type=page_type,
         exclusions_path=exclusions_path,
     )
     output = await _call_ai_or_raise(
@@ -184,6 +186,7 @@ async def _generate_incremental_page_content(
     ai_provider: str,
     ai_model: str,
     ai_cli_timeout: int | None = None,
+    page_type: str = "guide",
 ) -> str:
     prompt = build_incremental_page_prompt(
         project_name=project_name,
@@ -192,6 +195,7 @@ async def _generate_incremental_page_content(
         existing_content=existing_content,
         changed_files=changed_files,
         diff_content=diff_content,
+        page_type=page_type,
     )
     output = await _call_ai_or_raise(
         prompt=prompt,
@@ -260,6 +264,7 @@ async def generate_page(
     diff_content: str | None = None,
     branch: str = DEFAULT_BRANCH,
     on_page_generated: Callable[[int], Awaitable[None]] | None = None,
+    page_type: str = "guide",
 ) -> str:
     _label = project_name or repo_path.name
     prompt_project_name = project_name or repo_path.name
@@ -291,6 +296,7 @@ async def generate_page(
                     ai_provider=ai_provider,
                     ai_model=ai_model,
                     ai_cli_timeout=ai_cli_timeout,
+                    page_type=page_type,
                 )
             except (RuntimeError, ValueError) as exc:
                 logger.warning(
@@ -305,6 +311,7 @@ async def generate_page(
                     ai_provider=ai_provider,
                     ai_model=ai_model,
                     ai_cli_timeout=ai_cli_timeout,
+                    page_type=page_type,
                 )
         else:
             output = await generate_full_page_content(
@@ -315,6 +322,7 @@ async def generate_page(
                 ai_provider=ai_provider,
                 ai_model=ai_model,
                 ai_cli_timeout=ai_cli_timeout,
+                page_type=page_type,
             )
     except RuntimeError as exc:
         logger.warning(f"[{_label}] Failed to generate page '{slug}': {exc}")
@@ -385,6 +393,7 @@ async def generate_all_pages(
                     "slug": slug,
                     "title": title,
                     "description": page.get("description", ""),
+                    "type": page.get("type", "guide"),
                 }
             )
 
@@ -396,6 +405,7 @@ async def generate_all_pages(
             title=p["title"],
             description=p["description"],
             cache_dir=cache_dir,
+            page_type=p["type"],
             ai_provider=ai_provider,
             ai_model=ai_model,
             ai_cli_timeout=ai_cli_timeout,

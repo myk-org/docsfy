@@ -89,10 +89,14 @@ class GenerateRequest(BaseModel):
         return "unknown"
 
 
+PAGE_TYPES = ("guide", "reference", "recipe", "concept")
+
+
 class DocPage(BaseModel):
     slug: str
     title: str
     description: str = ""
+    type: Literal["guide", "reference", "recipe", "concept"] = "guide"
 
 
 class NavGroup(BaseModel):

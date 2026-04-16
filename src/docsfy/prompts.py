@@ -5,7 +5,7 @@ from typing import Any
 
 PLAN_SCHEMA = """{
   "project_name": "string - project name",
-  "tagline": "string - one-line project description",
+  "tagline": "string - one-line project description (what it does for the user, not what it is)",
   "navigation": [
     {
       "group": "string - section group name",
@@ -13,7 +13,8 @@ PLAN_SCHEMA = """{
         {
           "slug": "string - URL-friendly page identifier",
           "title": "string - human-readable page title",
-          "description": "string - brief description of what this page covers"
+          "description": "string - brief description of what this page covers",
+          "type": "string - one of: guide, reference, recipe, concept"
         }
       ]
     }
@@ -22,17 +23,44 @@ PLAN_SCHEMA = """{
 
 
 def build_planner_prompt(project_name: str) -> str:
-    return f"""You are a technical documentation planner. Explore this repository thoroughly.
-Explore the source code, configuration files, tests, CI/CD pipelines, and project structure.
+    return f"""You are a documentation planner focused on the USER EXPERIENCE. Explore this repository thoroughly.
+Read source code, configuration files, tests, CI/CD pipelines, and project structure.
 Do NOT rely on the README — understand the project from its code and configuration.
 
-Then create a documentation plan as a JSON object. The plan should cover:
-- Introduction and overview
-- Installation / getting started
-- Configuration (if applicable)
-- Usage guides for key features
-- API reference (if the project has an API)
-- Any other sections that would help users understand and use this project
+Then create a documentation plan as a JSON object. The plan must be structured as a USER JOURNEY,
+not an architecture tour. Think: "What does a new user need to do first? Then what?"
+
+NAVIGATION STRUCTURE (use these groups in order, skip any that don't apply):
+
+1. "Getting Started" — Installation, prerequisites, quickstart. Get the user productive in 60 seconds.
+   Page types: guide
+
+2. "User Guides" — Task-oriented pages. Each page answers ONE question: "How do I do X?"
+   Lead with the most common tasks. Titles should use action verbs (e.g., "Generating Documentation",
+   "Managing Users", "Configuring Providers").
+   Page types: guide
+
+3. "Recipes" — ONLY if the project has enough common patterns/workflows to warrant it.
+   Short, copy-paste-friendly patterns grouped on one or two pages.
+   Page types: recipe
+
+4. "Reference" — API endpoints, CLI commands, configuration options, environment variables.
+   Structured for lookup, not for reading start-to-finish.
+   Page types: reference
+
+5. "Internals" — Architecture, data model, internal design. ONLY if the project is a framework/library
+   where users genuinely need to understand internals to use it effectively. Skip for most tools/apps.
+   Page types: concept
+
+CRITICAL RULES:
+- Do NOT create an "Introduction" or "Overview" page — fold that into the Getting Started quickstart page
+- Do NOT put API details, internal code, or architecture in User Guides — that belongs in Reference or Internals
+- Do NOT create pages that only describe what something IS — every page should help users DO something
+- Keep total page count between 8 and 15 for most projects
+- The tagline should describe what the project does FOR THE USER, not what it is technically
+  Good: "Turn any Git repo into a polished documentation site in minutes"
+  Bad: "AI-powered documentation generator using FastAPI and React"
+- Each page description should state what the user will learn or accomplish, not what the page contains
 
 Project name: {project_name}
 
@@ -65,23 +93,111 @@ If no pages need regeneration, output: []
 """
 
 
-_PAGE_WRITING_RULES = """Write in markdown format. Include:
-- Clear explanations
-- Code examples from the actual codebase (not made up)
-- Configuration snippets where relevant
+_GUIDE_WRITING_RULES = """Write a task-oriented guide in markdown format. Follow these rules strictly:
+
+STRUCTURE (in this order):
+1. Opening: Start with 1-2 sentences about WHAT THE USER WANTS TO ACCOMPLISH and WHY.
+   Do NOT start with a definition or description of what something is.
+2. Prerequisites: If any, list them briefly in a bullet list.
+3. Quick example: Show the simplest working example FIRST, before any explanation.
+4. Step-by-step: Walk through the common use case with clear steps.
+5. Advanced usage: AFTER the basics, cover advanced options, edge cases, or alternatives.
+6. Troubleshooting: Common problems and solutions (only if relevant, keep brief).
+
+CONTENT RULES:
+- Lead with examples. Show the command/code BEFORE explaining what it does.
+- Use code examples from the actual codebase (not made up).
+- Use comparison tables when showing "before/after" or "old way vs new way."
+- Progressive disclosure: simple first, advanced later. The user should be productive after reading just the first half.
+- Do NOT include internal implementation details, architecture, or source code structure.
+- Do NOT show raw API request/response payloads unless this page is specifically about the API.
+- Do NOT duplicate content that belongs on other pages — link to them instead with: "See [Page Title](page-slug.html)"
+- Write for humans who want to GET THINGS DONE, not understand internals.
+- Use short paragraphs (2-3 sentences max).
+- Prefer bullet lists and numbered steps over long prose.
 - Where architecture, data flow, or component relationships would benefit from a visual, include a Mermaid diagram using a ```mermaid code block. Use flowchart, sequence, or class diagrams as appropriate.
 
-Use these callout formats for special content:
+Use these callout formats:
 - Notes: > **Note:** text
 - Warnings: > **Warning:** text
-- Tips: > **Tip:** text
+- Tips: > **Tip:** text"""
 
-Write documentation that is user-facing and user-friendly:
-- Write for humans who want to use this project, not for AI systems
-- Use clear, approachable language — avoid overly technical jargon where possible
-- Structure content for easy scanning: use headings, short paragraphs, and lists
-- Lead with what the user needs to know, not internal implementation details
-- Prefer practical examples over theoretical explanations"""
+_REFERENCE_WRITING_RULES = """Write a structured reference page in markdown format. Follow these rules strictly:
+
+STRUCTURE:
+- Organize by resource, endpoint, command, or configuration key.
+- For each item: name, description, parameters/options, example, return value/effect.
+- Use tables for parameters and options.
+- Put code examples after each item, not in a separate section.
+
+CONTENT RULES:
+- Be precise and scannable — users come here to LOOK UP specific information, not to read.
+- Every parameter/option must have: name, type, default value (if any), description.
+- Include at least one concrete example per endpoint/command/option.
+- Do NOT include narrative explanations or tutorials — that belongs in User Guides.
+- Do NOT explain WHY something works the way it does — just document WHAT it does.
+- Use code blocks generously.
+- Group related items under clear headings.
+
+Use these callout formats:
+- Notes: > **Note:** text
+- Warnings: > **Warning:** text
+- Tips: > **Tip:** text"""
+
+_RECIPE_WRITING_RULES = """Write a collection of practical recipes in markdown format. Follow these rules strictly:
+
+STRUCTURE for each recipe:
+1. Recipe title (## heading)
+2. One sentence: what this recipe solves
+3. Code block: the complete, copy-paste-ready solution
+4. Brief explanation (2-4 sentences max): what the code does and when to use it
+5. Optional: variations or tips as bullet points
+
+CONTENT RULES:
+- Each recipe must be SELF-CONTAINED and copy-paste ready.
+- Keep recipes SHORT — if it takes more than a screen, it's a guide, not a recipe.
+- Order recipes from most common to least common.
+- Do NOT include long explanations — link to the relevant guide page instead.
+- Practical over theoretical. If it can't be copy-pasted, it's not a recipe.
+- Include real values and realistic examples, not abstract placeholders.
+
+Use these callout formats:
+- Notes: > **Note:** text
+- Warnings: > **Warning:** text
+- Tips: > **Tip:** text"""
+
+_CONCEPT_WRITING_RULES = """Write an explanatory page in markdown format. Follow these rules strictly:
+
+STRUCTURE:
+1. Opening: What is this concept and WHY should the user care?
+2. The big picture: Use a diagram (Mermaid) if it helps understanding.
+3. Key concepts: Explain each concept clearly with examples.
+4. How it affects the user: Connect internals back to user-visible behavior.
+5. Related pages: Point to guides and reference pages where users can take action.
+
+CONTENT RULES:
+- Always connect technical concepts back to user-visible effects.
+- Use diagrams (Mermaid) for architecture, data flow, or relationships.
+- Do NOT go deeper than the user needs — this is not a code walkthrough.
+- Where architecture, data flow, or component relationships would benefit from a visual, include a Mermaid diagram using a ```mermaid code block.
+- Use clear, approachable language — avoid jargon where possible.
+
+Use these callout formats:
+- Notes: > **Note:** text
+- Warnings: > **Warning:** text
+- Tips: > **Tip:** text"""
+
+
+def _get_writing_rules(page_type: str) -> str:
+    """Return writing rules based on page type."""
+    rules_map = {
+        "guide": _GUIDE_WRITING_RULES,
+        "reference": _REFERENCE_WRITING_RULES,
+        "recipe": _RECIPE_WRITING_RULES,
+        "concept": _CONCEPT_WRITING_RULES,
+    }
+    return rules_map.get(page_type, _GUIDE_WRITING_RULES)
+
 
 INCREMENTAL_PAGE_UPDATE_SCHEMA = """{
   "updates": [
@@ -114,8 +230,10 @@ def build_page_prompt(
     project_name: str,
     page_title: str,
     page_description: str,
+    page_type: str = "guide",
     exclusions_path: str | None = None,
 ) -> str:
+    writing_rules = _get_writing_rules(page_type)
     exclusions_block = ""
     if exclusions_path:
         exclusions_block = f"""
@@ -130,14 +248,18 @@ Only document features and files that exist in the current codebase."""
 the "{page_title}" page for the {project_name} documentation.
 
 Page description: {page_description}
+Page type: {page_type}
 
 Explore the codebase as needed. Read source files, configs, tests, and CI/CD pipelines
-to write comprehensive, accurate documentation. Do NOT rely on the README.
+to write accurate documentation based on the actual code. Do NOT rely on the README.
 
-{_PAGE_WRITING_RULES}
+{writing_rules}
 
-This documentation will be read by end users of the project. Write it to be approachable,
-practical, and easy to follow. Separate llms.txt files are generated for AI consumption.{exclusions_block}
+ANTI-REDUNDANCY: This page should OWN its topic exclusively. Do NOT duplicate content
+that belongs on other pages. Instead, link to them: "See [Page Title](page-slug.html)".
+
+This documentation will be read by end users of the project. Separate llms.txt files
+are generated for AI consumption.{exclusions_block}
 
 Start the page with exactly this first line:
 # {page_title}
@@ -152,6 +274,7 @@ def build_incremental_page_prompt(
     existing_content: str,
     changed_files: list[str],
     diff_content: str,
+    page_type: str = "guide",
 ) -> str:
     truncated_diff = _truncate_diff_content(diff_content)
 
@@ -205,7 +328,7 @@ Instructions:
 - Do NOT add explanations, comments, markdown fences, or any text outside the JSON object
 
 When writing "new_text", follow these content rules:
-{_PAGE_WRITING_RULES}"""
+{_get_writing_rules(page_type)}"""
 
 
 VALIDATION_SCHEMA = """[
