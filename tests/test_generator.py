@@ -180,7 +180,7 @@ async def test_generate_page_falls_back_to_full_generation_on_invalid_incrementa
             diff_content="diff --git a/src/main.py\n+new line",
         )
 
-    assert md == full_page_response
+    assert md == full_page_response.strip()
     assert mock_call.call_count == 2
 
 
