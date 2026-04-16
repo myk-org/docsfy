@@ -200,15 +200,15 @@ CONTENT RULES:
 
 def _get_writing_rules(page_type: str) -> str:
     """Return writing rules based on page type."""
-    if page_type not in PAGE_TYPES:
-        logger.warning(f"Unknown page type '{page_type}', falling back to 'guide'")
-        page_type = "guide"
     rules_map = {
         "guide": _GUIDE_WRITING_RULES,
         "reference": _REFERENCE_WRITING_RULES,
         "recipe": _RECIPE_WRITING_RULES,
         "concept": _CONCEPT_WRITING_RULES,
     }
+    if page_type not in rules_map:
+        logger.warning(f"Unknown page type '{page_type}', falling back to 'guide'")
+        page_type = "guide"
     return rules_map[page_type]
 
 

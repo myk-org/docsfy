@@ -388,14 +388,13 @@ async def generate_all_pages(
             if is_unsafe_slug(slug):
                 logger.warning(f"[{_label}] Skipping path-unsafe slug: '{slug}'")
                 continue
+            _page_type = page.get("type", "guide")
             all_pages.append(
                 {
                     "slug": slug,
                     "title": title,
                     "description": page.get("description", ""),
-                    "type": page.get("type", "guide")
-                    if page.get("type") in PAGE_TYPES
-                    else "guide",
+                    "type": _page_type if _page_type in PAGE_TYPES else "guide",
                 }
             )
 
