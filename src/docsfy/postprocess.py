@@ -57,14 +57,14 @@ def fix_broken_internal_links(
     updated: dict[str, str] = {}
     for slug, content in pages.items():
 
-        def _replace_link(match: re.Match[str]) -> str:
+        def _replace_link(match: re.Match[str], _slug: str = slug) -> str:
             link_text = match.group(1)
             target_slug = match.group(2)
             if target_slug.lower() in valid_slugs_lower:
                 return match.group(0)  # Keep valid links
             logger.info(
                 f"[{_label}] Removing broken link to '{target_slug}.html' "
-                f"in page '{slug}'"
+                f"in page '{_slug}'"
             )
             return link_text  # Remove the link, keep the text
 

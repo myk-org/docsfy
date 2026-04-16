@@ -611,49 +611,46 @@ a:hover {
 }
 
 /* Callout boxes */
-blockquote.callout-note {
-    border-left: 4px solid var(--callout-note-border);
-    background: var(--callout-note-bg);
-    color: var(--callout-note-text);
+blockquote.callout-note,
+blockquote.callout-warning,
+blockquote.callout-tip,
+blockquote.callout-danger,
+blockquote.callout-important {
+    border-left-width: 4px;
+    border-left-style: solid;
     padding: 1rem 1.25rem;
     border-radius: 0 8px 8px 0;
     margin: 1.5rem 0;
+}
+
+blockquote.callout-note {
+    border-left-color: var(--callout-note-border);
+    background: var(--callout-note-bg);
+    color: var(--callout-note-text);
 }
 
 blockquote.callout-warning {
-    border-left: 4px solid var(--callout-warning-border);
+    border-left-color: var(--callout-warning-border);
     background: var(--callout-warning-bg);
     color: var(--callout-warning-text);
-    padding: 1rem 1.25rem;
-    border-radius: 0 8px 8px 0;
-    margin: 1.5rem 0;
 }
 
 blockquote.callout-tip {
-    border-left: 4px solid var(--callout-tip-border);
+    border-left-color: var(--callout-tip-border);
     background: var(--callout-tip-bg);
     color: var(--callout-tip-text);
-    padding: 1rem 1.25rem;
-    border-radius: 0 8px 8px 0;
-    margin: 1.5rem 0;
 }
 
 blockquote.callout-danger {
-    border-left: 4px solid var(--callout-danger-border);
+    border-left-color: var(--callout-danger-border);
     background: var(--callout-danger-bg);
     color: var(--callout-danger-text);
-    padding: 1rem 1.25rem;
-    border-radius: 0 8px 8px 0;
-    margin: 1.5rem 0;
 }
 
 blockquote.callout-important {
-    border-left: 4px solid var(--callout-important-border);
+    border-left-color: var(--callout-important-border);
     background: var(--callout-important-bg);
     color: var(--callout-important-text);
-    padding: 1rem 1.25rem;
-    border-radius: 0 8px 8px 0;
-    margin: 1.5rem 0;
 }
 
 /* Chained :not() for broader browser compatibility */
@@ -839,7 +836,7 @@ details > ol:last-child {
    -------------------------------------------------------------------------- */
 .card-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 20px;
     margin-bottom: 48px;
 }
@@ -1150,7 +1147,7 @@ pre:hover .copy-btn {
 
 .copy-btn:hover {
     background: var(--accent);
-    color: white;
+    color: var(--accent-contrast);
     border-color: var(--accent);
 }
 

@@ -22,6 +22,7 @@ class Settings(BaseSettings):
     secure_cookies: bool = True  # Set to False for local HTTP dev
     max_concurrent_pages: int = Field(
         default=10,
+        gt=0,
         description="Maximum number of AI CLI calls to run in parallel during page generation and validation",
     )
 
