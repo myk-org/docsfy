@@ -1135,3 +1135,95 @@ def test_fix_broken_internal_links_case_insensitive() -> None:
     result = fix_broken_internal_links(pages, plan, project_name="test")
     # Case-insensitive: QuickStart matches quickstart
     assert "QuickStart.html" in result["intro"]
+
+
+def test_linkify_plain_references_converts_see_pattern() -> None:
+    from docsfy.postprocess import linkify_plain_references
+
+    pages = {
+        "quickstart": "Install the tool. See Configuration for details.",
+        "config": "# Configuration\n\nSettings here.",
+    }
+    plan = {
+        "navigation": [
+            {
+                "group": "Start",
+                "pages": [
+                    {"slug": "quickstart", "title": "Quickstart"},
+                    {"slug": "config", "title": "Configuration"},
+                ],
+            }
+        ]
+    }
+    result = linkify_plain_references(pages, plan, project_name="test")
+    assert "[Configuration](config.html)" in result["quickstart"]
+    assert "See [Configuration](config.html)" in result["quickstart"]
+
+
+def test_linkify_plain_references_skips_existing_links() -> None:
+    from docsfy.postprocess import linkify_plain_references
+
+    pages = {
+        "quickstart": "See [Configuration](config.html) for details.",
+        "config": "# Configuration",
+    }
+    plan = {
+        "navigation": [
+            {
+                "group": "Start",
+                "pages": [
+                    {"slug": "quickstart", "title": "Quickstart"},
+                    {"slug": "config", "title": "Configuration"},
+                ],
+            }
+        ]
+    }
+    result = linkify_plain_references(pages, plan, project_name="test")
+    # Should not double-link
+    assert result["quickstart"].count("[Configuration]") == 1
+
+
+def test_linkify_plain_references_skips_self_links() -> None:
+    from docsfy.postprocess import linkify_plain_references
+
+    pages = {
+        "config": "See Configuration for more.",
+    }
+    plan = {
+        "navigation": [
+            {
+                "group": "Ref",
+                "pages": [
+                    {"slug": "config", "title": "Configuration"},
+                ],
+            }
+        ]
+    }
+    result = linkify_plain_references(pages, plan, project_name="test")
+    # Should NOT self-link
+    assert "[Configuration](config.html)" not in result["config"]
+
+
+def test_linkify_plain_references_longest_match_first() -> None:
+    from docsfy.postprocess import linkify_plain_references
+
+    pages = {
+        "intro": "See CLI Command Reference for flags.",
+        "cli-ref": "# CLI Command Reference",
+        "cli": "# CLI",
+    }
+    plan = {
+        "navigation": [
+            {
+                "group": "Ref",
+                "pages": [
+                    {"slug": "intro", "title": "Introduction"},
+                    {"slug": "cli-ref", "title": "CLI Command Reference"},
+                    {"slug": "cli", "title": "CLI"},
+                ],
+            }
+        ]
+    }
+    result = linkify_plain_references(pages, plan, project_name="test")
+    # Should match the longer "CLI Command Reference", not just "CLI"
+    assert "[CLI Command Reference](cli-ref.html)" in result["intro"]

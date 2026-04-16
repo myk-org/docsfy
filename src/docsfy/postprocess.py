@@ -74,6 +74,77 @@ def fix_broken_internal_links(
     return updated
 
 
+def linkify_plain_references(
+    pages: dict[str, str],
+    plan: dict[str, Any],
+    project_name: str = "",
+) -> dict[str, str]:
+    """Convert plain-text page references to markdown hyperlinks.
+
+    AI-generated content often writes "See Page Title" or "see Page Title for"
+    instead of proper markdown links. This finds those patterns and converts
+    them to [Page Title](slug.html) when a matching page exists in the plan.
+    """
+    _label = project_name or "unknown"
+
+    # Build title -> slug mapping from the plan
+    title_to_slug: dict[str, str] = {}
+    for group in plan.get("navigation", []):
+        for page in group.get("pages", []):
+            title = page.get("title", "")
+            slug = page.get("slug", "")
+            if title and slug:
+                title_to_slug[title] = slug
+
+    if not title_to_slug:
+        return pages
+
+    # Sort titles by length (longest first) to avoid partial matches
+    # e.g., "CLI Command Reference" should match before "CLI"
+    sorted_titles = sorted(title_to_slug.keys(), key=len, reverse=True)
+
+    # Build a single regex pattern for all titles
+    # Match: See <Title> (not inside an existing markdown link)
+    title_alternatives = "|".join(re.escape(t) for t in sorted_titles)
+    # Pattern matches "See <Title>" or "see <Title>" where Title is not inside []()
+    pattern = re.compile(
+        r"(?<!\[)"  # Not preceded by [
+        r"([Ss]ee\s+)"  # "See " or "see "
+        r"(" + title_alternatives + r")"  # One of the page titles
+        r"(?!\]\()"  # Not followed by ]( (already a link)
+    )
+
+    updated: dict[str, str] = {}
+    for page_slug, content in pages.items():
+
+        def _replace(match: re.Match[str], _page_slug: str = page_slug) -> str:
+            see_prefix = match.group(1)
+            matched_title = match.group(2)
+            # Find the canonical title (preserve original casing from plan)
+            canonical_title = None
+            for t in sorted_titles:
+                if t.lower() == matched_title.lower():
+                    canonical_title = t
+                    break
+            if not canonical_title:
+                return match.group(0)
+            target_slug = title_to_slug[canonical_title]
+            if target_slug == _page_slug:
+                return match.group(0)  # Don't self-link
+            return f"{see_prefix}[{canonical_title}]({target_slug}.html)"
+
+        new_content = pattern.sub(_replace, content)
+        if new_content != content:
+            link_count = new_content.count(".html)") - content.count(".html)")
+            if link_count > 0:
+                logger.info(
+                    f"[{_label}] Linkified {link_count} plain-text reference(s) in page '{page_slug}'"
+                )
+        updated[page_slug] = new_content
+
+    return updated
+
+
 def _confined_path(base: Path, relative_name: str) -> Path:
     """Ensure a relative filename resolves inside the base directory."""
     if any(ord(ch) < 32 for ch in relative_name):

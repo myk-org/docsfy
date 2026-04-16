@@ -34,6 +34,7 @@ from docsfy.postprocess import (
     add_cross_links,
     detect_version,
     fix_broken_internal_links,
+    linkify_plain_references,
     validate_pages,
 )
 from docsfy.renderer import render_site
@@ -1022,6 +1023,10 @@ async def _generate_from_path(
             page_count=len(pages),
         )
         pages = fix_broken_internal_links(pages, plan, project_name=project_name)
+        try:
+            pages = linkify_plain_references(pages, plan, project_name=project_name)
+        except Exception as exc:
+            logger.warning(f"[{project_name}] linkify_plain_references failed: {exc}")
         pages = await add_cross_links(
             pages=pages,
             plan=plan,

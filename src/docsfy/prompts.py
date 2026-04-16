@@ -50,7 +50,8 @@ NAVIGATION STRUCTURE (use these groups in order, skip any that don't apply):
    Page types: guide
 
 3. "Recipes" — ONLY if the project has enough common patterns/workflows to warrant it.
-   Short, copy-paste-friendly patterns grouped on one or two pages.
+   Short, copy-paste-friendly patterns. Use multiple pages when distinct recipe categories exist
+   (e.g., separate pages for CLI recipes, API recipes, deployment recipes).
    Page types: recipe
 
 4. "Reference" — API endpoints, CLI commands, configuration options, environment variables.
