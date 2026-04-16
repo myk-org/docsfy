@@ -235,6 +235,9 @@ assert set(_INCREMENTAL_WRITING_RULES) == set(PAGE_TYPES), (
 def _get_incremental_writing_rules(page_type: str) -> str:
     """Return condensed writing rules for incremental page updates."""
     if page_type not in _INCREMENTAL_WRITING_RULES:
+        logger.warning(
+            f"Unknown page type '{page_type}' for incremental rules, falling back to 'guide'"
+        )
         page_type = "guide"
     return _INCREMENTAL_WRITING_RULES[page_type]
 

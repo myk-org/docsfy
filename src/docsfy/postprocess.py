@@ -160,7 +160,7 @@ def linkify_plain_references(
         # Split content into code and non-code segments, only linkify non-code
         parts = _CODE_BLOCK_RE.split(content)
         new_parts: list[str] = []
-        for i, part in enumerate(parts):
+        for part in parts:
             if _CODE_BLOCK_RE.match(part):
                 new_parts.append(part)  # Code segment, keep as-is
             else:
@@ -408,12 +408,14 @@ async def validate_pages(
     job_dir = Path(tempfile.mkdtemp(prefix=f"docsfy-validation-{job_id}-"))
 
     # Write page manifest for cross-referencing
-    manifest_lines = [
-        f"- [{meta.get('title', s)}]({s}.html) \u2014 {meta.get('description', '')}"
-        for s, meta in slug_meta.items()
-    ]
-    manifest_path = job_dir / "pages.txt"
-    manifest_path.write_text("\n".join(manifest_lines), encoding="utf-8")
+    manifest_path: Path | None = None
+    if slug_meta:
+        manifest_lines = [
+            f"- [{meta.get('title', s)}]({s}.html) \u2014 {meta.get('description', '')}"
+            for s, meta in slug_meta.items()
+        ]
+        manifest_path = job_dir / "pages.txt"
+        manifest_path.write_text("\n".join(manifest_lines), encoding="utf-8")
 
     try:
         coroutines = [
@@ -430,7 +432,7 @@ async def validate_pages(
                 job_dir=job_dir,
                 ai_cli_timeout=ai_cli_timeout,
                 page_type=slug_meta.get(slug, {}).get("type", "guide"),
-                other_pages_path=str(manifest_path),
+                other_pages_path=str(manifest_path) if manifest_path else None,
             )
             for slug, content in pages.items()
         ]

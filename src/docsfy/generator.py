@@ -77,12 +77,13 @@ def _strip_ai_artifacts(text: str) -> str:
     # Only scan the tail of the output for self-referential AI commentary.
     # These markers only appear at the very end when the AI "thinks out loud"
     # after finishing. Scanning the full text risks truncating legitimate prose.
-    tail_offset = max(0, len(text) - 500)
-    for marker in _AI_COMMENTARY_END_MARKERS:
-        idx = text.find(marker, tail_offset)
-        if idx >= 0:
-            text = text[:idx]
-            break  # Only apply the first match
+    if len(text) > 500:
+        tail_offset = len(text) - 500
+        for marker in _AI_COMMENTARY_END_MARKERS:
+            idx = text.find(marker, tail_offset)
+            if idx >= 0:
+                text = text[:idx]
+                break  # Only apply the first match
 
     return text.strip()
 
