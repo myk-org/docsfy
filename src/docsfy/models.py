@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
-from typing import Literal
+from typing import Any, Literal, get_args
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
@@ -12,7 +12,6 @@ VALID_PROVIDERS = ("claude", "gemini", "cursor")
 DEFAULT_BRANCH = "main"
 DOCSFY_DOCS_URL = "https://myk-org.github.io/docsfy/"
 DOCSFY_REPO_URL = "https://github.com/myk-org/docsfy"
-MAX_CONCURRENT_PAGES = 5
 
 
 class GenerateRequest(BaseModel):
@@ -89,10 +88,22 @@ class GenerateRequest(BaseModel):
         return "unknown"
 
 
+PageType = Literal["guide", "reference", "recipe", "concept"]
+PAGE_TYPES: tuple[str, ...] = get_args(PageType)
+
+
 class DocPage(BaseModel):
     slug: str
     title: str
     description: str = ""
+    type: PageType = "guide"
+
+    @field_validator("type", mode="before")
+    @classmethod
+    def normalize_type(cls, v: Any) -> Any:
+        if isinstance(v, str):
+            return v.strip().lower()
+        return v
 
 
 class NavGroup(BaseModel):

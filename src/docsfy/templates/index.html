@@ -1,9 +1,9 @@
 {% extends "_doc_base.html" %}
 
 {% block content %}
-            <section class="hero">
-                <h1 class="hero-title">{{ project_name }}</h1>
-                <p class="hero-tagline">{{ tagline }}</p>
+            <section class="index-header">
+                <h1 class="index-title">{{ project_name }}</h1>
+                <p class="index-tagline">{{ tagline }}</p>
                 {% set ns = namespace(first_page=None) %}
                 {% for group in navigation %}
                   {% if not ns.first_page and group.pages %}
@@ -11,22 +11,9 @@
                   {% endif %}
                 {% endfor %}
                 {% if ns.first_page %}
-                <a href="{{ ns.first_page.slug }}.html" class="hero-cta">Get Started</a>
+                <a href="{{ ns.first_page.slug }}.html" class="index-cta">Get Started →</a>
                 {% endif %}
             </section>
-
-            <div class="llm-docs-banner">
-                <div class="llm-docs-icon">🤖</div>
-                <div class="llm-docs-content">
-                    <strong>AI-friendly documentation</strong>
-                    <p>This documentation is optimized for AI consumption.</p>
-                    <div class="llm-docs-links">
-                        <a href="llms.txt">llms.txt</a> — structured index
-                        <span class="llm-docs-sep">·</span>
-                        <a href="llms-full.txt">llms-full.txt</a> — complete docs in one file
-                    </div>
-                </div>
-            </div>
 
             <section class="card-grid">
                 {% for group in navigation %}
@@ -43,9 +30,22 @@
                         {% endfor %}
                     </ul>
                     {% if group.pages|length > 0 %}
-                    <a href="{{ group.pages[0].slug }}.html" class="card-link">Explore &rarr;</a>
+                    <a href="{{ group.pages[0].slug }}.html" class="card-link">Explore →</a>
                     {% endif %}
                 </div>
                 {% endfor %}
             </section>
+
+            <div class="llm-docs-banner">
+                <div class="llm-docs-icon">🤖</div>
+                <div class="llm-docs-content">
+                    <strong>AI-friendly documentation</strong>
+                    <p>This documentation is optimized for AI consumption.</p>
+                    <div class="llm-docs-links">
+                        <a href="llms.txt">llms.txt</a> — structured index
+                        <span class="llm-docs-sep">·</span>
+                        <a href="llms-full.txt">llms-full.txt</a> — complete docs in one file
+                    </div>
+                </div>
+            </div>
 {% endblock %}

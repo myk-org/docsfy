@@ -28,11 +28,11 @@ When adding new code:
 
 | Resource Type | Location | Examples |
 |---|---|---|
-| Python constants | `src/docsfy/models.py` | `VALID_PROVIDERS`, `DEFAULT_BRANCH`, `DOCSFY_DOCS_URL`, `DOCSFY_REPO_URL` |
+| Python constants | `src/docsfy/models.py` | `VALID_PROVIDERS`, `DEFAULT_BRANCH`, `PAGE_TYPES`, `DOCSFY_DOCS_URL`, `DOCSFY_REPO_URL` |
 | Data models | `src/docsfy/models.py` | `GenerateRequest`, `DocPlan`, `DocPage`, `NavGroup` |
 | DB constants & validators | `src/docsfy/storage.py` | `VALID_STATUSES`, `VALID_ROLES`, `_validate_name()`, `_validate_owner()` |
 | Git timeouts | `src/docsfy/repository.py` | `_CLONE_TIMEOUT`, `_FETCH_TIMEOUT`, `_DIFF_TIMEOUT` |
-| Prompt constants | `src/docsfy/prompts.py` | `_MAX_DIFF_LENGTH`, `_PAGE_WRITING_RULES` |
+| Prompt constants | `src/docsfy/prompts.py` | `_MAX_DIFF_LENGTH`, `_GUIDE_WRITING_RULES`, `_REFERENCE_WRITING_RULES`, `_RECIPE_WRITING_RULES`, `_CONCEPT_WRITING_RULES`, `_INCREMENTAL_WRITING_RULES`, `truncate_diff_content()` |
 | Frontend constants | `frontend/src/lib/constants.ts` | API base URL, poll intervals, toast durations |
 | Frontend types | `frontend/src/types/index.ts` | `Project`, `User`, `Variant`, `AuthState` |
 | Frontend API client | `frontend/src/lib/api.ts` | `fetchProjects()`, `login()`, `generateDocs()` |

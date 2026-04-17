@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import re
 import shutil
 import subprocess
 import tempfile
@@ -15,10 +16,166 @@ from simple_logger.logger import get_logger
 from docsfy.ai_client import call_ai_cli, run_parallel_with_limit
 from docsfy.generator import generate_full_page_content
 from docsfy.json_parser import parse_json_array_response, parse_json_response
-from docsfy.models import MAX_CONCURRENT_PAGES
+from docsfy.models import PAGE_TYPES
+from docsfy.config import get_settings
 from docsfy.prompts import build_cross_links_prompt, build_validation_prompt
 
 logger = get_logger(name=__name__)
+
+# Regex to identify code fences and inline code that should be skipped
+_CODE_BLOCK_RE = re.compile(r"(```[\s\S]*?```|`[^`\n]+`)")
+
+
+def fix_broken_internal_links(
+    pages: dict[str, str],
+    plan: dict[str, Any],
+    project_name: str = "",
+) -> dict[str, str]:
+    """Remove or fix internal links that point to non-existent pages.
+
+    AI-generated content often includes links to pages that were not part of
+    the documentation plan (hallucinated page names). This function finds all
+    internal .html links and removes those that don't match any plan slug.
+    """
+    _label = project_name or "unknown"
+
+    # Build set of valid slugs from the plan
+    valid_slugs: set[str] = set()
+    for group in plan.get("navigation", []):
+        for page in group.get("pages", []):
+            slug = page.get("slug", "")
+            if slug:
+                valid_slugs.add(slug)
+
+    # Also add slugs from pages dict (in case plan is incomplete)
+    valid_slugs.update(pages.keys())
+
+    # Build canonical slug casing lookup (keys are lowercase for case-insensitive matching)
+    slug_to_canonical: dict[str, str] = {s.lower(): s for s in valid_slugs}
+
+    # Pattern: [link text](slug.html) — internal links only (no http://, no /)
+    link_pattern = re.compile(
+        r"\[([^\]]+)\]\(((?!\.)[a-zA-Z0-9._-]+)\.html(?:#[^\s)\"]*)?(?:\s*\"[^\"]*\")?\)"
+    )
+
+    updated: dict[str, str] = {}
+    for slug, content in pages.items():
+
+        def _replace_link(match: re.Match[str], _slug: str = slug) -> str:
+            link_text = match.group(1)
+            target_slug = match.group(2)
+            target_lower = target_slug.lower()
+            if target_lower in slug_to_canonical:
+                # Rewrite to canonical slug casing for case-sensitive hosts
+                canonical = slug_to_canonical.get(target_lower, target_slug)
+                if canonical != target_slug:
+                    # Reconstruct with canonical slug casing (limit=1 to avoid
+                    # corrupting link text that happens to contain the slug)
+                    return match.group(0).replace(
+                        f"({target_slug}.html", f"({canonical}.html", 1
+                    )
+                return match.group(0)  # Already correct casing
+            logger.info(
+                f"[{_label}] Removing broken link to '{target_slug}.html' "
+                f"in page '{_slug}'"
+            )
+            return link_text  # Remove the link, keep the text
+
+        # Split content into code and non-code segments, only fix links in non-code
+        parts = _CODE_BLOCK_RE.split(content)
+        new_parts: list[str] = []
+        for part in parts:
+            if _CODE_BLOCK_RE.match(part):
+                new_parts.append(part)  # Code segment, keep as-is
+            else:
+                new_parts.append(link_pattern.sub(_replace_link, part))
+        updated[slug] = "".join(new_parts)
+
+    return updated
+
+
+def linkify_plain_references(
+    pages: dict[str, str],
+    plan: dict[str, Any],
+    project_name: str = "",
+) -> dict[str, str]:
+    """Convert plain-text page references to markdown hyperlinks.
+
+    AI-generated content often writes "See Page Title" or "see Page Title for"
+    instead of proper markdown links. This finds those patterns and converts
+    them to [Page Title](slug.html) when a matching page exists in the plan.
+    """
+    _label = project_name or "unknown"
+
+    # Build title -> slug mapping from the plan
+    title_to_slug: dict[str, str] = {}
+    for group in plan.get("navigation", []):
+        for page in group.get("pages", []):
+            title = page.get("title", "")
+            slug = page.get("slug", "")
+            if title and slug:
+                title_to_slug[title] = slug
+
+    if not title_to_slug:
+        return pages
+
+    # Sort titles by length (longest first) to avoid partial matches
+    # e.g., "CLI Command Reference" should match before "CLI"
+    sorted_titles = sorted(title_to_slug.keys(), key=len, reverse=True)
+    lower_to_canonical: dict[str, str] = {t.lower(): t for t in sorted_titles}
+
+    # Build a single regex pattern for all titles
+    # Match: See <Title> (not inside an existing markdown link)
+    title_alternatives = "|".join(re.escape(t) for t in sorted_titles)
+    # Pattern matches "See <Title>" or "see <Title>" where Title is not inside []()
+    pattern = re.compile(
+        r"(?<!\[)"  # Not preceded by [
+        r"(see\s+)"  # "See " or "see " (IGNORECASE handles casing)
+        r"(" + title_alternatives + r")"  # One of the page titles
+        r"(?!\]\()",  # Not followed by ]( (already a link)
+        re.IGNORECASE,
+    )
+
+    updated: dict[str, str] = {}
+    for page_slug, content in pages.items():
+
+        def _replace(match: re.Match[str], _page_slug: str = page_slug) -> str:
+            see_prefix = match.group(1)
+            matched_title = match.group(2)
+            # Find the canonical title (preserve original casing from plan)
+            canonical_title = lower_to_canonical.get(matched_title.lower())
+            if not canonical_title:
+                return match.group(0)
+            target_slug = title_to_slug[canonical_title]
+            if target_slug == _page_slug:
+                return match.group(0)  # Don't self-link
+            # Escape markdown special chars in the title for safe link text
+            safe_title = (
+                canonical_title.replace("\\", "\\\\")
+                .replace("[", "\\[")
+                .replace("]", "\\]")
+            )
+            return f"{see_prefix}[{safe_title}]({target_slug}.html)"
+
+        # Split content into code and non-code segments, only linkify non-code
+        parts = _CODE_BLOCK_RE.split(content)
+        new_parts: list[str] = []
+        for part in parts:
+            if _CODE_BLOCK_RE.match(part):
+                new_parts.append(part)  # Code segment, keep as-is
+            else:
+                new_parts.append(pattern.sub(_replace, part))
+        new_content = "".join(new_parts)
+
+        if new_content != content:
+            link_count = new_content.count(".html)") - content.count(".html)")
+            if link_count > 0:
+                logger.info(
+                    f"[{_label}] Linkified {link_count} plain-text reference(s) in page '{page_slug}'"
+                )
+        updated[page_slug] = new_content
+
+    return updated
 
 
 def _confined_path(base: Path, relative_name: str) -> Path:
@@ -128,6 +285,8 @@ async def _validate_single_page(
     page_description: str,
     job_dir: Path,
     ai_cli_timeout: int | None = None,
+    page_type: str = "guide",
+    other_pages_path: str | None = None,
 ) -> str:
     """Validate a single page and regenerate if stale references are found.
 
@@ -191,6 +350,8 @@ async def _validate_single_page(
             ai_model=ai_model,
             ai_cli_timeout=ai_cli_timeout,
             exclusions_path=str(exclusions_file),
+            page_type=page_type,
+            other_pages_path=other_pages_path,
         )
         cache_file = _confined_path(cache_dir, f"{slug}.md")
         await asyncio.to_thread(cache_file.write_text, new_content, encoding="utf-8")
@@ -236,15 +397,35 @@ async def validate_pages(
             for page in group.get("pages", []):
                 slug = page.get("slug", "")
                 if slug:
+                    _page_type = page.get("type", "guide")
+                    if _page_type not in PAGE_TYPES:
+                        logger.warning(
+                            f"[{project_name}] Unknown page type '{_page_type}' for slug '{slug}', "
+                            f"falling back to 'guide'"
+                        )
+                        _page_type = "guide"
                     slug_meta[slug] = {
                         "title": page.get("title", slug),
                         "description": page.get("description", ""),
+                        "type": _page_type,
                     }
 
     job_id = str(uuid.uuid4())
     job_dir = Path(tempfile.mkdtemp(prefix=f"docsfy-validation-{job_id}-"))
 
     try:
+        # Write page manifest for cross-referencing
+        manifest_path: Path | None = None
+        if slug_meta:
+            manifest_lines = [
+                f"- [{meta.get('title', s)}]({s}.html) \u2014 {meta.get('description', '')}"
+                for s, meta in slug_meta.items()
+            ]
+            manifest_path = job_dir / "pages.txt"
+            await asyncio.to_thread(
+                manifest_path.write_text, "\n".join(manifest_lines), "utf-8"
+            )
+
         coroutines = [
             _validate_single_page(
                 slug=slug,
@@ -258,12 +439,14 @@ async def validate_pages(
                 page_description=slug_meta.get(slug, {}).get("description", ""),
                 job_dir=job_dir,
                 ai_cli_timeout=ai_cli_timeout,
+                page_type=slug_meta.get(slug, {}).get("type", "guide"),
+                other_pages_path=str(manifest_path) if manifest_path else None,
             )
             for slug, content in pages.items()
         ]
 
         results = await run_parallel_with_limit(
-            coroutines, max_concurrency=MAX_CONCURRENT_PAGES
+            coroutines, max_concurrency=get_settings().max_concurrent_pages
         )
     finally:
         shutil.rmtree(job_dir, ignore_errors=True)

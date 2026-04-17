@@ -1048,3 +1048,226 @@ async def test_add_cross_links_fallback_to_slug_for_unknown_pages(
         )
     # Should have a link using slug as the fallback title, because extra is in `pages`
     assert "[extra](extra.html)" in result["intro"]
+
+
+def test_fix_broken_internal_links_removes_invalid() -> None:
+    from docsfy.postprocess import fix_broken_internal_links
+
+    pages = {
+        "intro": "See [Setup Guide](setup.html) and [FAQ](faq.html) for details.",
+    }
+    plan = {
+        "navigation": [
+            {"group": "Start", "pages": [{"slug": "intro", "title": "Intro"}]}
+        ]
+    }
+    result = fix_broken_internal_links(pages, plan, project_name="test")
+    # "setup" and "faq" are not in the plan, links should be removed but text kept
+    assert "[Setup Guide](setup.html)" not in result["intro"]
+    assert "[FAQ](faq.html)" not in result["intro"]
+    assert "Setup Guide" in result["intro"]
+    assert "FAQ" in result["intro"]
+
+
+def test_fix_broken_internal_links_keeps_valid() -> None:
+    from docsfy.postprocess import fix_broken_internal_links
+
+    pages = {
+        "intro": "See [Quick Start](quickstart.html) for details.",
+        "quickstart": "# Quick Start",
+    }
+    plan = {
+        "navigation": [
+            {
+                "group": "Start",
+                "pages": [
+                    {"slug": "intro", "title": "Intro"},
+                    {"slug": "quickstart", "title": "Quick Start"},
+                ],
+            }
+        ]
+    }
+    result = fix_broken_internal_links(pages, plan, project_name="test")
+    assert "[Quick Start](quickstart.html)" in result["intro"]
+
+
+def test_fix_broken_internal_links_handles_anchors() -> None:
+    from docsfy.postprocess import fix_broken_internal_links
+
+    pages = {
+        "intro": "See [Config](config.html#advanced) for details.",
+        "config": "# Config",
+    }
+    plan = {
+        "navigation": [
+            {
+                "group": "Start",
+                "pages": [
+                    {"slug": "intro", "title": "Intro"},
+                    {"slug": "config", "title": "Config"},
+                ],
+            }
+        ]
+    }
+    result = fix_broken_internal_links(pages, plan, project_name="test")
+    # config exists in plan, link should be preserved
+    assert "config.html#advanced" in result["intro"]
+
+
+def test_fix_broken_internal_links_case_insensitive() -> None:
+    from docsfy.postprocess import fix_broken_internal_links
+
+    pages = {
+        "intro": "See [Quick Start](QuickStart.html) for details.",
+        "quickstart": "# Quick Start",
+    }
+    plan = {
+        "navigation": [
+            {
+                "group": "Start",
+                "pages": [
+                    {"slug": "intro", "title": "Intro"},
+                    {"slug": "quickstart", "title": "Quick Start"},
+                ],
+            }
+        ]
+    }
+    result = fix_broken_internal_links(pages, plan, project_name="test")
+    # Case-insensitive match rewrites to canonical slug casing
+    assert "quickstart.html" in result["intro"]
+    assert "QuickStart.html" not in result["intro"]
+
+
+def test_linkify_plain_references_converts_see_pattern() -> None:
+    from docsfy.postprocess import linkify_plain_references
+
+    pages = {
+        "quickstart": "Install the tool. See Configuration for details.",
+        "config": "# Configuration\n\nSettings here.",
+    }
+    plan = {
+        "navigation": [
+            {
+                "group": "Start",
+                "pages": [
+                    {"slug": "quickstart", "title": "Quickstart"},
+                    {"slug": "config", "title": "Configuration"},
+                ],
+            }
+        ]
+    }
+    result = linkify_plain_references(pages, plan, project_name="test")
+    assert "[Configuration](config.html)" in result["quickstart"]
+    assert "See [Configuration](config.html)" in result["quickstart"]
+
+
+def test_linkify_plain_references_skips_existing_links() -> None:
+    from docsfy.postprocess import linkify_plain_references
+
+    pages = {
+        "quickstart": "See [Configuration](config.html) for details.",
+        "config": "# Configuration",
+    }
+    plan = {
+        "navigation": [
+            {
+                "group": "Start",
+                "pages": [
+                    {"slug": "quickstart", "title": "Quickstart"},
+                    {"slug": "config", "title": "Configuration"},
+                ],
+            }
+        ]
+    }
+    result = linkify_plain_references(pages, plan, project_name="test")
+    # Should not double-link
+    assert result["quickstart"].count("[Configuration]") == 1
+
+
+def test_linkify_plain_references_skips_self_links() -> None:
+    from docsfy.postprocess import linkify_plain_references
+
+    pages = {
+        "config": "See Configuration for more.",
+    }
+    plan = {
+        "navigation": [
+            {
+                "group": "Ref",
+                "pages": [
+                    {"slug": "config", "title": "Configuration"},
+                ],
+            }
+        ]
+    }
+    result = linkify_plain_references(pages, plan, project_name="test")
+    # Should NOT self-link
+    assert "[Configuration](config.html)" not in result["config"]
+
+
+def test_linkify_plain_references_longest_match_first() -> None:
+    from docsfy.postprocess import linkify_plain_references
+
+    pages = {
+        "intro": "See CLI Command Reference for flags.",
+        "cli-ref": "# CLI Command Reference",
+        "cli": "# CLI",
+    }
+    plan = {
+        "navigation": [
+            {
+                "group": "Ref",
+                "pages": [
+                    {"slug": "intro", "title": "Introduction"},
+                    {"slug": "cli-ref", "title": "CLI Command Reference"},
+                    {"slug": "cli", "title": "CLI"},
+                ],
+            }
+        ]
+    }
+    result = linkify_plain_references(pages, plan, project_name="test")
+    # Should match the longer "CLI Command Reference", not just "CLI"
+    assert "[CLI Command Reference](cli-ref.html)" in result["intro"]
+
+
+def test_fix_broken_internal_links_dotted_slug_valid() -> None:
+    from docsfy.postprocess import fix_broken_internal_links
+
+    pages = {
+        "intro": "See [API v2](api.v2.html) for details.",
+        "api.v2": "# API v2",
+    }
+    plan = {
+        "navigation": [
+            {
+                "group": "Ref",
+                "pages": [
+                    {"slug": "intro", "title": "Intro"},
+                    {"slug": "api.v2", "title": "API v2"},
+                ],
+            }
+        ]
+    }
+    result = fix_broken_internal_links(pages, plan, project_name="test")
+    assert "[API v2](api.v2.html)" in result["intro"]
+
+
+def test_fix_broken_internal_links_dotted_slug_broken() -> None:
+    from docsfy.postprocess import fix_broken_internal_links
+
+    pages = {
+        "intro": "See [Old API](api.v1.html) for details.",
+    }
+    plan = {
+        "navigation": [
+            {
+                "group": "Ref",
+                "pages": [
+                    {"slug": "intro", "title": "Intro"},
+                ],
+            }
+        ]
+    }
+    result = fix_broken_internal_links(pages, plan, project_name="test")
+    assert "[Old API](api.v1.html)" not in result["intro"]
+    assert "Old API" in result["intro"]

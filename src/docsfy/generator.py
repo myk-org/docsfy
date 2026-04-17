@@ -1,5 +1,9 @@
 from __future__ import annotations
 
+import json
+import re
+import shutil
+import tempfile
 from collections.abc import Awaitable, Callable
 from pathlib import Path
 from typing import Any
@@ -10,12 +14,13 @@ from docsfy.ai_client import call_ai_cli, run_parallel_with_limit
 from docsfy.json_parser import parse_json_array_response, parse_json_response
 from pydantic import ValidationError
 
-from docsfy.models import DEFAULT_BRANCH, MAX_CONCURRENT_PAGES, DocPlan
+from docsfy.models import DEFAULT_BRANCH, PAGE_TYPES, DocPlan
 from docsfy.prompts import (
     build_incremental_page_prompt,
     build_incremental_planner_prompt,
     build_page_prompt,
     build_planner_prompt,
+    truncate_diff_content,
 )
 
 logger = get_logger(name=__name__)
@@ -35,6 +40,52 @@ def _strip_ai_preamble(text: str) -> str:
         if line.startswith("#"):
             return "\n".join(lines[i:])
     return text
+
+
+_AI_COMMENTARY_END_MARKERS = (
+    "\nWait -",
+    "\nWait,",
+    "\nLet me refine",
+    "\nLet me remove",
+    "\nI should ",
+    "\nI'll also ",
+    "\nI'll remove",
+    "\nSo I should",
+    "\n`</think>`",
+)
+
+
+def _strip_ai_artifacts(text: str) -> str:
+    """Strip AI thinking/reasoning artifacts from generated content.
+
+    Removes:
+    - <think>...</think> blocks anywhere in the text
+    - </think> orphan closing tags
+    - Self-referential AI commentary at the end (e.g., "Wait - the user said...",
+      "Let me refine:", "I should NOT include...")
+    """
+    # Remove <think>...</think> blocks (including multiline)
+    while "<think>" in text and "</think>" in text:
+        text = re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL)
+
+    # Remove orphan </think> tags
+    text = re.sub(r"</think>", "", text)
+
+    # Remove orphan <think> tags
+    text = re.sub(r"<think>", "", text)
+
+    # Only scan the tail of the output for self-referential AI commentary.
+    # These markers only appear at the very end when the AI "thinks out loud"
+    # after finishing. Scanning the full text risks truncating legitimate prose.
+    if len(text) > 500:
+        tail_offset = len(text) - 500
+        for marker in _AI_COMMENTARY_END_MARKERS:
+            idx = text.find(marker, tail_offset)
+            if idx >= 0:
+                text = text[:idx]
+                break  # Only apply the first match
+
+    return text.strip()
 
 
 async def _call_ai_or_raise(
@@ -156,12 +207,16 @@ async def generate_full_page_content(
     ai_model: str,
     ai_cli_timeout: int | None = None,
     exclusions_path: str | None = None,
+    page_type: str = "guide",
+    other_pages_path: str | None = None,
 ) -> str:
     prompt = build_page_prompt(
         project_name=project_name,
         page_title=page_title,
         page_description=page_description,
+        page_type=page_type,
         exclusions_path=exclusions_path,
+        other_pages_path=other_pages_path,
     )
     output = await _call_ai_or_raise(
         prompt=prompt,
@@ -170,7 +225,7 @@ async def generate_full_page_content(
         ai_model=ai_model,
         ai_cli_timeout=ai_cli_timeout,
     )
-    return _strip_ai_preamble(output)
+    return _strip_ai_artifacts(_strip_ai_preamble(output))
 
 
 async def _generate_incremental_page_content(
@@ -184,22 +239,35 @@ async def _generate_incremental_page_content(
     ai_provider: str,
     ai_model: str,
     ai_cli_timeout: int | None = None,
+    page_type: str = "guide",
 ) -> str:
-    prompt = build_incremental_page_prompt(
-        project_name=project_name,
-        page_title=page_title,
-        page_description=page_description,
-        existing_content=existing_content,
-        changed_files=changed_files,
-        diff_content=diff_content,
-    )
-    output = await _call_ai_or_raise(
-        prompt=prompt,
-        repo_path=repo_path,
-        ai_provider=ai_provider,
-        ai_model=ai_model,
-        ai_cli_timeout=ai_cli_timeout,
-    )
+    job_dir = Path(tempfile.mkdtemp(prefix="docsfy-incremental-page-"))
+    try:
+        existing_page_file = job_dir / "existing_page.md"
+        existing_page_file.write_text(existing_content, encoding="utf-8")
+
+        truncated_diff = truncate_diff_content(diff_content)
+        diff_file = job_dir / "diff.patch"
+        diff_file.write_text(truncated_diff, encoding="utf-8")
+
+        prompt = build_incremental_page_prompt(
+            project_name=project_name,
+            page_title=page_title,
+            page_description=page_description,
+            existing_page_path=str(existing_page_file),
+            changed_files=changed_files,
+            diff_path=str(diff_file),
+            page_type=page_type,
+        )
+        output = await _call_ai_or_raise(
+            prompt=prompt,
+            repo_path=repo_path,
+            ai_provider=ai_provider,
+            ai_model=ai_model,
+            ai_cli_timeout=ai_cli_timeout,
+        )
+    finally:
+        shutil.rmtree(job_dir, ignore_errors=True)
     return _apply_incremental_page_updates(existing_content, output)
 
 
@@ -260,6 +328,8 @@ async def generate_page(
     diff_content: str | None = None,
     branch: str = DEFAULT_BRANCH,
     on_page_generated: Callable[[int], Awaitable[None]] | None = None,
+    page_type: str = "guide",
+    other_pages_path: str | None = None,
 ) -> str:
     _label = project_name or repo_path.name
     prompt_project_name = project_name or repo_path.name
@@ -291,6 +361,7 @@ async def generate_page(
                     ai_provider=ai_provider,
                     ai_model=ai_model,
                     ai_cli_timeout=ai_cli_timeout,
+                    page_type=page_type,
                 )
             except (RuntimeError, ValueError) as exc:
                 logger.warning(
@@ -305,6 +376,8 @@ async def generate_page(
                     ai_provider=ai_provider,
                     ai_model=ai_model,
                     ai_cli_timeout=ai_cli_timeout,
+                    page_type=page_type,
+                    other_pages_path=other_pages_path,
                 )
         else:
             output = await generate_full_page_content(
@@ -315,6 +388,8 @@ async def generate_page(
                 ai_provider=ai_provider,
                 ai_model=ai_model,
                 ai_cli_timeout=ai_cli_timeout,
+                page_type=page_type,
+                other_pages_path=other_pages_path,
             )
     except RuntimeError as exc:
         logger.warning(f"[{_label}] Failed to generate page '{slug}': {exc}")
@@ -380,40 +455,64 @@ async def generate_all_pages(
             if is_unsafe_slug(slug):
                 logger.warning(f"[{_label}] Skipping path-unsafe slug: '{slug}'")
                 continue
+            _page_type = page.get("type", "guide")
+            if _page_type not in PAGE_TYPES:
+                logger.warning(
+                    f"[{_label}] Unknown page type '{_page_type}' for slug '{slug}', "
+                    f"falling back to 'guide'"
+                )
+                _page_type = "guide"
             all_pages.append(
                 {
                     "slug": slug,
                     "title": title,
                     "description": page.get("description", ""),
+                    "type": _page_type,
                 }
             )
 
-    _existing_pages = existing_pages or {}
-    coroutines = [
-        generate_page(
-            repo_path=repo_path,
-            slug=p["slug"],
-            title=p["title"],
-            description=p["description"],
-            cache_dir=cache_dir,
-            ai_provider=ai_provider,
-            ai_model=ai_model,
-            ai_cli_timeout=ai_cli_timeout,
-            use_cache=use_cache,
-            project_name=project_name,
-            owner=owner,
-            existing_content=_existing_pages.get(p["slug"]),
-            changed_files=changed_files,
-            diff_content=diff_content,
-            branch=branch,
-            on_page_generated=on_page_generated,
-        )
-        for p in all_pages
-    ]
+    # Write page manifest once for cross-referencing (GOLDEN RULE: don't inline in prompts)
+    pages_manifest_dir = Path(tempfile.mkdtemp(prefix="docsfy-pages-manifest-"))
+    try:
+        pages_manifest_path = pages_manifest_dir / "pages.txt"
+        manifest_lines = [
+            f"- [{p['title']}]({p['slug']}.html) \u2014 {p['description']}"
+            for p in all_pages
+        ]
+        pages_manifest_path.write_text("\n".join(manifest_lines), encoding="utf-8")
 
-    results = await run_parallel_with_limit(
-        coroutines, max_concurrency=MAX_CONCURRENT_PAGES
-    )
+        _existing_pages = existing_pages or {}
+        coroutines = [
+            generate_page(
+                repo_path=repo_path,
+                slug=p["slug"],
+                title=p["title"],
+                description=p["description"],
+                cache_dir=cache_dir,
+                page_type=p["type"],
+                ai_provider=ai_provider,
+                ai_model=ai_model,
+                ai_cli_timeout=ai_cli_timeout,
+                use_cache=use_cache,
+                project_name=project_name,
+                owner=owner,
+                existing_content=_existing_pages.get(p["slug"]),
+                changed_files=changed_files,
+                diff_content=diff_content,
+                branch=branch,
+                on_page_generated=on_page_generated,
+                other_pages_path=str(pages_manifest_path),
+            )
+            for p in all_pages
+        ]
+
+        from docsfy.config import get_settings
+
+        results = await run_parallel_with_limit(
+            coroutines, max_concurrency=get_settings().max_concurrent_pages
+        )
+    finally:
+        shutil.rmtree(pages_manifest_dir, ignore_errors=True)
     pages: dict[str, str] = {}
     for page_info, result in zip(all_pages, results):
         if isinstance(result, Exception):
@@ -443,20 +542,29 @@ async def run_incremental_planner(
     logger.info(
         f"[{project_name}] Running incremental planner for {len(changed_files)} changed files"
     )
-    prompt = build_incremental_planner_prompt(
-        project_name, changed_files, existing_plan
-    )
+    job_dir = Path(tempfile.mkdtemp(prefix="docsfy-incremental-plan-"))
     try:
-        output = await _call_ai_or_raise(
-            prompt=prompt,
-            repo_path=repo_path,
-            ai_provider=ai_provider,
-            ai_model=ai_model,
-            ai_cli_timeout=ai_cli_timeout,
+        plan_file = job_dir / "existing_plan.json"
+        plan_file.write_text(json.dumps(existing_plan, indent=2), encoding="utf-8")
+
+        prompt = build_incremental_planner_prompt(
+            project_name, changed_files, str(plan_file)
         )
-    except RuntimeError:
-        logger.warning(f"[{project_name}] Incremental planner failed, regenerating all")
-        return ["all"]
+        try:
+            output = await _call_ai_or_raise(
+                prompt=prompt,
+                repo_path=repo_path,
+                ai_provider=ai_provider,
+                ai_model=ai_model,
+                ai_cli_timeout=ai_cli_timeout,
+            )
+        except RuntimeError:
+            logger.warning(
+                f"[{project_name}] Incremental planner failed, regenerating all"
+            )
+            return ["all"]
+    finally:
+        shutil.rmtree(job_dir, ignore_errors=True)
 
     raw_result = parse_json_array_response(output)
     if raw_result is None or not isinstance(raw_result, list):
