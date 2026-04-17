@@ -73,10 +73,10 @@ def fix_broken_internal_links(
                 # Rewrite to canonical slug casing for case-sensitive hosts
                 canonical = slug_to_canonical.get(target_lower, target_slug)
                 if canonical != target_slug:
-                    # Preserve any anchor/title suffix from the original match
-                    full_match = match.group(0)
-                    return full_match.replace(
-                        f"({target_slug}.html", f"({canonical}.html"
+                    # Reconstruct with canonical slug casing (limit=1 to avoid
+                    # corrupting link text that happens to contain the slug)
+                    return match.group(0).replace(
+                        f"({target_slug}.html", f"({canonical}.html", 1
                     )
                 return match.group(0)  # Already correct casing
             logger.info(
@@ -126,6 +126,7 @@ def linkify_plain_references(
     # Sort titles by length (longest first) to avoid partial matches
     # e.g., "CLI Command Reference" should match before "CLI"
     sorted_titles = sorted(title_to_slug.keys(), key=len, reverse=True)
+    lower_to_canonical: dict[str, str] = {t.lower(): t for t in sorted_titles}
 
     # Build a single regex pattern for all titles
     # Match: See <Title> (not inside an existing markdown link)
@@ -146,11 +147,7 @@ def linkify_plain_references(
             see_prefix = match.group(1)
             matched_title = match.group(2)
             # Find the canonical title (preserve original casing from plan)
-            canonical_title = None
-            for t in sorted_titles:
-                if t.lower() == matched_title.lower():
-                    canonical_title = t
-                    break
+            canonical_title = lower_to_canonical.get(matched_title.lower())
             if not canonical_title:
                 return match.group(0)
             target_slug = title_to_slug[canonical_title]
@@ -429,7 +426,9 @@ async def validate_pages(
                 for s, meta in slug_meta.items()
             ]
             manifest_path = job_dir / "pages.txt"
-            manifest_path.write_text("\n".join(manifest_lines), encoding="utf-8")
+            await asyncio.to_thread(
+                manifest_path.write_text, "\n".join(manifest_lines), "utf-8"
+            )
 
         coroutines = [
             _validate_single_page(
