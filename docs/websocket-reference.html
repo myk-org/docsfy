@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket Reference - docsfy</title>
+    <meta name="description" content="Turn any Git repo into a polished, shareable documentation site in minutes">
+    <link rel="stylesheet" href="assets/style.css">
+    <script>try{var t=localStorage.getItem('theme');if(t==='dark')document.documentElement.setAttribute('data-theme','dark')}catch(e){}</script>
+    <link rel="alternate" type="text/plain" title="LLM Documentation Index" href="llms.txt">
+    <link rel="alternate" type="text/plain" title="LLM Full Documentation" href="llms-full.txt">
+</head>
+<body>
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <a href="index.html" class="sidebar-logo">docsfy</a>
+            <p class="sidebar-tagline">Turn any Git repo into a polished, shareable documentation site in minutes</p>
+        </div>
+
+        <div class="sidebar-search">
+            <input type="text" id="search-input" placeholder="Search... (⌘K)" autocomplete="off" readonly>
+            <div id="search-results" class="search-results"></div>
+        </div>
+
+        <nav class="sidebar-nav">
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Getting Started</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="generate-your-first-docs-site.html"
+                           class="nav-link">
+                            Generate Your First Docs Site
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="configure-ai-providers.html"
+                           class="nav-link">
+                            Configure AI Providers
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="install-and-run-docsfy-without-docker.html"
+                           class="nav-link">
+                            Install and Run docsfy Without Docker
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">User Guides</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="generate-documentation.html"
+                           class="nav-link">
+                            Generate Documentation
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="track-generation-progress.html"
+                           class="nav-link">
+                            Track Generation Progress
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="regenerate-for-new-branches-and-models.html"
+                           class="nav-link">
+                            Regenerate for New Branches and Models
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="view-download-and-publish-docs.html"
+                           class="nav-link">
+                            View, Download, and Publish Docs
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="manage-users-roles-and-access.html"
+                           class="nav-link">
+                            Manage Users, Roles, and Access
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="manage-docsfy-from-the-cli.html"
+                           class="nav-link">
+                            Manage docsfy from the CLI
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="fix-setup-and-generation-problems.html"
+                           class="nav-link">
+                            Fix Setup and Generation Problems
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Reference</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="configuration-reference.html"
+                           class="nav-link">
+                            Configuration Reference
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="cli-command-reference.html"
+                           class="nav-link">
+                            CLI Command Reference
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="http-api-reference.html"
+                           class="nav-link">
+                            HTTP API Reference
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="websocket-reference.html"
+                           class="nav-link active" aria-current="page">
+                            WebSocket Reference
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+        </nav>
+    </aside>
+
+    <div class="main-wrapper">
+        <header class="top-bar">
+            <div class="top-bar-left">
+                <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebar" aria-expanded="false">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                </button>
+                <a href="index.html" class="top-bar-title">docsfy</a>
+            </div>
+            <div class="top-bar-spacer"></div>
+            <div class="top-bar-right">
+                <button class="top-bar-search-btn" id="search-trigger" aria-label="Search">
+                    <kbd>&#8984;K</kbd> Search
+                </button>
+                <a href="https://github.com/myk-org/docsfy" target="_blank" rel="noopener" class="docsfy-badge" title="Generated with docsfy">
+                    ⚡ docs<span class="brand-accent">fy</span>
+                </a>
+                
+                <a href="https://github.com/myk-org/docsfy.git" target="_blank" rel="noopener noreferrer" class="top-bar-github" id="github-link" data-repo-url="https://github.com/myk-org/docsfy.git">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                    <span class="github-stars" id="github-stars" title="GitHub stars"></span>
+                </a>
+                
+                <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+                    <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                    </svg>
+                    <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <main class="content">
+            
+            <article class="article">
+                <div class="article-body">
+                    <!-- SECURITY: |safe is intentional. Content is AI-generated markdown
+                         converted to HTML server-side by the markdown library, not
+                         user-supplied input. XSS risk is minimal and accepted since
+                         the AI generates the content, not end users. -->
+                    <h1 id="websocket-reference">WebSocket Reference</h1>
+<h2 id="endpoint">Endpoint</h2>
+<h3 id="apiws"><code>/api/ws</code></h3>
+<p><strong>Description:</strong> Real-time endpoint for project sync and generation updates. One connection receives every update visible to the authenticated user. There is no subscribe or filter command.</p>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>scheme</code></td>
+<td><code>ws</code> | <code>wss</code></td>
+<td><code>wss</code> on HTTPS, <code>ws</code> on HTTP</td>
+<td>Transport scheme for the socket URL.</td>
+</tr>
+<tr>
+<td><code>path</code></td>
+<td>string</td>
+<td><code>/api/ws</code></td>
+<td>WebSocket endpoint path.</td>
+</tr>
+<tr>
+<td><code>token</code></td>
+<td>string</td>
+<td>None</td>
+<td>Optional query parameter. Accepts the raw <code>ADMIN_KEY</code> or a user's API key. No username parameter is used.</td>
+</tr>
+<tr>
+<td><code>docsfy_session</code></td>
+<td>string</td>
+<td>None</td>
+<td>Optional cookie. Opaque session token set by <code>POST /api/auth/login</code>; <code>HttpOnly</code>, <code>SameSite=Strict</code>, max age <code>28800</code> seconds, <code>Secure</code> controlled by <code>SECURE_COOKIES</code>.</td>
+</tr>
+</tbody>
+</table>
+<div class="highlight"><pre><span></span><code><span class="c1">// Same-origin browser session</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">ws</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">WebSocket</span><span class="p">(</span><span class="s1">&#39;wss://docs.example.com/api/ws&#39;</span><span class="p">)</span>
+
+<span class="c1">// Direct token auth</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">wsWithToken</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">WebSocket</span><span class="p">(</span><span class="s1">&#39;wss://docs.example.com/api/ws?token=&lt;API_KEY&gt;&#39;</span><span class="p">)</span>
+</code></pre></div>
+
+<p><strong>Return value/effect:</strong></p>
+<ul>
+<li>Successful connections are accepted and immediately receive a <code>sync</code> message.</li>
+<li>Admins receive updates for all variants.</li>
+<li>Other authenticated users receive updates for owned variants plus variants shared with them.</li>
+<li>Access grants and revocations trigger a new <code>sync</code> for the affected user.</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Close code</th>
+<th>Effect</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>1008</code></td>
+<td>Authentication failed.</td>
+</tr>
+<tr>
+<td><code>1001</code></td>
+<td>Heartbeat timeout after 2 missed <code>pong</code> replies.</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Note:</strong> <code>/api/ws</code> authenticates with the <code>token</code> query parameter or the <code>docsfy_session</code> cookie. It does not read <code>Authorization</code> headers.</p>
+<p><strong>Note:</strong> See <a href="#">Manage Users, Roles, and Access</a> for access assignment and role details.</p>
+<p><strong>Warning:</strong> <code>?token=</code> places credentials in the URL.</p>
+</blockquote>
+<h2 id="message-reference">Message Reference</h2>
+<h3 id="sync"><code>sync</code></h3>
+<p><strong>Description:</strong> Full replacement snapshot for the authenticated user's visible project list and lookup maps.</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>type</code></td>
+<td>string</td>
+<td><code>sync</code></td>
+<td>Message discriminator.</td>
+</tr>
+<tr>
+<td><code>projects</code></td>
+<td><code>Project[]</code></td>
+<td><code>[]</code></td>
+<td>Visible project variants, sorted by <code>updated_at</code> descending. Includes owned variants and any shared variants the user can access.</td>
+</tr>
+<tr>
+<td><code>known_models</code></td>
+<td><code>Record&lt;string, string[]&gt;</code></td>
+<td><code>{}</code></td>
+<td>Ready model names grouped by provider. Built from ready projects only.</td>
+</tr>
+<tr>
+<td><code>known_branches</code></td>
+<td><code>Record&lt;string, string[]&gt;</code></td>
+<td><code>{}</code></td>
+<td>Ready branch names grouped by project name. Admins receive all ready branches; non-admins receive owned ready branches only.</td>
+</tr>
+</tbody>
+</table>
+<p><strong><code>sync.projects[]</code> object</strong></p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>name</code></td>
+<td>string</td>
+<td>n/a</td>
+<td>Project name.</td>
+</tr>
+<tr>
+<td><code>branch</code></td>
+<td>string</td>
+<td><code>main</code></td>
+<td>Variant branch.</td>
+</tr>
+<tr>
+<td><code>ai_provider</code></td>
+<td>string</td>
+<td><code>""</code></td>
+<td>Provider name stored on the project record.</td>
+</tr>
+<tr>
+<td><code>ai_model</code></td>
+<td>string</td>
+<td><code>""</code></td>
+<td>Model name stored on the project record.</td>
+</tr>
+<tr>
+<td><code>owner</code></td>
+<td>string</td>
+<td><code>""</code></td>
+<td>Project owner username.</td>
+</tr>
+<tr>
+<td><code>repo_url</code></td>
+<td>string</td>
+<td>n/a</td>
+<td>Source repository URL, or the local repository path string when generation used <code>repo_path</code>.</td>
+</tr>
+<tr>
+<td><code>status</code></td>
+<td>string</td>
+<td><code>generating</code></td>
+<td>One of <code>generating</code>, <code>ready</code>, <code>error</code>, or <code>aborted</code>.</td>
+</tr>
+<tr>
+<td><code>current_stage</code></td>
+<td>string | null</td>
+<td><code>null</code></td>
+<td>Current stage string, <code>up_to_date</code>, or <code>null</code>.</td>
+</tr>
+<tr>
+<td><code>last_commit_sha</code></td>
+<td>string | null</td>
+<td><code>null</code></td>
+<td>Git commit SHA for the variant, when available.</td>
+</tr>
+<tr>
+<td><code>last_generated</code></td>
+<td>string | null</td>
+<td><code>null</code></td>
+<td>Generation timestamp string in <code>YYYY-MM-DD HH:MM:SS</code> format, when available.</td>
+</tr>
+<tr>
+<td><code>page_count</code></td>
+<td>integer</td>
+<td><code>0</code></td>
+<td>Generated page count.</td>
+</tr>
+<tr>
+<td><code>error_message</code></td>
+<td>string | null</td>
+<td><code>null</code></td>
+<td>Failure or abort text, when available.</td>
+</tr>
+<tr>
+<td><code>plan_json</code></td>
+<td>string | null</td>
+<td><code>null</code></td>
+<td>Serialized documentation plan JSON string.</td>
+</tr>
+<tr>
+<td><code>created_at</code></td>
+<td>string</td>
+<td>current timestamp</td>
+<td>Row creation timestamp.</td>
+</tr>
+<tr>
+<td><code>updated_at</code></td>
+<td>string</td>
+<td>current timestamp</td>
+<td>Last update timestamp.</td>
+</tr>
+</tbody>
+</table>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;sync&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;projects&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;docsfy&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;branch&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;main&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;ai_provider&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;cursor&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;ai_model&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;gpt-5.4-xhigh-fast&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;owner&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;alice&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;repo_url&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://github.com/myk-org/docsfy&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ready&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;current_stage&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;last_commit_sha&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;abc123def456&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;last_generated&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-04-17 12:34:56&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;page_count&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">14</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;error_message&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;plan_json&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;{\&quot;project_name\&quot;:\&quot;docsfy\&quot;,\&quot;navigation\&quot;:[...]}&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;created_at&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-04-17 12:10:00&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;updated_at&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-04-17 12:34:56&quot;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">],</span>
+<span class="w">  </span><span class="nt">&quot;known_models&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;cursor&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;gpt-5.4-xhigh-fast&quot;</span><span class="p">]</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="w">  </span><span class="nt">&quot;known_branches&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;docsfy&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;main&quot;</span><span class="p">]</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<p><strong>Return value/effect:</strong></p>
+<ul>
+<li>Sent immediately after a successful connection.</li>
+<li>Sent again after server-side resync events, including terminal status updates, deletes, variant replacement, and access changes.</li>
+<li>Replace local state with the new payload instead of patching individual fields.</li>
+</ul>
+<blockquote>
+<p><strong>Warning:</strong> <code>sync.projects[]</code> uses <code>ai_provider</code> and <code>ai_model</code>. <code>progress</code> and <code>status_change</code> use <code>provider</code> and <code>model</code>.</p>
+</blockquote>
+<h3 id="progress"><code>progress</code></h3>
+<p><strong>Description:</strong> Variant-scoped in-flight update while generation is still running.</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>type</code></td>
+<td>string</td>
+<td><code>progress</code></td>
+<td>Message discriminator.</td>
+</tr>
+<tr>
+<td><code>name</code></td>
+<td>string</td>
+<td>n/a</td>
+<td>Project name.</td>
+</tr>
+<tr>
+<td><code>branch</code></td>
+<td>string</td>
+<td><code>main</code></td>
+<td>Variant branch.</td>
+</tr>
+<tr>
+<td><code>provider</code></td>
+<td>string</td>
+<td>n/a</td>
+<td>AI provider for the active variant.</td>
+</tr>
+<tr>
+<td><code>model</code></td>
+<td>string</td>
+<td>n/a</td>
+<td>AI model for the active variant.</td>
+</tr>
+<tr>
+<td><code>owner</code></td>
+<td>string</td>
+<td>n/a</td>
+<td>Project owner username.</td>
+</tr>
+<tr>
+<td><code>status</code></td>
+<td>string</td>
+<td><code>generating</code></td>
+<td>Current run status. The current backend sends <code>generating</code> for this message type.</td>
+</tr>
+<tr>
+<td><code>current_stage</code></td>
+<td>string</td>
+<td>Not sent</td>
+<td>Current generation stage.</td>
+</tr>
+<tr>
+<td><code>page_count</code></td>
+<td>integer</td>
+<td>Not sent</td>
+<td>Generated page count so far.</td>
+</tr>
+<tr>
+<td><code>plan_json</code></td>
+<td>string | null</td>
+<td>Not sent</td>
+<td>Serialized documentation plan JSON string.</td>
+</tr>
+<tr>
+<td><code>error_message</code></td>
+<td>string | null</td>
+<td>Not sent</td>
+<td>In-flight error detail, when supplied by the backend.</td>
+</tr>
+</tbody>
+</table>
+<p><strong><code>current_stage</code> values</strong></p>
+<table>
+<thead>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>cloning</code></td>
+<td>Repository clone or local repository load has started.</td>
+</tr>
+<tr>
+<td><code>planning</code></td>
+<td>Full planning is running.</td>
+</tr>
+<tr>
+<td><code>incremental_planning</code></td>
+<td>Incremental planner is deciding which pages to regenerate.</td>
+</tr>
+<tr>
+<td><code>generating_pages</code></td>
+<td>Page generation is running.</td>
+</tr>
+<tr>
+<td><code>validating</code></td>
+<td>Post-generation validation is running.</td>
+</tr>
+<tr>
+<td><code>cross_linking</code></td>
+<td>Cross-linking and internal-link fixes are running.</td>
+</tr>
+<tr>
+<td><code>rendering</code></td>
+<td>Static site rendering is running.</td>
+</tr>
+</tbody>
+</table>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;progress&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;docsfy&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;branch&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;main&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;provider&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;cursor&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;model&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;gpt-5.4-xhigh-fast&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;owner&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;alice&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;generating&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;current_stage&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;generating_pages&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;page_count&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;plan_json&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;{\&quot;project_name\&quot;:\&quot;docsfy\&quot;,\&quot;navigation\&quot;:[...]}&quot;</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<p><strong>Return value/effect:</strong></p>
+<ul>
+<li>Apply this message to the variant identified by <code>name</code>, <code>branch</code>, <code>provider</code>, <code>model</code>, and <code>owner</code>.</li>
+<li>During <code>generating_pages</code>, <code>page_count</code> increments as pages are generated.</li>
+<li>During later stages, <code>page_count</code> carries the generated page total.</li>
+<li><code>plan_json</code> is a JSON string, not a parsed object.</li>
+</ul>
+<blockquote>
+<p><strong>Tip:</strong> Match <code>progress</code> messages by <code>name</code>, <code>branch</code>, <code>provider</code>, <code>model</code>, and <code>owner</code>.</p>
+</blockquote>
+<h3 id="status_change"><code>status_change</code></h3>
+<p><strong>Description:</strong> Variant-scoped terminal update.</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>type</code></td>
+<td>string</td>
+<td><code>status_change</code></td>
+<td>Message discriminator.</td>
+</tr>
+<tr>
+<td><code>name</code></td>
+<td>string</td>
+<td>n/a</td>
+<td>Project name.</td>
+</tr>
+<tr>
+<td><code>branch</code></td>
+<td>string</td>
+<td><code>main</code></td>
+<td>Variant branch.</td>
+</tr>
+<tr>
+<td><code>provider</code></td>
+<td>string</td>
+<td>n/a</td>
+<td>AI provider for the variant.</td>
+</tr>
+<tr>
+<td><code>model</code></td>
+<td>string</td>
+<td>n/a</td>
+<td>AI model for the variant.</td>
+</tr>
+<tr>
+<td><code>owner</code></td>
+<td>string</td>
+<td>n/a</td>
+<td>Project owner username.</td>
+</tr>
+<tr>
+<td><code>status</code></td>
+<td>string</td>
+<td>n/a</td>
+<td>Terminal status. One of <code>ready</code>, <code>error</code>, or <code>aborted</code>.</td>
+</tr>
+<tr>
+<td><code>page_count</code></td>
+<td>integer</td>
+<td>Not sent</td>
+<td>Final generated page count, when available.</td>
+</tr>
+<tr>
+<td><code>last_generated</code></td>
+<td>string | null</td>
+<td>Not sent</td>
+<td>Completion timestamp in <code>YYYY-MM-DD HH:MM:SS</code> format. Sent on <code>ready</code>.</td>
+</tr>
+<tr>
+<td><code>last_commit_sha</code></td>
+<td>string | null</td>
+<td>Not sent</td>
+<td>Commit SHA for the completed or reused variant, when available.</td>
+</tr>
+<tr>
+<td><code>error_message</code></td>
+<td>string | null</td>
+<td>Not sent</td>
+<td>Failure or abort text, when available.</td>
+</tr>
+</tbody>
+</table>
+<p><strong><code>status</code> values</strong></p>
+<table>
+<thead>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ready</code></td>
+<td>Generation completed successfully or the variant was reused as current.</td>
+</tr>
+<tr>
+<td><code>error</code></td>
+<td>Generation failed.</td>
+</tr>
+<tr>
+<td><code>aborted</code></td>
+<td>Generation was cancelled or aborted by the user.</td>
+</tr>
+</tbody>
+</table>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;status_change&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;docsfy&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;branch&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;main&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;provider&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;cursor&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;model&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;gpt-5.4-xhigh-fast&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;owner&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;alice&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ready&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;page_count&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">14</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;last_generated&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-04-17 12:34:56&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;last_commit_sha&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;abc123def456&quot;</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<p><strong>Return value/effect:</strong></p>
+<ul>
+<li>Emitted only for <code>ready</code>, <code>error</code>, and <code>aborted</code>.</li>
+<li>Every <code>status_change</code> is followed by a fresh <code>sync</code>.</li>
+<li>When a variant is reused without regeneration, the terminal message still uses <code>status: "ready"</code>. The following <code>sync.projects[]</code> record may show <code>current_stage: "up_to_date"</code>.</li>
+</ul>
+<h2 id="heartbeat">Heartbeat</h2>
+<h3 id="ping"><code>ping</code></h3>
+<p><strong>Description:</strong> Server heartbeat probe.</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>type</code></td>
+<td>string</td>
+<td><code>ping</code></td>
+<td>Heartbeat message sent by the server.</td>
+</tr>
+</tbody>
+</table>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ping&quot;</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<p><strong>Return value/effect:</strong></p>
+<ul>
+<li>Sent every <code>30</code> seconds.</li>
+<li>The server waits <code>10</code> seconds for the matching <code>pong</code>.</li>
+</ul>
+<h3 id="pong"><code>pong</code></h3>
+<p><strong>Description:</strong> Client heartbeat reply.</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>type</code></td>
+<td>string</td>
+<td><code>pong</code></td>
+<td>Heartbeat reply sent by the client.</td>
+</tr>
+</tbody>
+</table>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;pong&quot;</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<p><strong>Return value/effect:</strong></p>
+<ul>
+<li>Resets the missed-heartbeat counter for the current connection.</li>
+<li>After <code>2</code> missed <code>pong</code> replies, the server closes the socket with code <code>1001</code>.</li>
+<li>Client messages other than valid JSON <code>{"type":"pong"}</code> are ignored.</li>
+</ul>
+<h2 id="related-pages">Related Pages</h2>
+<ul>
+<li><a href="#">Track Generation Progress</a></li>
+<li><a href="#">HTTP API Reference</a></li>
+<li><a href="#">Manage Users, Roles, and Access</a></li>
+<li><a href="#">Fix Setup and Generation Problems</a></li>
+<li><a href="#">Manage docsfy from the CLI</a></li>
+</ul>
+                </div>
+            </article>
+            <nav class="page-nav">
+                
+                <a href="http-api-reference.html" class="page-nav-link page-nav-prev">
+                    <span class="page-nav-label">Previous</span>
+                    <span class="page-nav-title">HTTP API Reference</span>
+                </a>
+                
+                
+                <div></div>
+                
+            </nav>
+            
+            <aside class="toc-sidebar">
+                <div class="toc-container">
+                    <h3>On this page</h3>
+                    <div class="toc">
+<ul>
+<li><a href="#endpoint">Endpoint</a><ul>
+<li><a href="#apiws">/api/ws</a></li>
+</ul>
+</li>
+<li><a href="#message-reference">Message Reference</a><ul>
+<li><a href="#sync">sync</a></li>
+<li><a href="#progress">progress</a></li>
+<li><a href="#status_change">status_change</a></li>
+</ul>
+</li>
+<li><a href="#heartbeat">Heartbeat</a><ul>
+<li><a href="#ping">ping</a></li>
+<li><a href="#pong">pong</a></li>
+</ul>
+</li>
+<li><a href="#related-pages">Related Pages</a></li>
+</ul>
+</div>
+
+                </div>
+            </aside>
+            
+
+        </main>
+
+        <footer class="page-footer">
+            
+            <span class="footer-version">Generated from version 1.2.0</span>
+            <span class="footer-sep">&middot;</span>
+            
+            Generated with <a href="https://github.com/myk-org/docsfy" target="_blank" rel="noopener">docs<span class="brand-accent">fy</span></a>
+            <span class="footer-sep">&middot;</span>
+            <span class="footer-llm">LLM-friendly: <a href="llms.txt">llms.txt</a> &middot; <a href="llms-full.txt">llms-full.txt</a></span>
+        </footer>
+    </div>
+
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <script src="assets/theme.js"></script>
+    <script src="assets/search.js"></script>
+    <script src="assets/copy.js"></script>
+    <script src="assets/callouts.js"></script>
+    <script src="assets/scrollspy.js"></script>
+    <script src="assets/codelabels.js"></script>
+    <script src="assets/github.js"></script>
+    <script>
+(function() {
+    var toggle = document.getElementById('sidebar-toggle');
+    var sidebar = document.getElementById('sidebar');
+    var overlay = document.getElementById('sidebar-overlay');
+    if (toggle && sidebar) {
+        toggle.addEventListener('click', function() {
+            sidebar.classList.toggle('open');
+            if (overlay) overlay.classList.toggle('open');
+            var expanded = sidebar.classList.contains('open');
+            toggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+        });
+    }
+    if (overlay) {
+        overlay.addEventListener('click', function() {
+            sidebar.classList.remove('open');
+            overlay.classList.remove('open');
+            if (toggle) toggle.setAttribute('aria-expanded', 'false');
+        });
+    }
+})();
+</script>
+<script>
+(function() {
+    var sidebar = document.querySelector('.sidebar-nav') || document.querySelector('.sidebar');
+    if (!sidebar) return;
+
+    // Restore scroll position
+    var saved = sessionStorage.getItem('sidebar-scroll');
+    if (saved) sidebar.scrollTop = parseInt(saved, 10);
+
+    // Save scroll position before navigating
+    sidebar.addEventListener('scroll', function() {
+        sessionStorage.setItem('sidebar-scroll', sidebar.scrollTop.toString());
+    });
+
+    // Also scroll active link into view if no saved position
+    if (!saved) {
+        var active = sidebar.querySelector('.nav-link.active');
+        if (active) {
+            active.scrollIntoView({ block: 'center', behavior: 'instant' });
+        }
+    }
+})();
+</script>
+</body>
+</html>

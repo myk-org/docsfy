@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Regenerate for New Branches and Models - docsfy</title>
+    <meta name="description" content="Turn any Git repo into a polished, shareable documentation site in minutes">
+    <link rel="stylesheet" href="assets/style.css">
+    <script>try{var t=localStorage.getItem('theme');if(t==='dark')document.documentElement.setAttribute('data-theme','dark')}catch(e){}</script>
+    <link rel="alternate" type="text/plain" title="LLM Documentation Index" href="llms.txt">
+    <link rel="alternate" type="text/plain" title="LLM Full Documentation" href="llms-full.txt">
+</head>
+<body>
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <a href="index.html" class="sidebar-logo">docsfy</a>
+            <p class="sidebar-tagline">Turn any Git repo into a polished, shareable documentation site in minutes</p>
+        </div>
+
+        <div class="sidebar-search">
+            <input type="text" id="search-input" placeholder="Search... (⌘K)" autocomplete="off" readonly>
+            <div id="search-results" class="search-results"></div>
+        </div>
+
+        <nav class="sidebar-nav">
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Getting Started</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="generate-your-first-docs-site.html"
+                           class="nav-link">
+                            Generate Your First Docs Site
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="configure-ai-providers.html"
+                           class="nav-link">
+                            Configure AI Providers
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="install-and-run-docsfy-without-docker.html"
+                           class="nav-link">
+                            Install and Run docsfy Without Docker
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">User Guides</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="generate-documentation.html"
+                           class="nav-link">
+                            Generate Documentation
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="track-generation-progress.html"
+                           class="nav-link">
+                            Track Generation Progress
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="regenerate-for-new-branches-and-models.html"
+                           class="nav-link active" aria-current="page">
+                            Regenerate for New Branches and Models
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="view-download-and-publish-docs.html"
+                           class="nav-link">
+                            View, Download, and Publish Docs
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="manage-users-roles-and-access.html"
+                           class="nav-link">
+                            Manage Users, Roles, and Access
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="manage-docsfy-from-the-cli.html"
+                           class="nav-link">
+                            Manage docsfy from the CLI
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="fix-setup-and-generation-problems.html"
+                           class="nav-link">
+                            Fix Setup and Generation Problems
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Reference</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="configuration-reference.html"
+                           class="nav-link">
+                            Configuration Reference
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="cli-command-reference.html"
+                           class="nav-link">
+                            CLI Command Reference
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="http-api-reference.html"
+                           class="nav-link">
+                            HTTP API Reference
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="websocket-reference.html"
+                           class="nav-link">
+                            WebSocket Reference
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+        </nav>
+    </aside>
+
+    <div class="main-wrapper">
+        <header class="top-bar">
+            <div class="top-bar-left">
+                <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebar" aria-expanded="false">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                </button>
+                <a href="index.html" class="top-bar-title">docsfy</a>
+            </div>
+            <div class="top-bar-spacer"></div>
+            <div class="top-bar-right">
+                <button class="top-bar-search-btn" id="search-trigger" aria-label="Search">
+                    <kbd>&#8984;K</kbd> Search
+                </button>
+                <a href="https://github.com/myk-org/docsfy" target="_blank" rel="noopener" class="docsfy-badge" title="Generated with docsfy">
+                    ⚡ docs<span class="brand-accent">fy</span>
+                </a>
+                
+                <a href="https://github.com/myk-org/docsfy.git" target="_blank" rel="noopener noreferrer" class="top-bar-github" id="github-link" data-repo-url="https://github.com/myk-org/docsfy.git">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                    <span class="github-stars" id="github-stars" title="GitHub stars"></span>
+                </a>
+                
+                <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+                    <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                    </svg>
+                    <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <main class="content">
+            
+            <article class="article">
+                <div class="article-body">
+                    <!-- SECURITY: |safe is intentional. Content is AI-generated markdown
+                         converted to HTML server-side by the markdown library, not
+                         user-supplied input. XSS risk is minimal and accepted since
+                         the AI generates the content, not end users. -->
+                    <h1 id="regenerate-for-new-branches-and-models">Regenerate for New Branches and Models</h1>
+<p>You want another docs variant from the same repository so you can cover a different branch or switch models without rebuilding everything by hand. In docsfy, branch changes and model changes behave differently, so the fastest path depends on what you are changing.</p>
+<h2 id="prerequisites">Prerequisites</h2>
+<ul>
+<li>A running docsfy instance and a login with <code>user</code> or <code>admin</code> access. If you still need setup help, see <a href="#">Generate Your First Docs Site</a> or <a href="#">Install and Run docsfy Without Docker</a>.</li>
+<li>The repository URL you want to regenerate.</li>
+<li>A provider/model that already works in your environment.</li>
+<li>If you use the CLI, a configured <code>docsfy</code> connection.</li>
+</ul>
+<h2 id="quick-example">Quick Example</h2>
+<div class="highlight"><pre><span></span><code><span class="c1"># New branch</span>
+docsfy<span class="w"> </span>generate<span class="w"> </span>https://github.com/myk-org/for-testing-only<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--branch<span class="w"> </span>dev<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--provider<span class="w"> </span>gemini<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--model<span class="w"> </span>gemini-2.5-flash
+</code></pre></div>
+
+<div class="highlight"><pre><span></span><code><span class="c1"># New model on the same branch</span>
+docsfy<span class="w"> </span>generate<span class="w"> </span>https://github.com/myk-org/for-testing-only<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--branch<span class="w"> </span>main<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--provider<span class="w"> </span>gemini<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--model<span class="w"> </span>gemini-2.0-flash
+</code></pre></div>
+
+<blockquote>
+<p><strong>Tip:</strong> The branch and model fields are editable. Suggestions only come from ready variants, so you can type a value even when it is not listed yet.</p>
+</blockquote>
+<h2 id="step-by-step">Step-by-step</h2>
+<ol>
+<li>Create a new branch variant.</li>
+</ol>
+<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>generate<span class="w"> </span>https://github.com/myk-org/for-testing-only<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--branch<span class="w"> </span>dev<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--provider<span class="w"> </span>gemini<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--model<span class="w"> </span>gemini-2.5-flash<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--watch
+</code></pre></div>
+
+<p>Use the same repo URL and change only the branch. In the dashboard, do the same thing from <code>New Generation</code>: keep the repository URL, type the new branch, choose the provider/model, and click <code>Generate</code>.</p>
+<blockquote>
+<p><strong>Note:</strong> If you omit <code>--branch</code>, docsfy uses <code>main</code>.</p>
+</blockquote>
+<ol>
+<li>Create a new model variant on the same branch.</li>
+</ol>
+<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>generate<span class="w"> </span>https://github.com/myk-org/for-testing-only<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--branch<span class="w"> </span>main<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--provider<span class="w"> </span>gemini<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--model<span class="w"> </span>gemini-2.0-flash
+</code></pre></div>
+
+<p>Keep the branch the same and change the model. In the dashboard, select the ready variant in the sidebar and use <code>Regenerate Documentation</code>; that form changes the provider/model but keeps the selected branch.</p>
+<ol>
+<li>Check the exact variant you started.</li>
+</ol>
+<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>status<span class="w"> </span><span class="k">for</span>-testing-only<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--branch<span class="w"> </span>main<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--provider<span class="w"> </span>gemini<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--model<span class="w"> </span>gemini-2.0-flash
+</code></pre></div>
+
+<p>Use the branch, provider, and model together so you do not confuse one variant with another. In the dashboard, a new branch appears under its own <code>@branch</code> section in the sidebar.</p>
+<ol>
+<li>Choose whether you want reuse or a full rebuild.</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>Situation</th>
+<th>What docsfy does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Same branch, same model, no force</td>
+<td>Updates the existing variant in place. If the repo is unchanged, the run finishes as already up to date.</td>
+</tr>
+<tr>
+<td>Same branch, same model, <code>--force</code></td>
+<td>Rebuilds that variant from scratch.</td>
+</tr>
+<tr>
+<td>Same branch, different model, no force</td>
+<td>Reuses the newest ready variant on that branch when possible, then removes the older source variant after the new one is ready.</td>
+</tr>
+<tr>
+<td>Same branch, different model, <code>--force</code></td>
+<td>Runs a full generation and keeps the existing variant, so both variants can remain.</td>
+</tr>
+<tr>
+<td>Different branch</td>
+<td>Creates a separate branch variant. Reuse starts only after that branch has its own ready variant.</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Warning:</strong> A non-force model switch is not additive. If you want to keep both the old and new model variants on the same branch, turn on <code>Force full regeneration</code>.</p>
+</blockquote>
+<ol>
+<li>Confirm the result in the UI.</li>
+</ol>
+<p>Select the ready variant and check its branch, provider/model, page count, and latest commit. If docsfy reused an unchanged variant, the ready view says the documentation is already up to date.</p>
+<details><summary>Advanced Usage</summary>
+
+<div class="mermaid-diagram"><svg id="my-svg" width="100%" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="flowchart" style="max-width: 1425.84px; background-color: transparent;" viewBox="0 0 1425.84375 1692.84375" role="graphics-document document" aria-roledescription="flowchart-v2"><style>#my-svg{font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:16px;fill:#333;}@keyframes edge-animation-frame{from{stroke-dashoffset:0;}}@keyframes dash{to{stroke-dashoffset:0;}}#my-svg .edge-animation-slow{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 50s linear infinite;stroke-linecap:round;}#my-svg .edge-animation-fast{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 20s linear infinite;stroke-linecap:round;}#my-svg .error-icon{fill:#552222;}#my-svg .error-text{fill:#552222;stroke:#552222;}#my-svg .edge-thickness-normal{stroke-width:1px;}#my-svg .edge-thickness-thick{stroke-width:3.5px;}#my-svg .edge-pattern-solid{stroke-dasharray:0;}#my-svg .edge-thickness-invisible{stroke-width:0;fill:none;}#my-svg .edge-pattern-dashed{stroke-dasharray:3;}#my-svg .edge-pattern-dotted{stroke-dasharray:2;}#my-svg .marker{fill:#333333;stroke:#333333;}#my-svg .marker.cross{stroke:#333333;}#my-svg svg{font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:16px;}#my-svg p{margin:0;}#my-svg .label{font-family:"trebuchet ms",verdana,arial,sans-serif;color:#333;}#my-svg .cluster-label text{fill:#333;}#my-svg .cluster-label span{color:#333;}#my-svg .cluster-label span p{background-color:transparent;}#my-svg .label text,#my-svg span{fill:#333;color:#333;}#my-svg .node rect,#my-svg .node circle,#my-svg .node ellipse,#my-svg .node polygon,#my-svg .node path{fill:#ECECFF;stroke:#9370DB;stroke-width:1px;}#my-svg .rough-node .label text,#my-svg .node .label text,#my-svg .image-shape .label,#my-svg .icon-shape .label{text-anchor:middle;}#my-svg .node .katex path{fill:#000;stroke:#000;stroke-width:1px;}#my-svg .rough-node .label,#my-svg .node .label,#my-svg .image-shape .label,#my-svg .icon-shape .label{text-align:center;}#my-svg .node.clickable{cursor:pointer;}#my-svg .root .anchor path{fill:#333333!important;stroke-width:0;stroke:#333333;}#my-svg .arrowheadPath{fill:#333333;}#my-svg .edgePath .path{stroke:#333333;stroke-width:1px;}#my-svg .flowchart-link{stroke:#333333;fill:none;}#my-svg .edgeLabel{background-color:rgba(232,232,232, 0.8);text-align:center;}#my-svg .edgeLabel p{background-color:rgba(232,232,232, 0.8);}#my-svg .edgeLabel rect{opacity:0.5;background-color:rgba(232,232,232, 0.8);fill:rgba(232,232,232, 0.8);}#my-svg .labelBkg{background-color:rgba(232, 232, 232, 0.5);}#my-svg .cluster rect{fill:#ffffde;stroke:#aaaa33;stroke-width:1px;}#my-svg .cluster text{fill:#333;}#my-svg .cluster span{color:#333;}#my-svg div.mermaidTooltip{position:absolute;text-align:center;max-width:200px;padding:2px;font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:12px;background:hsl(80, 100%, 96.2745098039%);border:1px solid #aaaa33;border-radius:2px;pointer-events:none;z-index:100;}#my-svg .flowchartTitleText{text-anchor:middle;font-size:18px;fill:#333;}#my-svg rect.text{fill:none;stroke-width:0;}#my-svg .icon-shape,#my-svg .image-shape{background-color:rgba(232,232,232, 0.8);text-align:center;}#my-svg .icon-shape p,#my-svg .image-shape p{background-color:rgba(232,232,232, 0.8);padding:2px;}#my-svg .icon-shape .label rect,#my-svg .image-shape .label rect{opacity:0.5;background-color:rgba(232,232,232, 0.8);fill:rgba(232,232,232, 0.8);}#my-svg .label-icon{display:inline-block;height:1em;overflow:visible;vertical-align:-0.125em;}#my-svg .node .label-icon path{fill:currentColor;stroke:revert;stroke-width:revert;}#my-svg .node .neo-node{stroke:#9370DB;}#my-svg [data-look="neo"].node rect,#my-svg [data-look="neo"].cluster rect,#my-svg [data-look="neo"].node polygon{stroke:#9370DB;filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#my-svg [data-look="neo"].node path{stroke:#9370DB;stroke-width:1px;}#my-svg [data-look="neo"].node .outer-path{filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#my-svg [data-look="neo"].node .neo-line path{stroke:#9370DB;filter:none;}#my-svg [data-look="neo"].node circle{stroke:#9370DB;filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#my-svg [data-look="neo"].node circle .state-start{fill:#000000;}#my-svg [data-look="neo"].icon-shape .icon{fill:#9370DB;filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#my-svg [data-look="neo"].icon-shape .icon-neo path{stroke:#9370DB;filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#my-svg :root{--mermaid-font-family:"trebuchet ms",verdana,arial,sans-serif;}</style><g><marker id="my-svg_flowchart-v2-pointEnd" class="marker flowchart-v2" viewBox="0 0 10 10" refX="5" refY="5" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"/></marker><marker id="my-svg_flowchart-v2-pointStart" class="marker flowchart-v2" viewBox="0 0 10 10" refX="4.5" refY="5" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" orient="auto"><path d="M 0 5 L 10 10 L 10 0 z" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"/></marker><marker id="my-svg_flowchart-v2-pointEnd-margin" class="marker flowchart-v2" viewBox="0 0 11.5 14" refX="11.5" refY="7" markerUnits="userSpaceOnUse" markerWidth="10.5" markerHeight="14" orient="auto"><path d="M 0 0 L 11.5 7 L 0 14 z" class="arrowMarkerPath" style="stroke-width: 0; stroke-dasharray: 1, 0;"/></marker><marker id="my-svg_flowchart-v2-pointStart-margin" class="marker flowchart-v2" viewBox="0 0 11.5 14" refX="1" refY="7" markerUnits="userSpaceOnUse" markerWidth="11.5" markerHeight="14" orient="auto"><polygon points="0,7 11.5,14 11.5,0" class="arrowMarkerPath" style="stroke-width: 0; stroke-dasharray: 1, 0;"/></marker><marker id="my-svg_flowchart-v2-circleEnd" class="marker flowchart-v2" viewBox="0 0 10 10" refX="11" refY="5" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"/></marker><marker id="my-svg_flowchart-v2-circleStart" class="marker flowchart-v2" viewBox="0 0 10 10" refX="-1" refY="5" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"/></marker><marker id="my-svg_flowchart-v2-circleEnd-margin" class="marker flowchart-v2" viewBox="0 0 10 10" refY="5" refX="12.25" markerUnits="userSpaceOnUse" markerWidth="14" markerHeight="14" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 0; stroke-dasharray: 1, 0;"/></marker><marker id="my-svg_flowchart-v2-circleStart-margin" class="marker flowchart-v2" viewBox="0 0 10 10" refX="-2" refY="5" markerUnits="userSpaceOnUse" markerWidth="14" markerHeight="14" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 0; stroke-dasharray: 1, 0;"/></marker><marker id="my-svg_flowchart-v2-crossEnd" class="marker cross flowchart-v2" viewBox="0 0 11 11" refX="12" refY="5.2" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><path d="M 1,1 l 9,9 M 10,1 l -9,9" class="arrowMarkerPath" style="stroke-width: 2; stroke-dasharray: 1, 0;"/></marker><marker id="my-svg_flowchart-v2-crossStart" class="marker cross flowchart-v2" viewBox="0 0 11 11" refX="-1" refY="5.2" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><path d="M 1,1 l 9,9 M 10,1 l -9,9" class="arrowMarkerPath" style="stroke-width: 2; stroke-dasharray: 1, 0;"/></marker><marker id="my-svg_flowchart-v2-crossEnd-margin" class="marker cross flowchart-v2" viewBox="0 0 15 15" refX="17.7" refY="7.5" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" orient="auto"><path d="M 1,1 L 14,14 M 1,14 L 14,1" class="arrowMarkerPath" style="stroke-width: 2.5;"/></marker><marker id="my-svg_flowchart-v2-crossStart-margin" class="marker cross flowchart-v2" viewBox="0 0 15 15" refX="-3.5" refY="7.5" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" orient="auto"><path d="M 1,1 L 14,14 M 1,14 L 14,1" class="arrowMarkerPath" style="stroke-width: 2.5; stroke-dasharray: 1, 0;"/></marker><g class="root"><g class="clusters"/><g class="edgePaths"><path d="M561.02,62L561.02,66.167C561.02,70.333,561.02,78.667,561.02,86.333C561.02,94,561.02,101,561.02,104.5L561.02,108" id="my-svg-L_A_B_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_A_B_0" data-points="W3sieCI6NTYxLjAxOTUzMTI1LCJ5Ijo2Mn0seyJ4Ijo1NjEuMDE5NTMxMjUsInkiOjg3fSx7IngiOjU2MS4wMTk1MzEyNSwieSI6MTEyfV0=" data-look="classic" marker-end="url(#my-svg_flowchart-v2-pointEnd)"/><path d="M487.57,231.863L429.308,250.271C371.047,268.68,254.523,305.496,196.262,346.071C138,386.646,138,430.979,138,453.146L138,475.313" id="my-svg-L_B_C_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_B_C_0" data-points="W3sieCI6NDg3LjU3MDE2ODE4MzQ1NjgsInkiOjIzMS44NjMxMzY5MzM0NTY4NH0seyJ4IjoxMzgsInkiOjM0Mi4zMTI1fSx7IngiOjEzOCwieSI6NDc5LjMxMjV9XQ==" data-look="classic" marker-end="url(#my-svg_flowchart-v2-pointEnd)"/><path d="M138,557.313L138,580.146C138,602.979,138,648.646,138,685.085C138,721.523,138,748.734,138,762.34L138,775.945" id="my-svg-L_C_D_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_C_D_0" data-points="W3sieCI6MTM4LCJ5Ijo1NTcuMzEyNX0seyJ4IjoxMzgsInkiOjY5NC4zMTI1fSx7IngiOjEzOCwieSI6Nzc5Ljk0NTMxMjV9XQ==" data-look="classic" marker-end="url(#my-svg_flowchart-v2-pointEnd)"/><path d="M613.608,252.724L631.427,267.655C649.245,282.587,684.882,312.45,702.701,332.881C720.52,353.313,720.52,364.313,720.52,369.813L720.52,375.313" id="my-svg-L_B_E_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_B_E_0" data-points="W3sieCI6NjEzLjYwODExNDU1NjY4MzcsInkiOjI1Mi43MjM5MTY2OTMzMTYyOH0seyJ4Ijo3MjAuNTE5NTMxMjUsInkiOjM0Mi4zMTI1fSx7IngiOjcyMC41MTk1MzEyNSwieSI6Mzc5LjMxMjV9XQ==" data-look="classic" marker-end="url(#my-svg_flowchart-v2-pointEnd)"/><path d="M634.107,570.9L600.309,591.469C566.51,612.038,498.913,653.175,465.115,679.244C431.316,705.313,431.316,716.313,431.316,721.813L431.316,727.313" id="my-svg-L_E_F_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_E_F_0" data-points="W3sieCI6NjM0LjEwNzMxMjEyNTI4OTcsInkiOjU3MC45MDAyODA4NzUyODk3fSx7IngiOjQzMS4zMTY0MDYyNSwieSI6Njk0LjMxMjV9LHsieCI6NDMxLjMxNjQwNjI1LCJ5Ijo3MzEuMzEyNX1d" data-look="classic" marker-end="url(#my-svg_flowchart-v2-pointEnd)"/><path d="M387.767,863.029L374.505,876.454C361.243,889.879,334.719,916.728,321.457,945.888C308.195,975.047,308.195,1006.516,308.195,1022.25L308.195,1037.984" id="my-svg-L_F_G_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_F_G_0" data-points="W3sieCI6Mzg3Ljc2NzM1NDM0MzIyMDM1LCJ5Ijo4NjMuMDI5MDczMDkzMjIwM30seyJ4IjozMDguMTk1MzEyNSwieSI6OTQzLjU3ODEyNX0seyJ4IjozMDguMTk1MzEyNSwieSI6MTA0MS45ODQzNzV9XQ==" data-look="classic" marker-end="url(#my-svg_flowchart-v2-pointEnd)"/><path d="M474.865,863.029L488.127,876.454C501.389,889.879,527.913,916.728,541.175,935.653C554.438,954.578,554.438,965.578,554.438,971.078L554.438,976.578" id="my-svg-L_F_H_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_F_H_0" data-points="W3sieCI6NDc0Ljg2NTQ1ODE1Njc3OTY1LCJ5Ijo4NjMuMDI5MDczMDkzMjIwM30seyJ4Ijo1NTQuNDM3NSwieSI6OTQzLjU3ODEyNX0seyJ4Ijo1NTQuNDM3NSwieSI6OTgwLjU3ODEyNX1d" data-look="classic" marker-end="url(#my-svg_flowchart-v2-pointEnd)"/><path d="M505.97,1108.923L488.683,1123.168C471.397,1137.412,436.823,1165.901,419.537,1195.6C402.25,1225.299,402.25,1256.208,402.25,1271.663L402.25,1287.117" id="my-svg-L_H_I_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_H_I_0" data-points="W3sieCI6NTA1Ljk2OTgxNTk0MDU2MDY0LCJ5IjoxMTA4LjkyMjk0MDk0MDU2MDd9LHsieCI6NDAyLjI1LCJ5IjoxMTk0LjM5MDYyNX0seyJ4Ijo0MDIuMjUsInkiOjEyOTEuMTE3MTg3NX1d" data-look="classic" marker-end="url(#my-svg_flowchart-v2-pointEnd)"/><path d="M603.424,1108.404L621.233,1122.735C639.042,1137.066,674.66,1165.729,692.468,1191.514C710.277,1217.299,710.277,1240.208,710.277,1251.663L710.277,1263.117" id="my-svg-L_H_J_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_H_J_0" data-points="W3sieCI6NjAzLjQyMzgzNzkxNzg4NzgsInkiOjExMDguNDA0Mjg3MDgyMTEyMn0seyJ4Ijo3MTAuMjc3MzQzNzUsInkiOjExOTQuMzkwNjI1fSx7IngiOjcxMC4yNzczNDM3NSwieSI6MTI2Ny4xMTcxODc1fV0=" data-look="classic" marker-end="url(#my-svg_flowchart-v2-pointEnd)"/><path d="M803.063,574.769L832.193,594.693C861.323,614.617,919.583,654.465,948.714,679.889C977.844,705.313,977.844,716.313,977.844,721.813L977.844,727.313" id="my-svg-L_E_K_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_E_K_0" data-points="W3sieCI6ODAzLjA2Mjk1OTE0NjYyMDQsInkiOjU3NC43NjkwNzIxMDMzNzk2fSx7IngiOjk3Ny44NDM3NSwieSI6Njk0LjMxMjV9LHsieCI6OTc3Ljg0Mzc1LCJ5Ijo3MzEuMzEyNX1d" data-look="classic" marker-end="url(#my-svg_flowchart-v2-pointEnd)"/><path d="M929.269,858.003L911.531,872.266C893.794,886.528,858.319,915.053,840.581,943.05C822.844,971.047,822.844,998.516,822.844,1012.25L822.844,1025.984" id="my-svg-L_K_L_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_K_L_0" data-points="W3sieCI6OTI5LjI2OTAyODY4NTc3NjYsInkiOjg1OC4wMDM0MDM2ODU3NzY2fSx7IngiOjgyMi44NDM3NSwieSI6OTQzLjU3ODEyNX0seyJ4Ijo4MjIuODQzNzUsInkiOjEwMjkuOTg0Mzc1fV0=" data-look="classic" marker-end="url(#my-svg_flowchart-v2-pointEnd)"/><path d="M1026.418,858.003L1044.156,872.266C1061.894,886.528,1097.369,915.053,1115.106,943.05C1132.844,971.047,1132.844,998.516,1132.844,1012.25L1132.844,1025.984" id="my-svg-L_K_M_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_K_M_0" data-points="W3sieCI6MTAyNi40MTg0NzEzMTQyMjM2LCJ5Ijo4NTguMDAzNDAzNjg1Nzc2Nn0seyJ4IjoxMTMyLjg0Mzc1LCJ5Ijo5NDMuNTc4MTI1fSx7IngiOjExMzIuODQzNzUsInkiOjEwMjkuOTg0Mzc1fV0=" data-look="classic" marker-end="url(#my-svg_flowchart-v2-pointEnd)"/><path d="M1132.844,1107.984L1132.844,1122.385C1132.844,1136.786,1132.844,1165.589,1132.844,1185.49C1132.844,1205.391,1132.844,1216.391,1132.844,1221.891L1132.844,1227.391" id="my-svg-L_M_N_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_M_N_0" data-points="W3sieCI6MTEzMi44NDM3NSwieSI6MTEwNy45ODQzNzV9LHsieCI6MTEzMi44NDM3NSwieSI6MTE5NC4zOTA2MjV9LHsieCI6MTEzMi44NDM3NSwieSI6MTIzMS4zOTA2MjV9XQ==" data-look="classic" marker-end="url(#my-svg_flowchart-v2-pointEnd)"/><path d="M1084.615,1356.615L1066.82,1370.82C1049.025,1385.025,1013.434,1413.434,995.639,1433.139C977.844,1452.844,977.844,1463.844,977.844,1469.344L977.844,1474.844" id="my-svg-L_N_O_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_N_O_0" data-points="W3sieCI6MTA4NC42MTUwNTkyNDY4NTM3LCJ5IjoxMzU2LjYxNTA1OTI0Njg1Mzd9LHsieCI6OTc3Ljg0Mzc1LCJ5IjoxNDQxLjg0Mzc1fSx7IngiOjk3Ny44NDM3NSwieSI6MTQ3OC44NDM3NX1d" data-look="classic" marker-end="url(#my-svg_flowchart-v2-pointEnd)"/><path d="M1181.072,1356.615L1198.868,1370.82C1216.663,1385.025,1252.253,1413.434,1270.049,1433.139C1287.844,1452.844,1287.844,1463.844,1287.844,1469.344L1287.844,1474.844" id="my-svg-L_N_P_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_N_P_0" data-points="W3sieCI6MTE4MS4wNzI0NDA3NTMxNDYzLCJ5IjoxMzU2LjYxNTA1OTI0Njg1Mzd9LHsieCI6MTI4Ny44NDM3NSwieSI6MTQ0MS44NDM3NX0seyJ4IjoxMjg3Ljg0Mzc1LCJ5IjoxNDc4Ljg0Mzc1fV0=" data-look="classic" marker-end="url(#my-svg_flowchart-v2-pointEnd)"/><path d="M977.844,1556.844L977.844,1561.01C977.844,1565.177,977.844,1573.51,987.319,1581.589C996.794,1589.668,1015.744,1597.493,1025.218,1601.405L1034.693,1605.317" id="my-svg-L_O_Q_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_O_Q_0" data-points="W3sieCI6OTc3Ljg0Mzc1LCJ5IjoxNTU2Ljg0Mzc1fSx7IngiOjk3Ny44NDM3NSwieSI6MTU4MS44NDM3NX0seyJ4IjoxMDM4LjM5MDYyNSwieSI6MTYwNi44NDM3NX1d" data-look="classic" marker-end="url(#my-svg_flowchart-v2-pointEnd)"/><path d="M1287.844,1556.844L1287.844,1561.01C1287.844,1565.177,1287.844,1573.51,1278.369,1581.589C1268.894,1589.668,1249.944,1597.493,1240.469,1601.405L1230.994,1605.317" id="my-svg-L_P_Q_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_P_Q_0" data-points="W3sieCI6MTI4Ny44NDM3NSwieSI6MTU1Ni44NDM3NX0seyJ4IjoxMjg3Ljg0Mzc1LCJ5IjoxNTgxLjg0Mzc1fSx7IngiOjEyMjcuMjk2ODc1LCJ5IjoxNjA2Ljg0Mzc1fV0=" data-look="classic" marker-end="url(#my-svg_flowchart-v2-pointEnd)"/></g><g class="edgeLabels"><g class="edgeLabel"><g class="label" data-id="L_A_B_0" transform="translate(0, 0)"><foreignObject width="0" height="0"><div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="edgeLabel"></span></div></foreignObject></g></g><g class="edgeLabel" transform="translate(138, 342.3125)"><g class="label" data-id="L_B_C_0" transform="translate(-12.9140625, -12)"><foreignObject width="25.828125" height="24"><div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="edgeLabel"><p>Yes</p></span></div></foreignObject></g></g><g class="edgeLabel"><g class="label" data-id="L_C_D_0" transform="translate(0, 0)"><foreignObject width="0" height="0"><div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="edgeLabel"></span></div></foreignObject></g></g><g class="edgeLabel" transform="translate(720.51953125, 342.3125)"><g class="label" data-id="L_B_E_0" transform="translate(-10.8828125, -12)"><foreignObject width="21.765625" height="24"><div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="edgeLabel"><p>No</p></span></div></foreignObject></g></g><g class="edgeLabel" transform="translate(431.31640625, 694.3125)"><g class="label" data-id="L_E_F_0" transform="translate(-10.8828125, -12)"><foreignObject width="21.765625" height="24"><div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="edgeLabel"><p>No</p></span></div></foreignObject></g></g><g class="edgeLabel" transform="translate(308.1953125, 943.578125)"><g class="label" data-id="L_F_G_0" transform="translate(-12.9140625, -12)"><foreignObject width="25.828125" height="24"><div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="edgeLabel"><p>Yes</p></span></div></foreignObject></g></g><g class="edgeLabel" transform="translate(554.4375, 943.578125)"><g class="label" data-id="L_F_H_0" transform="translate(-10.8828125, -12)"><foreignObject width="21.765625" height="24"><div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="edgeLabel"><p>No</p></span></div></foreignObject></g></g><g class="edgeLabel" transform="translate(402.25, 1194.390625)"><g class="label" data-id="L_H_I_0" transform="translate(-10.8828125, -12)"><foreignObject width="21.765625" height="24"><div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="edgeLabel"><p>No</p></span></div></foreignObject></g></g><g class="edgeLabel" transform="translate(710.27734375, 1194.390625)"><g class="label" data-id="L_H_J_0" transform="translate(-12.9140625, -12)"><foreignObject width="25.828125" height="24"><div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="edgeLabel"><p>Yes</p></span></div></foreignObject></g></g><g class="edgeLabel" transform="translate(977.84375, 694.3125)"><g class="label" data-id="L_E_K_0" transform="translate(-12.9140625, -12)"><foreignObject width="25.828125" height="24"><div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="edgeLabel"><p>Yes</p></span></div></foreignObject></g></g><g class="edgeLabel" transform="translate(822.84375, 943.578125)"><g class="label" data-id="L_K_L_0" transform="translate(-12.9140625, -12)"><foreignObject width="25.828125" height="24"><div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="edgeLabel"><p>Yes</p></span></div></foreignObject></g></g><g class="edgeLabel" transform="translate(1132.84375, 943.578125)"><g class="label" data-id="L_K_M_0" transform="translate(-10.8828125, -12)"><foreignObject width="21.765625" height="24"><div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="edgeLabel"><p>No</p></span></div></foreignObject></g></g><g class="edgeLabel"><g class="label" data-id="L_M_N_0" transform="translate(0, 0)"><foreignObject width="0" height="0"><div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="edgeLabel"></span></div></foreignObject></g></g><g class="edgeLabel" transform="translate(977.84375, 1441.84375)"><g class="label" data-id="L_N_O_0" transform="translate(-12.9140625, -12)"><foreignObject width="25.828125" height="24"><div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="edgeLabel"><p>Yes</p></span></div></foreignObject></g></g><g class="edgeLabel" transform="translate(1287.84375, 1441.84375)"><g class="label" data-id="L_N_P_0" transform="translate(-10.8828125, -12)"><foreignObject width="21.765625" height="24"><div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="edgeLabel"><p>No</p></span></div></foreignObject></g></g><g class="edgeLabel"><g class="label" data-id="L_O_Q_0" transform="translate(0, 0)"><foreignObject width="0" height="0"><div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="edgeLabel"></span></div></foreignObject></g></g><g class="edgeLabel"><g class="label" data-id="L_P_Q_0" transform="translate(0, 0)"><foreignObject width="0" height="0"><div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="edgeLabel"></span></div></foreignObject></g></g></g><g class="nodes"><g class="node default" id="my-svg-flowchart-A-0" data-look="classic" transform="translate(561.01953125, 35)"><rect class="basic label-container" style="" x="-103.0390625" y="-27" width="206.078125" height="54"/><g class="label" style="" transform="translate(-73.0390625, -12)"><rect/><foreignObject width="146.078125" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="nodeLabel"><p>Start a generation</p></span></div></foreignObject></g></g><g class="node default" id="my-svg-flowchart-B-1" data-look="classic" transform="translate(561.01953125, 208.65625)"><polygon points="96.65625,0 193.3125,-96.65625 96.65625,-193.3125 0,-96.65625" class="label-container" transform="translate(-96.15625, 96.65625)"/><g class="label" style="" transform="translate(-69.65625, -12)"><rect/><foreignObject width="139.3125" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="nodeLabel"><p>Different branch?</p></span></div></foreignObject></g></g><g class="node default" id="my-svg-flowchart-C-3" data-look="classic" transform="translate(138, 518.3125)"><rect class="basic label-container" style="" x="-130" y="-39" width="260" height="78"/><g class="label" style="" transform="translate(-100, -24)"><rect/><foreignObject width="200" height="48"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table; white-space: break-spaces; line-height: 1.5; max-width: 200px; text-align: center; width: 200px;"><span class="nodeLabel"><p>Create a separate branch variant</p></span></div></foreignObject></g></g><g class="node default" id="my-svg-flowchart-D-5" data-look="classic" transform="translate(138, 818.9453125)"><rect class="basic label-container" style="" x="-130" y="-39" width="260" height="78"/><g class="label" style="" transform="translate(-100, -24)"><rect/><foreignObject width="200" height="48"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table; white-space: break-spaces; line-height: 1.5; max-width: 200px; text-align: center; width: 200px;"><span class="nodeLabel"><p>Later reuse stays on that branch</p></span></div></foreignObject></g></g><g class="node default" id="my-svg-flowchart-E-7" data-look="classic" transform="translate(720.51953125, 518.3125)"><polygon points="139,0 278,-139 139,-278 0,-139" class="label-container" transform="translate(-138.5, 139)"/><g class="label" style="" transform="translate(-100, -24)"><rect/><foreignObject width="200" height="48"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table; white-space: break-spaces; line-height: 1.5; max-width: 200px; text-align: center; width: 200px;"><span class="nodeLabel"><p>Different model or provider?</p></span></div></foreignObject></g></g><g class="node default" id="my-svg-flowchart-F-9" data-look="classic" transform="translate(431.31640625, 818.9453125)"><polygon points="87.6328125,0 175.265625,-87.6328125 87.6328125,-175.265625 0,-87.6328125" class="label-container" transform="translate(-87.1328125, 87.6328125)"/><g class="label" style="" transform="translate(-60.6328125, -12)"><rect/><foreignObject width="121.265625" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="nodeLabel"><p>Force enabled?</p></span></div></foreignObject></g></g><g class="node default" id="my-svg-flowchart-G-11" data-look="classic" transform="translate(308.1953125, 1068.984375)"><rect class="basic label-container" style="" x="-107.8359375" y="-27" width="215.671875" height="54"/><g class="label" style="" transform="translate(-77.8359375, -12)"><rect/><foreignObject width="155.671875" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="nodeLabel"><p>Full rebuild in place</p></span></div></foreignObject></g></g><g class="node default" id="my-svg-flowchart-H-13" data-look="classic" transform="translate(554.4375, 1068.984375)"><polygon points="88.40625,0 176.8125,-88.40625 88.40625,-176.8125 0,-88.40625" class="label-container" transform="translate(-87.90625, 88.40625)"/><g class="label" style="" transform="translate(-61.40625, -12)"><rect/><foreignObject width="122.8125" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="nodeLabel"><p>Repo changed?</p></span></div></foreignObject></g></g><g class="node default" id="my-svg-flowchart-I-15" data-look="classic" transform="translate(402.25, 1318.1171875)"><rect class="basic label-container" style="" x="-124.375" y="-27" width="248.75" height="54"/><g class="label" style="" transform="translate(-94.375, -12)"><rect/><foreignObject width="188.75" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="nodeLabel"><p>Mark variant up to date</p></span></div></foreignObject></g></g><g class="node default" id="my-svg-flowchart-J-17" data-look="classic" transform="translate(710.27734375, 1318.1171875)"><rect class="basic label-container" style="" x="-130" y="-51" width="260" height="102"/><g class="label" style="" transform="translate(-100, -36)"><rect/><foreignObject width="200" height="72"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table; white-space: break-spaces; line-height: 1.5; max-width: 200px; text-align: center; width: 200px;"><span class="nodeLabel"><p>Reuse plan and unchanged pages when possible</p></span></div></foreignObject></g></g><g class="node default" id="my-svg-flowchart-K-19" data-look="classic" transform="translate(977.84375, 818.9453125)"><polygon points="87.6328125,0 175.265625,-87.6328125 87.6328125,-175.265625 0,-87.6328125" class="label-container" transform="translate(-87.1328125, 87.6328125)"/><g class="label" style="" transform="translate(-60.6328125, -12)"><rect/><foreignObject width="121.265625" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="nodeLabel"><p>Force enabled?</p></span></div></foreignObject></g></g><g class="node default" id="my-svg-flowchart-L-21" data-look="classic" transform="translate(822.84375, 1068.984375)"><rect class="basic label-container" style="" x="-130" y="-39" width="260" height="78"/><g class="label" style="" transform="translate(-100, -24)"><rect/><foreignObject width="200" height="48"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table; white-space: break-spaces; line-height: 1.5; max-width: 200px; text-align: center; width: 200px;"><span class="nodeLabel"><p>Full rebuild and keep the existing variant</p></span></div></foreignObject></g></g><g class="node default" id="my-svg-flowchart-M-23" data-look="classic" transform="translate(1132.84375, 1068.984375)"><rect class="basic label-container" style="" x="-130" y="-39" width="260" height="78"/><g class="label" style="" transform="translate(-100, -24)"><rect/><foreignObject width="200" height="48"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table; white-space: break-spaces; line-height: 1.5; max-width: 200px; text-align: center; width: 200px;"><span class="nodeLabel"><p>Reuse the newest ready variant on that branch</p></span></div></foreignObject></g></g><g class="node default" id="my-svg-flowchart-N-25" data-look="classic" transform="translate(1132.84375, 1318.1171875)"><polygon points="86.7265625,0 173.453125,-86.7265625 86.7265625,-173.453125 0,-86.7265625" class="label-container" transform="translate(-86.2265625, 86.7265625)"/><g class="label" style="" transform="translate(-59.7265625, -12)"><rect/><foreignObject width="119.453125" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="nodeLabel"><p>Same commit?</p></span></div></foreignObject></g></g><g class="node default" id="my-svg-flowchart-O-27" data-look="classic" transform="translate(977.84375, 1517.84375)"><rect class="basic label-container" style="" x="-130" y="-39" width="260" height="78"/><g class="label" style="" transform="translate(-100, -24)"><rect/><foreignObject width="200" height="48"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table; white-space: break-spaces; line-height: 1.5; max-width: 200px; text-align: center; width: 200px;"><span class="nodeLabel"><p>Copy existing docs into the new variant</p></span></div></foreignObject></g></g><g class="node default" id="my-svg-flowchart-P-29" data-look="classic" transform="translate(1287.84375, 1517.84375)"><rect class="basic label-container" style="" x="-130" y="-39" width="260" height="78"/><g class="label" style="" transform="translate(-100, -24)"><rect/><foreignObject width="200" height="48"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table; white-space: break-spaces; line-height: 1.5; max-width: 200px; text-align: center; width: 200px;"><span class="nodeLabel"><p>Regenerate only what changed when possible</p></span></div></foreignObject></g></g><g class="node default" id="my-svg-flowchart-Q-31" data-look="classic" transform="translate(1132.84375, 1645.84375)"><rect class="basic label-container" style="" x="-130" y="-39" width="260" height="78"/><g class="label" style="" transform="translate(-100, -24)"><rect/><foreignObject width="200" height="48"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table; white-space: break-spaces; line-height: 1.5; max-width: 200px; text-align: center; width: 200px;"><span class="nodeLabel"><p>Replace the older source variant</p></span></div></foreignObject></g></g></g></g></g><defs><filter id="my-svg-drop-shadow" height="130%" width="130%"><feDropShadow dx="4" dy="4" stdDeviation="0" flood-opacity="0.06" flood-color="#000000"/></filter></defs><defs><filter id="my-svg-drop-shadow-small" height="150%" width="150%"><feDropShadow dx="2" dy="2" stdDeviation="0" flood-opacity="0.06" flood-color="#000000"/></filter></defs></svg></div>
+
+
+<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>models<span class="w"> </span>--provider<span class="w"> </span>gemini
+</code></pre></div>
+
+
+
+Use this to see the provider list, the server-marked defaults, and model names from completed generations. If you plan to rely on omitted provider/model values, check [Configuration Reference](configuration-reference.html) first.
+
+A few reuse rules matter in practice:
+
+- Reuse is branch-scoped. A ready `main` variant is not used as the starting point for a first-time `dev` variant.
+- A same-commit model switch without force can finish by copying the existing docs into the new variant instead of starting over.
+- A new commit on the same branch without force can reuse the existing plan and regenerate only changed pages when docsfy can tell what changed.
+- A new commit with no file changes is treated as up to date.
+- If docsfy cannot figure out what changed or cannot reuse the earlier plan, it falls back to a full regeneration automatically.
+- The same replacement rules apply when you switch providers, not just when you switch models.
+- In the dashboard, errored and aborted variants reopen with `Force full regeneration` enabled by default.
+
+
+<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>status<span class="w"> </span><span class="k">for</span>-testing-only
+</code></pre></div>
+
+
+
+Use this when you want a full list of branch/provider/model variants for one repository.
+
+> **Warning:** Branch names cannot contain `/`. Use a slash-free name such as `release-1.x`.
+
+For full command syntax, see [CLI Command Reference](cli-command-reference.html). If you automate this outside the CLI, see [HTTP API Reference](http-api-reference.html) and [WebSocket Reference](websocket-reference.html).
+
+</details>
+
+<h2 id="troubleshooting">Troubleshooting</h2>
+<ul>
+<li><code>Clone failed</code> or branch not found: verify the branch exists in the remote repository and that the server can access that repository.</li>
+<li>A branch name like <code>release/v2.0</code> is rejected: docsfy only accepts branch names without slashes. Use something like <code>release-v2.0</code> or <code>release-1.x</code>.</li>
+<li>The model you want is not in the dropdown: type it manually or run <code>docsfy models --provider &lt;provider&gt;</code>. The suggestion list only includes models from ready variants.</li>
+<li>The regenerate controls are missing: <code>viewer</code> access is read-only. See <a href="#">Manage Users, Roles, and Access</a> for permission changes.</li>
+<li>The previous model disappeared after a switch: that is expected after a non-force model change on the same branch. Rerun with <code>--force</code> if you want both variants to remain.</li>
+</ul>
+<h2 id="related-pages">Related Pages</h2>
+<ul>
+<li><a href="#">Generate Documentation</a></li>
+<li><a href="#">Track Generation Progress</a></li>
+<li><a href="#">View, Download, and Publish Docs</a></li>
+<li><a href="#">Manage docsfy from the CLI</a></li>
+<li><a href="#">HTTP API Reference</a></li>
+</ul>
+                </div>
+            </article>
+            <nav class="page-nav">
+                
+                <a href="track-generation-progress.html" class="page-nav-link page-nav-prev">
+                    <span class="page-nav-label">Previous</span>
+                    <span class="page-nav-title">Track Generation Progress</span>
+                </a>
+                
+                
+                <a href="view-download-and-publish-docs.html" class="page-nav-link page-nav-next">
+                    <span class="page-nav-label">Next</span>
+                    <span class="page-nav-title">View, Download, and Publish Docs</span>
+                </a>
+                
+            </nav>
+            
+            <aside class="toc-sidebar">
+                <div class="toc-container">
+                    <h3>On this page</h3>
+                    <div class="toc">
+<ul>
+<li><a href="#prerequisites">Prerequisites</a></li>
+<li><a href="#quick-example">Quick Example</a></li>
+<li><a href="#step-by-step">Step-by-step</a></li>
+<li><a href="#troubleshooting">Troubleshooting</a></li>
+<li><a href="#related-pages">Related Pages</a></li>
+</ul>
+</div>
+
+                </div>
+            </aside>
+            
+
+        </main>
+
+        <footer class="page-footer">
+            
+            <span class="footer-version">Generated from version 1.2.0</span>
+            <span class="footer-sep">&middot;</span>
+            
+            Generated with <a href="https://github.com/myk-org/docsfy" target="_blank" rel="noopener">docs<span class="brand-accent">fy</span></a>
+            <span class="footer-sep">&middot;</span>
+            <span class="footer-llm">LLM-friendly: <a href="llms.txt">llms.txt</a> &middot; <a href="llms-full.txt">llms-full.txt</a></span>
+        </footer>
+    </div>
+
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <script src="assets/theme.js"></script>
+    <script src="assets/search.js"></script>
+    <script src="assets/copy.js"></script>
+    <script src="assets/callouts.js"></script>
+    <script src="assets/scrollspy.js"></script>
+    <script src="assets/codelabels.js"></script>
+    <script src="assets/github.js"></script>
+    <script>
+(function() {
+    var toggle = document.getElementById('sidebar-toggle');
+    var sidebar = document.getElementById('sidebar');
+    var overlay = document.getElementById('sidebar-overlay');
+    if (toggle && sidebar) {
+        toggle.addEventListener('click', function() {
+            sidebar.classList.toggle('open');
+            if (overlay) overlay.classList.toggle('open');
+            var expanded = sidebar.classList.contains('open');
+            toggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+        });
+    }
+    if (overlay) {
+        overlay.addEventListener('click', function() {
+            sidebar.classList.remove('open');
+            overlay.classList.remove('open');
+            if (toggle) toggle.setAttribute('aria-expanded', 'false');
+        });
+    }
+})();
+</script>
+<script>
+(function() {
+    var sidebar = document.querySelector('.sidebar-nav') || document.querySelector('.sidebar');
+    if (!sidebar) return;
+
+    // Restore scroll position
+    var saved = sessionStorage.getItem('sidebar-scroll');
+    if (saved) sidebar.scrollTop = parseInt(saved, 10);
+
+    // Save scroll position before navigating
+    sidebar.addEventListener('scroll', function() {
+        sessionStorage.setItem('sidebar-scroll', sidebar.scrollTop.toString());
+    });
+
+    // Also scroll active link into view if no saved position
+    if (!saved) {
+        var active = sidebar.querySelector('.nav-link.active');
+        if (active) {
+            active.scrollIntoView({ block: 'center', behavior: 'instant' });
+        }
+    }
+})();
+</script>
+</body>
+</html>
