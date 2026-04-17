@@ -17,6 +17,7 @@ from docsfy.ai_client import call_ai_cli, run_parallel_with_limit
 from docsfy.generator import generate_full_page_content
 from docsfy.json_parser import parse_json_array_response, parse_json_response
 from docsfy.models import PAGE_TYPES
+from docsfy.config import get_settings
 from docsfy.prompts import build_cross_links_prompt, build_validation_prompt
 
 logger = get_logger(name=__name__)
@@ -49,13 +50,8 @@ def fix_broken_internal_links(
     # Also add slugs from pages dict (in case plan is incomplete)
     valid_slugs.update(pages.keys())
 
-    # Lowercase for case-insensitive matching
-    valid_slugs_lower = {s.lower() for s in valid_slugs}
-
-    # Build canonical slug casing lookup
-    slug_to_canonical: dict[str, str] = {}
-    for s in valid_slugs:
-        slug_to_canonical[s.lower()] = s
+    # Build canonical slug casing lookup (keys are lowercase for case-insensitive matching)
+    slug_to_canonical: dict[str, str] = {s.lower(): s for s in valid_slugs}
 
     # Pattern: [link text](slug.html) — internal links only (no http://, no /)
     link_pattern = re.compile(
@@ -69,7 +65,7 @@ def fix_broken_internal_links(
             link_text = match.group(1)
             target_slug = match.group(2)
             target_lower = target_slug.lower()
-            if target_lower in valid_slugs_lower:
+            if target_lower in slug_to_canonical:
                 # Rewrite to canonical slug casing for case-sensitive hosts
                 canonical = slug_to_canonical.get(target_lower, target_slug)
                 if canonical != target_slug:
@@ -134,7 +130,7 @@ def linkify_plain_references(
     # Pattern matches "See <Title>" or "see <Title>" where Title is not inside []()
     pattern = re.compile(
         r"(?<!\[)"  # Not preceded by [
-        r"([Ss]ee\s+)"  # "See " or "see "
+        r"(see\s+)"  # "See " or "see " (IGNORECASE handles casing)
         r"(" + title_alternatives + r")"  # One of the page titles
         r"(?!\]\()",  # Not followed by ]( (already a link)
         re.IGNORECASE,
@@ -448,8 +444,6 @@ async def validate_pages(
             )
             for slug, content in pages.items()
         ]
-
-        from docsfy.config import get_settings
 
         results = await run_parallel_with_limit(
             coroutines, max_concurrency=get_settings().max_concurrent_pages
