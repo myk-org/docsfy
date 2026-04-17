@@ -1,360 +1,494 @@
 # CLI Command Reference
 
-`docsfy` is the command-line client for a running docsfy server. You use it to save connection profiles, start documentation generation, inspect existing outputs, download generated sites, and perform admin-only user and access management.
+## `docsfy`
+**Syntax:** `docsfy [GLOBAL OPTIONS] COMMAND [ARGS]...`
 
-In docsfy, a _variant_ is one `project / branch / provider / model` combination. In admin or shared-access setups, the same project name can exist under different owners, which is why some commands also support `--owner`.
+| Name | Type | Default | Description |
+| --- | --- | --- | --- |
+| `--server`, `-s` | string | none | Use a saved profile from `~/.config/docsfy/config.toml`. |
+| `--host` | string | none | Override the profile host. When set, the CLI builds `scheme://host:port`; the scheme comes from the selected profile when available, otherwise `https`. |
+| `--port` | integer | `8000` when `--host` is used | Port used with `--host`. |
+| `--username`, `-u` | string | none | Override the profile username. |
+| `--password`, `-p` | string | none | Override the profile password/API key sent as the bearer token. |
 
-Permissions at a glance:
-- `list`, `status`, and `download` are read-oriented commands for projects you own or have been granted access to.
-- `generate`, `delete`, and `abort` require a `user` or `admin` account.
-- `admin ...` commands require admin access.
-
-Examples on this page are taken from the repository's CLI tests and sample config.
-
-## Command Summary
-
-| Command | What it does |
-| --- | --- |
-| `config` | Manage saved server profiles in `~/.config/docsfy/config.toml` |
-| `generate` | Start documentation generation for a Git repository |
-| `list` | Show accessible projects and variants |
-| `status` | Show detailed status for one project or one exact variant |
-| `delete` | Delete a single variant or all variants of a project |
-| `abort` | Stop an active generation run |
-| `download` | Download a generated docs site as a tarball, or extract it to a directory |
-| `admin users ...` | List, create, delete, and rotate user API keys |
-| `admin access ...` | Grant, revoke, and inspect project access for other users |
-
-## Global Connection Options
-
-All commands share the same connection options. The CLI resolves them in this order:
-
-1. Explicit CLI flags such as `--host`, `--username`, and `--password`
-2. A named profile selected with `--server`
-3. The default profile from `[default].server` in `~/.config/docsfy/config.toml`
-4. An error if nothing is configured
-
-| Option | Meaning |
-| --- | --- |
-| `--server`, `-s` | Use a named server profile from the config file |
-| `--host` | Override the host from the selected profile |
-| `--port` | Override the port when `--host` is used |
-| `--username`, `-u` | Override the configured username |
-| `--password`, `-p` | Override the configured password/API key |
-
-> **Note:** In CLI config and flags, the field is named `password`, but for docsfy this value is your API key.
-
-> **Note:** Global options go before the subcommand. That matters because `-p` is reused: before the subcommand it means API key, but after commands like `status`, `delete`, `abort`, and `download` it means `--provider`.
-
-> **Tip:** If you use `--host`, the CLI builds a full URL from host and port. The port defaults to `8000`, and the scheme comes from the selected profile when available; otherwise it defaults to `https`.
-
-## `config`
-
-`docsfy config` manages the CLI config file at `~/.config/docsfy/config.toml`.
-
-A sample config from the repository:
-
-```toml
-[default]
-server = "dev"
-
-[servers.dev]
-url = "http://localhost:8000"
-username = "admin"
-password = "<your-dev-key>"
-
-[servers.prod]
-url = "https://docsfy.example.com"
-username = "admin"
-password = "<your-prod-key>"
-
-[servers.staging]
-url = "https://staging.docsfy.example.com"
-username = "deployer"
-password = "<your-staging-key>"
+```shell
+docsfy --server prod status my-repo
+docsfy --host docsfy.example.com --port 443 -u admin -p <API_KEY> health
 ```
 
-> **Warning:** This file contains credentials. The CLI writes it with owner-only permissions, and you should keep it private.
+Return value / effect:
+- Dispatches to `health`, `config`, `generate`, `list`, `status`, `delete`, `abort`, `download`, `models`, or `admin`.
+- With no subcommand, prints help.
+- Applies the resolved connection settings to the selected subcommand.
 
-### `config init`
+> **Note:** Connection resolution order is explicit CLI flags, then `--server`, then `[default].server` in `~/.config/docsfy/config.toml`, then an error if nothing is configured.
 
-`docsfy config init` is the interactive setup flow. It prompts for:
+> **Note:** Put global options before the subcommand. After commands such as `status`, `delete`, `abort`, and `download`, `-p` means `--provider`, not API key.
 
-- Profile name, defaulting to `dev`
-- Server URL
-- Username
-- Password/API key
+## `docsfy health`
+**Syntax:** `docsfy [GLOBAL OPTIONS] health`
 
-If you are creating the first profile, it also becomes the default server. If you add another profile later, the existing default stays in place until you change it.
+| Name | Type | Default | Description |
+| --- | --- | --- | --- |
+| None | - | - | No command-specific parameters or options. Use global connection options before `health`. |
+
+```shell
+docsfy --server dev health
+docsfy --host localhost --port 8000 -u admin -p <API_KEY> health
+```
+
+Return value / effect:
+- Calls the server `/health` endpoint.
+- Prints `Server: <url>` and `Status: <value>`.
+- Exits non-zero if the server is unreachable, returns an HTTP error, or responds with non-JSON content.
+
+## `docsfy config`
+`docsfy config` is the CLI configuration command group for `~/.config/docsfy/config.toml`.
+
+| Subcommand | Description |
+| --- | --- |
+| `docsfy config init` | Create or add a profile interactively. |
+| `docsfy config show` | Print saved profiles with masked passwords. |
+| `docsfy config set` | Update one dotted key in the config file. |
+
+> **Warning:** `~/.config/docsfy/config.toml` stores raw API keys.
+
+### `docsfy config init`
+**Syntax:** `docsfy config init`
+
+| Name | Type | Default | Description |
+| --- | --- | --- | --- |
+| `Profile name` | string | `dev` | Profile name stored under `[servers.<profile>]`. |
+| `Server URL` | string | none | Full server URL, such as `https://docsfy.example.com`. |
+| `Username` | string | none | Username saved with the profile. |
+| `Password` | string | none | API key saved in the profile as `password`. Input is hidden. |
 
 ```shell
 docsfy config init
+# Profile name [dev]: prod
+# Server URL: https://docsfy.example.com
+# Username: admin
+# Password: <API_KEY>
 ```
 
-### `config show`
+Return value / effect:
+- Creates `~/.config/docsfy/config.toml` if it does not exist.
+- Writes the config directory with owner-only permissions and the file with owner read/write permissions.
+- Adds `[servers.<profile>]`.
+- Sets `[default].server` only when no default profile exists yet.
+- Prints `Profile '<profile>' saved to ~/.config/docsfy/config.toml`.
 
-`docsfy config show` prints the config file path, the current default profile, and each saved profile with its password/API key masked.
+### `docsfy config show`
+**Syntax:** `docsfy config show`
+
+| Name | Type | Default | Description |
+| --- | --- | --- | --- |
+| None | - | - | No command-specific parameters or options. |
 
 ```shell
 docsfy config show
 ```
 
-### `config set`
+Return value / effect:
+- Prints the config file path.
+- Prints the current default server profile.
+- Prints each saved profile with `URL`, `Username`, and a masked `Password`.
+- Exits non-zero if the config file is missing or invalid TOML.
 
-`docsfy config set` writes nested TOML keys directly.
+### `docsfy config set`
+**Syntax:** `docsfy config set KEY VALUE`
+
+| Name | Type | Default | Description |
+| --- | --- | --- | --- |
+| `KEY` | string | Required | Dotted config key. Accepted prefixes are `default.` and `servers.`. |
+| `VALUE` | string | Required | Value written to the selected key. |
 
 ```shell
 docsfy config set default.server prod
-docsfy config set servers.dev.url https://new-server.com
+docsfy config set servers.prod.url https://docsfy.example.com
+docsfy config set servers.prod.password <API_KEY>
 ```
 
-Use it when you want to switch the default profile or update individual fields without re-running `config init`.
+Return value / effect:
+- Updates one config value and prints `Updated <KEY>`.
+- Creates missing intermediate tables on the path to `KEY`.
+- Exits non-zero if the config file does not exist.
+- Exits non-zero if `KEY` does not start with `default.` or `servers.`.
 
-> **Note:** `config set` expects dotted keys such as `default.server`, `servers.dev.url`, and `servers.dev.username`. It does not use shorthand keys like `server` or `api-key`.
+> **Warning:** `docsfy config set` writes the TOML key directly. It does not verify that a referenced profile exists.
 
-## `generate`
+## Project Commands
+> **Note:** `generate`, `delete`, and `abort` require a `user` or `admin` account. `list`, `status`, `download`, and `models` are read-oriented commands.
 
-`docsfy generate` starts documentation generation for a remote Git repository.
+### `docsfy generate`
+**Syntax:** `docsfy [GLOBAL OPTIONS] generate REPO_URL [OPTIONS]`
 
-The project name used by later commands is derived from the repository name. For example:
-
-- `https://github.com/myk-org/for-testing-only` becomes `for-testing-only`
-- `https://github.com/org/my-repo.git` becomes `my-repo`
-- `git@github.com:org/repo.git` becomes `repo`
-
-Common options:
-- `--branch`, `-b`: Git branch to generate from. Defaults to `main`.
-- `--provider`: AI provider. Valid values in this codebase are `claude`, `gemini`, and `cursor`.
-- `--model`, `-m`: AI model name.
-- `--force`, `-f`: Force a full regeneration instead of reusing cached artifacts.
-- `--watch`, `-w`: Stream live generation progress.
-
-Examples:
+| Name | Type | Default | Description |
+| --- | --- | --- | --- |
+| `REPO_URL` | string | Required | Remote Git URL. Accepted forms include `https://host/org/repo`, `https://host/org/repo.git`, `git@host:org/repo`, and `git@host:org/repo.git`. |
+| `--branch`, `-b` | string | `main` | Git branch to generate. Branch names cannot contain `/`. |
+| `--provider` | string | server default | AI provider. Valid values in this codebase are `claude`, `gemini`, and `cursor`. |
+| `--model`, `-m` | string | server default | AI model name. |
+| `--force`, `-f` | boolean | `false` | Force a full regeneration instead of reusing cached artifacts. |
+| `--watch`, `-w` | boolean | `false` | Stream live generation progress over WebSocket after the request starts. |
 
 ```shell
 docsfy generate https://github.com/myk-org/for-testing-only --provider gemini --model gemini-2.5-flash --force
 docsfy generate https://github.com/myk-org/for-testing-only --branch dev --provider gemini --model gemini-2.5-flash --force --watch
 ```
 
-What you can expect:
-- The CLI prints the derived project name, resolved branch, and initial status.
-- With `--watch`, it listens for live progress updates such as `cloning`, `planning`, `incremental_planning`, `generating_pages`, `validating`, `cross_linking`, and `rendering`.
-- Final statuses are `ready`, `error`, or `aborted`. A `ready` result can also mean docsfy determined the target variant was already up to date and skipped regeneration work.
+Return value / effect:
+- Starts generation and prints `Project`, `Branch`, and `Status`.
+- Uses the repository name as the stored project name for later commands.
+- With `--watch`, prints progress updates until the variant reaches `ready`, `error`, or `aborted`.
+- Exits non-zero on validation, HTTP, or WebSocket errors.
 
-> **Tip:** `generate` takes a repository URL, but `status`, `delete`, `abort`, and `download` use the derived project name. For `https://github.com/myk-org/for-testing-only`, that name is `for-testing-only`.
+> **Note:** When `--provider` or `--model` is omitted, the server default is used. In this repository, the code defaults are `cursor` and `gpt-5.4-xhigh-fast`, but deployments can override them.
 
-> **Note:** If you omit `--provider` or `--model`, the server default is used. In this codebase the current defaults are `cursor` and `gpt-5.4-xhigh-fast`, but deployments can override them.
+> **Tip:** When using `--watch`, pass both `--provider` and `--model` so the CLI can subscribe to the exact variant immediately.
 
-> **Tip:** When using `--watch`, pass both `--provider` and `--model` explicitly so the CLI can subscribe to the exact variant immediately.
+> **Warning:** The CLI `generate` command accepts remote Git URLs only. Local filesystem paths are not a CLI argument.
 
-> **Warning:** Branch names cannot contain slashes. Use names like `release-1.x`, not `release/1.x`.
+> **Warning:** Repository URLs that target `localhost` or private-network addresses are rejected by the server.
 
-> **Warning:** The CLI `generate` command expects a Git repository URL, not a local filesystem path. Standard HTTPS remotes like `https://github.com/org/repo.git` and SSH remotes like `git@github.com:org/repo.git` are accepted, but the server rejects repository URLs that point to `localhost` or private-network addresses.
+### `docsfy list`
+**Syntax:** `docsfy [GLOBAL OPTIONS] list [OPTIONS]`
 
-## `list`
-
-`docsfy list` shows the accessible projects and variants in a table. The table includes these columns:
-
-- `NAME`
-- `BRANCH`
-- `PROVIDER`
-- `MODEL`
-- `STATUS`
-- `OWNER`
-- `PAGES`
-
-Examples:
+| Name | Type | Default | Description |
+| --- | --- | --- | --- |
+| `--status` | string | all statuses | Filter by stored status value. The codebase uses `generating`, `ready`, `error`, and `aborted`. |
+| `--provider` | string | all providers | Filter by AI provider. |
+| `--json` | boolean | `false` | Output JSON instead of the table view. |
 
 ```shell
-docsfy list
-docsfy list --status ready
-docsfy list --provider cursor
+docsfy list --status ready --provider cursor
 docsfy list --json
 ```
 
-Use `--status` and `--provider` to narrow the result set before printing. In practice, project statuses used by the codebase are `generating`, `ready`, `error`, and `aborted`.
+Return value / effect:
+- Prints a table with `NAME`, `BRANCH`, `PROVIDER`, `MODEL`, `STATUS`, `OWNER`, and `PAGES`.
+- `--json` outputs an array of project/variant objects.
+- Includes projects the user owns and projects shared with the user.
+- Prints `No projects found.` when nothing matches.
 
-For non-admin users, `list` includes projects you own plus projects that have been shared with you. For admins, it shows everything.
+### `docsfy status`
+**Syntax:** `docsfy [GLOBAL OPTIONS] status NAME [OPTIONS]`
 
-## `status`
-
-`docsfy status` shows detailed information for one project.
-
-With just the project name, it shows all matching variants you can access. If you provide `--branch`, `--provider`, and `--model` together, it fetches one exact variant instead.
-
-Examples:
+| Name | Type | Default | Description |
+| --- | --- | --- | --- |
+| `NAME` | string | Required | Stored project name, such as `for-testing-only`. |
+| `--branch`, `-b` | string | all branches | Filter by branch. When combined with `--provider` and `--model`, targets one exact variant. |
+| `--provider`, `-p` | string | all providers | Filter by provider. When combined with `--branch` and `--model`, targets one exact variant. |
+| `--model`, `-m` | string | all models | Filter by model. When combined with `--branch` and `--provider`, targets one exact variant. |
+| `--owner` | string | none | Owner disambiguation for exact variant lookups. |
+| `--json` | boolean | `false` | Output JSON instead of plain text. |
 
 ```shell
 docsfy status for-testing-only
-docsfy status my-repo -b main -p cursor -m gpt-5
+docsfy status for-testing-only --branch main --provider cursor --model gpt-5 --json
 ```
 
-Useful fields in the output include:
-- Status
-- Owner
-- Page count
-- Last generated time
-- Short commit SHA
-- Current stage
-- Error message, when present
+Return value / effect:
+- With only `NAME`, prints all accessible variants for that project.
+- With `--branch`, `--provider`, and `--model` together, prints one exact variant.
+- Plain text output can include `Status`, `Owner`, `Pages`, `Updated`, short `Commit`, `Stage`, and `Error`.
+- `--json` outputs either `{ "name": NAME, "variants": [...] }` or a single variant object.
+- Prints `No variants found for '<NAME>'.` when filters remove every result.
 
-> **Note:** A `ready` variant can still show `Stage: up_to_date` when docsfy determines that nothing meaningful changed and no regeneration work was needed.
+> **Note:** `--owner` is used only when `--branch`, `--provider`, and `--model` are all present. It does not change the broad project view.
 
-> **Note:** `--owner` is mainly useful for admins when you are querying one fully qualified variant and need to disambiguate between multiple owners.
+> **Tip:** `status` accepts partial filters. `--branch` alone, `--provider` alone, and other partial combinations are valid.
 
-> **Tip:** If you want one exact variant, provide all three selectors together: `--branch`, `--provider`, and `--model`.
+### `docsfy delete`
+**Syntax:** `docsfy [GLOBAL OPTIONS] delete NAME [OPTIONS]`
 
-## `delete`
-
-`docsfy delete` removes either one exact variant or every variant for a project within one owner scope.
-
-Common options:
-- `--branch`, `-b`: Variant branch
-- `--provider`, `-p`: Variant provider
-- `--model`, `-m`: Variant model
-- `--owner`: Project owner. Required on admin deletes because delete routes are owner-scoped, even when the rest of the variant is fully specified.
-- `--all`: Delete all variants for the project within that owner scope
-- `--yes`, `-y`: Skip the confirmation prompt
-
-Examples:
+| Name | Type | Default | Description |
+| --- | --- | --- | --- |
+| `NAME` | string | Required | Stored project name. |
+| `--branch`, `-b` | string | none | Variant branch. Must be used with `--provider` and `--model` for exact variant deletion. |
+| `--provider`, `-p` | string | none | Variant provider. Must be used with `--branch` and `--model` for exact variant deletion. |
+| `--model`, `-m` | string | none | Variant model. Must be used with `--branch` and `--provider` for exact variant deletion. |
+| `--owner` | string | none | Required for admin delete requests. Ignored for non-admin users. |
+| `--all` | boolean | `false` | Delete all variants for the project within one owner scope. |
+| `--yes`, `-y` | boolean | `false` | Skip the confirmation prompt. |
 
 ```shell
 docsfy delete for-testing-only --branch dev --provider gemini --model gemini-2.0-flash --yes
 docsfy delete my-repo --all --yes
 ```
 
-If you leave off `--yes`, the CLI asks for confirmation before deleting anything.
+Return value / effect:
+- Deletes one exact variant when `--branch`, `--provider`, and `--model` are all present.
+- Deletes all variants for one project/owner scope when `--all` is set.
+- Prompts for confirmation unless `--yes` is used.
+- Prints `Deleted variant '<name>/<branch>/<provider>/<model>'.` or `Deleted all variants of '<name>'.`
+- Exits non-zero if the target is missing, still generating, or invalidly specified.
 
-> **Warning:** Use either `--all` or the full variant selector (`--branch`, `--provider`, and `--model`). Do not combine them.
+> **Warning:** Use either `--all` or the full variant selector. Do not combine them.
 
-> **Warning:** The server refuses deletion while generation is in progress. Abort the running variant first, then retry the delete.
+> **Warning:** Admin deletes require `--owner`, even when the branch, provider, and model are fully specified.
 
-## `abort`
+### `docsfy abort`
+**Syntax:** `docsfy [GLOBAL OPTIONS] abort NAME [OPTIONS]`
 
-`docsfy abort` stops an active generation run.
-
-You can use it in two ways:
-- By project name alone, if there is only one active generation for that project
-- By exact variant, using `--branch`, `--provider`, and `--model`
-
-Examples:
+| Name | Type | Default | Description |
+| --- | --- | --- | --- |
+| `NAME` | string | Required | Stored project name. |
+| `--branch`, `-b` | string | none | Variant branch. Must be supplied together with `--provider` and `--model` for exact variant aborts. |
+| `--provider`, `-p` | string | none | Variant provider. Must be supplied together with `--branch` and `--model` for exact variant aborts. |
+| `--model`, `-m` | string | none | Variant model. Must be supplied together with `--branch` and `--provider` for exact variant aborts. |
+| `--owner` | string | none | Owner disambiguation for exact variant aborts. |
 
 ```shell
 docsfy abort my-repo
 docsfy abort for-testing-only --branch main --provider gemini --model gemini-2.5-flash
 ```
 
-When the abort succeeds, the variant ends up in `aborted` status.
+Return value / effect:
+- With only `NAME`, aborts the single active generation for that project name.
+- With the full selector, aborts that exact variant.
+- Prints `Aborted generation for '<name>'.` or `Aborted generation for '<name>/<branch>/<provider>/<model>'.`
+- Successful aborts transition the variant to `aborted`.
+- Exits non-zero if the target is not generating, ambiguously specified, or unavailable.
 
-> **Tip:** If more than one active variant exists for the same project name, the project-level form is ambiguous. In that case, retry with `--branch`, `--provider`, and `--model`. Admins may also need `--owner` for someone else's variant.
+> **Warning:** Project-level abort fails when more than one active variant matches the same project name.
 
-## `download`
+> **Note:** `--owner` only affects fully qualified variant aborts. It does not change project-level aborts.
 
-`docsfy download` fetches generated documentation for a project.
+### `docsfy download`
+**Syntax:** `docsfy [GLOBAL OPTIONS] download NAME [OPTIONS]`
 
-You can use it in two modes:
-- Without variant selectors: download the latest ready variant you can access
-- With `--branch`, `--provider`, and `--model`: download one exact variant
-
-Common options:
-- `--branch`, `-b`: Variant branch
-- `--provider`, `-p`: Variant provider
-- `--model`, `-m`: Variant model
-- `--owner`: Useful for admins when downloading a specific variant owned by someone else
-- `--output`, `-o`: Extract into a directory instead of saving a tarball in the current directory
-
-Example:
+| Name | Type | Default | Description |
+| --- | --- | --- | --- |
+| `NAME` | string | Required | Stored project name. |
+| `--branch`, `-b` | string | none | Variant branch. Must be supplied together with `--provider` and `--model` for exact variant downloads. |
+| `--provider`, `-p` | string | none | Variant provider. Must be supplied together with `--branch` and `--model` for exact variant downloads. |
+| `--model`, `-m` | string | none | Variant model. Must be supplied together with `--branch` and `--provider` for exact variant downloads. |
+| `--owner` | string | none | Owner disambiguation for exact variant downloads. |
+| `--output`, `-o` | string | none | Extract into a directory instead of saving a `.tar.gz` archive in the current directory. |
 
 ```shell
-docsfy download my-repo -b main -p cursor -m gpt-5
+docsfy download my-repo
+docsfy download my-repo --branch main --provider cursor --model gpt-5 --output ./site
 ```
 
+Return value / effect:
+- With no variant selector, downloads the latest ready variant visible to the user.
+- With the full selector, downloads that exact variant.
+- Without `--output`, saves an archive in the current directory.
+- With `--output`, creates the directory if needed, downloads to a temporary archive, and extracts the archive there.
+- Prints `Downloaded to <path>` or `Extracted to <dir>`.
+
 Archive naming:
-- Exact variant download: `<project>-<branch>-<provider>-<model>-docs.tar.gz`
 - Project-level download: `<project>-docs.tar.gz`
+- Exact variant download: `<project>-<branch>-<provider>-<model>-docs.tar.gz`
 
-When you pass `--output`, the CLI creates the directory if needed, downloads the archive to a temporary file, and extracts it there.
+> **Warning:** Only `ready` variants can be downloaded.
 
-> **Tip:** If a project has multiple variants, or if you are an admin working across multiple owners, prefer the fully qualified form with `--branch`, `--provider`, and `--model` so you know exactly which archive you are getting.
+> **Warning:** Use all three variant selectors together or omit all three.
 
-> **Warning:** Only ready variants can be downloaded.
+> **Note:** `--owner` only affects fully qualified variant downloads. It does not change project-level downloads.
 
-## `admin`
+### `docsfy models`
+**Syntax:** `docsfy [GLOBAL OPTIONS] models [OPTIONS]`
 
-All `admin` subcommands require admin credentials.
+| Name | Type | Default | Description |
+| --- | --- | --- | --- |
+| `--provider`, `-P` | string | all providers | Filter to one provider. Valid providers in this codebase are `claude`, `gemini`, and `cursor`. |
+| `--json`, `-j` | boolean | `false` | Output JSON instead of plain text. |
 
-### `admin users`
+```shell
+docsfy models
+docsfy models --provider cursor --json
+```
 
-`admin users` manages docsfy accounts. Valid roles are:
-- `admin`
-- `user`
-- `viewer`
+Return value / effect:
+- Plain text output groups known models under each provider.
+- Marks the current default provider and default model with `(default)`.
+- Shows `(no models used yet)` for providers with no completed ready variants.
+- `--json` outputs `{ "providers": [...], "default_provider": "...", "default_model": "...", "known_models": {...} }`.
+- With `--provider`, output is filtered to one provider. In JSON mode, `default_provider` and `default_model` remain present even when the provider list is filtered.
+- Exits non-zero for an unknown provider.
 
-Examples:
+> **Note:** `known_models` is built from ready variants only.
+
+## `docsfy admin`
+`docsfy admin` is the admin-only command group.
+
+| Group | Subcommands |
+| --- | --- |
+| `docsfy admin users` | `list`, `create`, `delete`, `rotate-key` |
+| `docsfy admin access` | `list`, `grant`, `revoke` |
+
+> **Warning:** All `admin ...` commands require admin credentials.
+
+### `docsfy admin users list`
+**Syntax:** `docsfy [GLOBAL OPTIONS] admin users list [OPTIONS]`
+
+| Name | Type | Default | Description |
+| --- | --- | --- | --- |
+| `--json` | boolean | `false` | Output JSON instead of the table view. |
 
 ```shell
 docsfy admin users list
-docsfy admin users create cli-test-user --role user
-docsfy admin users delete cli-test-user --yes
-docsfy admin users rotate-key alice
+docsfy admin users list --json
 ```
 
-What each subcommand does:
-- `list`: Show all users in a table, or JSON with `--json`
-- `create`: Create a user and print the generated API key; `--role` defaults to `user`
-- `delete`: Delete a user; prompts unless you pass `--yes`
-- `rotate-key`: Rotate a user's API key; use `--new-key` to provide your own key, or omit it to generate one automatically
+Return value / effect:
+- Prints a table with `USERNAME`, `ROLE`, and `CREATED`.
+- `--json` outputs an array of user objects with `id`, `username`, `role`, and `created_at`.
+- Prints `No users found.` when the user list is empty.
 
-Practical details:
-- Usernames must be 2-50 characters, start with an alphanumeric character, and may include `.`, `_`, and `-`
-- The username `admin` is reserved
-- Deleting a user also removes their sessions, owned projects, and related access grants
-- Rotating a key invalidates that user's existing sessions
+### `docsfy admin users create`
+**Syntax:** `docsfy [GLOBAL OPTIONS] admin users create USERNAME [OPTIONS]`
 
-> **Warning:** `create` and `rotate-key` show the API key only once. Save it immediately.
+| Name | Type | Default | Description |
+| --- | --- | --- | --- |
+| `USERNAME` | string | Required | Username to create. Must be 2-50 characters, start with an alphanumeric character, and use only alphanumerics, `.`, `_`, or `-`. |
+| `--role`, `-r` | string | `user` | User role. Valid values are `admin`, `user`, and `viewer`. |
+| `--json` | boolean | `false` | Output JSON instead of plain text. |
 
-> **Warning:** You cannot delete your own admin account, and the server blocks deleting a user while they have a generation in progress.
+```shell
+docsfy admin users create alice --role viewer
+docsfy admin users create alice --role user --json
+```
 
-### `admin access`
+Return value / effect:
+- Creates the user account.
+- Plain text output prints `User created`, `Role`, and `API Key`.
+- `--json` outputs `{ "username": "...", "api_key": "...", "role": "..." }`.
+- Exits non-zero for invalid usernames, duplicate usernames, reserved usernames, or invalid roles.
 
-`admin access` manages project sharing. Access is project-level and owner-scoped, which means a grant applies to all variants of that project for that owner.
+> **Warning:** The username `admin` is reserved.
 
-Examples:
+> **Warning:** The API key is shown once. Save it immediately.
+
+### `docsfy admin users delete`
+**Syntax:** `docsfy [GLOBAL OPTIONS] admin users delete USERNAME [OPTIONS]`
+
+| Name | Type | Default | Description |
+| --- | --- | --- | --- |
+| `USERNAME` | string | Required | Username to delete. |
+| `--yes`, `-y` | boolean | `false` | Skip the confirmation prompt. |
+
+```shell
+docsfy admin users delete alice --yes
+```
+
+Return value / effect:
+- Prompts for confirmation unless `--yes` is used.
+- Deletes the user account.
+- Deletes that user's sessions, owned projects, and related access grants.
+- Prints `Deleted user '<username>'.` on success.
+- Exits non-zero when the user is missing or cannot be deleted.
+
+> **Warning:** You cannot delete your own admin account.
+
+> **Warning:** A user cannot be deleted while one of their generations is still in progress.
+
+### `docsfy admin users rotate-key`
+**Syntax:** `docsfy [GLOBAL OPTIONS] admin users rotate-key USERNAME [OPTIONS]`
+
+| Name | Type | Default | Description |
+| --- | --- | --- | --- |
+| `USERNAME` | string | Required | Username whose API key will be rotated. |
+| `--new-key` | string | auto-generated key | Set a specific replacement API key. Custom keys must be at least 16 characters long. |
+| `--json` | boolean | `false` | Output JSON instead of plain text. |
+
+```shell
+docsfy admin users rotate-key alice
+docsfy admin users rotate-key alice --new-key "my-very-secure-custom-password-123" --json
+```
+
+Return value / effect:
+- Generates a new API key when `--new-key` is omitted.
+- Uses the supplied key when `--new-key` is present and valid.
+- Invalidates the user's existing sessions.
+- Plain text output prints `User` and `New API Key`.
+- `--json` outputs `{ "username": "...", "new_api_key": "..." }`.
+
+> **Warning:** The new API key is shown once. Save it immediately.
+
+### `docsfy admin access list`
+**Syntax:** `docsfy [GLOBAL OPTIONS] admin access list PROJECT [OPTIONS]`
+
+| Name | Type | Default | Description |
+| --- | --- | --- | --- |
+| `PROJECT` | string | Required | Stored project name. |
+| `--owner` | string | Required | Owner whose project access list should be shown. |
+| `--json` | boolean | `false` | Output JSON instead of plain text. |
 
 ```shell
 docsfy admin access list my-repo --owner admin
+docsfy admin access list my-repo --owner admin --json
+```
+
+Return value / effect:
+- Prints the project name, owner, and current access list.
+- Prints `No access grants.` when the list is empty.
+- `--json` outputs `{ "project": "...", "owner": "...", "users": [...] }`.
+
+> **Note:** Access grants are project-level and owner-scoped. One grant covers all variants of that project for the specified owner.
+
+### `docsfy admin access grant`
+**Syntax:** `docsfy [GLOBAL OPTIONS] admin access grant PROJECT [OPTIONS]`
+
+| Name | Type | Default | Description |
+| --- | --- | --- | --- |
+| `PROJECT` | string | Required | Stored project name. |
+| `--username` | string | Required | Username to grant access to. |
+| `--owner` | string | Required | Owner whose project will be shared. |
+
+```shell
 docsfy admin access grant my-repo --username alice --owner admin
+```
+
+Return value / effect:
+- Grants the named user access to the project for the specified owner.
+- The grant applies to all variants of that project for that owner.
+- Prints `Granted '<username>' access to '<project>' (owner: <owner>).`
+- Exits non-zero if the user does not exist or the project does not exist for that owner.
+
+### `docsfy admin access revoke`
+**Syntax:** `docsfy [GLOBAL OPTIONS] admin access revoke PROJECT [OPTIONS]`
+
+| Name | Type | Default | Description |
+| --- | --- | --- | --- |
+| `PROJECT` | string | Required | Stored project name. |
+| `--username` | string | Required | Username whose access will be removed. |
+| `--owner` | string | Required | Owner whose project access grant will be removed. |
+
+```shell
 docsfy admin access revoke my-repo --username alice --owner admin
 ```
 
-What each subcommand does:
-- `list`: Show which users currently have access to a project; supports `--json`
-- `grant`: Give a user access to a project owned by a specific owner
-- `revoke`: Remove that access again
+Return value / effect:
+- Removes the named user's access grant for that project and owner.
+- Prints `Revoked '<username>' access to '<project>' (owner: <owner>).`
 
-> **Note:** `--owner` is required on all `admin access` commands, because project sharing is scoped to a specific owner.
+## Shared Exit Behavior
 
-## JSON Output and Exit Behavior
+| Condition | Effect |
+| --- | --- |
+| HTTP `4xx` / `5xx` | Prints `Error (<status>): <detail>` to stderr and exits non-zero. |
+| HTTP redirect | Prints a redirect error and exits non-zero. |
+| `health` connection failure | Prints `Server unreachable: ...` and exits non-zero. |
+| `generate --watch` WebSocket timeout or close | Prints an error to stderr and exits non-zero. |
+| Confirmation declined | Prints `Aborted.` and exits without changing server state. |
 
-Commands that support `--json`:
+Commands with JSON output:
 - `docsfy list`
 - `docsfy status`
+- `docsfy models`
 - `docsfy admin users list`
 - `docsfy admin users create`
 - `docsfy admin users rotate-key`
 - `docsfy admin access list`
 
-When scripting:
-- `docsfy list --json` returns an array of project objects
-- `docsfy status --json` returns either one variant object or a `{name, variants}` object, depending on whether you fully qualified the variant
-- HTTP and API failures are printed as `Error (<status>): ...` and return a non-zero exit code
-- If you decline a confirmation prompt, the CLI prints `Aborted.` and exits without making changes
-
-
 ## Related Pages
 
-- [CLI Workflows](cli-workflows.html)
-- [CLI Configuration](cli-configuration.html)
-- [Generating Documentation](generating-documentation.html)
-- [Viewing, Downloading, and Hosting Docs](viewing-downloading-and-hosting-docs.html)
-- [Projects API](projects-api.html)
+- [Manage docsfy from the CLI](manage-docsfy-from-the-cli.html)
+- [Generate Documentation](generate-documentation.html)
+- [Track Generation Progress](track-generation-progress.html)
+- [View, Download, and Publish Docs](view-download-and-publish-docs.html)
+- [Manage Users, Roles, and Access](manage-users-roles-and-access.html)

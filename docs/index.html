@@ -1,11 +1,12 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>docsfy</title>
-    <meta name="description" content="AI-powered documentation generator that turns Git repositories into shareable static docs sites.">
+    <meta name="description" content="Turn any Git repo into a polished, shareable documentation site in minutes">
     <link rel="stylesheet" href="assets/style.css">
+    <script>try{var t=localStorage.getItem('theme');if(t==='dark')document.documentElement.setAttribute('data-theme','dark')}catch(e){}</script>
     <link rel="alternate" type="text/plain" title="LLM Documentation Index" href="llms.txt">
     <link rel="alternate" type="text/plain" title="LLM Full Documentation" href="llms-full.txt">
 </head>
@@ -13,7 +14,7 @@
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <a href="index.html" class="sidebar-logo">docsfy</a>
-            <p class="sidebar-tagline">AI-powered documentation generator that turns Git repositories into shareable static docs sites.</p>
+            <p class="sidebar-tagline">Turn any Git repo into a polished, shareable documentation site in minutes</p>
         </div>
 
         <div class="sidebar-search">
@@ -24,69 +25,27 @@
         <nav class="sidebar-nav">
             
             <div class="nav-group">
-                <h3 class="nav-group-title">Overview</h3>
-                <ul class="nav-group-pages">
-                    
-                    <li>
-                        <a href="introduction.html"
-                           class="nav-link">
-                            Introduction
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="architecture-and-runtime.html"
-                           class="nav-link">
-                            Architecture and Runtime
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="projects-variants-and-ownership.html"
-                           class="nav-link">
-                            Projects, Variants, and Ownership
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="generated-output.html"
-                           class="nav-link">
-                            Generated Output
-                        </a>
-                    </li>
-                    
-                </ul>
-            </div>
-            
-            <div class="nav-group">
                 <h3 class="nav-group-title">Getting Started</h3>
                 <ul class="nav-group-pages">
                     
                     <li>
-                        <a href="installation.html"
+                        <a href="generate-your-first-docs-site.html"
                            class="nav-link">
-                            Installation
+                            Generate Your First Docs Site
                         </a>
                     </li>
                     
                     <li>
-                        <a href="ai-provider-setup.html"
+                        <a href="configure-ai-providers.html"
                            class="nav-link">
-                            AI Provider Setup
+                            Configure AI Providers
                         </a>
                     </li>
                     
                     <li>
-                        <a href="local-development.html"
+                        <a href="install-and-run-docsfy-without-docker.html"
                            class="nav-link">
-                            Local Development
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="docker-quickstart.html"
-                           class="nav-link">
-                            Docker and Compose Quickstart
+                            Install and Run docsfy Without Docker
                         </a>
                     </li>
                     
@@ -94,90 +53,55 @@
             </div>
             
             <div class="nav-group">
-                <h3 class="nav-group-title">Configuration</h3>
+                <h3 class="nav-group-title">User Guides</h3>
                 <ul class="nav-group-pages">
                     
                     <li>
-                        <a href="environment-variables.html"
+                        <a href="generate-documentation.html"
                            class="nav-link">
-                            Environment Variables
+                            Generate Documentation
                         </a>
                     </li>
                     
                     <li>
-                        <a href="cli-configuration.html"
+                        <a href="track-generation-progress.html"
                            class="nav-link">
-                            CLI Configuration
+                            Track Generation Progress
                         </a>
                     </li>
                     
                     <li>
-                        <a href="authentication-and-roles.html"
+                        <a href="regenerate-for-new-branches-and-models.html"
                            class="nav-link">
-                            Authentication and Roles
+                            Regenerate for New Branches and Models
                         </a>
                     </li>
                     
                     <li>
-                        <a href="data-storage-and-layout.html"
+                        <a href="view-download-and-publish-docs.html"
                            class="nav-link">
-                            Data Storage and Layout
-                        </a>
-                    </li>
-                    
-                </ul>
-            </div>
-            
-            <div class="nav-group">
-                <h3 class="nav-group-title">Usage Guides</h3>
-                <ul class="nav-group-pages">
-                    
-                    <li>
-                        <a href="first-run-quickstart.html"
-                           class="nav-link">
-                            First Run Quickstart
+                            View, Download, and Publish Docs
                         </a>
                     </li>
                     
                     <li>
-                        <a href="generating-documentation.html"
+                        <a href="manage-users-roles-and-access.html"
                            class="nav-link">
-                            Generating Documentation
+                            Manage Users, Roles, and Access
                         </a>
                     </li>
                     
                     <li>
-                        <a href="tracking-progress-and-status.html"
+                        <a href="manage-docsfy-from-the-cli.html"
                            class="nav-link">
-                            Tracking Progress and Status
+                            Manage docsfy from the CLI
                         </a>
                     </li>
                     
                     <li>
-                        <a href="variants-branches-and-regeneration.html"
+                        <a href="fix-setup-and-generation-problems.html"
                            class="nav-link">
-                            Variants, Branches, and Regeneration
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="viewing-downloading-and-hosting-docs.html"
-                           class="nav-link">
-                            Viewing, Downloading, and Hosting Docs
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="user-and-access-management.html"
-                           class="nav-link">
-                            User and Access Management
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="cli-workflows.html"
-                           class="nav-link">
-                            CLI Workflows
+                            Fix Setup and Generation Problems
                         </a>
                     </li>
                     
@@ -189,6 +113,13 @@
                 <ul class="nav-group-pages">
                     
                     <li>
+                        <a href="configuration-reference.html"
+                           class="nav-link">
+                            Configuration Reference
+                        </a>
+                    </li>
+                    
+                    <li>
                         <a href="cli-command-reference.html"
                            class="nav-link">
                             CLI Command Reference
@@ -196,65 +127,16 @@
                     </li>
                     
                     <li>
-                        <a href="auth-api.html"
+                        <a href="http-api-reference.html"
                            class="nav-link">
-                            Authentication API
+                            HTTP API Reference
                         </a>
                     </li>
                     
                     <li>
-                        <a href="projects-api.html"
+                        <a href="websocket-reference.html"
                            class="nav-link">
-                            Projects API
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="admin-api.html"
-                           class="nav-link">
-                            Admin API
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="websocket-protocol.html"
-                           class="nav-link">
-                            WebSocket Protocol
-                        </a>
-                    </li>
-                    
-                </ul>
-            </div>
-            
-            <div class="nav-group">
-                <h3 class="nav-group-title">Operations</h3>
-                <ul class="nav-group-pages">
-                    
-                    <li>
-                        <a href="deployment-and-runtime.html"
-                           class="nav-link">
-                            Deployment and Runtime
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="testing-and-quality-checks.html"
-                           class="nav-link">
-                            Testing and Quality Checks
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="security-considerations.html"
-                           class="nav-link">
-                            Security Considerations
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="troubleshooting.html"
-                           class="nav-link">
-                            Troubleshooting
+                            WebSocket Reference
                         </a>
                     </li>
                     
@@ -283,9 +165,9 @@
                     ⚡ docs<span class="brand-accent">fy</span>
                 </a>
                 
-                <a href="https://github.com/myk-org/docsfy" target="_blank" rel="noopener noreferrer" class="top-bar-github" id="github-link" data-repo-url="https://github.com/myk-org/docsfy">
+                <a href="https://github.com/myk-org/docsfy.git" target="_blank" rel="noopener noreferrer" class="top-bar-github" id="github-link" data-repo-url="https://github.com/myk-org/docsfy.git">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
-                    <span class="github-stars" id="github-stars"></span>
+                    <span class="github-stars" id="github-stars" title="GitHub stars"></span>
                 </a>
                 
                 <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
@@ -301,9 +183,9 @@
 
         <main class="content">
             
-            <section class="hero">
-                <h1 class="hero-title">docsfy</h1>
-                <p class="hero-tagline">AI-powered documentation generator that turns Git repositories into shareable static docs sites.</p>
+            <section class="index-header">
+                <h1 class="index-title">docsfy</h1>
+                <p class="index-tagline">Turn any Git repo into a polished, shareable documentation site in minutes</p>
                 
                 
                   
@@ -314,14 +196,140 @@
                 
                   
                 
-                  
                 
-                  
+                <a href="generate-your-first-docs-site.html" class="index-cta">Get Started →</a>
                 
-                  
+            </section>
+
+            <section class="card-grid">
                 
+                <div class="card">
+                    <h3 class="card-title">Getting Started</h3>
+                    <ul class="card-pages">
+                        
+                        <li>
+                            <a href="generate-your-first-docs-site.html">Generate Your First Docs Site</a>
+                            
+                            <p class="card-page-desc">Start docsfy with the fastest Docker-based path, sign in as admin, and generate docs for a repository right away.</p>
+                            
+                        </li>
+                        
+                        <li>
+                            <a href="configure-ai-providers.html">Configure AI Providers</a>
+                            
+                            <p class="card-page-desc">Install and authenticate the Claude, Gemini, or Cursor CLI so documentation generation can run successfully.</p>
+                            
+                        </li>
+                        
+                        <li>
+                            <a href="install-and-run-docsfy-without-docker.html">Install and Run docsfy Without Docker</a>
+                            
+                            <p class="card-page-desc">Set the required environment variables, build the frontend, and start the server and CLI directly on your machine.</p>
+                            
+                        </li>
+                        
+                    </ul>
+                    
+                    <a href="generate-your-first-docs-site.html" class="card-link">Explore →</a>
+                    
+                </div>
                 
-                <a href="introduction.html" class="hero-cta">Get Started</a>
+                <div class="card">
+                    <h3 class="card-title">User Guides</h3>
+                    <ul class="card-pages">
+                        
+                        <li>
+                            <a href="generate-documentation.html">Generate Documentation</a>
+                            
+                            <p class="card-page-desc">Add a repository, choose branch and model settings, and start a new generation from the dashboard.</p>
+                            
+                        </li>
+                        
+                        <li>
+                            <a href="track-generation-progress.html">Track Generation Progress</a>
+                            
+                            <p class="card-page-desc">Follow real-time status updates, understand each generation stage, and abort a run when needed.</p>
+                            
+                        </li>
+                        
+                        <li>
+                            <a href="regenerate-for-new-branches-and-models.html">Regenerate for New Branches and Models</a>
+                            
+                            <p class="card-page-desc">Create new variants for another branch or model and learn when docsfy reuses existing work.</p>
+                            
+                        </li>
+                        
+                        <li>
+                            <a href="view-download-and-publish-docs.html">View, Download, and Publish Docs</a>
+                            
+                            <p class="card-page-desc">Open the latest or exact variant, download the static site, and host the generated output elsewhere.</p>
+                            
+                        </li>
+                        
+                        <li>
+                            <a href="manage-users-roles-and-access.html">Manage Users, Roles, and Access</a>
+                            
+                            <p class="card-page-desc">Create users, assign roles, rotate passwords, and control who can see each project&#39;s docs.</p>
+                            
+                        </li>
+                        
+                        <li>
+                            <a href="manage-docsfy-from-the-cli.html">Manage docsfy from the CLI</a>
+                            
+                            <p class="card-page-desc">Configure a server profile and run health checks, generations, status checks, downloads, and admin tasks from the terminal.</p>
+                            
+                        </li>
+                        
+                        <li>
+                            <a href="fix-setup-and-generation-problems.html">Fix Setup and Generation Problems</a>
+                            
+                            <p class="card-page-desc">Diagnose login failures, provider setup issues, branch validation errors, conflicts, and failed generations.</p>
+                            
+                        </li>
+                        
+                    </ul>
+                    
+                    <a href="generate-documentation.html" class="card-link">Explore →</a>
+                    
+                </div>
+                
+                <div class="card">
+                    <h3 class="card-title">Reference</h3>
+                    <ul class="card-pages">
+                        
+                        <li>
+                            <a href="configuration-reference.html">Configuration Reference</a>
+                            
+                            <p class="card-page-desc">Look up environment variables, default settings, data locations, cookie options, and CLI profile fields.</p>
+                            
+                        </li>
+                        
+                        <li>
+                            <a href="cli-command-reference.html">CLI Command Reference</a>
+                            
+                            <p class="card-page-desc">Find syntax, flags, defaults, and examples for every docsfy command and subcommand.</p>
+                            
+                        </li>
+                        
+                        <li>
+                            <a href="http-api-reference.html">HTTP API Reference</a>
+                            
+                            <p class="card-page-desc">Find auth requirements, paths, parameters, and responses for models, auth, project, admin, download, and docs routes.</p>
+                            
+                        </li>
+                        
+                        <li>
+                            <a href="websocket-reference.html">WebSocket Reference</a>
+                            
+                            <p class="card-page-desc">Look up connection options and the sync, progress, status_change, and heartbeat messages.</p>
+                            
+                        </li>
+                        
+                    </ul>
+                    
+                    <a href="configuration-reference.html" class="card-link">Explore →</a>
+                    
+                </div>
                 
             </section>
 
@@ -338,271 +346,11 @@
                 </div>
             </div>
 
-            <section class="card-grid">
-                
-                <div class="card">
-                    <h3 class="card-title">Overview</h3>
-                    <ul class="card-pages">
-                        
-                        <li>
-                            <a href="introduction.html">Introduction</a>
-                            
-                            <p class="card-page-desc">Explain what docsfy does, who it is for, and the main workflows exposed through the web app, HTTP API, generated sites, and CLI.</p>
-                            
-                        </li>
-                        
-                        <li>
-                            <a href="architecture-and-runtime.html">Architecture and Runtime</a>
-                            
-                            <p class="card-page-desc">Describe how the FastAPI backend, React dashboard, SQLite storage, AI CLI integrations, and static site renderer work together.</p>
-                            
-                        </li>
-                        
-                        <li>
-                            <a href="projects-variants-and-ownership.html">Projects, Variants, and Ownership</a>
-                            
-                            <p class="card-page-desc">Define the core data model: owners, repository names, branches, provider and model variants, statuses, and latest-variant resolution.</p>
-                            
-                        </li>
-                        
-                        <li>
-                            <a href="generated-output.html">Generated Output</a>
-                            
-                            <p class="card-page-desc">Show what docsfy publishes for each generation, including static HTML pages, Markdown copies, search index files, and LLM-friendly artifacts.</p>
-                            
-                        </li>
-                        
-                    </ul>
-                    
-                    <a href="introduction.html" class="card-link">Explore &rarr;</a>
-                    
-                </div>
-                
-                <div class="card">
-                    <h3 class="card-title">Getting Started</h3>
-                    <ul class="card-pages">
-                        
-                        <li>
-                            <a href="installation.html">Installation</a>
-                            
-                            <p class="card-page-desc">Cover Python and frontend prerequisites, dependency installation with uv and npm, and the two console entry points: docsfy and docsfy-server.</p>
-                            
-                        </li>
-                        
-                        <li>
-                            <a href="ai-provider-setup.html">AI Provider Setup</a>
-                            
-                            <p class="card-page-desc">Document the external Claude, Gemini, and Cursor CLI requirements, authentication expectations, and how provider and model availability affects generation.</p>
-                            
-                        </li>
-                        
-                        <li>
-                            <a href="local-development.html">Local Development</a>
-                            
-                            <p class="card-page-desc">Explain how to run the backend and frontend locally, when to build the SPA, and how DEV_MODE and the Vite proxy change the development workflow.</p>
-                            
-                        </li>
-                        
-                        <li>
-                            <a href="docker-quickstart.html">Docker and Compose Quickstart</a>
-                            
-                            <p class="card-page-desc">Show how to run docsfy with the provided Dockerfile and docker-compose setup, including .env usage, persistent data, and exposed ports.</p>
-                            
-                        </li>
-                        
-                    </ul>
-                    
-                    <a href="installation.html" class="card-link">Explore &rarr;</a>
-                    
-                </div>
-                
-                <div class="card">
-                    <h3 class="card-title">Configuration</h3>
-                    <ul class="card-pages">
-                        
-                        <li>
-                            <a href="environment-variables.html">Environment Variables</a>
-                            
-                            <p class="card-page-desc">Reference runtime settings such as ADMIN_KEY, default AI provider and model, CLI timeout, logging, cookie security, and the data directory.</p>
-                            
-                        </li>
-                        
-                        <li>
-                            <a href="cli-configuration.html">CLI Configuration</a>
-                            
-                            <p class="card-page-desc">Document the CLI profile file in ~/.config/docsfy/config.toml, default server selection, per-server credentials, and override rules from command-line flags.</p>
-                            
-                        </li>
-                        
-                        <li>
-                            <a href="authentication-and-roles.html">Authentication and Roles</a>
-                            
-                            <p class="card-page-desc">Explain admin login, database-backed users, API keys, session cookies, viewer and user and admin permissions, and key rotation behavior.</p>
-                            
-                        </li>
-                        
-                        <li>
-                            <a href="data-storage-and-layout.html">Data Storage and Layout</a>
-                            
-                            <p class="card-page-desc">Describe the SQLite database, project artifact directories under /data, cache locations, and how branch and provider and model values shape on-disk paths.</p>
-                            
-                        </li>
-                        
-                    </ul>
-                    
-                    <a href="environment-variables.html" class="card-link">Explore &rarr;</a>
-                    
-                </div>
-                
-                <div class="card">
-                    <h3 class="card-title">Usage Guides</h3>
-                    <ul class="card-pages">
-                        
-                        <li>
-                            <a href="first-run-quickstart.html">First Run Quickstart</a>
-                            
-                            <p class="card-page-desc">Walk through bringing up the service, signing in as admin, creating users if needed, and starting the first documentation generation.</p>
-                            
-                        </li>
-                        
-                        <li>
-                            <a href="generating-documentation.html">Generating Documentation</a>
-                            
-                            <p class="card-page-desc">Show how to create a generation from a Git repository URL, choose branch and provider and model settings, and understand force regeneration.</p>
-                            
-                        </li>
-                        
-                        <li>
-                            <a href="tracking-progress-and-status.html">Tracking Progress and Status</a>
-                            
-                            <p class="card-page-desc">Explain generation stages, WebSocket-driven updates, page counts, ready and error and aborted states, and how the dashboard reflects in-flight work.</p>
-                            
-                        </li>
-                        
-                        <li>
-                            <a href="variants-branches-and-regeneration.html">Variants, Branches, and Regeneration</a>
-                            
-                            <p class="card-page-desc">Explain branch-specific generations, provider and model variants, up-to-date detection, incremental updates, and when docsfy falls back to a full regeneration.</p>
-                            
-                        </li>
-                        
-                        <li>
-                            <a href="viewing-downloading-and-hosting-docs.html">Viewing, Downloading, and Hosting Docs</a>
-                            
-                            <p class="card-page-desc">Show how to open generated docs through the latest or explicit variant URLs, download tarballs, and work with the published static site output.</p>
-                            
-                        </li>
-                        
-                        <li>
-                            <a href="user-and-access-management.html">User and Access Management</a>
-                            
-                            <p class="card-page-desc">Cover creating and deleting users, rotating keys, granting and revoking project access, and how shared projects appear for non-admin users.</p>
-                            
-                        </li>
-                        
-                        <li>
-                            <a href="cli-workflows.html">CLI Workflows</a>
-                            
-                            <p class="card-page-desc">Provide task-oriented CLI guides for health checks, generation, listing and inspecting projects, aborting work, downloading artifacts, and admin operations.</p>
-                            
-                        </li>
-                        
-                    </ul>
-                    
-                    <a href="first-run-quickstart.html" class="card-link">Explore &rarr;</a>
-                    
-                </div>
-                
-                <div class="card">
-                    <h3 class="card-title">Reference</h3>
-                    <ul class="card-pages">
-                        
-                        <li>
-                            <a href="cli-command-reference.html">CLI Command Reference</a>
-                            
-                            <p class="card-page-desc">Reference global CLI connection options plus the config, generate, list, status, delete, abort, download, and admin subcommands.</p>
-                            
-                        </li>
-                        
-                        <li>
-                            <a href="auth-api.html">Authentication API</a>
-                            
-                            <p class="card-page-desc">Reference the login, logout, current-user, and rotate-key endpoints, including bearer-token and session-cookie authentication behavior.</p>
-                            
-                        </li>
-                        
-                        <li>
-                            <a href="projects-api.html">Projects API</a>
-                            
-                            <p class="card-page-desc">Reference project listing, generation, variant lookup, abort, delete, download, and docs-serving routes, including owner scoping and branch-aware URLs.</p>
-                            
-                        </li>
-                        
-                        <li>
-                            <a href="admin-api.html">Admin API</a>
-                            
-                            <p class="card-page-desc">Reference user management and project-access administration endpoints, including key rotation, access grants, and access lookups.</p>
-                            
-                        </li>
-                        
-                        <li>
-                            <a href="websocket-protocol.html">WebSocket Protocol</a>
-                            
-                            <p class="card-page-desc">Document the /api/ws connection model, authentication options, sync and progress and status_change messages, heartbeat ping and pong, and polling fallback expectations.</p>
-                            
-                        </li>
-                        
-                    </ul>
-                    
-                    <a href="cli-command-reference.html" class="card-link">Explore &rarr;</a>
-                    
-                </div>
-                
-                <div class="card">
-                    <h3 class="card-title">Operations</h3>
-                    <ul class="card-pages">
-                        
-                        <li>
-                            <a href="deployment-and-runtime.html">Deployment and Runtime</a>
-                            
-                            <p class="card-page-desc">Describe production runtime behavior, entrypoint modes, container expectations, persistent storage, health checks, and non-root execution details.</p>
-                            
-                        </li>
-                        
-                        <li>
-                            <a href="testing-and-quality-checks.html">Testing and Quality Checks</a>
-                            
-                            <p class="card-page-desc">Cover pytest, Vitest, tox, pre-commit hooks, type checks, secret scanning, review automation, and the repository&#39;s manual end-to-end test plans.</p>
-                            
-                        </li>
-                        
-                        <li>
-                            <a href="security-considerations.html">Security Considerations</a>
-                            
-                            <p class="card-page-desc">Document the project&#39;s auth model, API key hashing, cookie settings, SSRF protections, repository and path validation, and sanitization of AI-generated HTML.</p>
-                            
-                        </li>
-                        
-                        <li>
-                            <a href="troubleshooting.html">Troubleshooting</a>
-                            
-                            <p class="card-page-desc">Help users diagnose missing frontend builds, provider CLI failures, branch validation errors, generation conflicts, access issues, and WebSocket connectivity problems.</p>
-                            
-                        </li>
-                        
-                    </ul>
-                    
-                    <a href="deployment-and-runtime.html" class="card-link">Explore &rarr;</a>
-                    
-                </div>
-                
-            </section>
-
         </main>
 
         <footer class="page-footer">
             
-            <span class="footer-version">Generated from version 1.0.2</span>
+            <span class="footer-version">Generated from version 1.2.0</span>
             <span class="footer-sep">&middot;</span>
             
             Generated with <a href="https://github.com/myk-org/docsfy" target="_blank" rel="noopener">docs<span class="brand-accent">fy</span></a>

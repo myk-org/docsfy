@@ -1,11 +1,12 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CLI Command Reference - docsfy</title>
-    <meta name="description" content="AI-powered documentation generator that turns Git repositories into shareable static docs sites.">
+    <meta name="description" content="Turn any Git repo into a polished, shareable documentation site in minutes">
     <link rel="stylesheet" href="assets/style.css">
+    <script>try{var t=localStorage.getItem('theme');if(t==='dark')document.documentElement.setAttribute('data-theme','dark')}catch(e){}</script>
     <link rel="alternate" type="text/plain" title="LLM Documentation Index" href="llms.txt">
     <link rel="alternate" type="text/plain" title="LLM Full Documentation" href="llms-full.txt">
 </head>
@@ -13,7 +14,7 @@
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <a href="index.html" class="sidebar-logo">docsfy</a>
-            <p class="sidebar-tagline">AI-powered documentation generator that turns Git repositories into shareable static docs sites.</p>
+            <p class="sidebar-tagline">Turn any Git repo into a polished, shareable documentation site in minutes</p>
         </div>
 
         <div class="sidebar-search">
@@ -24,69 +25,27 @@
         <nav class="sidebar-nav">
             
             <div class="nav-group">
-                <h3 class="nav-group-title">Overview</h3>
-                <ul class="nav-group-pages">
-                    
-                    <li>
-                        <a href="introduction.html"
-                           class="nav-link">
-                            Introduction
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="architecture-and-runtime.html"
-                           class="nav-link">
-                            Architecture and Runtime
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="projects-variants-and-ownership.html"
-                           class="nav-link">
-                            Projects, Variants, and Ownership
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="generated-output.html"
-                           class="nav-link">
-                            Generated Output
-                        </a>
-                    </li>
-                    
-                </ul>
-            </div>
-            
-            <div class="nav-group">
                 <h3 class="nav-group-title">Getting Started</h3>
                 <ul class="nav-group-pages">
                     
                     <li>
-                        <a href="installation.html"
+                        <a href="generate-your-first-docs-site.html"
                            class="nav-link">
-                            Installation
+                            Generate Your First Docs Site
                         </a>
                     </li>
                     
                     <li>
-                        <a href="ai-provider-setup.html"
+                        <a href="configure-ai-providers.html"
                            class="nav-link">
-                            AI Provider Setup
+                            Configure AI Providers
                         </a>
                     </li>
                     
                     <li>
-                        <a href="local-development.html"
+                        <a href="install-and-run-docsfy-without-docker.html"
                            class="nav-link">
-                            Local Development
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="docker-quickstart.html"
-                           class="nav-link">
-                            Docker and Compose Quickstart
+                            Install and Run docsfy Without Docker
                         </a>
                     </li>
                     
@@ -94,90 +53,55 @@
             </div>
             
             <div class="nav-group">
-                <h3 class="nav-group-title">Configuration</h3>
+                <h3 class="nav-group-title">User Guides</h3>
                 <ul class="nav-group-pages">
                     
                     <li>
-                        <a href="environment-variables.html"
+                        <a href="generate-documentation.html"
                            class="nav-link">
-                            Environment Variables
+                            Generate Documentation
                         </a>
                     </li>
                     
                     <li>
-                        <a href="cli-configuration.html"
+                        <a href="track-generation-progress.html"
                            class="nav-link">
-                            CLI Configuration
+                            Track Generation Progress
                         </a>
                     </li>
                     
                     <li>
-                        <a href="authentication-and-roles.html"
+                        <a href="regenerate-for-new-branches-and-models.html"
                            class="nav-link">
-                            Authentication and Roles
+                            Regenerate for New Branches and Models
                         </a>
                     </li>
                     
                     <li>
-                        <a href="data-storage-and-layout.html"
+                        <a href="view-download-and-publish-docs.html"
                            class="nav-link">
-                            Data Storage and Layout
-                        </a>
-                    </li>
-                    
-                </ul>
-            </div>
-            
-            <div class="nav-group">
-                <h3 class="nav-group-title">Usage Guides</h3>
-                <ul class="nav-group-pages">
-                    
-                    <li>
-                        <a href="first-run-quickstart.html"
-                           class="nav-link">
-                            First Run Quickstart
+                            View, Download, and Publish Docs
                         </a>
                     </li>
                     
                     <li>
-                        <a href="generating-documentation.html"
+                        <a href="manage-users-roles-and-access.html"
                            class="nav-link">
-                            Generating Documentation
+                            Manage Users, Roles, and Access
                         </a>
                     </li>
                     
                     <li>
-                        <a href="tracking-progress-and-status.html"
+                        <a href="manage-docsfy-from-the-cli.html"
                            class="nav-link">
-                            Tracking Progress and Status
+                            Manage docsfy from the CLI
                         </a>
                     </li>
                     
                     <li>
-                        <a href="variants-branches-and-regeneration.html"
+                        <a href="fix-setup-and-generation-problems.html"
                            class="nav-link">
-                            Variants, Branches, and Regeneration
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="viewing-downloading-and-hosting-docs.html"
-                           class="nav-link">
-                            Viewing, Downloading, and Hosting Docs
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="user-and-access-management.html"
-                           class="nav-link">
-                            User and Access Management
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="cli-workflows.html"
-                           class="nav-link">
-                            CLI Workflows
+                            Fix Setup and Generation Problems
                         </a>
                     </li>
                     
@@ -189,6 +113,13 @@
                 <ul class="nav-group-pages">
                     
                     <li>
+                        <a href="configuration-reference.html"
+                           class="nav-link">
+                            Configuration Reference
+                        </a>
+                    </li>
+                    
+                    <li>
                         <a href="cli-command-reference.html"
                            class="nav-link active" aria-current="page">
                             CLI Command Reference
@@ -196,65 +127,16 @@
                     </li>
                     
                     <li>
-                        <a href="auth-api.html"
+                        <a href="http-api-reference.html"
                            class="nav-link">
-                            Authentication API
+                            HTTP API Reference
                         </a>
                     </li>
                     
                     <li>
-                        <a href="projects-api.html"
+                        <a href="websocket-reference.html"
                            class="nav-link">
-                            Projects API
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="admin-api.html"
-                           class="nav-link">
-                            Admin API
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="websocket-protocol.html"
-                           class="nav-link">
-                            WebSocket Protocol
-                        </a>
-                    </li>
-                    
-                </ul>
-            </div>
-            
-            <div class="nav-group">
-                <h3 class="nav-group-title">Operations</h3>
-                <ul class="nav-group-pages">
-                    
-                    <li>
-                        <a href="deployment-and-runtime.html"
-                           class="nav-link">
-                            Deployment and Runtime
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="testing-and-quality-checks.html"
-                           class="nav-link">
-                            Testing and Quality Checks
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="security-considerations.html"
-                           class="nav-link">
-                            Security Considerations
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="troubleshooting.html"
-                           class="nav-link">
-                            Troubleshooting
+                            WebSocket Reference
                         </a>
                     </li>
                     
@@ -283,9 +165,9 @@
                     ⚡ docs<span class="brand-accent">fy</span>
                 </a>
                 
-                <a href="https://github.com/myk-org/docsfy" target="_blank" rel="noopener noreferrer" class="top-bar-github" id="github-link" data-repo-url="https://github.com/myk-org/docsfy">
+                <a href="https://github.com/myk-org/docsfy.git" target="_blank" rel="noopener noreferrer" class="top-bar-github" id="github-link" data-repo-url="https://github.com/myk-org/docsfy.git">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
-                    <span class="github-stars" id="github-stars"></span>
+                    <span class="github-stars" id="github-stars" title="GitHub stars"></span>
                 </a>
                 
                 <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
@@ -308,389 +190,1048 @@
                          user-supplied input. XSS risk is minimal and accepted since
                          the AI generates the content, not end users. -->
                     <h1 id="cli-command-reference">CLI Command Reference</h1>
-<p><code>docsfy</code> is the command-line client for a running docsfy server. You use it to save connection profiles, start documentation generation, inspect existing outputs, download generated sites, and perform admin-only user and access management.</p>
-<p>In docsfy, a <em>variant</em> is one <code>project / branch / provider / model</code> combination. In admin or shared-access setups, the same project name can exist under different owners, which is why some commands also support <code>--owner</code>.</p>
-<p>Permissions at a glance:</p>
-<ul>
-<li><code>list</code>, <code>status</code>, and <code>download</code> are read-oriented commands for projects you own or have been granted access to.</li>
-<li><code>generate</code>, <code>delete</code>, and <code>abort</code> require a <code>user</code> or <code>admin</code> account.</li>
-<li><code>admin ...</code> commands require admin access.</li>
-</ul>
-<p>Examples on this page are taken from the repository's CLI tests and sample config.</p>
-<h2 id="command-summary">Command Summary</h2>
+<h2 id="docsfy"><code>docsfy</code></h2>
+<p><strong>Syntax:</strong> <code>docsfy [GLOBAL OPTIONS] COMMAND [ARGS]...</code></p>
 <table>
 <thead>
 <tr>
-<th>Command</th>
-<th>What it does</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>config</code></td>
-<td>Manage saved server profiles in <code>~/.config/docsfy/config.toml</code></td>
-</tr>
-<tr>
-<td><code>generate</code></td>
-<td>Start documentation generation for a Git repository</td>
-</tr>
-<tr>
-<td><code>list</code></td>
-<td>Show accessible projects and variants</td>
-</tr>
-<tr>
-<td><code>status</code></td>
-<td>Show detailed status for one project or one exact variant</td>
-</tr>
-<tr>
-<td><code>delete</code></td>
-<td>Delete a single variant or all variants of a project</td>
-</tr>
-<tr>
-<td><code>abort</code></td>
-<td>Stop an active generation run</td>
-</tr>
-<tr>
-<td><code>download</code></td>
-<td>Download a generated docs site as a tarball, or extract it to a directory</td>
-</tr>
-<tr>
-<td><code>admin users ...</code></td>
-<td>List, create, delete, and rotate user API keys</td>
-</tr>
-<tr>
-<td><code>admin access ...</code></td>
-<td>Grant, revoke, and inspect project access for other users</td>
-</tr>
-</tbody>
-</table>
-<h2 id="global-connection-options">Global Connection Options</h2>
-<p>All commands share the same connection options. The CLI resolves them in this order:</p>
-<ol>
-<li>Explicit CLI flags such as <code>--host</code>, <code>--username</code>, and <code>--password</code></li>
-<li>A named profile selected with <code>--server</code></li>
-<li>The default profile from <code>[default].server</code> in <code>~/.config/docsfy/config.toml</code></li>
-<li>An error if nothing is configured</li>
-</ol>
-<table>
-<thead>
-<tr>
-<th>Option</th>
-<th>Meaning</th>
+<th>Name</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td><code>--server</code>, <code>-s</code></td>
-<td>Use a named server profile from the config file</td>
+<td>string</td>
+<td>none</td>
+<td>Use a saved profile from <code>~/.config/docsfy/config.toml</code>.</td>
 </tr>
 <tr>
 <td><code>--host</code></td>
-<td>Override the host from the selected profile</td>
+<td>string</td>
+<td>none</td>
+<td>Override the profile host. When set, the CLI builds <code>scheme://host:port</code>; the scheme comes from the selected profile when available, otherwise <code>https</code>.</td>
 </tr>
 <tr>
 <td><code>--port</code></td>
-<td>Override the port when <code>--host</code> is used</td>
+<td>integer</td>
+<td><code>8000</code> when <code>--host</code> is used</td>
+<td>Port used with <code>--host</code>.</td>
 </tr>
 <tr>
 <td><code>--username</code>, <code>-u</code></td>
-<td>Override the configured username</td>
+<td>string</td>
+<td>none</td>
+<td>Override the profile username.</td>
 </tr>
 <tr>
 <td><code>--password</code>, <code>-p</code></td>
-<td>Override the configured password/API key</td>
+<td>string</td>
+<td>none</td>
+<td>Override the profile password/API key sent as the bearer token.</td>
+</tr>
+</tbody>
+</table>
+<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>--server<span class="w"> </span>prod<span class="w"> </span>status<span class="w"> </span>my-repo
+docsfy<span class="w"> </span>--host<span class="w"> </span>docsfy.example.com<span class="w"> </span>--port<span class="w"> </span><span class="m">443</span><span class="w"> </span>-u<span class="w"> </span>admin<span class="w"> </span>-p<span class="w"> </span>&lt;API_KEY&gt;<span class="w"> </span>health
+</code></pre></div>
+
+<p>Return value / effect:</p>
+<ul>
+<li>Dispatches to <code>health</code>, <code>config</code>, <code>generate</code>, <code>list</code>, <code>status</code>, <code>delete</code>, <code>abort</code>, <code>download</code>, <code>models</code>, or <code>admin</code>.</li>
+<li>With no subcommand, prints help.</li>
+<li>Applies the resolved connection settings to the selected subcommand.</li>
+</ul>
+<blockquote>
+<p><strong>Note:</strong> Connection resolution order is explicit CLI flags, then <code>--server</code>, then <code>[default].server</code> in <code>~/.config/docsfy/config.toml</code>, then an error if nothing is configured.</p>
+<p><strong>Note:</strong> Put global options before the subcommand. After commands such as <code>status</code>, <code>delete</code>, <code>abort</code>, and <code>download</code>, <code>-p</code> means <code>--provider</code>, not API key.</p>
+</blockquote>
+<h2 id="docsfy-health"><code>docsfy health</code></h2>
+<p><strong>Syntax:</strong> <code>docsfy [GLOBAL OPTIONS] health</code></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>None</td>
+<td>-</td>
+<td>-</td>
+<td>No command-specific parameters or options. Use global connection options before <code>health</code>.</td>
+</tr>
+</tbody>
+</table>
+<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>--server<span class="w"> </span>dev<span class="w"> </span>health
+docsfy<span class="w"> </span>--host<span class="w"> </span>localhost<span class="w"> </span>--port<span class="w"> </span><span class="m">8000</span><span class="w"> </span>-u<span class="w"> </span>admin<span class="w"> </span>-p<span class="w"> </span>&lt;API_KEY&gt;<span class="w"> </span>health
+</code></pre></div>
+
+<p>Return value / effect:</p>
+<ul>
+<li>Calls the server <code>/health</code> endpoint.</li>
+<li>Prints <code>Server: &lt;url&gt;</code> and <code>Status: &lt;value&gt;</code>.</li>
+<li>Exits non-zero if the server is unreachable, returns an HTTP error, or responds with non-JSON content.</li>
+</ul>
+<h2 id="docsfy-config"><code>docsfy config</code></h2>
+<p><code>docsfy config</code> is the CLI configuration command group for <code>~/.config/docsfy/config.toml</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Subcommand</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>docsfy config init</code></td>
+<td>Create or add a profile interactively.</td>
+</tr>
+<tr>
+<td><code>docsfy config show</code></td>
+<td>Print saved profiles with masked passwords.</td>
+</tr>
+<tr>
+<td><code>docsfy config set</code></td>
+<td>Update one dotted key in the config file.</td>
 </tr>
 </tbody>
 </table>
 <blockquote>
-<p><strong>Note:</strong> In CLI config and flags, the field is named <code>password</code>, but for docsfy this value is your API key.</p>
-<p><strong>Note:</strong> Global options go before the subcommand. That matters because <code>-p</code> is reused: before the subcommand it means API key, but after commands like <code>status</code>, <code>delete</code>, <code>abort</code>, and <code>download</code> it means <code>--provider</code>.</p>
-<p><strong>Tip:</strong> If you use <code>--host</code>, the CLI builds a full URL from host and port. The port defaults to <code>8000</code>, and the scheme comes from the selected profile when available; otherwise it defaults to <code>https</code>.</p>
+<p><strong>Warning:</strong> <code>~/.config/docsfy/config.toml</code> stores raw API keys.</p>
 </blockquote>
-<h2 id="config"><code>config</code></h2>
-<p><code>docsfy config</code> manages the CLI config file at <code>~/.config/docsfy/config.toml</code>.</p>
-<p>A sample config from the repository:</p>
-<div class="highlight"><pre><span></span><code><span class="k">[default]</span>
-<span class="n">server</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;dev&quot;</span>
-
-<span class="k">[servers.dev]</span>
-<span class="n">url</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;http://localhost:8000&quot;</span>
-<span class="n">username</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;admin&quot;</span>
-<span class="n">password</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;&lt;your-dev-key&gt;&quot;</span>
-
-<span class="k">[servers.prod]</span>
-<span class="n">url</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;https://docsfy.example.com&quot;</span>
-<span class="n">username</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;admin&quot;</span>
-<span class="n">password</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;&lt;your-prod-key&gt;&quot;</span>
-
-<span class="k">[servers.staging]</span>
-<span class="n">url</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;https://staging.docsfy.example.com&quot;</span>
-<span class="n">username</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;deployer&quot;</span>
-<span class="n">password</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;&lt;your-staging-key&gt;&quot;</span>
-</code></pre></div>
-
-<blockquote>
-<p><strong>Warning:</strong> This file contains credentials. The CLI writes it with owner-only permissions, and you should keep it private.</p>
-</blockquote>
-<h3 id="config-init"><code>config init</code></h3>
-<p><code>docsfy config init</code> is the interactive setup flow. It prompts for:</p>
-<ul>
-<li>Profile name, defaulting to <code>dev</code></li>
-<li>Server URL</li>
-<li>Username</li>
-<li>Password/API key</li>
-</ul>
-<p>If you are creating the first profile, it also becomes the default server. If you add another profile later, the existing default stays in place until you change it.</p>
+<h3 id="docsfy-config-init"><code>docsfy config init</code></h3>
+<p><strong>Syntax:</strong> <code>docsfy config init</code></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Profile name</code></td>
+<td>string</td>
+<td><code>dev</code></td>
+<td>Profile name stored under <code>[servers.&lt;profile&gt;]</code>.</td>
+</tr>
+<tr>
+<td><code>Server URL</code></td>
+<td>string</td>
+<td>none</td>
+<td>Full server URL, such as <code>https://docsfy.example.com</code>.</td>
+</tr>
+<tr>
+<td><code>Username</code></td>
+<td>string</td>
+<td>none</td>
+<td>Username saved with the profile.</td>
+</tr>
+<tr>
+<td><code>Password</code></td>
+<td>string</td>
+<td>none</td>
+<td>API key saved in the profile as <code>password</code>. Input is hidden.</td>
+</tr>
+</tbody>
+</table>
 <div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>config<span class="w"> </span>init
+<span class="c1"># Profile name [dev]: prod</span>
+<span class="c1"># Server URL: https://docsfy.example.com</span>
+<span class="c1"># Username: admin</span>
+<span class="c1"># Password: &lt;API_KEY&gt;</span>
 </code></pre></div>
 
-<h3 id="config-show"><code>config show</code></h3>
-<p><code>docsfy config show</code> prints the config file path, the current default profile, and each saved profile with its password/API key masked.</p>
+<p>Return value / effect:</p>
+<ul>
+<li>Creates <code>~/.config/docsfy/config.toml</code> if it does not exist.</li>
+<li>Writes the config directory with owner-only permissions and the file with owner read/write permissions.</li>
+<li>Adds <code>[servers.&lt;profile&gt;]</code>.</li>
+<li>Sets <code>[default].server</code> only when no default profile exists yet.</li>
+<li>Prints <code>Profile '&lt;profile&gt;' saved to ~/.config/docsfy/config.toml</code>.</li>
+</ul>
+<h3 id="docsfy-config-show"><code>docsfy config show</code></h3>
+<p><strong>Syntax:</strong> <code>docsfy config show</code></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>None</td>
+<td>-</td>
+<td>-</td>
+<td>No command-specific parameters or options.</td>
+</tr>
+</tbody>
+</table>
 <div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>config<span class="w"> </span>show
 </code></pre></div>
 
-<h3 id="config-set"><code>config set</code></h3>
-<p><code>docsfy config set</code> writes nested TOML keys directly.</p>
+<p>Return value / effect:</p>
+<ul>
+<li>Prints the config file path.</li>
+<li>Prints the current default server profile.</li>
+<li>Prints each saved profile with <code>URL</code>, <code>Username</code>, and a masked <code>Password</code>.</li>
+<li>Exits non-zero if the config file is missing or invalid TOML.</li>
+</ul>
+<h3 id="docsfy-config-set"><code>docsfy config set</code></h3>
+<p><strong>Syntax:</strong> <code>docsfy config set KEY VALUE</code></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>KEY</code></td>
+<td>string</td>
+<td>Required</td>
+<td>Dotted config key. Accepted prefixes are <code>default.</code> and <code>servers.</code>.</td>
+</tr>
+<tr>
+<td><code>VALUE</code></td>
+<td>string</td>
+<td>Required</td>
+<td>Value written to the selected key.</td>
+</tr>
+</tbody>
+</table>
 <div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>config<span class="w"> </span><span class="nb">set</span><span class="w"> </span>default.server<span class="w"> </span>prod
-docsfy<span class="w"> </span>config<span class="w"> </span><span class="nb">set</span><span class="w"> </span>servers.dev.url<span class="w"> </span>https://new-server.com
+docsfy<span class="w"> </span>config<span class="w"> </span><span class="nb">set</span><span class="w"> </span>servers.prod.url<span class="w"> </span>https://docsfy.example.com
+docsfy<span class="w"> </span>config<span class="w"> </span><span class="nb">set</span><span class="w"> </span>servers.prod.password<span class="w"> </span>&lt;API_KEY&gt;
 </code></pre></div>
 
-<p>Use it when you want to switch the default profile or update individual fields without re-running <code>config init</code>.</p>
+<p>Return value / effect:</p>
+<ul>
+<li>Updates one config value and prints <code>Updated &lt;KEY&gt;</code>.</li>
+<li>Creates missing intermediate tables on the path to <code>KEY</code>.</li>
+<li>Exits non-zero if the config file does not exist.</li>
+<li>Exits non-zero if <code>KEY</code> does not start with <code>default.</code> or <code>servers.</code>.</li>
+</ul>
 <blockquote>
-<p><strong>Note:</strong> <code>config set</code> expects dotted keys such as <code>default.server</code>, <code>servers.dev.url</code>, and <code>servers.dev.username</code>. It does not use shorthand keys like <code>server</code> or <code>api-key</code>.</p>
+<p><strong>Warning:</strong> <code>docsfy config set</code> writes the TOML key directly. It does not verify that a referenced profile exists.</p>
 </blockquote>
-<h2 id="generate"><code>generate</code></h2>
-<p><code>docsfy generate</code> starts documentation generation for a remote Git repository.</p>
-<p>The project name used by later commands is derived from the repository name. For example:</p>
-<ul>
-<li><code>https://github.com/myk-org/for-testing-only</code> becomes <code>for-testing-only</code></li>
-<li><code>https://github.com/org/my-repo.git</code> becomes <code>my-repo</code></li>
-<li><code>git@github.com:org/repo.git</code> becomes <code>repo</code></li>
-</ul>
-<p>Common options:</p>
-<ul>
-<li><code>--branch</code>, <code>-b</code>: Git branch to generate from. Defaults to <code>main</code>.</li>
-<li><code>--provider</code>: AI provider. Valid values in this codebase are <code>claude</code>, <code>gemini</code>, and <code>cursor</code>.</li>
-<li><code>--model</code>, <code>-m</code>: AI model name.</li>
-<li><code>--force</code>, <code>-f</code>: Force a full regeneration instead of reusing cached artifacts.</li>
-<li><code>--watch</code>, <code>-w</code>: Stream live generation progress.</li>
-</ul>
-<p>Examples:</p>
+<h2 id="project-commands">Project Commands</h2>
+<blockquote>
+<p><strong>Note:</strong> <code>generate</code>, <code>delete</code>, and <code>abort</code> require a <code>user</code> or <code>admin</code> account. <code>list</code>, <code>status</code>, <code>download</code>, and <code>models</code> are read-oriented commands.</p>
+</blockquote>
+<h3 id="docsfy-generate"><code>docsfy generate</code></h3>
+<p><strong>Syntax:</strong> <code>docsfy [GLOBAL OPTIONS] generate REPO_URL [OPTIONS]</code></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>REPO_URL</code></td>
+<td>string</td>
+<td>Required</td>
+<td>Remote Git URL. Accepted forms include <code>https://host/org/repo</code>, <code>https://host/org/repo.git</code>, <code>git@host:org/repo</code>, and <code>git@host:org/repo.git</code>.</td>
+</tr>
+<tr>
+<td><code>--branch</code>, <code>-b</code></td>
+<td>string</td>
+<td><code>main</code></td>
+<td>Git branch to generate. Branch names cannot contain <code>/</code>.</td>
+</tr>
+<tr>
+<td><code>--provider</code></td>
+<td>string</td>
+<td>server default</td>
+<td>AI provider. Valid values in this codebase are <code>claude</code>, <code>gemini</code>, and <code>cursor</code>.</td>
+</tr>
+<tr>
+<td><code>--model</code>, <code>-m</code></td>
+<td>string</td>
+<td>server default</td>
+<td>AI model name.</td>
+</tr>
+<tr>
+<td><code>--force</code>, <code>-f</code></td>
+<td>boolean</td>
+<td><code>false</code></td>
+<td>Force a full regeneration instead of reusing cached artifacts.</td>
+</tr>
+<tr>
+<td><code>--watch</code>, <code>-w</code></td>
+<td>boolean</td>
+<td><code>false</code></td>
+<td>Stream live generation progress over WebSocket after the request starts.</td>
+</tr>
+</tbody>
+</table>
 <div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>generate<span class="w"> </span>https://github.com/myk-org/for-testing-only<span class="w"> </span>--provider<span class="w"> </span>gemini<span class="w"> </span>--model<span class="w"> </span>gemini-2.5-flash<span class="w"> </span>--force
 docsfy<span class="w"> </span>generate<span class="w"> </span>https://github.com/myk-org/for-testing-only<span class="w"> </span>--branch<span class="w"> </span>dev<span class="w"> </span>--provider<span class="w"> </span>gemini<span class="w"> </span>--model<span class="w"> </span>gemini-2.5-flash<span class="w"> </span>--force<span class="w"> </span>--watch
 </code></pre></div>
 
-<p>What you can expect:</p>
+<p>Return value / effect:</p>
 <ul>
-<li>The CLI prints the derived project name, resolved branch, and initial status.</li>
-<li>With <code>--watch</code>, it listens for live progress updates such as <code>cloning</code>, <code>planning</code>, <code>incremental_planning</code>, <code>generating_pages</code>, <code>validating</code>, <code>cross_linking</code>, and <code>rendering</code>.</li>
-<li>Final statuses are <code>ready</code>, <code>error</code>, or <code>aborted</code>. A <code>ready</code> result can also mean docsfy determined the target variant was already up to date and skipped regeneration work.</li>
+<li>Starts generation and prints <code>Project</code>, <code>Branch</code>, and <code>Status</code>.</li>
+<li>Uses the repository name as the stored project name for later commands.</li>
+<li>With <code>--watch</code>, prints progress updates until the variant reaches <code>ready</code>, <code>error</code>, or <code>aborted</code>.</li>
+<li>Exits non-zero on validation, HTTP, or WebSocket errors.</li>
 </ul>
 <blockquote>
-<p><strong>Tip:</strong> <code>generate</code> takes a repository URL, but <code>status</code>, <code>delete</code>, <code>abort</code>, and <code>download</code> use the derived project name. For <code>https://github.com/myk-org/for-testing-only</code>, that name is <code>for-testing-only</code>.</p>
-<p><strong>Note:</strong> If you omit <code>--provider</code> or <code>--model</code>, the server default is used. In this codebase the current defaults are <code>cursor</code> and <code>gpt-5.4-xhigh-fast</code>, but deployments can override them.</p>
-<p><strong>Tip:</strong> When using <code>--watch</code>, pass both <code>--provider</code> and <code>--model</code> explicitly so the CLI can subscribe to the exact variant immediately.</p>
-<p><strong>Warning:</strong> Branch names cannot contain slashes. Use names like <code>release-1.x</code>, not <code>release/1.x</code>.</p>
-<p><strong>Warning:</strong> The CLI <code>generate</code> command expects a Git repository URL, not a local filesystem path. Standard HTTPS remotes like <code>https://github.com/org/repo.git</code> and SSH remotes like <code>git@github.com:org/repo.git</code> are accepted, but the server rejects repository URLs that point to <code>localhost</code> or private-network addresses.</p>
+<p><strong>Note:</strong> When <code>--provider</code> or <code>--model</code> is omitted, the server default is used. In this repository, the code defaults are <code>cursor</code> and <code>gpt-5.4-xhigh-fast</code>, but deployments can override them.</p>
+<p><strong>Tip:</strong> When using <code>--watch</code>, pass both <code>--provider</code> and <code>--model</code> so the CLI can subscribe to the exact variant immediately.</p>
+<p><strong>Warning:</strong> The CLI <code>generate</code> command accepts remote Git URLs only. Local filesystem paths are not a CLI argument.</p>
+<p><strong>Warning:</strong> Repository URLs that target <code>localhost</code> or private-network addresses are rejected by the server.</p>
 </blockquote>
-<h2 id="list"><code>list</code></h2>
-<p><code>docsfy list</code> shows the accessible projects and variants in a table. The table includes these columns:</p>
-<ul>
-<li><code>NAME</code></li>
-<li><code>BRANCH</code></li>
-<li><code>PROVIDER</code></li>
-<li><code>MODEL</code></li>
-<li><code>STATUS</code></li>
-<li><code>OWNER</code></li>
-<li><code>PAGES</code></li>
-</ul>
-<p>Examples:</p>
-<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>list
-docsfy<span class="w"> </span>list<span class="w"> </span>--status<span class="w"> </span>ready
-docsfy<span class="w"> </span>list<span class="w"> </span>--provider<span class="w"> </span>cursor
+<h3 id="docsfy-list"><code>docsfy list</code></h3>
+<p><strong>Syntax:</strong> <code>docsfy [GLOBAL OPTIONS] list [OPTIONS]</code></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--status</code></td>
+<td>string</td>
+<td>all statuses</td>
+<td>Filter by stored status value. The codebase uses <code>generating</code>, <code>ready</code>, <code>error</code>, and <code>aborted</code>.</td>
+</tr>
+<tr>
+<td><code>--provider</code></td>
+<td>string</td>
+<td>all providers</td>
+<td>Filter by AI provider.</td>
+</tr>
+<tr>
+<td><code>--json</code></td>
+<td>boolean</td>
+<td><code>false</code></td>
+<td>Output JSON instead of the table view.</td>
+</tr>
+</tbody>
+</table>
+<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>list<span class="w"> </span>--status<span class="w"> </span>ready<span class="w"> </span>--provider<span class="w"> </span>cursor
 docsfy<span class="w"> </span>list<span class="w"> </span>--json
 </code></pre></div>
 
-<p>Use <code>--status</code> and <code>--provider</code> to narrow the result set before printing. In practice, project statuses used by the codebase are <code>generating</code>, <code>ready</code>, <code>error</code>, and <code>aborted</code>.</p>
-<p>For non-admin users, <code>list</code> includes projects you own plus projects that have been shared with you. For admins, it shows everything.</p>
-<h2 id="status"><code>status</code></h2>
-<p><code>docsfy status</code> shows detailed information for one project.</p>
-<p>With just the project name, it shows all matching variants you can access. If you provide <code>--branch</code>, <code>--provider</code>, and <code>--model</code> together, it fetches one exact variant instead.</p>
-<p>Examples:</p>
+<p>Return value / effect:</p>
+<ul>
+<li>Prints a table with <code>NAME</code>, <code>BRANCH</code>, <code>PROVIDER</code>, <code>MODEL</code>, <code>STATUS</code>, <code>OWNER</code>, and <code>PAGES</code>.</li>
+<li><code>--json</code> outputs an array of project/variant objects.</li>
+<li>Includes projects the user owns and projects shared with the user.</li>
+<li>Prints <code>No projects found.</code> when nothing matches.</li>
+</ul>
+<h3 id="docsfy-status"><code>docsfy status</code></h3>
+<p><strong>Syntax:</strong> <code>docsfy [GLOBAL OPTIONS] status NAME [OPTIONS]</code></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>NAME</code></td>
+<td>string</td>
+<td>Required</td>
+<td>Stored project name, such as <code>for-testing-only</code>.</td>
+</tr>
+<tr>
+<td><code>--branch</code>, <code>-b</code></td>
+<td>string</td>
+<td>all branches</td>
+<td>Filter by branch. When combined with <code>--provider</code> and <code>--model</code>, targets one exact variant.</td>
+</tr>
+<tr>
+<td><code>--provider</code>, <code>-p</code></td>
+<td>string</td>
+<td>all providers</td>
+<td>Filter by provider. When combined with <code>--branch</code> and <code>--model</code>, targets one exact variant.</td>
+</tr>
+<tr>
+<td><code>--model</code>, <code>-m</code></td>
+<td>string</td>
+<td>all models</td>
+<td>Filter by model. When combined with <code>--branch</code> and <code>--provider</code>, targets one exact variant.</td>
+</tr>
+<tr>
+<td><code>--owner</code></td>
+<td>string</td>
+<td>none</td>
+<td>Owner disambiguation for exact variant lookups.</td>
+</tr>
+<tr>
+<td><code>--json</code></td>
+<td>boolean</td>
+<td><code>false</code></td>
+<td>Output JSON instead of plain text.</td>
+</tr>
+</tbody>
+</table>
 <div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>status<span class="w"> </span><span class="k">for</span>-testing-only
-docsfy<span class="w"> </span>status<span class="w"> </span>my-repo<span class="w"> </span>-b<span class="w"> </span>main<span class="w"> </span>-p<span class="w"> </span>cursor<span class="w"> </span>-m<span class="w"> </span>gpt-5
+docsfy<span class="w"> </span>status<span class="w"> </span><span class="k">for</span>-testing-only<span class="w"> </span>--branch<span class="w"> </span>main<span class="w"> </span>--provider<span class="w"> </span>cursor<span class="w"> </span>--model<span class="w"> </span>gpt-5<span class="w"> </span>--json
 </code></pre></div>
 
-<p>Useful fields in the output include:</p>
+<p>Return value / effect:</p>
 <ul>
-<li>Status</li>
-<li>Owner</li>
-<li>Page count</li>
-<li>Last generated time</li>
-<li>Short commit SHA</li>
-<li>Current stage</li>
-<li>Error message, when present</li>
+<li>With only <code>NAME</code>, prints all accessible variants for that project.</li>
+<li>With <code>--branch</code>, <code>--provider</code>, and <code>--model</code> together, prints one exact variant.</li>
+<li>Plain text output can include <code>Status</code>, <code>Owner</code>, <code>Pages</code>, <code>Updated</code>, short <code>Commit</code>, <code>Stage</code>, and <code>Error</code>.</li>
+<li><code>--json</code> outputs either <code>{ "name": NAME, "variants": [...] }</code> or a single variant object.</li>
+<li>Prints <code>No variants found for '&lt;NAME&gt;'.</code> when filters remove every result.</li>
 </ul>
 <blockquote>
-<p><strong>Note:</strong> A <code>ready</code> variant can still show <code>Stage: up_to_date</code> when docsfy determines that nothing meaningful changed and no regeneration work was needed.</p>
-<p><strong>Note:</strong> <code>--owner</code> is mainly useful for admins when you are querying one fully qualified variant and need to disambiguate between multiple owners.</p>
-<p><strong>Tip:</strong> If you want one exact variant, provide all three selectors together: <code>--branch</code>, <code>--provider</code>, and <code>--model</code>.</p>
+<p><strong>Note:</strong> <code>--owner</code> is used only when <code>--branch</code>, <code>--provider</code>, and <code>--model</code> are all present. It does not change the broad project view.</p>
+<p><strong>Tip:</strong> <code>status</code> accepts partial filters. <code>--branch</code> alone, <code>--provider</code> alone, and other partial combinations are valid.</p>
 </blockquote>
-<h2 id="delete"><code>delete</code></h2>
-<p><code>docsfy delete</code> removes either one exact variant or every variant for a project within one owner scope.</p>
-<p>Common options:</p>
-<ul>
-<li><code>--branch</code>, <code>-b</code>: Variant branch</li>
-<li><code>--provider</code>, <code>-p</code>: Variant provider</li>
-<li><code>--model</code>, <code>-m</code>: Variant model</li>
-<li><code>--owner</code>: Project owner. Required on admin deletes because delete routes are owner-scoped, even when the rest of the variant is fully specified.</li>
-<li><code>--all</code>: Delete all variants for the project within that owner scope</li>
-<li><code>--yes</code>, <code>-y</code>: Skip the confirmation prompt</li>
-</ul>
-<p>Examples:</p>
+<h3 id="docsfy-delete"><code>docsfy delete</code></h3>
+<p><strong>Syntax:</strong> <code>docsfy [GLOBAL OPTIONS] delete NAME [OPTIONS]</code></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>NAME</code></td>
+<td>string</td>
+<td>Required</td>
+<td>Stored project name.</td>
+</tr>
+<tr>
+<td><code>--branch</code>, <code>-b</code></td>
+<td>string</td>
+<td>none</td>
+<td>Variant branch. Must be used with <code>--provider</code> and <code>--model</code> for exact variant deletion.</td>
+</tr>
+<tr>
+<td><code>--provider</code>, <code>-p</code></td>
+<td>string</td>
+<td>none</td>
+<td>Variant provider. Must be used with <code>--branch</code> and <code>--model</code> for exact variant deletion.</td>
+</tr>
+<tr>
+<td><code>--model</code>, <code>-m</code></td>
+<td>string</td>
+<td>none</td>
+<td>Variant model. Must be used with <code>--branch</code> and <code>--provider</code> for exact variant deletion.</td>
+</tr>
+<tr>
+<td><code>--owner</code></td>
+<td>string</td>
+<td>none</td>
+<td>Required for admin delete requests. Ignored for non-admin users.</td>
+</tr>
+<tr>
+<td><code>--all</code></td>
+<td>boolean</td>
+<td><code>false</code></td>
+<td>Delete all variants for the project within one owner scope.</td>
+</tr>
+<tr>
+<td><code>--yes</code>, <code>-y</code></td>
+<td>boolean</td>
+<td><code>false</code></td>
+<td>Skip the confirmation prompt.</td>
+</tr>
+</tbody>
+</table>
 <div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>delete<span class="w"> </span><span class="k">for</span>-testing-only<span class="w"> </span>--branch<span class="w"> </span>dev<span class="w"> </span>--provider<span class="w"> </span>gemini<span class="w"> </span>--model<span class="w"> </span>gemini-2.0-flash<span class="w"> </span>--yes
 docsfy<span class="w"> </span>delete<span class="w"> </span>my-repo<span class="w"> </span>--all<span class="w"> </span>--yes
 </code></pre></div>
 
-<p>If you leave off <code>--yes</code>, the CLI asks for confirmation before deleting anything.</p>
-<blockquote>
-<p><strong>Warning:</strong> Use either <code>--all</code> or the full variant selector (<code>--branch</code>, <code>--provider</code>, and <code>--model</code>). Do not combine them.</p>
-<p><strong>Warning:</strong> The server refuses deletion while generation is in progress. Abort the running variant first, then retry the delete.</p>
-</blockquote>
-<h2 id="abort"><code>abort</code></h2>
-<p><code>docsfy abort</code> stops an active generation run.</p>
-<p>You can use it in two ways:</p>
+<p>Return value / effect:</p>
 <ul>
-<li>By project name alone, if there is only one active generation for that project</li>
-<li>By exact variant, using <code>--branch</code>, <code>--provider</code>, and <code>--model</code></li>
+<li>Deletes one exact variant when <code>--branch</code>, <code>--provider</code>, and <code>--model</code> are all present.</li>
+<li>Deletes all variants for one project/owner scope when <code>--all</code> is set.</li>
+<li>Prompts for confirmation unless <code>--yes</code> is used.</li>
+<li>Prints <code>Deleted variant '&lt;name&gt;/&lt;branch&gt;/&lt;provider&gt;/&lt;model&gt;'.</code> or <code>Deleted all variants of '&lt;name&gt;'.</code></li>
+<li>Exits non-zero if the target is missing, still generating, or invalidly specified.</li>
 </ul>
-<p>Examples:</p>
+<blockquote>
+<p><strong>Warning:</strong> Use either <code>--all</code> or the full variant selector. Do not combine them.</p>
+<p><strong>Warning:</strong> Admin deletes require <code>--owner</code>, even when the branch, provider, and model are fully specified.</p>
+</blockquote>
+<h3 id="docsfy-abort"><code>docsfy abort</code></h3>
+<p><strong>Syntax:</strong> <code>docsfy [GLOBAL OPTIONS] abort NAME [OPTIONS]</code></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>NAME</code></td>
+<td>string</td>
+<td>Required</td>
+<td>Stored project name.</td>
+</tr>
+<tr>
+<td><code>--branch</code>, <code>-b</code></td>
+<td>string</td>
+<td>none</td>
+<td>Variant branch. Must be supplied together with <code>--provider</code> and <code>--model</code> for exact variant aborts.</td>
+</tr>
+<tr>
+<td><code>--provider</code>, <code>-p</code></td>
+<td>string</td>
+<td>none</td>
+<td>Variant provider. Must be supplied together with <code>--branch</code> and <code>--model</code> for exact variant aborts.</td>
+</tr>
+<tr>
+<td><code>--model</code>, <code>-m</code></td>
+<td>string</td>
+<td>none</td>
+<td>Variant model. Must be supplied together with <code>--branch</code> and <code>--provider</code> for exact variant aborts.</td>
+</tr>
+<tr>
+<td><code>--owner</code></td>
+<td>string</td>
+<td>none</td>
+<td>Owner disambiguation for exact variant aborts.</td>
+</tr>
+</tbody>
+</table>
 <div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>abort<span class="w"> </span>my-repo
 docsfy<span class="w"> </span>abort<span class="w"> </span><span class="k">for</span>-testing-only<span class="w"> </span>--branch<span class="w"> </span>main<span class="w"> </span>--provider<span class="w"> </span>gemini<span class="w"> </span>--model<span class="w"> </span>gemini-2.5-flash
 </code></pre></div>
 
-<p>When the abort succeeds, the variant ends up in <code>aborted</code> status.</p>
+<p>Return value / effect:</p>
+<ul>
+<li>With only <code>NAME</code>, aborts the single active generation for that project name.</li>
+<li>With the full selector, aborts that exact variant.</li>
+<li>Prints <code>Aborted generation for '&lt;name&gt;'.</code> or <code>Aborted generation for '&lt;name&gt;/&lt;branch&gt;/&lt;provider&gt;/&lt;model&gt;'.</code></li>
+<li>Successful aborts transition the variant to <code>aborted</code>.</li>
+<li>Exits non-zero if the target is not generating, ambiguously specified, or unavailable.</li>
+</ul>
 <blockquote>
-<p><strong>Tip:</strong> If more than one active variant exists for the same project name, the project-level form is ambiguous. In that case, retry with <code>--branch</code>, <code>--provider</code>, and <code>--model</code>. Admins may also need <code>--owner</code> for someone else's variant.</p>
+<p><strong>Warning:</strong> Project-level abort fails when more than one active variant matches the same project name.</p>
+<p><strong>Note:</strong> <code>--owner</code> only affects fully qualified variant aborts. It does not change project-level aborts.</p>
 </blockquote>
-<h2 id="download"><code>download</code></h2>
-<p><code>docsfy download</code> fetches generated documentation for a project.</p>
-<p>You can use it in two modes:</p>
-<ul>
-<li>Without variant selectors: download the latest ready variant you can access</li>
-<li>With <code>--branch</code>, <code>--provider</code>, and <code>--model</code>: download one exact variant</li>
-</ul>
-<p>Common options:</p>
-<ul>
-<li><code>--branch</code>, <code>-b</code>: Variant branch</li>
-<li><code>--provider</code>, <code>-p</code>: Variant provider</li>
-<li><code>--model</code>, <code>-m</code>: Variant model</li>
-<li><code>--owner</code>: Useful for admins when downloading a specific variant owned by someone else</li>
-<li><code>--output</code>, <code>-o</code>: Extract into a directory instead of saving a tarball in the current directory</li>
-</ul>
-<p>Example:</p>
-<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>download<span class="w"> </span>my-repo<span class="w"> </span>-b<span class="w"> </span>main<span class="w"> </span>-p<span class="w"> </span>cursor<span class="w"> </span>-m<span class="w"> </span>gpt-5
+<h3 id="docsfy-download"><code>docsfy download</code></h3>
+<p><strong>Syntax:</strong> <code>docsfy [GLOBAL OPTIONS] download NAME [OPTIONS]</code></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>NAME</code></td>
+<td>string</td>
+<td>Required</td>
+<td>Stored project name.</td>
+</tr>
+<tr>
+<td><code>--branch</code>, <code>-b</code></td>
+<td>string</td>
+<td>none</td>
+<td>Variant branch. Must be supplied together with <code>--provider</code> and <code>--model</code> for exact variant downloads.</td>
+</tr>
+<tr>
+<td><code>--provider</code>, <code>-p</code></td>
+<td>string</td>
+<td>none</td>
+<td>Variant provider. Must be supplied together with <code>--branch</code> and <code>--model</code> for exact variant downloads.</td>
+</tr>
+<tr>
+<td><code>--model</code>, <code>-m</code></td>
+<td>string</td>
+<td>none</td>
+<td>Variant model. Must be supplied together with <code>--branch</code> and <code>--provider</code> for exact variant downloads.</td>
+</tr>
+<tr>
+<td><code>--owner</code></td>
+<td>string</td>
+<td>none</td>
+<td>Owner disambiguation for exact variant downloads.</td>
+</tr>
+<tr>
+<td><code>--output</code>, <code>-o</code></td>
+<td>string</td>
+<td>none</td>
+<td>Extract into a directory instead of saving a <code>.tar.gz</code> archive in the current directory.</td>
+</tr>
+</tbody>
+</table>
+<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>download<span class="w"> </span>my-repo
+docsfy<span class="w"> </span>download<span class="w"> </span>my-repo<span class="w"> </span>--branch<span class="w"> </span>main<span class="w"> </span>--provider<span class="w"> </span>cursor<span class="w"> </span>--model<span class="w"> </span>gpt-5<span class="w"> </span>--output<span class="w"> </span>./site
 </code></pre></div>
 
+<p>Return value / effect:</p>
+<ul>
+<li>With no variant selector, downloads the latest ready variant visible to the user.</li>
+<li>With the full selector, downloads that exact variant.</li>
+<li>Without <code>--output</code>, saves an archive in the current directory.</li>
+<li>With <code>--output</code>, creates the directory if needed, downloads to a temporary archive, and extracts the archive there.</li>
+<li>Prints <code>Downloaded to &lt;path&gt;</code> or <code>Extracted to &lt;dir&gt;</code>.</li>
+</ul>
 <p>Archive naming:</p>
 <ul>
-<li>Exact variant download: <code>&lt;project&gt;-&lt;branch&gt;-&lt;provider&gt;-&lt;model&gt;-docs.tar.gz</code></li>
 <li>Project-level download: <code>&lt;project&gt;-docs.tar.gz</code></li>
+<li>Exact variant download: <code>&lt;project&gt;-&lt;branch&gt;-&lt;provider&gt;-&lt;model&gt;-docs.tar.gz</code></li>
 </ul>
-<p>When you pass <code>--output</code>, the CLI creates the directory if needed, downloads the archive to a temporary file, and extracts it there.</p>
 <blockquote>
-<p><strong>Tip:</strong> If a project has multiple variants, or if you are an admin working across multiple owners, prefer the fully qualified form with <code>--branch</code>, <code>--provider</code>, and <code>--model</code> so you know exactly which archive you are getting.</p>
-<p><strong>Warning:</strong> Only ready variants can be downloaded.</p>
+<p><strong>Warning:</strong> Only <code>ready</code> variants can be downloaded.</p>
+<p><strong>Warning:</strong> Use all three variant selectors together or omit all three.</p>
+<p><strong>Note:</strong> <code>--owner</code> only affects fully qualified variant downloads. It does not change project-level downloads.</p>
 </blockquote>
-<h2 id="admin"><code>admin</code></h2>
-<p>All <code>admin</code> subcommands require admin credentials.</p>
-<h3 id="admin-users"><code>admin users</code></h3>
-<p><code>admin users</code> manages docsfy accounts. Valid roles are:</p>
+<h3 id="docsfy-models"><code>docsfy models</code></h3>
+<p><strong>Syntax:</strong> <code>docsfy [GLOBAL OPTIONS] models [OPTIONS]</code></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--provider</code>, <code>-P</code></td>
+<td>string</td>
+<td>all providers</td>
+<td>Filter to one provider. Valid providers in this codebase are <code>claude</code>, <code>gemini</code>, and <code>cursor</code>.</td>
+</tr>
+<tr>
+<td><code>--json</code>, <code>-j</code></td>
+<td>boolean</td>
+<td><code>false</code></td>
+<td>Output JSON instead of plain text.</td>
+</tr>
+</tbody>
+</table>
+<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>models
+docsfy<span class="w"> </span>models<span class="w"> </span>--provider<span class="w"> </span>cursor<span class="w"> </span>--json
+</code></pre></div>
+
+<p>Return value / effect:</p>
 <ul>
-<li><code>admin</code></li>
-<li><code>user</code></li>
-<li><code>viewer</code></li>
+<li>Plain text output groups known models under each provider.</li>
+<li>Marks the current default provider and default model with <code>(default)</code>.</li>
+<li>Shows <code>(no models used yet)</code> for providers with no completed ready variants.</li>
+<li><code>--json</code> outputs <code>{ "providers": [...], "default_provider": "...", "default_model": "...", "known_models": {...} }</code>.</li>
+<li>With <code>--provider</code>, output is filtered to one provider. In JSON mode, <code>default_provider</code> and <code>default_model</code> remain present even when the provider list is filtered.</li>
+<li>Exits non-zero for an unknown provider.</li>
 </ul>
-<p>Examples:</p>
+<blockquote>
+<p><strong>Note:</strong> <code>known_models</code> is built from ready variants only.</p>
+</blockquote>
+<h2 id="docsfy-admin"><code>docsfy admin</code></h2>
+<p><code>docsfy admin</code> is the admin-only command group.</p>
+<table>
+<thead>
+<tr>
+<th>Group</th>
+<th>Subcommands</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>docsfy admin users</code></td>
+<td><code>list</code>, <code>create</code>, <code>delete</code>, <code>rotate-key</code></td>
+</tr>
+<tr>
+<td><code>docsfy admin access</code></td>
+<td><code>list</code>, <code>grant</code>, <code>revoke</code></td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Warning:</strong> All <code>admin ...</code> commands require admin credentials.</p>
+</blockquote>
+<h3 id="docsfy-admin-users-list"><code>docsfy admin users list</code></h3>
+<p><strong>Syntax:</strong> <code>docsfy [GLOBAL OPTIONS] admin users list [OPTIONS]</code></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--json</code></td>
+<td>boolean</td>
+<td><code>false</code></td>
+<td>Output JSON instead of the table view.</td>
+</tr>
+</tbody>
+</table>
 <div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>admin<span class="w"> </span>users<span class="w"> </span>list
-docsfy<span class="w"> </span>admin<span class="w"> </span>users<span class="w"> </span>create<span class="w"> </span>cli-test-user<span class="w"> </span>--role<span class="w"> </span>user
-docsfy<span class="w"> </span>admin<span class="w"> </span>users<span class="w"> </span>delete<span class="w"> </span>cli-test-user<span class="w"> </span>--yes
-docsfy<span class="w"> </span>admin<span class="w"> </span>users<span class="w"> </span>rotate-key<span class="w"> </span>alice
+docsfy<span class="w"> </span>admin<span class="w"> </span>users<span class="w"> </span>list<span class="w"> </span>--json
 </code></pre></div>
 
-<p>What each subcommand does:</p>
+<p>Return value / effect:</p>
 <ul>
-<li><code>list</code>: Show all users in a table, or JSON with <code>--json</code></li>
-<li><code>create</code>: Create a user and print the generated API key; <code>--role</code> defaults to <code>user</code></li>
-<li><code>delete</code>: Delete a user; prompts unless you pass <code>--yes</code></li>
-<li><code>rotate-key</code>: Rotate a user's API key; use <code>--new-key</code> to provide your own key, or omit it to generate one automatically</li>
+<li>Prints a table with <code>USERNAME</code>, <code>ROLE</code>, and <code>CREATED</code>.</li>
+<li><code>--json</code> outputs an array of user objects with <code>id</code>, <code>username</code>, <code>role</code>, and <code>created_at</code>.</li>
+<li>Prints <code>No users found.</code> when the user list is empty.</li>
 </ul>
-<p>Practical details:</p>
+<h3 id="docsfy-admin-users-create"><code>docsfy admin users create</code></h3>
+<p><strong>Syntax:</strong> <code>docsfy [GLOBAL OPTIONS] admin users create USERNAME [OPTIONS]</code></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>USERNAME</code></td>
+<td>string</td>
+<td>Required</td>
+<td>Username to create. Must be 2-50 characters, start with an alphanumeric character, and use only alphanumerics, <code>.</code>, <code>_</code>, or <code>-</code>.</td>
+</tr>
+<tr>
+<td><code>--role</code>, <code>-r</code></td>
+<td>string</td>
+<td><code>user</code></td>
+<td>User role. Valid values are <code>admin</code>, <code>user</code>, and <code>viewer</code>.</td>
+</tr>
+<tr>
+<td><code>--json</code></td>
+<td>boolean</td>
+<td><code>false</code></td>
+<td>Output JSON instead of plain text.</td>
+</tr>
+</tbody>
+</table>
+<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>admin<span class="w"> </span>users<span class="w"> </span>create<span class="w"> </span>alice<span class="w"> </span>--role<span class="w"> </span>viewer
+docsfy<span class="w"> </span>admin<span class="w"> </span>users<span class="w"> </span>create<span class="w"> </span>alice<span class="w"> </span>--role<span class="w"> </span>user<span class="w"> </span>--json
+</code></pre></div>
+
+<p>Return value / effect:</p>
 <ul>
-<li>Usernames must be 2-50 characters, start with an alphanumeric character, and may include <code>.</code>, <code>_</code>, and <code>-</code></li>
-<li>The username <code>admin</code> is reserved</li>
-<li>Deleting a user also removes their sessions, owned projects, and related access grants</li>
-<li>Rotating a key invalidates that user's existing sessions</li>
+<li>Creates the user account.</li>
+<li>Plain text output prints <code>User created</code>, <code>Role</code>, and <code>API Key</code>.</li>
+<li><code>--json</code> outputs <code>{ "username": "...", "api_key": "...", "role": "..." }</code>.</li>
+<li>Exits non-zero for invalid usernames, duplicate usernames, reserved usernames, or invalid roles.</li>
 </ul>
 <blockquote>
-<p><strong>Warning:</strong> <code>create</code> and <code>rotate-key</code> show the API key only once. Save it immediately.</p>
-<p><strong>Warning:</strong> You cannot delete your own admin account, and the server blocks deleting a user while they have a generation in progress.</p>
+<p><strong>Warning:</strong> The username <code>admin</code> is reserved.</p>
+<p><strong>Warning:</strong> The API key is shown once. Save it immediately.</p>
 </blockquote>
-<h3 id="admin-access"><code>admin access</code></h3>
-<p><code>admin access</code> manages project sharing. Access is project-level and owner-scoped, which means a grant applies to all variants of that project for that owner.</p>
-<p>Examples:</p>
+<h3 id="docsfy-admin-users-delete"><code>docsfy admin users delete</code></h3>
+<p><strong>Syntax:</strong> <code>docsfy [GLOBAL OPTIONS] admin users delete USERNAME [OPTIONS]</code></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>USERNAME</code></td>
+<td>string</td>
+<td>Required</td>
+<td>Username to delete.</td>
+</tr>
+<tr>
+<td><code>--yes</code>, <code>-y</code></td>
+<td>boolean</td>
+<td><code>false</code></td>
+<td>Skip the confirmation prompt.</td>
+</tr>
+</tbody>
+</table>
+<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>admin<span class="w"> </span>users<span class="w"> </span>delete<span class="w"> </span>alice<span class="w"> </span>--yes
+</code></pre></div>
+
+<p>Return value / effect:</p>
+<ul>
+<li>Prompts for confirmation unless <code>--yes</code> is used.</li>
+<li>Deletes the user account.</li>
+<li>Deletes that user's sessions, owned projects, and related access grants.</li>
+<li>Prints <code>Deleted user '&lt;username&gt;'.</code> on success.</li>
+<li>Exits non-zero when the user is missing or cannot be deleted.</li>
+</ul>
+<blockquote>
+<p><strong>Warning:</strong> You cannot delete your own admin account.</p>
+<p><strong>Warning:</strong> A user cannot be deleted while one of their generations is still in progress.</p>
+</blockquote>
+<h3 id="docsfy-admin-users-rotate-key"><code>docsfy admin users rotate-key</code></h3>
+<p><strong>Syntax:</strong> <code>docsfy [GLOBAL OPTIONS] admin users rotate-key USERNAME [OPTIONS]</code></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>USERNAME</code></td>
+<td>string</td>
+<td>Required</td>
+<td>Username whose API key will be rotated.</td>
+</tr>
+<tr>
+<td><code>--new-key</code></td>
+<td>string</td>
+<td>auto-generated key</td>
+<td>Set a specific replacement API key. Custom keys must be at least 16 characters long.</td>
+</tr>
+<tr>
+<td><code>--json</code></td>
+<td>boolean</td>
+<td><code>false</code></td>
+<td>Output JSON instead of plain text.</td>
+</tr>
+</tbody>
+</table>
+<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>admin<span class="w"> </span>users<span class="w"> </span>rotate-key<span class="w"> </span>alice
+docsfy<span class="w"> </span>admin<span class="w"> </span>users<span class="w"> </span>rotate-key<span class="w"> </span>alice<span class="w"> </span>--new-key<span class="w"> </span><span class="s2">&quot;my-very-secure-custom-password-123&quot;</span><span class="w"> </span>--json
+</code></pre></div>
+
+<p>Return value / effect:</p>
+<ul>
+<li>Generates a new API key when <code>--new-key</code> is omitted.</li>
+<li>Uses the supplied key when <code>--new-key</code> is present and valid.</li>
+<li>Invalidates the user's existing sessions.</li>
+<li>Plain text output prints <code>User</code> and <code>New API Key</code>.</li>
+<li><code>--json</code> outputs <code>{ "username": "...", "new_api_key": "..." }</code>.</li>
+</ul>
+<blockquote>
+<p><strong>Warning:</strong> The new API key is shown once. Save it immediately.</p>
+</blockquote>
+<h3 id="docsfy-admin-access-list"><code>docsfy admin access list</code></h3>
+<p><strong>Syntax:</strong> <code>docsfy [GLOBAL OPTIONS] admin access list PROJECT [OPTIONS]</code></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>PROJECT</code></td>
+<td>string</td>
+<td>Required</td>
+<td>Stored project name.</td>
+</tr>
+<tr>
+<td><code>--owner</code></td>
+<td>string</td>
+<td>Required</td>
+<td>Owner whose project access list should be shown.</td>
+</tr>
+<tr>
+<td><code>--json</code></td>
+<td>boolean</td>
+<td><code>false</code></td>
+<td>Output JSON instead of plain text.</td>
+</tr>
+</tbody>
+</table>
 <div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>admin<span class="w"> </span>access<span class="w"> </span>list<span class="w"> </span>my-repo<span class="w"> </span>--owner<span class="w"> </span>admin
-docsfy<span class="w"> </span>admin<span class="w"> </span>access<span class="w"> </span>grant<span class="w"> </span>my-repo<span class="w"> </span>--username<span class="w"> </span>alice<span class="w"> </span>--owner<span class="w"> </span>admin
-docsfy<span class="w"> </span>admin<span class="w"> </span>access<span class="w"> </span>revoke<span class="w"> </span>my-repo<span class="w"> </span>--username<span class="w"> </span>alice<span class="w"> </span>--owner<span class="w"> </span>admin
+docsfy<span class="w"> </span>admin<span class="w"> </span>access<span class="w"> </span>list<span class="w"> </span>my-repo<span class="w"> </span>--owner<span class="w"> </span>admin<span class="w"> </span>--json
 </code></pre></div>
 
-<p>What each subcommand does:</p>
+<p>Return value / effect:</p>
 <ul>
-<li><code>list</code>: Show which users currently have access to a project; supports <code>--json</code></li>
-<li><code>grant</code>: Give a user access to a project owned by a specific owner</li>
-<li><code>revoke</code>: Remove that access again</li>
+<li>Prints the project name, owner, and current access list.</li>
+<li>Prints <code>No access grants.</code> when the list is empty.</li>
+<li><code>--json</code> outputs <code>{ "project": "...", "owner": "...", "users": [...] }</code>.</li>
 </ul>
 <blockquote>
-<p><strong>Note:</strong> <code>--owner</code> is required on all <code>admin access</code> commands, because project sharing is scoped to a specific owner.</p>
+<p><strong>Note:</strong> Access grants are project-level and owner-scoped. One grant covers all variants of that project for the specified owner.</p>
 </blockquote>
-<h2 id="json-output-and-exit-behavior">JSON Output and Exit Behavior</h2>
-<p>Commands that support <code>--json</code>:</p>
+<h3 id="docsfy-admin-access-grant"><code>docsfy admin access grant</code></h3>
+<p><strong>Syntax:</strong> <code>docsfy [GLOBAL OPTIONS] admin access grant PROJECT [OPTIONS]</code></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>PROJECT</code></td>
+<td>string</td>
+<td>Required</td>
+<td>Stored project name.</td>
+</tr>
+<tr>
+<td><code>--username</code></td>
+<td>string</td>
+<td>Required</td>
+<td>Username to grant access to.</td>
+</tr>
+<tr>
+<td><code>--owner</code></td>
+<td>string</td>
+<td>Required</td>
+<td>Owner whose project will be shared.</td>
+</tr>
+</tbody>
+</table>
+<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>admin<span class="w"> </span>access<span class="w"> </span>grant<span class="w"> </span>my-repo<span class="w"> </span>--username<span class="w"> </span>alice<span class="w"> </span>--owner<span class="w"> </span>admin
+</code></pre></div>
+
+<p>Return value / effect:</p>
+<ul>
+<li>Grants the named user access to the project for the specified owner.</li>
+<li>The grant applies to all variants of that project for that owner.</li>
+<li>Prints <code>Granted '&lt;username&gt;' access to '&lt;project&gt;' (owner: &lt;owner&gt;).</code></li>
+<li>Exits non-zero if the user does not exist or the project does not exist for that owner.</li>
+</ul>
+<h3 id="docsfy-admin-access-revoke"><code>docsfy admin access revoke</code></h3>
+<p><strong>Syntax:</strong> <code>docsfy [GLOBAL OPTIONS] admin access revoke PROJECT [OPTIONS]</code></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>PROJECT</code></td>
+<td>string</td>
+<td>Required</td>
+<td>Stored project name.</td>
+</tr>
+<tr>
+<td><code>--username</code></td>
+<td>string</td>
+<td>Required</td>
+<td>Username whose access will be removed.</td>
+</tr>
+<tr>
+<td><code>--owner</code></td>
+<td>string</td>
+<td>Required</td>
+<td>Owner whose project access grant will be removed.</td>
+</tr>
+</tbody>
+</table>
+<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>admin<span class="w"> </span>access<span class="w"> </span>revoke<span class="w"> </span>my-repo<span class="w"> </span>--username<span class="w"> </span>alice<span class="w"> </span>--owner<span class="w"> </span>admin
+</code></pre></div>
+
+<p>Return value / effect:</p>
+<ul>
+<li>Removes the named user's access grant for that project and owner.</li>
+<li>Prints <code>Revoked '&lt;username&gt;' access to '&lt;project&gt;' (owner: &lt;owner&gt;).</code></li>
+</ul>
+<h2 id="shared-exit-behavior">Shared Exit Behavior</h2>
+<table>
+<thead>
+<tr>
+<th>Condition</th>
+<th>Effect</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>HTTP <code>4xx</code> / <code>5xx</code></td>
+<td>Prints <code>Error (&lt;status&gt;): &lt;detail&gt;</code> to stderr and exits non-zero.</td>
+</tr>
+<tr>
+<td>HTTP redirect</td>
+<td>Prints a redirect error and exits non-zero.</td>
+</tr>
+<tr>
+<td><code>health</code> connection failure</td>
+<td>Prints <code>Server unreachable: ...</code> and exits non-zero.</td>
+</tr>
+<tr>
+<td><code>generate --watch</code> WebSocket timeout or close</td>
+<td>Prints an error to stderr and exits non-zero.</td>
+</tr>
+<tr>
+<td>Confirmation declined</td>
+<td>Prints <code>Aborted.</code> and exits without changing server state.</td>
+</tr>
+</tbody>
+</table>
+<p>Commands with JSON output:</p>
 <ul>
 <li><code>docsfy list</code></li>
 <li><code>docsfy status</code></li>
+<li><code>docsfy models</code></li>
 <li><code>docsfy admin users list</code></li>
 <li><code>docsfy admin users create</code></li>
 <li><code>docsfy admin users rotate-key</code></li>
 <li><code>docsfy admin access list</code></li>
 </ul>
-<p>When scripting:</p>
-<ul>
-<li><code>docsfy list --json</code> returns an array of project objects</li>
-<li><code>docsfy status --json</code> returns either one variant object or a <code>{name, variants}</code> object, depending on whether you fully qualified the variant</li>
-<li>HTTP and API failures are printed as <code>Error (&lt;status&gt;): ...</code> and return a non-zero exit code</li>
-<li>If you decline a confirmation prompt, the CLI prints <code>Aborted.</code> and exits without making changes</li>
-</ul>
 <h2 id="related-pages">Related Pages</h2>
 <ul>
-<li><a href="#">CLI Workflows</a></li>
-<li><a href="#">CLI Configuration</a></li>
-<li><a href="#">Generating Documentation</a></li>
-<li><a href="#">Viewing, Downloading, and Hosting Docs</a></li>
-<li><a href="#">Projects API</a></li>
+<li><a href="#">Manage docsfy from the CLI</a></li>
+<li><a href="#">Generate Documentation</a></li>
+<li><a href="#">Track Generation Progress</a></li>
+<li><a href="#">View, Download, and Publish Docs</a></li>
+<li><a href="#">Manage Users, Roles, and Access</a></li>
 </ul>
                 </div>
             </article>
             <nav class="page-nav">
                 
-                <a href="cli-workflows.html" class="page-nav-link page-nav-prev">
+                <a href="configuration-reference.html" class="page-nav-link page-nav-prev">
                     <span class="page-nav-label">Previous</span>
-                    <span class="page-nav-title">CLI Workflows</span>
+                    <span class="page-nav-title">Configuration Reference</span>
                 </a>
                 
                 
-                <a href="auth-api.html" class="page-nav-link page-nav-next">
+                <a href="http-api-reference.html" class="page-nav-link page-nav-next">
                     <span class="page-nav-label">Next</span>
-                    <span class="page-nav-title">Authentication API</span>
+                    <span class="page-nav-title">HTTP API Reference</span>
                 </a>
                 
             </nav>
@@ -700,26 +1241,35 @@ docsfy<span class="w"> </span>admin<span class="w"> </span>access<span class="w"
                     <h3>On this page</h3>
                     <div class="toc">
 <ul>
-<li><a href="#command-summary">Command Summary</a></li>
-<li><a href="#global-connection-options">Global Connection Options</a></li>
-<li><a href="#config">config</a><ul>
-<li><a href="#config-init">config init</a></li>
-<li><a href="#config-show">config show</a></li>
-<li><a href="#config-set">config set</a></li>
+<li><a href="#docsfy">docsfy</a></li>
+<li><a href="#docsfy-health">docsfy health</a></li>
+<li><a href="#docsfy-config">docsfy config</a><ul>
+<li><a href="#docsfy-config-init">docsfy config init</a></li>
+<li><a href="#docsfy-config-show">docsfy config show</a></li>
+<li><a href="#docsfy-config-set">docsfy config set</a></li>
 </ul>
 </li>
-<li><a href="#generate">generate</a></li>
-<li><a href="#list">list</a></li>
-<li><a href="#status">status</a></li>
-<li><a href="#delete">delete</a></li>
-<li><a href="#abort">abort</a></li>
-<li><a href="#download">download</a></li>
-<li><a href="#admin">admin</a><ul>
-<li><a href="#admin-users">admin users</a></li>
-<li><a href="#admin-access">admin access</a></li>
+<li><a href="#project-commands">Project Commands</a><ul>
+<li><a href="#docsfy-generate">docsfy generate</a></li>
+<li><a href="#docsfy-list">docsfy list</a></li>
+<li><a href="#docsfy-status">docsfy status</a></li>
+<li><a href="#docsfy-delete">docsfy delete</a></li>
+<li><a href="#docsfy-abort">docsfy abort</a></li>
+<li><a href="#docsfy-download">docsfy download</a></li>
+<li><a href="#docsfy-models">docsfy models</a></li>
 </ul>
 </li>
-<li><a href="#json-output-and-exit-behavior">JSON Output and Exit Behavior</a></li>
+<li><a href="#docsfy-admin">docsfy admin</a><ul>
+<li><a href="#docsfy-admin-users-list">docsfy admin users list</a></li>
+<li><a href="#docsfy-admin-users-create">docsfy admin users create</a></li>
+<li><a href="#docsfy-admin-users-delete">docsfy admin users delete</a></li>
+<li><a href="#docsfy-admin-users-rotate-key">docsfy admin users rotate-key</a></li>
+<li><a href="#docsfy-admin-access-list">docsfy admin access list</a></li>
+<li><a href="#docsfy-admin-access-grant">docsfy admin access grant</a></li>
+<li><a href="#docsfy-admin-access-revoke">docsfy admin access revoke</a></li>
+</ul>
+</li>
+<li><a href="#shared-exit-behavior">Shared Exit Behavior</a></li>
 <li><a href="#related-pages">Related Pages</a></li>
 </ul>
 </div>
@@ -732,7 +1282,7 @@ docsfy<span class="w"> </span>admin<span class="w"> </span>access<span class="w"
 
         <footer class="page-footer">
             
-            <span class="footer-version">Generated from version 1.0.2</span>
+            <span class="footer-version">Generated from version 1.2.0</span>
             <span class="footer-sep">&middot;</span>
             
             Generated with <a href="https://github.com/myk-org/docsfy" target="_blank" rel="noopener">docs<span class="brand-accent">fy</span></a>
