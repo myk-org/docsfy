@@ -223,6 +223,7 @@ async def notify_progress(
     page_count: int | None = None,
     plan_json: str | None = None,
     error_message: str | None = None,
+    generation_id: str | None = None,
 ) -> None:
     """Send a progress update for an in-progress generation."""
     # gen_key format: "owner/name/branch/provider/model"
@@ -243,6 +244,8 @@ async def notify_progress(
         "owner": owner,
         "status": status,
     }
+    if generation_id:
+        message["generation_id"] = generation_id
     if current_stage is not None:
         message["current_stage"] = current_stage
     if page_count is not None:
@@ -262,6 +265,7 @@ async def notify_status_change(
     last_generated: str | None = None,
     last_commit_sha: str | None = None,
     error_message: str | None = None,
+    generation_id: str | None = None,
 ) -> None:
     """Send a status change notification (for terminal states)."""
     parts = gen_key.split("/", 4)
@@ -279,6 +283,8 @@ async def notify_status_change(
         "owner": owner,
         "status": status,
     }
+    if generation_id:
+        message["generation_id"] = generation_id
     if page_count is not None:
         message["page_count"] = page_count
     if last_generated is not None:

@@ -29,6 +29,7 @@ from docsfy.models import (
     DEFAULT_BRANCH,
     VALID_PROVIDERS,
     GenerateRequest,
+    is_uuid,
 )
 from docsfy.postprocess import (
     add_cross_links,
@@ -54,6 +55,7 @@ from docsfy.storage import (
     get_latest_variant,
     get_project,
     get_project_access,
+    get_project_by_generation_id,
     get_project_cache_dir,
     get_project_dir,
     get_project_site_dir,
@@ -116,6 +118,7 @@ async def update_and_notify(
     error_message: str | None = None,
     plan_json: str | None = None,
     current_stage: str | None | object = None,
+    generation_id: str | None = None,
 ) -> None:
     """Update project status in DB and send WebSocket notification."""
     ups_kwargs: dict[str, Any] = {
@@ -150,6 +153,7 @@ async def update_and_notify(
             ),
             last_commit_sha=last_commit_sha,
             error_message=error_message,
+            generation_id=generation_id,
         )
         await notify_sync()
     else:
@@ -160,6 +164,7 @@ async def update_and_notify(
             page_count=page_count,
             plan_json=plan_json,
             error_message=error_message,
+            generation_id=generation_id,
         )
 
 
@@ -536,6 +541,7 @@ async def _run_generation(
     force: bool = False,
     owner: str = "",
     branch: str = DEFAULT_BRANCH,
+    generation_id: str | None = None,
 ) -> None:
     gen_key = f"{owner}/{project_name}/{branch}/{ai_provider}/{ai_model}"
     try:
@@ -553,6 +559,7 @@ async def _run_generation(
                 owner=owner,
                 branch=branch,
                 error_message=msg,
+                generation_id=generation_id,
             )
             return
 
@@ -565,6 +572,7 @@ async def _run_generation(
             owner=owner,
             branch=branch,
             current_stage="cloning",
+            generation_id=generation_id,
         )
 
         if repo_path:
@@ -583,6 +591,7 @@ async def _run_generation(
                 force,
                 owner,
                 branch=branch,
+                generation_id=generation_id,
             )
         else:
             # Remote repository - clone to temp dir
@@ -604,6 +613,7 @@ async def _run_generation(
                     force,
                     owner,
                     branch=branch,
+                    generation_id=generation_id,
                 )
 
     except asyncio.CancelledError:
@@ -618,6 +628,7 @@ async def _run_generation(
             branch=branch,
             error_message="Generation was cancelled",
             current_stage=None,
+            generation_id=generation_id,
         )
         raise
     except Exception as exc:
@@ -631,6 +642,7 @@ async def _run_generation(
             owner=owner,
             branch=branch,
             error_message=str(exc),
+            generation_id=generation_id,
         )
     finally:
         async with _gen_lock:
@@ -648,6 +660,7 @@ async def _generate_from_path(
     force: bool,
     owner: str = "",
     branch: str = DEFAULT_BRANCH,
+    generation_id: str | None = None,
 ) -> None:
     cache_dir = get_project_cache_dir(
         project_name, ai_provider, ai_model, owner, branch=branch
@@ -689,6 +702,7 @@ async def _generate_from_path(
             last_commit_sha=commit_sha,
             page_count=page_count,
             plan_json=plan_json,
+            generation_id=generation_id,
         )
 
     async def _replace_base_variant() -> None:
@@ -719,6 +733,7 @@ async def _generate_from_path(
             owner=owner,
             branch=branch,
             page_count=0,
+            generation_id=generation_id,
         )
     else:
         current_variant = await get_project(
@@ -851,6 +866,7 @@ async def _generate_from_path(
                         branch=branch,
                         current_stage="incremental_planning",
                         page_count=0,
+                        generation_id=generation_id,
                     )
                     pages_to_regen = await run_incremental_planner(
                         repo_dir,
@@ -923,6 +939,7 @@ async def _generate_from_path(
             branch=branch,
             current_stage="planning",
             page_count=0,
+            generation_id=generation_id,
         )
 
         plan = await run_planner(
@@ -959,6 +976,7 @@ async def _generate_from_path(
         current_stage="generating_pages",
         plan_json=json.dumps(plan),
         page_count=current_page_count,
+        generation_id=generation_id,
     )
 
     async def _on_page_generated(page_count: int) -> None:
@@ -967,6 +985,7 @@ async def _generate_from_path(
             status="generating",
             current_stage="generating_pages",
             page_count=page_count,
+            generation_id=generation_id,
         )
 
     pages = await generate_all_pages(
@@ -998,6 +1017,7 @@ async def _generate_from_path(
             branch=branch,
             current_stage="validating",
             page_count=len(pages),
+            generation_id=generation_id,
         )
         pages = await validate_pages(
             pages=pages,
@@ -1023,6 +1043,7 @@ async def _generate_from_path(
             branch=branch,
             current_stage="cross_linking",
             page_count=len(pages),
+            generation_id=generation_id,
         )
         pages = fix_broken_internal_links(pages, plan, project_name=project_name)
         try:
@@ -1057,6 +1078,7 @@ async def _generate_from_path(
         branch=branch,
         current_stage="rendering",
         page_count=len(pages),
+        generation_id=generation_id,
     )
 
     site_dir = get_project_site_dir(
@@ -1087,6 +1109,7 @@ async def _generate_from_path(
         last_commit_sha=commit_sha,
         page_count=page_count,
         plan_json=json.dumps(plan),
+        generation_id=generation_id,
     )
     logger.info(f"[{project_name}] Documentation ready ({page_count} pages)")
 
@@ -1185,6 +1208,27 @@ async def get_models_endpoint() -> dict[str, Any]:
         "default_model": settings.ai_model,
         "known_models": known_models,
     }
+
+
+@router.get("/projects/by-id/{generation_id}")
+async def get_project_by_id(generation_id: str, request: Request) -> dict[str, Any]:
+    """Look up a project variant by its generation UUID."""
+    if not is_uuid(generation_id):
+        raise HTTPException(status_code=400, detail="Invalid generation ID format")
+    project = await get_project_by_generation_id(generation_id)
+    if not project:
+        raise HTTPException(status_code=404, detail="Generation ID not found")
+    # Check access
+    if not request.state.is_admin:
+        project_owner = str(project.get("owner", ""))
+        if project_owner != request.state.username:
+            accessible = await get_user_accessible_projects(request.state.username)
+            if (str(project.get("name", "")), project_owner) not in accessible:
+                # Return 404 (not 403) so callers cannot distinguish
+                # "exists but not mine" from "does not exist", matching
+                # _check_ownership / _resolve_project elsewhere in this file.
+                raise HTTPException(status_code=404, detail="Generation ID not found")
+    return project
 
 
 @router.get("/status")
@@ -1291,7 +1335,7 @@ async def generate(
                 detail=f"Variant '{project_name}/{branch}/{ai_provider}/{ai_model}' is already being generated",
             )
 
-        await save_project(
+        gen_id = await save_project(
             name=project_name,
             repo_url=gen_request.repo_url or gen_request.repo_path or "",
             status="generating",
@@ -1314,6 +1358,7 @@ async def generate(
                     force=gen_request.force,
                     owner=owner,
                     branch=branch,
+                    generation_id=gen_id,
                 )
             )
             _generating[gen_key] = task
@@ -1321,7 +1366,12 @@ async def generate(
             _generating.pop(gen_key, None)
             raise
 
-    return {"project": project_name, "status": "generating", "branch": branch}
+    return {
+        "project": project_name,
+        "status": "generating",
+        "branch": branch,
+        "generation_id": gen_id,
+    }
 
 
 @router.get("/projects/{name}/{branch}/{provider}/{model}")

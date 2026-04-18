@@ -6,9 +6,41 @@ import tempfile
 from pathlib import Path
 from typing import Annotated, Any, Optional
 
+import httpx
 import typer
 
 from docsfy.cli.formatting import print_table
+from docsfy.models import is_uuid
+
+
+def _resolve_generation_id(
+    client: httpx.Client,
+    name: str,
+    branch: str | None,
+    provider: str | None,
+    model: str | None,
+) -> tuple[str, str | None, str | None, str | None, str | None]:
+    """If name is a UUID, resolve it to (name, branch, provider, model, owner) via API. Otherwise return as-is."""
+    if not is_uuid(name):
+        return name, branch, provider, model, None
+    response = client.get(f"/api/projects/by-id/{name}")
+    if response.status_code == 404:
+        typer.echo(f"Generation ID not found: {name}", err=True)
+        raise typer.Exit(1)
+    if not response.is_success:
+        typer.echo(
+            f"Failed to resolve generation ID: HTTP {response.status_code}",
+            err=True,
+        )
+        raise typer.Exit(1)
+    data = response.json()
+    return (
+        data["name"],
+        branch or data["branch"],
+        provider or data["ai_provider"],
+        model or data["ai_model"],
+        data.get("owner"),
+    )
 
 
 def list_projects(
@@ -53,11 +85,21 @@ def list_projects(
                     str(p.get("status", "")),
                     str(p.get("owner", "")),
                     str(p.get("page_count", "") or ""),
+                    str(p.get("generation_id", "") or ""),
                 ]
             )
 
         print_table(
-            ["NAME", "BRANCH", "PROVIDER", "MODEL", "STATUS", "OWNER", "PAGES"],
+            [
+                "NAME",
+                "BRANCH",
+                "PROVIDER",
+                "MODEL",
+                "STATUS",
+                "OWNER",
+                "PAGES",
+                "GEN ID",
+            ],
             rows,
         )
     finally:
@@ -65,7 +107,7 @@ def list_projects(
 
 
 def status(
-    name: str = typer.Argument(help="Project name"),  # noqa: M511
+    name: str = typer.Argument(help="Project name or generation ID (UUID)"),  # noqa: M511
     branch: Optional[str] = typer.Option(  # noqa: M511
         None, "--branch", "-b", help="Filter by branch"
     ),
@@ -83,10 +125,17 @@ def status(
     """Show status of a project and its variants."""
     from docsfy.cli.main import get_client
 
-    owner_qs = f"?owner={owner}" if owner else ""
-
     client = get_client()
     try:
+        # Resolve UUID if name looks like one
+        name, branch, provider, model, resolved_owner = _resolve_generation_id(
+            client, name, branch, provider, model
+        )
+        if resolved_owner and not owner:
+            owner = resolved_owner
+
+        owner_qs = f"?owner={owner}" if owner else ""
+
         # If all three are specified, get the specific variant
         if branch and provider and model:
             response = client.get(
@@ -136,6 +185,8 @@ def _print_variant_detail(v: dict[str, Any]) -> None:
     typer.echo(
         f"  {v.get('branch', 'main')}/{v.get('ai_provider', '')}/{v.get('ai_model', '')}"
     )
+    if v.get("generation_id"):
+        typer.echo(f"    ID:      {v['generation_id']}")
     typer.echo(f"    Status:  {v.get('status', '')}")
     typer.echo(f"    Owner:   {v.get('owner', '')}")
     if v.get("page_count"):
@@ -152,7 +203,7 @@ def _print_variant_detail(v: dict[str, Any]) -> None:
 
 
 def delete(
-    name: str = typer.Argument(help="Project name"),  # noqa: M511
+    name: str = typer.Argument(help="Project name or generation ID (UUID)"),  # noqa: M511
     branch: Optional[str] = typer.Option(  # noqa: M511
         None, "--branch", "-b", help="Branch of variant to delete"
     ),
@@ -175,17 +226,36 @@ def delete(
     """Delete a project or a specific variant."""
     from docsfy.cli.main import get_client
 
-    if all_variants and any([branch, provider, model]):
-        typer.echo(
-            "Use either --all or --branch/--provider/--model, not both.",
-            err=True,
-        )
-        raise typer.Exit(code=1)
-
-    owner_qs = f"?owner={owner}" if owner else ""
-
     client = get_client()
     try:
+        # Resolve UUID if name looks like one
+        original_name = name
+        if all_variants:
+            name, _, _, _, resolved_owner = _resolve_generation_id(
+                client, name, None, None, None
+            )
+            if is_uuid(original_name):
+                typer.echo(
+                    f"Warning: UUID resolved to project '{name}'. "
+                    "--all will delete all variants of this project.",
+                    err=True,
+                )
+        else:
+            name, branch, provider, model, resolved_owner = _resolve_generation_id(
+                client, name, branch, provider, model
+            )
+        if resolved_owner and not owner:
+            owner = resolved_owner
+
+        if all_variants and any([branch, provider, model]):
+            typer.echo(
+                "Use either --all or --branch/--provider/--model, not both.",
+                err=True,
+            )
+            raise typer.Exit(code=1)
+
+        owner_qs = f"?owner={owner}" if owner else ""
+
         if all_variants:
             if not yes:
                 confirmed = typer.confirm(f"Delete ALL variants of '{name}'?")
@@ -217,7 +287,7 @@ def delete(
 
 
 def abort(
-    name: str = typer.Argument(help="Project name"),  # noqa: M511
+    name: str = typer.Argument(help="Project name or generation ID (UUID)"),  # noqa: M511
     branch: Optional[str] = typer.Option(  # noqa: M511
         None, "--branch", "-b", help="Branch of variant to abort"
     ),
@@ -234,20 +304,27 @@ def abort(
     """Abort an active documentation generation."""
     from docsfy.cli.main import get_client
 
-    # Require all variant selectors together, or none
-    variant_opts = [branch, provider, model]
-    if any(variant_opts) and not all(variant_opts):
-        typer.echo(
-            "Specify --branch, --provider, and --model together to abort a specific variant, "
-            "or omit all three to abort by project name.",
-            err=True,
-        )
-        raise typer.Exit(code=1)
-
-    owner_qs = f"?owner={owner}" if owner else ""
-
     client = get_client()
     try:
+        # Resolve UUID if name looks like one
+        name, branch, provider, model, resolved_owner = _resolve_generation_id(
+            client, name, branch, provider, model
+        )
+        if resolved_owner and not owner:
+            owner = resolved_owner
+
+        # Require all variant selectors together, or none
+        variant_opts = [branch, provider, model]
+        if any(variant_opts) and not all(variant_opts):
+            typer.echo(
+                "Specify --branch, --provider, and --model together to abort a specific variant, "
+                "or omit all three to abort by project name.",
+                err=True,
+            )
+            raise typer.Exit(code=1)
+
+        owner_qs = f"?owner={owner}" if owner else ""
+
         if branch and provider and model:
             client.post(
                 f"/api/projects/{name}/{branch}/{provider}/{model}/abort{owner_qs}"
@@ -261,7 +338,7 @@ def abort(
 
 
 def download(
-    name: str = typer.Argument(help="Project name"),  # noqa: M511
+    name: str = typer.Argument(help="Project name or generation ID (UUID)"),  # noqa: M511
     branch: Optional[str] = typer.Option(  # noqa: M511
         None, "--branch", "-b", help="Branch of variant to download"
     ),
@@ -284,20 +361,27 @@ def download(
     """Download generated documentation as tar.gz or extract to a directory."""
     from docsfy.cli.main import get_client
 
-    # Require all variant selectors together, or none
-    variant_opts = [branch, provider, model]
-    if any(variant_opts) and not all(variant_opts):
-        typer.echo(
-            "Specify --branch, --provider, and --model together to download a specific variant, "
-            "or omit all three to download the default variant.",
-            err=True,
-        )
-        raise typer.Exit(code=1)
-
-    owner_qs = f"?owner={owner}" if owner else ""
-
     client = get_client()
     try:
+        # Resolve UUID if name looks like one
+        name, branch, provider, model, resolved_owner = _resolve_generation_id(
+            client, name, branch, provider, model
+        )
+        if resolved_owner and not owner:
+            owner = resolved_owner
+
+        # Require all variant selectors together, or none
+        variant_opts = [branch, provider, model]
+        if any(variant_opts) and not all(variant_opts):
+            typer.echo(
+                "Specify --branch, --provider, and --model together to download a specific variant, "
+                "or omit all three to download the default variant.",
+                err=True,
+            )
+            raise typer.Exit(code=1)
+
+        owner_qs = f"?owner={owner}" if owner else ""
+
         if branch and provider and model:
             url_path = (
                 f"/api/projects/{name}/{branch}/{provider}/{model}/download{owner_qs}"

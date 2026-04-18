@@ -166,10 +166,13 @@ def generate(
         project_name = data.get("project", "")
         status = data.get("status", "")
         result_branch = data.get("branch", branch)
+        gen_id = data.get("generation_id", "")
 
         typer.echo(f"Project: {project_name}")
         typer.echo(f"Branch: {result_branch}")
         typer.echo(f"Status: {status}")
+        if gen_id:
+            typer.echo(f"Generation ID: {gen_id}")
 
         if watch and status == "generating":
             srv_url, _, srv_pw = resolve_connection(

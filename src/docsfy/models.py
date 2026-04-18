@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+import uuid as _uuid_mod
 from pathlib import Path
 from typing import Any, Literal, get_args
 
@@ -116,3 +117,13 @@ class DocPlan(BaseModel):
     tagline: str = ""
     navigation: list[NavGroup] = Field(default_factory=list)
     version: str | None = None
+
+
+def is_uuid(value: str) -> bool:
+    """Check if a string is a canonical hyphenated UUID (8-4-4-4-12)."""
+    try:
+        parsed = _uuid_mod.UUID(value)
+    except (ValueError, TypeError, AttributeError):
+        return False
+    # Reject non-canonical forms (urn:uuid:, braces, 32-char hex, etc.)
+    return str(parsed) == value.lower()

@@ -210,6 +210,7 @@ export default function DashboardPage() {
                 page_count: message.page_count ?? p.page_count,
                 plan_json: message.plan_json ?? p.plan_json,
                 error_message: message.error_message ?? p.error_message,
+                generation_id: message.generation_id ?? p.generation_id,
               }
             : p
         )
@@ -242,6 +243,7 @@ export default function DashboardPage() {
                 last_generated: message.last_generated ?? p.last_generated,
                 last_commit_sha: message.last_commit_sha ?? p.last_commit_sha,
                 error_message: message.error_message ?? p.error_message,
+                generation_id: message.generation_id ?? p.generation_id,
               }
             : p
         )
