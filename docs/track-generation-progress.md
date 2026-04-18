@@ -1,11 +1,12 @@
-# Track Generation Progress
+# Tracking Generation Progress
 
-Keep an eye on a generation so you know whether to wait, retry, or stop it before spending more AI time. This guide shows how to follow a run in the dashboard and from the terminal, and how to tell the difference between a normal long run and a fast "already up to date" result.
+Use docsfy's live progress views to decide whether a generation is moving normally, already finished, or worth stopping before it spends more time and AI usage. This page shows the fastest ways to watch a run in the dashboard and from the CLI.
 
 ## Prerequisites
-- A generation has already been started. If not, see [Generate Your First Docs Site](generate-your-first-docs-site.html).
-- To abort a run, sign in as a `user` or `admin`. A `viewer` can monitor progress, but cannot stop or regenerate runs.
-- For terminal examples, configure `docsfy` to reach your server. See [CLI Command Reference](cli-command-reference.html) and [Configuration Reference](configuration-reference.html).
+
+- Start a generation first if you do not already have one running. See [Generating Documentation](generate-documentation.html).
+- For terminal examples, configure the `docsfy` CLI first. See [Managing docsfy from the CLI](manage-docsfy-from-the-cli.html).
+- Use a `user` or `admin` account if you may need to abort a run. `viewer` can monitor a run but cannot stop it.
 
 ## Quick Example
 
@@ -13,137 +14,130 @@ Keep an eye on a generation so you know whether to wait, retry, or stop it befor
 docsfy generate https://github.com/myk-org/for-testing-only --provider gemini --model gemini-2.5-flash --watch
 ```
 
-```text
-Project: for-testing-only
-Branch: main
-Status: generating
-Watching generation progress...
-[generating] cloning
-[generating] planning
-[generating] generating_pages (3 pages)
-Generation complete! (9 pages)
-```
+Run this when you want one command that starts a generation and keeps printing progress until it reaches `ready`, `error`, or `aborted`.
 
-Use `--watch` when you want live terminal updates until the run finishes as `ready`, `error`, or `aborted`.
+## Step-by-Step
 
-## Step-by-step
+### 1. Open the exact variant you want to watch
 
-1. Open the exact variant you want to watch.
+In the dashboard sidebar, expand the repository and branch, then select the provider/model variant. Collapsed repository groups still show how many variants are ready, generating, failed, or aborted, which makes active work easy to spot when you have several variants.
 
-   In the dashboard sidebar, expand the repository and branch, then select the provider/model variant. Even when a repository group is collapsed, docsfy still shows how many variants are `ready`, `generating`, `failed`, or `aborted`, which makes active work easy to spot.
+### 2. Check the status first
 
-2. Check the status badge first.
+| Status | What it means | What to do |
+| --- | --- | --- |
+| `Generating` | The run is still active. | Keep watching, or abort if you started the wrong run. |
+| `Ready` | The docs finished successfully. | Open or download the finished variant. |
+| `Error` | The run failed. | Read the message, fix the problem, and start again. |
+| `Aborted` | A user stopped the run. | Review the message and regenerate if needed. |
 
-   | Status | What it means | What to do next |
-   | --- | --- | --- |
-   | `generating` | The run is still active. | Keep watching, or abort if you started the wrong run. |
-   | `ready` | The docs finished successfully. | Open or download the result. See [View, Download, and Publish Docs](view-download-and-publish-docs.html). |
-   | `error` | The run failed. | Regenerate after fixing the problem. |
-   | `aborted` | A user stopped the run. | Review the message, then regenerate or delete the variant. |
+### 3. Use the activity log and page counter together
 
-3. Read the activity log and progress bar together.
+Stay on the variant detail view while the run is active. The Activity Log and progress bar update live, so you do not need to refresh the page manually.
 
 ```mermaid
 flowchart LR
-  A[cloning] --> B{What kind of run is this?}
-  B -->|Fresh work| C[planning]
-  B -->|Reuse earlier work| D[incremental_planning]
-  B -->|Nothing changed| J[ready: up to date]
-  C --> E[generating_pages]
-  D --> E
-  E --> F[validating]
-  F --> G[cross_linking]
-  G --> H[rendering]
-  H --> I[ready]
+  A[cloning] --> B{next step}
+  B --> C[planning]
+  B --> D[incremental_planning]
+  B --> E[up_to_date]
+  C --> F[generating_pages]
+  D --> F
+  F --> G[validating]
+  G --> H[cross_linking]
+  H --> I[rendering]
+  I --> J[ready]
 ```
 
-   | Stage | What you are waiting for |
-   | --- | --- |
-   | `cloning` | docsfy is preparing the repository source. |
-   | `planning` | docsfy is building a fresh documentation plan. |
-   | `incremental_planning` | docsfy is deciding what can be reused from an earlier variant. |
-   | `generating_pages` | Pages are being written or updated. |
-   | `validating` | The generated pages are being checked against the repository. |
-   | `cross_linking` | Cross-page links are being added. |
-   | `rendering` | The final docs site is being built. |
+| CLI stage | What you will see in the dashboard | What it means |
+| --- | --- | --- |
+| `cloning` | `Cloning repository...` | docsfy is preparing the repository source. |
+| `planning` | `Planning documentation structure...` | docsfy is building a full docs plan. |
+| `incremental_planning` | `Planning incremental update...` | docsfy is deciding what can be reused from an earlier run. |
+| `generating_pages` | `Generating page X of Y...` and `Generated page X of Y` | docsfy is writing or updating pages. |
+| `validating` | `Validating documentation against codebase...` | docsfy is checking the generated pages against the repository. |
+| `cross_linking` | `Adding cross-page links...` | docsfy is fixing cross-page references. |
+| `rendering` | `Rendering documentation site...` | docsfy is building the final site. |
+| `up_to_date` | `Documentation is already up to date.` | Nothing changed that required a rebuild. |
 
 > **Note:** The progress bar appears only after planning finishes, because docsfy does not know the total page count until the plan exists.
 
-4. Interpret the page counter correctly.
+### 4. Know when a run is actually finished
 
-   `X of Y pages` tracks page writing, not the whole run. If the counter reaches `Y of Y` and the status still says `generating`, docsfy is usually finishing `validating`, `cross_linking`, or `rendering`.
+`X of Y pages` measures page generation only. If the counter reaches `Y of Y` and the status still says `Generating`, docsfy is usually finishing `validating`, `cross_linking`, or `rendering`.
 
-> **Tip:** Treat `ready` as the real finish line. The page counter can hit `100%` before the final site is done.
+A healthy run does not have to increase the page counter every second. It is still healthy if the stage changes, the activity log keeps moving, or it finishes quickly as already up to date.
 
-5. Recognize the fast-success case.
+> **Tip:** Treat `Ready` as the real finish line. A run can hit `100%` page generation before the final site is fully built.
 
-   A run can finish quickly without rebuilding everything. When docsfy decides the target docs are already current, the variant still ends as `ready`, and the dashboard shows **Documentation is already up to date.**
+### 5. Recognize the fast successful case
 
-6. Abort a run when you need to stop it.
+If a regenerate finishes quickly and the ready view says `Documentation is already up to date.`, the run succeeded without rebuilding pages. This is normal when the source content did not change in a way that requires new docs output.
 
-   Open the generating variant, click `Abort Generation`, and confirm the dialog. The variant stays in the list with status `aborted`, so you can review what happened and start again with different settings if needed.
+If you see `Planning incremental update...` instead of full planning, docsfy is reusing earlier work. That is also a normal, healthy path.
+
+### 6. Abort when the run is clearly the wrong one
+
+Click `Abort Generation`, confirm the dialog, and wait for the status to change to `Aborted`. Use this when you started the wrong branch, model, or repository, or when you want to stop a duplicate run and start over cleanly.
 
 > **Warning:** Aborting discards in-flight progress for that run.
 
-7. Use the finished variant right away.
-
-   When the status changes to `ready`, the detail view shows `View Documentation` and `Download`. See [View, Download, and Publish Docs](view-download-and-publish-docs.html) for the next step.
-
-<details><summary>Advanced Usage</summary>
-
-Monitor a repository from the terminal without opening the dashboard:
-
-```shell
-docsfy status for-testing-only
-```
-
-Use that when you want to scan every variant for the repository.
+## Advanced Usage
 
 ```shell
 docsfy status for-testing-only --branch main --provider gemini --model gemini-2.5-flash
 ```
 
-Use the fully specified form when you want one variant's current status, stage, page count, update time, and commit.
+Use this when a run is already in progress and you want a snapshot of its status, stage, page count, last update time, commit, and any error message.
 
-Abort a specific running variant from the terminal:
+```shell
+docsfy list --status generating
+```
+
+Use this to scan all active runs from the terminal. The table includes the page count and generation ID, which is useful when the same repository has multiple active variants.
+
+```shell
+docsfy status <generation-id>
+docsfy abort <generation-id>
+```
+
+Copy the generation ID from the sidebar or the variant details when you want to inspect or stop one exact run without typing the full repository, branch, provider, and model combination.
 
 ```shell
 docsfy abort for-testing-only --branch main --provider gemini --model gemini-2.5-flash
 ```
 
-This is the safest abort form when the same repository may be running under more than one branch or model.
-
-You can also use the shorter command:
+Use the fully specified abort command when more than one variant of the same repository might be running.
 
 ```shell
 docsfy abort for-testing-only
 ```
 
-That shortcut works only when exactly one active variant matches that repository name.
+Use the short form only when exactly one active variant matches that project name.
 
-A few progress patterns are worth knowing:
+Incremental runs can start with some pages already counted, because docsfy may reuse unchanged pages from the previous variant. That is expected behavior, not a stuck progress bar.
 
-- A non-force regenerate can reuse earlier work, so the log may show `incremental_planning` instead of `planning`.
-- Incremental runs can show a page count above `0` sooner than a full regenerate.
-- A no-op regenerate ends as `ready` and shows **Documentation is already up to date.**
-- If the dashboard stops updating instantly, leave it open for a moment before refreshing; it retries live updates automatically.
-- If `--watch` disconnects, rerun `docsfy status ...` to check the latest state.
+> **Tip:** The Activity Log keeps auto-scrolling only while you are already near the bottom, so you can scroll up to inspect earlier steps without losing your place.
 
-See [CLI Command Reference](cli-command-reference.html) for more command syntax.
 
-</details>
+> **Tip:** If live updates pause briefly, leave the page open for a moment. The dashboard retries automatically and falls back to periodic refresh if needed.
+
+See [CLI Command Reference](cli-command-reference.html) for full command syntax. If you intentionally run several branches or model combinations at the same time, see [Regenerating for New Branches and Models](regenerate-for-new-branches-and-models.html).
 
 ## Troubleshooting
-- **`Abort Generation` is missing:** your account is probably `viewer`. `viewer` can monitor accessible variants, but only `user` and `admin` can stop runs. See [Manage Users, Roles, and Access](manage-users-roles-and-access.html) for details.
-- **The counter says `100%` but the run is still `generating`:** page writing is done, but docsfy is still validating, cross-linking, or rendering.
-- **`docsfy abort <name>` says more than one variant is active:** rerun the command with `--branch`, `--provider`, and `--model`.
-- **Abort says the run already finished or is still in progress:** refresh status, wait a moment, and retry only if the variant is still `generating`.
-- **A run changed from `generating` to `error` after a restart:** the server marks interrupted runs as failed instead of leaving them stuck forever. Start the run again.
+
+- **`Abort Generation` is missing:** You are probably signed in as `viewer`. `viewer` can monitor accessible variants, but only `user` and `admin` can stop a run.
+- **The progress bar says `100%` but the run still shows `Generating`:** Page writing is done, but docsfy is still validating, cross-linking, or rendering. Wait for `Ready`, `Error`, or `Aborted`.
+- **`docsfy abort <name>` says multiple active variants were found:** Run it again with `--branch`, `--provider`, and `--model`, or use the generation ID.
+- **The run changed from `Generating` to `Error` after a restart:** docsfy marks interrupted runs as failed with `Server restarted during generation` instead of leaving them stuck forever. Start the run again.
+- **Abort says the generation already finished or that abort is still in progress:** Refresh the status, wait a few seconds, and retry only if the variant still shows `Generating`.
+
+See [Fixing Setup and Generation Problems](fix-setup-and-generation-problems.html) for deeper failure diagnosis.
 
 ## Related Pages
 
-- [Generate Documentation](generate-documentation.html)
-- [View, Download, and Publish Docs](view-download-and-publish-docs.html)
-- [Regenerate for New Branches and Models](regenerate-for-new-branches-and-models.html)
-- [Manage docsfy from the CLI](manage-docsfy-from-the-cli.html)
-- [WebSocket Reference](websocket-reference.html)
+- [Generating Documentation](generate-documentation.html)
+- [Viewing and Downloading Docs](view-and-download-docs.html)
+- [Regenerating After Code Changes](regenerate-after-code-changes.html)
+- [Regenerating for New Branches and Models](regenerate-for-new-branches-and-models.html)
+- [Fixing Setup and Generation Problems](fix-setup-and-generation-problems.html)

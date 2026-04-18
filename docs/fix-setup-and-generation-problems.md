@@ -1,159 +1,202 @@
-# Fix Setup and Generation Problems
+# Fixing Setup and Generation Problems
 
-You want docsfy to accept your sign-in, start a generation, and finish with a ready docs site instead of failing early or getting stuck. Use this page to isolate whether the problem is your server connection, login, provider setup, branch choice, or the exact variant you started.
+You want docsfy to accept your sign-in, start a run, and get that run back to `ready` instead of failing on login, provider setup, repo validation, or a stuck variant. Use these checks to isolate the real cause quickly so you only retry after fixing the right thing.
 
 ## Prerequisites
+
 - A running docsfy server.
-- Browser credentials or CLI credentials for that server.
+- A valid admin key or user API key.
 - A Git repository URL the server can reach.
 - If you use the CLI, either a saved profile from `docsfy config init` or explicit `--host`, `--port`, `-u`, and `-p` flags.
-- If you need the clean first-run path instead of troubleshooting, see [Generate Your First Docs Site](generate-your-first-docs-site.html).
 
 ## Quick Example
+
 ```bash
 docsfy health
 docsfy models
 docsfy generate https://github.com/myk-org/for-testing-only --branch main --provider cursor --model gpt-5.4-xhigh-fast --force --watch
-docsfy status for-testing-only -b main -p cursor -m gpt-5.4-xhigh-fast
+docsfy status for-testing-only --branch main --provider cursor --model gpt-5.4-xhigh-fast
 ```
 
-Start with the public `for-testing-only` repository when you need to prove that your setup works independently of your own repo. If this succeeds, your server target, credentials, provider, and branch handling are all working.
+Use the public `for-testing-only` repository first. If this works, your server connection, credentials, repo input, and basic generation path are all working. If your server defaults are different, substitute the provider and model shown by `docsfy models`.
+
+If you just need the normal first-run path instead of troubleshooting, see [Generate Your First Docs Site](generate-your-first-docs-site.html).
 
 ```mermaid
 flowchart TD
-  A[Generation will not start or finish] --> B{Can you reach the server?}
-  B -->|No| C[Fix the server URL or start docsfy]
+  A[Run will not start or finish] --> B{Can docsfy reach the server?}
+  B -->|No| C[Fix saved URL or start the server]
   B -->|Yes| D{Can you sign in?}
-  D -->|No| E[Fix credentials or SECURE_COOKIES]
-  D -->|Yes| F{Does generation start?}
-  F -->|No| G[Check provider, model, branch, and repo URL]
-  F -->|Yes| H[Run docsfy status for the exact variant]
+  D -->|No| E[Fix username or API key]
+  D -->|Yes| F{Does the run fail immediately?}
+  F -->|Yes| G[Check provider CLI, repo URL, and branch]
+  F -->|No| H[Inspect the exact variant]
   H --> I{Status}
-  I -->|generating| J[Wait, or abort the exact variant]
-  I -->|error| K[Read the error and rerun with --force after fixing the cause]
-  I -->|ready| L[Open or download the docs]
+  I -->|generating| J[Wait or abort that variant]
+  I -->|error| K[Read Error and rerun with --force]
+  I -->|ready| L[Open or download docs]
 ```
 
 ## Step-by-Step
-### 1. Confirm The Server
+
+### 1. Confirm the server target
+
 ```bash
 docsfy config show
 docsfy health
 ```
 
-If `docsfy config show` says the config is missing, run `docsfy config init` or use explicit connection flags on each command. If `docsfy health` says the server is unreachable, fix the saved URL or start the server; if it reports a redirect, the CLI is pointed at the wrong host or port.
+`docsfy config show` should point at the server you expect. `docsfy health` should return `Status: ok`.
 
-### 2. Fix Sign-In First
-| Sign-in type | Username field | Password field |
+If the config is missing, run `docsfy config init`. When it asks for `Password`, enter your admin key or user API key. See [Managing docsfy from the CLI](manage-docsfy-from-the-cli.html) for the full CLI setup flow.
+
+If `docsfy health` says `Server unreachable`, fix the saved URL, host, or port. If it says the server redirected you somewhere else, the CLI is pointed at the wrong address.
+
+### 2. Fix login before anything else
+
+| Sign-in type | Username | Password field |
 | --- | --- | --- |
-| Admin | `admin` | `ADMIN_KEY` |
-| Named user | your username | your API key |
+| Built-in admin | `admin` | `ADMIN_KEY` |
+| Named user | your exact username | your API key |
 
-For admin access, the username must literally be `admin`. For named users, the username must match the owner of the API key, even though the browser label says `Password`.
+The browser login form always labels the secret as `Password`, but named users must still enter their API key there. The built-in admin only works when the username is literally `admin`.
 
-> **Warning:** If browser sign-in seems to work and then sends you back to `/login` on plain `http://localhost`, set `SECURE_COOKIES=false` and restart the server. Keep `SECURE_COOKIES=true` anywhere you serve docsfy over HTTPS.
+> **Warning:** If login works once and then you keep landing back on `/login` on plain `http://localhost`, set `SECURE_COOKIES=false` and restart the server. Keep `SECURE_COOKIES=true` for HTTPS deployments.
 
-> **Warning:** If admin access never works and the server will not start cleanly, `ADMIN_KEY` is missing or too short. It must be set and must be at least 16 characters.
 
-> **Note:** The browser and CLI do not share auth state. A working browser session does not fix a broken CLI profile, and a working CLI command does not refresh an expired browser session.
+> **Note:** Browser and CLI sign-in are separate. A working browser session does not fix a broken CLI profile, and a working CLI profile does not refresh an expired browser session.
 
-### 3. Verify The Provider And Model
+### 3. Verify the AI tool can actually run
+
 ```bash
 docsfy models
-docsfy generate https://github.com/myk-org/for-testing-only --branch main --provider cursor --model gpt-5.4-xhigh-fast
+docsfy generate https://github.com/myk-org/for-testing-only --branch main --provider cursor --model gpt-5.4-xhigh-fast --force
 ```
 
-Use only `claude`, `gemini`, or `cursor` as provider names. If you leave provider or model unset, docsfy uses the server defaults; in the default configuration, those are `cursor` and `gpt-5.4-xhigh-fast`.
+Use only `claude`, `gemini`, or `cursor` as provider names. `docsfy models` shows the server defaults and any models docsfy has already seen in ready runs.
 
-If a generation fails almost immediately, fix the selected provider on the server before retrying. A remembered model name in the UI or CLI is not proof that the provider CLI is still installed, authenticated, or allowed to use that model.
+A provider or model appearing in the UI or in `docsfy models` is not a live health check. Those suggestions come from previous ready variants, so a new generation can still fail immediately if the provider CLI is missing, not signed in, or cannot use that model.
 
 On a brand-new server, `docsfy models` can show `(no models used yet)` and still be healthy.
 
-> **Tip:** If provider startup is slow rather than broken, increase `AI_CLI_TIMEOUT` before retrying.
+If you run docsfy without Docker, make sure the provider CLI you selected is installed and authenticated on the server machine, then restart the server. See [Install and Run docsfy Without Docker](install-and-run-docsfy-without-docker.html) for the setup steps.
 
-### 4. Use A Valid Branch
+### 4. Recheck the repo URL and branch
+
 ```bash
-docsfy generate https://github.com/myk-org/for-testing-only --branch dev --provider cursor --model gpt-5.4-xhigh-fast
+docsfy generate https://github.com/myk-org/for-testing-only --branch dev --force
 ```
+
+Use a real Git remote with a hostname. The supported remote formats are direct HTTPS or SSH URLs such as `https://github.com/org/repo.git` and `git@github.com:org/repo.git`.
+
+Bare local paths, `localhost` URLs, and URLs that resolve to private network addresses are rejected before generation starts. If you only need the standard run flow, see [Generating Documentation](generate-documentation.html).
 
 | Use this | Not this | Why |
 | --- | --- | --- |
-| `main` | `.hidden` | Branches must start with a letter or number. |
+| `main` | `.hidden` | The branch must start with a letter or number. |
 | `release-1.x` | `release/1.x` | Slashes are rejected. |
-| `v2.0.1` | `../etc/passwd` | Traversal-like names are rejected. |
+| `v2.0.1` | `../repo` | `..` and traversal-like names are rejected. |
 
-If the branch name passes validation but clone still fails, check that the branch actually exists in the remote repo. If you do not pass `--branch`, docsfy uses `main`.
+If you omit `--branch`, docsfy uses `main`. If the branch name is valid but cloning still fails, confirm that branch really exists in the remote repository.
 
-### 5. Check The Exact Variant
+### 5. Recover the exact variant that failed
+
 ```bash
-docsfy status for-testing-only -b main -p cursor -m gpt-5.4-xhigh-fast
-docsfy abort for-testing-only -b main -p cursor -m gpt-5.4-xhigh-fast
+docsfy status for-testing-only --branch main --provider cursor --model gpt-5.4-xhigh-fast
+docsfy abort for-testing-only --branch main --provider cursor --model gpt-5.4-xhigh-fast
 docsfy generate https://github.com/myk-org/for-testing-only --branch main --provider cursor --model gpt-5.4-xhigh-fast --force --watch
 ```
 
-Always inspect the exact `branch/provider/model` variant you are fixing. That matters because the same project can have multiple variants at once.
+Always inspect the exact `branch` / `provider` / `model` combination you are fixing. The same repository can have multiple variants at once, and only one of them may be stuck or broken.
 
-If you see `already being generated`, let the active run finish or abort that exact variant before retrying. If you see `error`, fix the cause shown in the `Error` field and then retry with `--force` for a clean rebuild.
+| Status | What it means | What to do next |
+| --- | --- | --- |
+| `generating` | The run is still active | Wait, or abort that exact variant before retrying. |
+| `ready` | The docs finished successfully | Open or download the docs. See [Viewing and Downloading Docs](view-and-download-docs.html). |
+| `error` | The run stopped | Read the `Error` field, fix the cause, then rerun with `--force`. |
+| `aborted` | The run was stopped on purpose | Start a new run if you still need this variant. |
 
-> **Tip:** Where a run stops tells you what to fix next. Failures before `cloning` are usually provider problems, failures during `cloning` are usually repo URL or branch problems, and later failures are best diagnosed from the variant's `Error` message.
+If a run comes back `ready` with an `up_to_date` stage, nothing is broken. docsfy decided the existing docs already match the current repository state.
 
-See [CLI Command Reference](cli-command-reference.html) for the full command syntax.
+Where the run stopped helps you narrow the cause. Problems in or before `cloning` usually point to repo or provider setup, while later failures are best diagnosed from the variant’s `Error` field. See [Tracking Generation Progress](track-generation-progress.html) for the fuller stage-by-stage view.
 
-<details><summary>Advanced Usage</summary>
+## Advanced Usage
 
-### Local Settings To Recheck
+### Recheck the server settings that affect troubleshooting
+
 ```env
-ADMIN_KEY=<a-secret-with-at-least-16-characters>
+ADMIN_KEY=<at-least-16-characters>
 AI_PROVIDER=cursor
 AI_MODEL=gpt-5.4-xhigh-fast
-AI_CLI_TIMEOUT=60
+AI_CLI_TIMEOUT=120
 SECURE_COOKIES=false
 ```
 
-Use `SECURE_COOKIES=false` only for plain local HTTP. Keep it `true` when docsfy is served over HTTPS.
+`ADMIN_KEY` is required and must be at least 16 characters long. `AI_CLI_TIMEOUT` must be greater than zero, so increase it if the provider CLI starts slowly instead of failing outright.
 
-### When `--watch` Is The Only Thing Failing
+`SECURE_COOKIES=false` is only for plain local HTTP. For normal HTTPS deployments, switch it back to `true`. See [Configuration Reference](configuration-reference.html) for the full settings list.
+
+### Use generation IDs to target the exact run
+
 ```bash
-docsfy generate https://github.com/myk-org/for-testing-only --branch main --provider cursor --model gpt-5.4-xhigh-fast --watch
-docsfy status for-testing-only -b main -p cursor -m gpt-5.4-xhigh-fast
+docsfy status <generation-id>
+docsfy abort <generation-id>
 ```
 
-`--watch` depends on live WebSocket updates. If watch times out or disconnects, the server-side generation can still continue, so fall back to `docsfy status` and only treat it as a failed generation if the variant itself reaches `error` or `aborted`.
+Every run gets a generation ID, and the CLI accepts that ID anywhere it normally accepts a project name. This is the cleanest way to inspect or abort one specific run when names, branches, or models are easy to mix up.
 
-See [WebSocket Reference](websocket-reference.html) if you are debugging custom live-status clients.
+### Disambiguate admin actions by owner
 
-### When An Admin Sees Owner Ambiguity
 ```bash
-docsfy status for-testing-only -b main -p cursor -m gpt-5.4-xhigh-fast --owner alice
+docsfy status for-testing-only --branch main --provider cursor --model gpt-5.4-xhigh-fast --owner <owner>
 ```
 
-If more than one owner has the same project name or the same variant key, add `--owner` when you inspect or abort a variant. This is the fastest fix for `Multiple owners found` errors.
+Admins can see more than one owner’s copy of the same variant. If you hit a `Multiple owners found` error, rerun the command with `--owner`.
 
-### When You Automate Outside The CLI
-Use the same sequence of checks: reach the server, authenticate, start one exact variant, then inspect that exact variant until it reaches `ready`, `error`, or `aborted`. See [HTTP API Reference](http-api-reference.html) for the route list.
+### When `--watch` is the only thing failing
 
-### When You Generate From A Local Checkout
-Local path generation is an admin-only flow. The path must be absolute, the directory must exist, it must contain `.git`, and the checked-out branch must match the branch you requested.
+```bash
+docsfy generate https://github.com/myk-org/for-testing-only --branch main --force --watch
+docsfy status for-testing-only
+```
 
-</details>
+The CLI `--watch` mode depends on the WebSocket connection. If it times out or disconnects, the server-side generation may still be running, so fall back to `docsfy status` before assuming the run failed.
+
+### When a branch or model is missing from the web app suggestions
+
+The branch and model fields accept typed values. Their suggestion lists only include branches and models from previous ready variants, so a missing suggestion does not mean the value is invalid.
+
+### If you use a local repository path
+
+Local-path generation is an admin-only flow. The path must be absolute, it must exist, it must contain a `.git` directory, and the checked-out branch must match the branch you requested.
+
+### If you automate outside the CLI
+
+Use the same recovery sequence: confirm server reachability, authenticate, start one exact variant, then poll that variant until it reaches `ready`, `error`, or `aborted`. See [HTTP API and WebSocket Reference](http-api-and-websocket-reference.html) for the integration endpoints.
 
 ## Troubleshooting
+
 | Problem | What to do |
 | --- | --- |
-| `Invalid username or password` in the browser | Use `admin` only with `ADMIN_KEY`. For named users, use the exact username that owns the API key. |
-| Sign-in works once, then you go back to `/login` on `http://localhost` | Set `SECURE_COOKIES=false`, restart the server, and sign in again. |
-| `Server unreachable` or `Unable to connect to server` | Fix the server URL, host, or port, or start the server before retrying. |
-| The UI says `Frontend not built` | Build the frontend and restart the server. |
-| Generation fails almost immediately | Fix the selected provider on the server, pick a different provider or model, or increase `AI_CLI_TIMEOUT`. |
+| `Invalid username or password` | Use `admin` only with `ADMIN_KEY`. For named users, use the exact username that owns the API key. |
+| You keep getting sent back to `/login` on local HTTP | Set `SECURE_COOKIES=false`, restart the server, and sign in again. |
+| `Session expired. Redirecting to login...` | Sign in again. Browser sessions last 8 hours. |
+| `Server unreachable` or a redirect error in the CLI | Recheck `docsfy config show` and `docsfy health`, then fix the saved server URL, host, or port. |
+| `docsfy models` shows a model, but generation still fails immediately | Treat the model list as history, not proof the provider CLI is healthy. Install or re-authenticate the selected provider CLI, then retry. |
+| Repo input is rejected before clone starts | Use a direct remote URL with a hostname. Bare local paths, `localhost`, and private-network repo URLs are rejected. |
 | `Invalid branch name` | Use a branch that starts with a letter or number and only contains letters, numbers, `.`, `_`, or `-`. Replace `/` with `-`. |
-| `Variant '...' is already being generated` | Wait for that exact variant to finish, or abort it before retrying. |
-| `Multiple active variants found` when aborting by project name | Re-run `docsfy abort` with `-b`, `-p`, and `-m` together. |
-| `--watch` fails but the generation may still be running | Use `docsfy status` until the variant reaches `ready`, `error`, or `aborted`. |
+| `Variant '...' is already being generated` | Wait for that exact variant to finish, or abort it before starting another run. |
+| `Multiple active variants found` or `Multiple owners found` | Rerun `status` or `abort` with `--branch`, `--provider`, and `--model`, and add `--owner` when needed. |
+| `--watch` times out or the WebSocket closes | Check `docsfy status`; the generation may still be running. |
+| Generate, abort, or delete is missing or returns `Write access required` | Your account is read-only. Use a `user` or `admin` account for write actions. |
+| The app says `Frontend not built` | Build the frontend with `cd frontend && npm run build`, then restart the server. |
+
+See [CLI Command Reference](cli-command-reference.html) for the full CLI syntax.
 
 ## Related Pages
 
 - [Generate Your First Docs Site](generate-your-first-docs-site.html)
-- [Configure AI Providers](configure-ai-providers.html)
 - [Install and Run docsfy Without Docker](install-and-run-docsfy-without-docker.html)
-- [Generate Documentation](generate-documentation.html)
-- [Track Generation Progress](track-generation-progress.html)
+- [Configuring AI Providers and Models](configure-ai-providers-and-models.html)
+- [Tracking Generation Progress](track-generation-progress.html)
+- [Configuration Reference](configuration-reference.html)

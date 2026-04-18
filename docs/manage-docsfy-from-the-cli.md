@@ -1,44 +1,43 @@
-# Manage docsfy from the CLI
+# Managing docsfy from the CLI
 
-Use the CLI when you want to manage docsfy from a shell, script, or remote session instead of the browser. A saved server profile makes health checks, generations, status lookups, downloads, and admin tasks faster and easier to repeat.
+Run docsfy from a terminal when you want to save a profile, start a docs run, watch it finish, and fetch the result without opening the web app. That keeps repeat work fast in remote shells, local terminals, and simple scripts.
 
 ## Prerequisites
 - A running docsfy server you can reach
-- The `docsfy` command available on your machine
+- The `docsfy` command installed on your machine. If you still need local setup, see [Install and Run docsfy Without Docker](install-and-run-docsfy-without-docker.html).
 - An API key for that server
-- For the built-in admin account, the username is `admin`
-- For generation, a server that already has a working AI provider configured
+- A `user` or `admin` key if you want to run `generate`, `abort`, or `delete`
+- A Git repository URL the server can reach
 
 ## Quick Example
 ```shell
 docsfy config init
 docsfy health
-docsfy generate https://github.com/org/my-repo.git --watch
-docsfy status my-repo
-docsfy download my-repo
+docsfy generate https://github.com/myk-org/for-testing-only --watch
+docsfy status for-testing-only
+docsfy download for-testing-only --output ./site
 ```
 
-In this flow, `my-repo` is the project name derived from the Git URL. `download` fetches the newest ready variant you can access.
+Replace `https://github.com/myk-org/for-testing-only` with the repository you want to document. The rest of the flow stays the same.
 
 ```mermaid
 flowchart LR
-  A[Save profile] --> B[Check health]
+  A[Save profile] --> B[Check server]
   B --> C[Start generation]
-  C --> D[Watch or check status]
-  D --> E[Download docs]
+  C --> D[Watch progress]
+  D --> E[Inspect variants]
+  E --> F[Download output]
 ```
 
-## Step-by-Step
-1. Save a reusable server profile.
+## Step-by-step
+1. Save a reusable profile.
 
 ```shell
 docsfy config init
 docsfy config show
 ```
 
-When `docsfy config init` asks for `Password`, enter your API key.
-
-A saved profile looks like this:
+When `docsfy config init` asks for `Password`, enter your API key. For the built-in admin account, the username is `admin`.
 
 ```toml
 [default]
@@ -50,186 +49,154 @@ username = "admin"
 password = "<your-dev-key>"
 ```
 
-The first profile you create becomes the default server. Later profiles are added without changing the existing default.
+The first profile you create becomes the default. Later profiles are added without changing that default automatically.
 
-> **Note:** The CLI stores profiles in `~/.config/docsfy/config.toml`, masks saved passwords in `docsfy config show`, and writes the file with owner-only permissions.
+> **Note:** Profiles live in `~/.config/docsfy/config.toml`. `docsfy config show` masks the saved key, but the file stores the full value, so keep it private. See [Configuration Reference](configuration-reference.html) for the full profile format.
 
-2. Confirm that the CLI can reach the right server.
+2. Confirm that the CLI is pointing at the right server.
 
 ```shell
 docsfy health
 ```
 
-A healthy server returns a short result like this:
+A working connection prints the server URL and `Status: ok`. Run this first whenever you switch environments or update a profile.
 
-```text
-Server: http://localhost:8000
-Status: ok
-```
-
-Run this first whenever you switch profiles or change environments.
-
-3. Start a generation from a Git remote.
+3. Start a generation and watch it live.
 
 ```shell
-docsfy generate https://github.com/org/my-repo.git --watch
+docsfy generate https://github.com/myk-org/for-testing-only --watch
 ```
 
-Use a normal HTTPS or SSH Git URL. If you omit `--branch`, docsfy uses `main`. If you omit `--provider` and `--model`, the server uses its current defaults.
+Use an HTTPS or SSH Git URL. If you omit `--branch`, docsfy uses `main`. If you omit `--provider` and `--model`, the server uses its current defaults.
 
-Later CLI commands use the repository name, so `https://github.com/org/my-repo.git` becomes `my-repo`.
+Later commands use the repository name from the URL, with any `.git` suffix removed, so this repository becomes `for-testing-only`.
 
-> **Warning:** `docsfy generate` takes a Git URL, not a local filesystem path.
+```text
+Project: for-testing-only
+Branch: main
+Status: generating
+Generation ID: <GENERATION_ID>
+Watching generation progress...
+[generating] cloning
+[generating] planning
+[generating] generating_pages (3 pages)
+Generation complete! (9 pages)
+```
 
-> **Warning:** Branch names cannot contain `/`. Use names like `release-1.x`, not `release/1.x`.
+Save the generation ID if you want an exact handle for later commands. The exact stage list and page counts vary by run. See [Tracking Generation Progress](track-generation-progress.html) for the meaning of each stage.
 
-If you want to generate another branch or model on purpose, see [Regenerate for New Branches and Models](regenerate-for-new-branches-and-models.html).
+> **Tip:** If you want `--watch` to follow one exact variant from the start, run `docsfy models` first and pass both `--provider` and `--model` to `docsfy generate`.
 
-4. Check what is running and inspect the result.
+
+> **Warning:** `docsfy generate` accepts a remote Git URL, not a local path. Branch names cannot contain `/`, so use `release-1.x` instead of `release/1.x`.
+
+4. Inspect the variants you can access.
 
 ```shell
 docsfy list
-docsfy status my-repo
+docsfy status for-testing-only
+docsfy status <GENERATION_ID>
 ```
 
-`list` gives you a table of accessible variants. Each row is one variant, so the same project can appear more than once.
+`docsfy list` prints one row per variant, including `NAME`, `BRANCH`, `PROVIDER`, `MODEL`, `STATUS`, `OWNER`, `PAGES`, and `GEN ID`. `docsfy status` shows the fuller detail view, including stage, last update time, short commit, and any error message.
 
-`status` shows the details for one project, including the owner, current status, page count, last update time, short commit, current stage, and any error message.
+> **Tip:** Use the generation ID from `docsfy generate` or `docsfy list` when you want the exact variant without retyping branch, provider, and model.
 
-If you want one exact variant instead of every variant for the project, pass all three selectors together:
+5. Download the finished output.
 
 ```shell
-docsfy status my-repo --branch main --provider cursor --model gpt-5.4-xhigh-fast
+docsfy download for-testing-only
+docsfy download <GENERATION_ID> --output ./site
 ```
 
-For the full meaning of statuses and stages, see [Track Generation Progress](track-generation-progress.html).
+| Command | What you get |
+| --- | --- |
+| `docsfy download for-testing-only` | A `.tar.gz` archive for the latest ready variant you can access, saved in your current directory. |
+| `docsfy download <GENERATION_ID> --output ./site` | One exact variant, downloaded and extracted directly into `./site`. |
 
-5. Download the finished site.
+Without `--output`, the archive name is `<project>-docs.tar.gz`. With `--output`, docsfy creates the target directory if needed and extracts the archive there.
 
-```shell
-docsfy download my-repo
-```
-
-This saves the newest ready variant you can access as a `.tar.gz` file in your current directory.
-
-If you want to unpack it immediately instead:
-
-```shell
-docsfy download my-repo --output ./site
-```
-
-> **Tip:** Use exact selectors when you need one specific variant instead of the latest ready one.
-
-See [CLI Command Reference](cli-command-reference.html) for the full syntax and every flag.
-
-<details><summary>Advanced Usage</summary>
-
-### Switch servers or override a saved profile
+## Advanced Usage
+### Switch profiles or override them for one command
 
 ```shell
 docsfy config set default.server prod
-docsfy --host myhost --port 9000 -u admin -p <your-api-key> health
+docsfy --server prod health
+docsfy --host docsfy.example.com --port 443 -u admin -p <API_KEY> health
 ```
 
-Use saved profiles for everyday work, and one-off flags when you need to hit a different host without changing `~/.config/docsfy/config.toml`.
+Use `--server` when you already saved multiple profiles. Use `--host`, `--port`, `-u`, and `-p` before the subcommand when you need a one-off connection without changing the saved file.
 
-| If `-p` appears... | It means... |
+| Command | Meaning of `-p` |
 | --- | --- |
-| Before the subcommand, like `docsfy -p <your-api-key> health` | API key/password |
-| After `status`, `delete`, `abort`, or `download`, like `docsfy status my-repo -p cursor` | AI provider |
+| `docsfy --server prod -p <API_KEY> health` | API key/password, because it appears before the subcommand. |
+| `docsfy status for-testing-only -p cursor` | AI provider, because it appears after `status`. |
 
-> **Tip:** Global connection flags go before the subcommand.
+> **Tip:** Put global connection flags before the subcommand.
 
-### Discover providers and models
+### Pick an exact provider, model, or branch
 
 ```shell
 docsfy models
 docsfy models --provider cursor
-docsfy models --json
+docsfy generate https://github.com/myk-org/for-testing-only --branch dev --force
+docsfy status for-testing-only --branch main --provider cursor --model gpt-5.4-xhigh-fast
+docsfy download for-testing-only --branch main --provider cursor --model gpt-5.4-xhigh-fast --output ./site
 ```
 
-Use `models` when you want to see the server defaults and the model names the server already knows about.
+Use `docsfy models` to see the current default provider and model, plus model names the server already knows about. A provider can show `(no models used yet)` until a ready variant has been generated with it.
 
-### Work with exact variants, aborts, and deletes
+Replace `cursor` and `gpt-5.4-xhigh-fast` with the values your server reports. Use `--force` when you want a full rebuild instead of reusing existing artifacts.
+
+If you intentionally keep separate outputs for other branches or models, see [Regenerating for New Branches and Models](regenerate-for-new-branches-and-models.html).
+
+### Stop or clean up runs
 
 ```shell
-docsfy abort my-repo
-docsfy abort my-repo --branch main --provider cursor --model gpt-5.4-xhigh-fast
-docsfy delete my-repo --branch main --provider cursor --model gpt-5.4-xhigh-fast --yes
-docsfy delete my-repo --all --yes
+docsfy abort for-testing-only
+docsfy abort <GENERATION_ID>
+docsfy delete <GENERATION_ID> --yes
+docsfy delete for-testing-only --all --yes
 ```
 
-Use the project-only `abort` form when there is just one active run for that project. If more than one variant is running, rerun the command with `--branch`, `--provider`, and `--model`.
+Project-level `abort` is convenient when only one active variant matches that project name. Use a generation ID when more than one run might be active, or when you want copy-paste-safe cleanup.
 
-The same exact selector pattern is useful for downloads too:
-
-```shell
-docsfy download my-repo --branch main --provider cursor --model gpt-5.4-xhigh-fast --output ./site
-```
-
-> **Note:** When you use `--output`, docsfy extracts the archive into a subdirectory inside the target directory.
-
-> **Warning:** Use either `--all` or an exact variant selector with `delete`, not both.
-
-### Use `--owner` when you are an admin
-
-```shell
-docsfy status shared-name --branch main --provider claude --model opus --owner alice
-docsfy download shared-name --branch main --provider claude --model opus --owner alice
-```
-
-`--owner` is mainly for admins who need one specific copy of a project or variant when the same project name exists under multiple owners.
-
-### Run admin tasks
-
-```shell
-docsfy admin users list
-docsfy admin users create newuser --role user
-docsfy admin users rotate-key newuser
-docsfy admin access grant my-repo --username newuser --owner admin
-docsfy admin access list my-repo --owner admin
-docsfy admin access revoke my-repo --username newuser --owner admin
-```
-
-Valid roles are `admin`, `user`, and `viewer`. New and rotated API keys are shown once, so save them immediately. Generated keys use the `docsfy_...` format.
-
-Access grants are project-wide for one owner, so granting access to `my-repo` also grants access to that owner's variants of the project.
-
-If you rotate a key for a saved profile, update the profile too:
-
-```shell
-docsfy config set servers.dev.password <new-api-key>
-```
-
-> **Note:** `viewer` accounts can list, inspect, and download docs they can access, but they cannot generate, abort, or delete.
-
-> **Warning:** The username `admin` is reserved, custom keys must be at least 16 characters long, you cannot delete your own account, and a user cannot be deleted while they still have an active generation.
+`docsfy delete ... --all --yes` removes every variant of that project that belongs to you. If you only want one variant, delete by generation ID instead.
 
 ### Use JSON output for scripts
 
 ```shell
-docsfy list --json
-docsfy status my-repo --json
-docsfy admin users list --json
+docsfy list --status ready --json
+docsfy status for-testing-only --json
+docsfy models --provider cursor --json
 ```
 
-Use `--json` when you want stable output for automation instead of the default tables and detail blocks.
+These commands return JSON instead of table or plain-text output, which is easier to pipe into your own scripts. See [CLI Command Reference](cli-command-reference.html) for the full flag list.
 
-</details>
+### Disambiguate same-name projects as an admin
+
+```shell
+docsfy status shared-name --branch main --provider claude --model opus --owner alice
+docsfy download shared-name --branch main --provider claude --model opus --owner alice --output ./site
+```
+
+Use `--owner` only with fully specified variant commands. It helps when the same project name exists under more than one owner and you need one exact copy.
 
 ## Troubleshooting
-- `No server configured`: run `docsfy config init`, or pass `--host`, `--username`, and `--password` before the subcommand.
-- `Server unreachable` or a redirect error: check the saved URL, host, and port with `docsfy config show` and `docsfy health`.
-- `Write access required`: you authenticated as a `viewer`; use a `user` or `admin` account for `generate`, `abort`, and `delete`.
-- `Variant not ready`: wait until `docsfy status my-repo` shows a ready variant, then download again.
-- `Multiple active variants found` or `Multiple owners found`: rerun the command with `--branch`, `--provider`, and `--model`; if you are an admin and need one owner's copy, add `--owner`.
-- `Invalid branch name`: rename the branch argument to something like `release-1.x`.
-- A Git URL to `localhost` or another private network host is rejected: use a remote the server can reach.
+- `No server configured`: run `docsfy config init`, or pass `--host`, `--port`, `-u`, and `-p` before the subcommand.
+- `Server unreachable` or a redirect error: check the saved URL with `docsfy config show`, then rerun `docsfy health`.
+- `Write access required`: the API key belongs to a `viewer`; use a `user` or `admin` account for `generate`, `abort`, and `delete`.
+- `Invalid branch name`: branch names cannot contain `/`; use `release-1.x` instead.
+- A project name points to more than one possible variant, or a run is already active: run `docsfy list`, then retry with the generation ID or a fully specified variant selector.
+- `Variant not ready`: wait until `docsfy status ...` shows `ready`, then download again.
+- A repository URL that points to `localhost` or another private-network host is rejected: use a remote the server can reach.
+
+See [Fixing Setup and Generation Problems](fix-setup-and-generation-problems.html) for broader setup and generation failures.
 
 ## Related Pages
 
 - [CLI Command Reference](cli-command-reference.html)
+- [Install and Run docsfy Without Docker](install-and-run-docsfy-without-docker.html)
 - [Configuration Reference](configuration-reference.html)
-- [Generate Documentation](generate-documentation.html)
-- [Track Generation Progress](track-generation-progress.html)
-- [View, Download, and Publish Docs](view-download-and-publish-docs.html)
+- [Tracking Generation Progress](track-generation-progress.html)
+- [Viewing and Downloading Docs](view-and-download-docs.html)

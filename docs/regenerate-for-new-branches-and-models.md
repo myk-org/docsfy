@@ -1,34 +1,27 @@
-# Regenerate for New Branches and Models
+# Regenerating for New Branches and Models
 
-You want another docs variant from the same repository so you can cover a different branch or switch models without rebuilding everything by hand. In docsfy, branch changes and model changes behave differently, so the fastest path depends on what you are changing.
+You want a separate docs variant for another branch or AI model so you can compare outputs, keep release-specific docs, or grab a precise build later without overwriting the version you already use. docsfy can reuse finished work to make this faster, but the result depends on whether you changed the branch, the provider/model, or turned on a full rebuild.
 
 ## Prerequisites
-- A running docsfy instance and a login with `user` or `admin` access. If you still need setup help, see [Generate Your First Docs Site](generate-your-first-docs-site.html) or [Install and Run docsfy Without Docker](install-and-run-docsfy-without-docker.html).
-- The repository URL you want to regenerate.
-- A provider/model that already works in your environment.
-- If you use the CLI, a configured `docsfy` connection.
+- A running docsfy server and an account with write access.
+- A repository URL that the server can clone.
+- A provider and model that work in your environment.
+- Optional: a configured `docsfy` CLI profile.
+
+See [Generating Documentation](generate-documentation.html) for the basic first-run flow, or [Managing docsfy from the CLI](manage-docsfy-from-the-cli.html) if you need CLI setup first.
 
 ## Quick Example
 ```shell
-# New branch
 docsfy generate https://github.com/myk-org/for-testing-only \
   --branch dev \
   --provider gemini \
   --model gemini-2.5-flash
 ```
 
-```shell
-# New model on the same branch
-docsfy generate https://github.com/myk-org/for-testing-only \
-  --branch main \
-  --provider gemini \
-  --model gemini-2.0-flash
-```
-
-> **Tip:** The branch and model fields are editable. Suggestions only come from ready variants, so you can type a value even when it is not listed yet.
+This creates a separate `dev/gemini/gemini-2.5-flash` variant for the same repository instead of changing an existing `main` variant.
 
 ## Step-by-step
-1. Create a new branch variant.
+1. Create the branch variant you want.
 
 ```shell
 docsfy generate https://github.com/myk-org/for-testing-only \
@@ -38,11 +31,14 @@ docsfy generate https://github.com/myk-org/for-testing-only \
   --watch
 ```
 
-Use the same repo URL and change only the branch. In the dashboard, do the same thing from `New Generation`: keep the repository URL, type the new branch, choose the provider/model, and click `Generate`.
+In the web app, use `New Generation`, keep the same repository URL, type the new branch, pick the provider and model, and start the run. This is the branch-changing path in the UI.
 
 > **Note:** If you omit `--branch`, docsfy uses `main`.
 
-2. Create a new model variant on the same branch.
+
+> **Tip:** Branch suggestions only come from ready variants for that repository. You can still type a new branch even if it is not listed yet.
+
+2. Create a different provider/model variant on the same branch.
 
 ```shell
 docsfy generate https://github.com/myk-org/for-testing-only \
@@ -51,97 +47,103 @@ docsfy generate https://github.com/myk-org/for-testing-only \
   --model gemini-2.0-flash
 ```
 
-Keep the branch the same and change the model. In the dashboard, select the ready variant in the sidebar and use `Regenerate Documentation`; that form changes the provider/model but keeps the selected branch.
+In the web app, open the ready variant and use `Regenerate Documentation`. That form keeps the selected branch fixed and lets you change the provider or model.
 
-3. Check the exact variant you started.
+3. Check exactly which variant you have before you open or download it.
 
 ```shell
+docsfy status for-testing-only
+
 docsfy status for-testing-only \
   --branch main \
   --provider gemini \
   --model gemini-2.0-flash
 ```
 
-Use the branch, provider, and model together so you do not confuse one variant with another. In the dashboard, a new branch appears under its own `@branch` section in the sidebar.
+The first command lists every variant for that repository. The second command targets one exact branch, provider, and model combination.
 
-4. Choose whether you want reuse or a full rebuild.
+In the web app, variants are grouped by branch in the sidebar. Expand the repository, open the `@branch` group you want, and select the provider/model row.
 
-| Situation | What docsfy does |
-| --- | --- |
-| Same branch, same model, no force | Updates the existing variant in place. If the repo is unchanged, the run finishes as already up to date. |
-| Same branch, same model, `--force` | Rebuilds that variant from scratch. |
-| Same branch, different model, no force | Reuses the newest ready variant on that branch when possible, then removes the older source variant after the new one is ready. |
-| Same branch, different model, `--force` | Runs a full generation and keeps the existing variant, so both variants can remain. |
-| Different branch | Creates a separate branch variant. Reuse starts only after that branch has its own ready variant. |
+4. Open or download the exact variant you asked for.
 
-> **Warning:** A non-force model switch is not additive. If you want to keep both the old and new model variants on the same branch, turn on `Force full regeneration`.
+```shell
+docsfy download for-testing-only \
+  --branch main \
+  --provider gemini \
+  --model gemini-2.0-flash
+```
 
-5. Confirm the result in the UI.
+In the web app, the `View Documentation` and `Download` buttons on a selected variant already use that exact branch/provider/model. In the CLI, add `--output` if you want the archive extracted into a directory instead of saved as a `.tar.gz` file.
 
-Select the ready variant and check its branch, provider/model, page count, and latest commit. If docsfy reused an unchanged variant, the ready view says the documentation is already up to date.
+5. Choose whether you want reuse or a clean rebuild.
 
-<details><summary>Advanced Usage</summary>
+| Change you make | Without `--force` | With `--force` |
+| --- | --- | --- |
+| Same branch, same provider/model | Updates that same variant. If the commit is unchanged, docsfy marks it as already up to date. | Rebuilds that same variant from scratch. |
+| Same branch, different provider/model | Reuses the newest ready variant on that branch when possible, then replaces the older source variant after the new one is ready. | Builds the new variant from scratch and keeps the existing variant. |
+| Different branch | Creates a separate branch variant. The first ready variant on that branch does not reuse a ready variant from another branch. | Still creates a separate branch variant. Use this when you want a clean rebuild of that branch variant. |
 
+> **Warning:** A non-force provider/model switch on the same branch is replacement behavior, not side-by-side storage. If you want to keep both variants on that branch, turn on `Force full regeneration`.
+
+## Advanced Usage
 ```mermaid
 flowchart TD
-  A[Start a generation] --> B{Different branch?}
-  B -- Yes --> C[Create a separate branch variant]
-  C --> D[Later reuse stays on that branch]
-  B -- No --> E{Different model or provider?}
-  E -- No --> F{Force enabled?}
-  F -- Yes --> G[Full rebuild in place]
-  F -- No --> H{Repo changed?}
-  H -- No --> I[Mark variant up to date]
-  H -- Yes --> J[Reuse plan and unchanged pages when possible]
-  E -- Yes --> K{Force enabled?}
-  K -- Yes --> L[Full rebuild and keep the existing variant]
-  K -- No --> M[Reuse the newest ready variant on that branch]
+  A[Start a generation] --> B{Same branch?}
+  B -- No --> C[Create a separate branch variant]
+  C --> D[Future reuse stays on that branch]
+  B -- Yes --> E{Same provider and model?}
+  E -- Yes --> F{Force enabled?}
+  F -- No --> G[Reuse current variant when possible]
+  G --> H{Same commit or no file changes?}
+  H -- Yes --> I[Mark variant up to date]
+  H -- No --> J[Reuse plan and unchanged pages when possible]
+  F -- Yes --> K[Full rebuild in place]
+  E -- No --> L{Force enabled?}
+  L -- No --> M[Reuse newest ready variant on that branch]
   M --> N{Same commit?}
-  N -- Yes --> O[Copy existing docs into the new variant]
-  N -- No --> P[Regenerate only what changed when possible]
-  O --> Q[Replace the older source variant]
+  N -- Yes --> O[Copy existing docs artifacts]
+  N -- No --> P[Reuse unchanged cached pages when possible]
+  O --> Q[Replace older source variant]
   P --> Q
+  L -- Yes --> R[Build a new variant and keep the existing one]
 ```
+
+Use the exact form when precision matters:
+
+| Goal | Command or URL | What you get |
+| --- | --- | --- |
+| Open the latest ready docs for a repo | `/docs/for-testing-only/` | The most recently generated ready variant |
+| Open one exact variant | `/docs/for-testing-only/dev/gemini/gemini-2.5-flash/` | Only that branch/provider/model |
+| Download the latest ready docs for a repo | `docsfy download for-testing-only` | The most recently generated ready variant |
+| Download one exact variant | `docsfy download for-testing-only --branch dev --provider gemini --model gemini-2.5-flash` | Only that branch/provider/model |
 
 ```shell
 docsfy models --provider gemini
 ```
 
-Use this to see the provider list, the server-marked defaults, and model names from completed generations. If you plan to rely on omitted provider/model values, check [Configuration Reference](configuration-reference.html) first.
+Use this when you need the current provider defaults and the known model names from completed generations. The web app uses the same ready-variant history to populate model suggestions.
 
-A few reuse rules matter in practice:
+A few edge cases matter in practice:
 
-- Reuse is branch-scoped. A ready `main` variant is not used as the starting point for a first-time `dev` variant.
-- A same-commit model switch without force can finish by copying the existing docs into the new variant instead of starting over.
-- A new commit on the same branch without force can reuse the existing plan and regenerate only changed pages when docsfy can tell what changed.
-- A new commit with no file changes is treated as up to date.
-- If docsfy cannot figure out what changed or cannot reuse the earlier plan, it falls back to a full regeneration automatically.
-- The same replacement rules apply when you switch providers, not just when you switch models.
-- In the dashboard, errored and aborted variants reopen with `Force full regeneration` enabled by default.
+- Same-commit provider/model switches without force can finish by copying the previous docs artifacts, so the new variant can be identical to the old one.
+- New commits on the same branch can reuse the existing plan and unchanged pages when docsfy can tell what changed. If it cannot reuse safely, it falls back to a full regeneration automatically.
+- The same replacement rules apply whether you change just the model or switch providers too.
+- In the web app, `error` and `aborted` variants reopen `Regenerate Documentation` with `Force full regeneration` enabled by default.
+- If you copied a generation ID from the sidebar or variant detail view, `docsfy status` and `docsfy download` accept that ID too, so you do not have to retype the branch, provider, and model.
 
-```shell
-docsfy status for-testing-only
-```
-
-Use this when you want a full list of branch/provider/model variants for one repository.
-
-> **Warning:** Branch names cannot contain `/`. Use a slash-free name such as `release-1.x`.
-
-For full command syntax, see [CLI Command Reference](cli-command-reference.html). If you automate this outside the CLI, see [HTTP API Reference](http-api-reference.html) and [WebSocket Reference](websocket-reference.html).
-
-</details>
+See [Tracking Generation Progress](track-generation-progress.html) for live stage details, [CLI Command Reference](cli-command-reference.html) for full flag syntax, [Configuration Reference](configuration-reference.html) for server defaults, and [HTTP API and WebSocket Reference](http-api-and-websocket-reference.html) if you need to automate this flow.
 
 ## Troubleshooting
-- `Clone failed` or branch not found: verify the branch exists in the remote repository and that the server can access that repository.
-- A branch name like `release/v2.0` is rejected: docsfy only accepts branch names without slashes. Use something like `release-v2.0` or `release-1.x`.
-- The model you want is not in the dropdown: type it manually or run `docsfy models --provider <provider>`. The suggestion list only includes models from ready variants.
-- The regenerate controls are missing: `viewer` access is read-only. See [Manage Users, Roles, and Access](manage-users-roles-and-access.html) for permission changes.
-- The previous model disappeared after a switch: that is expected after a non-force model change on the same branch. Rerun with `--force` if you want both variants to remain.
+- A branch like `release/v2.0` is rejected: docsfy does not allow `/` in branch names. Use something like `release-v2.0` or `release-1.x`.
+- The wrong docs opened or downloaded: you probably used the default project route or `docsfy download` without branch/provider/model selectors. Use the fully qualified form when you need one exact variant.
+- A branch or model is missing from the suggestion list: only ready variants populate those lists. Type the value manually, or run `docsfy models --provider gemini`.
+- The old provider/model variant disappeared after a switch: that is expected after a same-branch non-force switch. Rerun with `--force` if you want both variants to remain.
+- The run ends in `Clone failed`, or the branch never appears: verify that the branch exists in the remote repository and that the server can access that repository. See [Fixing Setup and Generation Problems](fix-setup-and-generation-problems.html) for broader setup and runtime failures.
 
 ## Related Pages
 
-- [Generate Documentation](generate-documentation.html)
-- [Track Generation Progress](track-generation-progress.html)
-- [View, Download, and Publish Docs](view-download-and-publish-docs.html)
-- [Manage docsfy from the CLI](manage-docsfy-from-the-cli.html)
-- [HTTP API Reference](http-api-reference.html)
+- [Generating Documentation](generate-documentation.html)
+- [Configuring AI Providers and Models](configure-ai-providers-and-models.html)
+- [Tracking Generation Progress](track-generation-progress.html)
+- [Viewing and Downloading Docs](view-and-download-docs.html)
+- [Managing docsfy from the CLI](manage-docsfy-from-the-cli.html)

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Configuration Reference - docsfy</title>
-    <meta name="description" content="Turn any Git repo into a polished, shareable documentation site in minutes">
+    <meta name="description" content="Turn any Git repo into a polished docs site you can generate, track, and share in minutes">
     <link rel="stylesheet" href="assets/style.css">
     <script>try{var t=localStorage.getItem('theme');if(t==='dark')document.documentElement.setAttribute('data-theme','dark')}catch(e){}</script>
     <link rel="alternate" type="text/plain" title="LLM Documentation Index" href="llms.txt">
@@ -14,7 +14,7 @@
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <a href="index.html" class="sidebar-logo">docsfy</a>
-            <p class="sidebar-tagline">Turn any Git repo into a polished, shareable documentation site in minutes</p>
+            <p class="sidebar-tagline">Turn any Git repo into a polished docs site you can generate, track, and share in minutes</p>
         </div>
 
         <div class="sidebar-search">
@@ -36,13 +36,6 @@
                     </li>
                     
                     <li>
-                        <a href="configure-ai-providers.html"
-                           class="nav-link">
-                            Configure AI Providers
-                        </a>
-                    </li>
-                    
-                    <li>
                         <a href="install-and-run-docsfy-without-docker.html"
                            class="nav-link">
                             Install and Run docsfy Without Docker
@@ -59,49 +52,63 @@
                     <li>
                         <a href="generate-documentation.html"
                            class="nav-link">
-                            Generate Documentation
+                            Generating Documentation
                         </a>
                     </li>
                     
                     <li>
                         <a href="track-generation-progress.html"
                            class="nav-link">
-                            Track Generation Progress
+                            Tracking Generation Progress
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="view-and-download-docs.html"
+                           class="nav-link">
+                            Viewing and Downloading Docs
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="configure-ai-providers-and-models.html"
+                           class="nav-link">
+                            Configuring AI Providers and Models
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="regenerate-after-code-changes.html"
+                           class="nav-link">
+                            Regenerating After Code Changes
                         </a>
                     </li>
                     
                     <li>
                         <a href="regenerate-for-new-branches-and-models.html"
                            class="nav-link">
-                            Regenerate for New Branches and Models
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="view-download-and-publish-docs.html"
-                           class="nav-link">
-                            View, Download, and Publish Docs
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="manage-users-roles-and-access.html"
-                           class="nav-link">
-                            Manage Users, Roles, and Access
+                            Regenerating for New Branches and Models
                         </a>
                     </li>
                     
                     <li>
                         <a href="manage-docsfy-from-the-cli.html"
                            class="nav-link">
-                            Manage docsfy from the CLI
+                            Managing docsfy from the CLI
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="manage-users-and-access.html"
+                           class="nav-link">
+                            Managing Users and Access
                         </a>
                     </li>
                     
                     <li>
                         <a href="fix-setup-and-generation-problems.html"
                            class="nav-link">
-                            Fix Setup and Generation Problems
+                            Fixing Setup and Generation Problems
                         </a>
                     </li>
                     
@@ -113,13 +120,6 @@
                 <ul class="nav-group-pages">
                     
                     <li>
-                        <a href="configuration-reference.html"
-                           class="nav-link active" aria-current="page">
-                            Configuration Reference
-                        </a>
-                    </li>
-                    
-                    <li>
                         <a href="cli-command-reference.html"
                            class="nav-link">
                             CLI Command Reference
@@ -127,16 +127,16 @@
                     </li>
                     
                     <li>
-                        <a href="http-api-reference.html"
+                        <a href="http-api-and-websocket-reference.html"
                            class="nav-link">
-                            HTTP API Reference
+                            HTTP API and WebSocket Reference
                         </a>
                     </li>
                     
                     <li>
-                        <a href="websocket-reference.html"
-                           class="nav-link">
-                            WebSocket Reference
+                        <a href="configuration-reference.html"
+                           class="nav-link active" aria-current="page">
+                            Configuration Reference
                         </a>
                     </li>
                     
@@ -190,54 +190,10 @@
                          user-supplied input. XSS risk is minimal and accepted since
                          the AI generates the content, not end users. -->
                     <h1 id="configuration-reference">Configuration Reference</h1>
-<p>Server settings come from environment variables. CLI profiles live in <code>~/.config/docsfy/config.toml</code>. See <a href="#">Install and Run docsfy Without Docker</a> for startup steps and <a href="#">CLI Command Reference</a> for CLI syntax.</p>
-<h2 id="env-backed-server-settings"><code>.env</code>-Backed Server Settings</h2>
-<h3 id="env"><code>.env</code></h3>
-<p>Environment file used by the server settings model.</p>
-<table>
-<thead>
-<tr>
-<th>Name</th>
-<th>Type</th>
-<th>Default</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>path</code></td>
-<td>path</td>
-<td><code>.env</code></td>
-<td>UTF-8 file loaded by the server settings model.</td>
-</tr>
-<tr>
-<td><code>encoding</code></td>
-<td>string</td>
-<td><code>utf-8</code></td>
-<td>Encoding used when reading <code>.env</code>.</td>
-</tr>
-<tr>
-<td><code>extra keys</code></td>
-<td>behavior</td>
-<td><code>ignored</code></td>
-<td>Unknown keys do not fail settings loading.</td>
-</tr>
-</tbody>
-</table>
-<div class="highlight"><pre><span></span><code>ADMIN_KEY=&lt;ADMIN_KEY&gt;
-AI_PROVIDER=cursor
-AI_MODEL=gpt-5.4-xhigh-fast
-AI_CLI_TIMEOUT=60
-DATA_DIR=/data
-SECURE_COOKIES=true
-</code></pre></div>
-
-<p>Effect: Supplies the settings-model fields used during application startup and request handling.</p>
-<blockquote>
-<p><strong>Note:</strong> <code>HOST</code>, <code>PORT</code>, <code>DEBUG</code>, <code>DEV_MODE</code>, and <code>API_TARGET</code> are read directly from the process environment, not from the settings model.</p>
-</blockquote>
-<h3 id="authentication-settings">Authentication settings</h3>
-<p>Admin authentication and browser cookie security.</p>
+<p>Server runtime settings are loaded from environment variables. CLI profiles are stored in <code>~/.config/docsfy/config.toml</code>.</p>
+<h2 id="admin-and-server-settings">Admin and Server Settings</h2>
+<h3 id="server-environment-variables">Server environment variables</h3>
+<p>Settings loaded during application startup and request handling.</p>
 <table>
 <thead>
 <tr>
@@ -252,7 +208,37 @@ SECURE_COOKIES=true
 <td><code>ADMIN_KEY</code></td>
 <td>string</td>
 <td><code>""</code></td>
-<td>Required admin secret. Used for admin login, admin Bearer auth, and HMAC hashing of stored user API keys. Startup validation requires at least 16 characters.</td>
+<td>Required built-in admin secret. The built-in admin username is <code>admin</code>. Startup fails if this value is empty or shorter than 16 characters.</td>
+</tr>
+<tr>
+<td><code>AI_PROVIDER</code></td>
+<td>string</td>
+<td><code>cursor</code></td>
+<td>Default provider used when a generation request omits <code>ai_provider</code>. Accepted values: <code>claude</code>, <code>gemini</code>, <code>cursor</code>.</td>
+</tr>
+<tr>
+<td><code>AI_MODEL</code></td>
+<td>string</td>
+<td><code>gpt-5.4-xhigh-fast</code></td>
+<td>Default model used when a generation request omits <code>ai_model</code>.</td>
+</tr>
+<tr>
+<td><code>AI_CLI_TIMEOUT</code></td>
+<td>integer</td>
+<td><code>60</code></td>
+<td>Positive timeout value passed to AI CLI calls when a generation request omits <code>ai_cli_timeout</code>.</td>
+</tr>
+<tr>
+<td><code>MAX_CONCURRENT_PAGES</code></td>
+<td>integer</td>
+<td><code>10</code></td>
+<td>Maximum parallel AI CLI calls during page generation and validation. Must be greater than <code>0</code>.</td>
+</tr>
+<tr>
+<td><code>DATA_DIR</code></td>
+<td>path</td>
+<td><code>/data</code></td>
+<td>Base directory for <code>docsfy.db</code> and generated project artifacts.</td>
 </tr>
 <tr>
 <td><code>SECURE_COOKIES</code></td>
@@ -263,92 +249,21 @@ SECURE_COOKIES=true
 </tbody>
 </table>
 <div class="highlight"><pre><span></span><code>ADMIN_KEY=&lt;ADMIN_KEY&gt;
+AI_PROVIDER=cursor
+AI_MODEL=gpt-5.4-xhigh-fast
+AI_CLI_TIMEOUT=60
+MAX_CONCURRENT_PAGES=10
+DATA_DIR=/data
 SECURE_COOKIES=true
 </code></pre></div>
 
-<p>Effect: <code>ADMIN_KEY</code> must be present for the server to start. <code>SECURE_COOKIES</code> changes whether browsers send the session cookie only over HTTPS.</p>
+<p>Effect: <code>ADMIN_KEY</code> enables built-in admin access and is also used as the HMAC secret for stored user API keys. <code>AI_PROVIDER</code>, <code>AI_MODEL</code>, and <code>AI_CLI_TIMEOUT</code> apply when a generation request omits those fields. <code>DATA_DIR</code> changes the runtime storage root. <code>SECURE_COOKIES</code> changes whether browser sessions require HTTPS.</p>
 <blockquote>
 <p><strong>Warning:</strong> Changing <code>ADMIN_KEY</code> invalidates existing stored user API keys.</p>
+<p><strong>Note:</strong> On plain <code>http://localhost</code>, browser sessions do not persist unless <code>SECURE_COOKIES=false</code>.</p>
 </blockquote>
-<h3 id="generation-settings">Generation settings</h3>
-<p>Server-side defaults used when a generation omits provider, model, or timeout, plus the parallel page limit.</p>
-<table>
-<thead>
-<tr>
-<th>Name</th>
-<th>Type</th>
-<th>Default</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>AI_PROVIDER</code></td>
-<td>enum</td>
-<td><code>cursor</code></td>
-<td>Default AI provider. Accepted values: <code>claude</code>, <code>gemini</code>, <code>cursor</code>.</td>
-</tr>
-<tr>
-<td><code>AI_MODEL</code></td>
-<td>string</td>
-<td><code>gpt-5.4-xhigh-fast</code></td>
-<td>Default AI model name.</td>
-</tr>
-<tr>
-<td><code>AI_CLI_TIMEOUT</code></td>
-<td>integer</td>
-<td><code>60</code></td>
-<td>Positive timeout value passed to provider CLI calls when no request-specific value is supplied.</td>
-</tr>
-<tr>
-<td><code>MAX_CONCURRENT_PAGES</code></td>
-<td>integer</td>
-<td><code>10</code></td>
-<td>Maximum parallel AI CLI calls during page generation and validation. Must be greater than <code>0</code>.</td>
-</tr>
-</tbody>
-</table>
-<div class="highlight"><pre><span></span><code>AI_PROVIDER=gemini
-AI_MODEL=gemini-2.5-pro
-AI_CLI_TIMEOUT=120
-MAX_CONCURRENT_PAGES=4
-</code></pre></div>
-
-<p>Effect: Request-specific provider, model, and timeout values override <code>AI_PROVIDER</code>, <code>AI_MODEL</code>, and <code>AI_CLI_TIMEOUT</code>. <code>MAX_CONCURRENT_PAGES</code> remains the server-side concurrency cap.</p>
-<h3 id="storage-and-logging-settings">Storage and logging settings</h3>
-<p>Runtime storage root and log verbosity.</p>
-<table>
-<thead>
-<tr>
-<th>Name</th>
-<th>Type</th>
-<th>Default</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>DATA_DIR</code></td>
-<td>path</td>
-<td><code>/data</code></td>
-<td>Base directory for <code>docsfy.db</code> and per-variant project files.</td>
-</tr>
-<tr>
-<td><code>LOG_LEVEL</code></td>
-<td>string</td>
-<td><code>INFO</code></td>
-<td>Logger level string used by the server.</td>
-</tr>
-</tbody>
-</table>
-<div class="highlight"><pre><span></span><code>DATA_DIR=/srv/docsfy-data
-LOG_LEVEL=DEBUG
-</code></pre></div>
-
-<p>Effect: <code>DATA_DIR</code> changes where the database and generated artifacts are stored. <code>LOG_LEVEL</code> changes server log verbosity.</p>
-<h2 id="direct-process-environment">Direct Process Environment</h2>
-<h3 id="docsfy-server-launcher-variables"><code>docsfy-server</code> launcher variables</h3>
-<p>Variables read directly by the <code>docsfy-server</code> console entry point.</p>
+<h3 id="docsfy-server"><code>docsfy-server</code></h3>
+<p>Direct launcher environment read by <code>docsfy.main.run()</code>.</p>
 <table>
 <thead>
 <tr>
@@ -375,195 +290,20 @@ LOG_LEVEL=DEBUG
 <td><code>DEBUG</code></td>
 <td>string</td>
 <td>unset</td>
-<td>Set to <code>true</code> to start uvicorn with reload enabled.</td>
+<td>When set to <code>true</code>, starts uvicorn with reload enabled.</td>
 </tr>
 </tbody>
 </table>
 <div class="highlight"><pre><span></span><code><span class="nv">HOST</span><span class="o">=</span><span class="m">0</span>.0.0.0<span class="w"> </span><span class="nv">PORT</span><span class="o">=</span><span class="m">9000</span><span class="w"> </span><span class="nv">DEBUG</span><span class="o">=</span><span class="nb">true</span><span class="w"> </span>docsfy-server
 </code></pre></div>
 
-<p>Effect: Starts the direct server entry point on the requested host and port, with reload enabled only when <code>DEBUG=true</code>.</p>
+<p>Effect: Starts the server on the requested interface and port. <code>DEBUG=true</code> enables backend autoreload.</p>
 <blockquote>
-<p><strong>Note:</strong> The checked-in container entrypoint does not read <code>HOST</code> or <code>PORT</code>; it always starts uvicorn on <code>0.0.0.0:8000</code>.</p>
+<p><strong>Note:</strong> The checked-in container entrypoint does not use <code>HOST</code>, <code>PORT</code>, or <code>DEBUG</code>; it always starts uvicorn on <code>0.0.0.0:8000</code>.</p>
 </blockquote>
-<h3 id="container-and-frontend-development-variables">Container and frontend development variables</h3>
-<p>Variables used by <code>entrypoint.sh</code> and the Vite development server.</p>
-<table>
-<thead>
-<tr>
-<th>Name</th>
-<th>Type</th>
-<th>Default</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>DEV_MODE</code></td>
-<td>string</td>
-<td>unset</td>
-<td>When set to <code>true</code>, the container entrypoint runs <code>npm ci</code>, starts Vite on <code>5173</code>, and starts uvicorn with reload on <code>8000</code>.</td>
-</tr>
-<tr>
-<td><code>API_TARGET</code></td>
-<td>URL</td>
-<td><code>http://localhost:8000</code></td>
-<td>Backend target used by the Vite dev proxy for <code>/api</code>, <code>/docs</code>, and <code>/health</code>. WebSocket proxying is enabled for <code>/api</code>.</td>
-</tr>
-<tr>
-<td><code>vite host</code></td>
-<td>string</td>
-<td><code>0.0.0.0</code></td>
-<td>Fixed Vite development bind host.</td>
-</tr>
-<tr>
-<td><code>vite port</code></td>
-<td>integer</td>
-<td><code>5173</code></td>
-<td>Fixed Vite development port.</td>
-</tr>
-</tbody>
-</table>
-<div class="highlight"><pre><span></span><code><span class="nt">services</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">docsfy</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">ports</span><span class="p">:</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;8000:8000&quot;</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;5173:5173&quot;</span>
-<span class="w">    </span><span class="nt">environment</span><span class="p">:</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">DEV_MODE=true</span>
-</code></pre></div>
-
-<div class="highlight"><pre><span></span><code><span class="nv">API_TARGET</span><span class="o">=</span>http://localhost:8000<span class="w"> </span>npm<span class="w"> </span>run<span class="w"> </span>dev
-</code></pre></div>
-
-<p>Effect: Enables split frontend/backend development and points the Vite proxy at the chosen backend.</p>
-<h2 id="default-variant-setting">Default Variant Setting</h2>
-<h3 id="branch"><code>branch</code></h3>
-<p>Default branch used by variant records and filesystem layout when no branch is supplied.</p>
-<table>
-<thead>
-<tr>
-<th>Name</th>
-<th>Type</th>
-<th>Default</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>branch</code></td>
-<td>string</td>
-<td><code>main</code></td>
-<td>Default branch value. It is stored in the database primary key, used in variant URLs, and included in per-variant directory paths. Valid values must match <code>^[a-zA-Z0-9][a-zA-Z0-9._-]*$</code>; <code>/</code> and <code>..</code> are rejected.</td>
-</tr>
-</tbody>
-</table>
-<div class="highlight"><pre><span></span><code>Valid:   release-1.x
-Invalid: release/1.x
-Default: main
-</code></pre></div>
-
-<p>Effect: Omitted branch values resolve to <code>main</code>.</p>
-<blockquote>
-<p><strong>Tip:</strong> Use hyphens instead of slashes in branch names.</p>
-</blockquote>
-<h2 id="data-locations">Data Locations</h2>
-<h3 id="runtime-storage-layout">Runtime storage layout</h3>
-<p>Persistent files stored under <code>DATA_DIR</code>.</p>
-<table>
-<thead>
-<tr>
-<th>Name</th>
-<th>Type</th>
-<th>Default</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>DATA_DIR/docsfy.db</code></td>
-<td>file</td>
-<td><code>/data/docsfy.db</code></td>
-<td>SQLite database containing project metadata, users, project access rules, and hashed sessions.</td>
-</tr>
-<tr>
-<td><code>DATA_DIR/projects/</code></td>
-<td>directory</td>
-<td><code>/data/projects/</code></td>
-<td>Root directory for generated variants.</td>
-</tr>
-<tr>
-<td><code>DATA_DIR/projects/&lt;owner-or-_default&gt;/&lt;project&gt;/&lt;branch&gt;/&lt;provider&gt;/&lt;model&gt;/</code></td>
-<td>directory</td>
-<td>derived</td>
-<td>Per-variant root directory. <code>_default</code> is used when the owner is empty.</td>
-</tr>
-<tr>
-<td><code>.../site/</code></td>
-<td>directory</td>
-<td>derived</td>
-<td>Rendered static site files served under <code>/docs/...</code>.</td>
-</tr>
-<tr>
-<td><code>.../cache/pages/</code></td>
-<td>directory</td>
-<td>derived</td>
-<td>Cached page markdown used for regeneration.</td>
-</tr>
-</tbody>
-</table>
-<div class="highlight"><pre><span></span><code>/data/projects/alice/my-repo/main/claude/opus/site/index.html
-/data/projects/alice/my-repo/main/claude/opus/cache/pages/introduction.md
-</code></pre></div>
-
-<p>Effect: <code>docsfy</code> creates <code>docsfy.db</code> and the <code>projects/</code> tree under <code>DATA_DIR</code> and uses these paths as the authoritative runtime storage location.</p>
-<h3 id="docker-compose-volume">Docker Compose volume</h3>
-<p>Default host-to-container storage mapping in the checked-in <code>docker-compose.yaml</code>.</p>
-<table>
-<thead>
-<tr>
-<th>Name</th>
-<th>Type</th>
-<th>Default</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>host path</code></td>
-<td>path</td>
-<td><code>./data</code></td>
-<td>Host directory mounted into the container.</td>
-</tr>
-<tr>
-<td><code>container path</code></td>
-<td>path</td>
-<td><code>/data</code></td>
-<td>Container path used by the server's default <code>DATA_DIR</code>.</td>
-</tr>
-<tr>
-<td><code>env_file</code></td>
-<td>path</td>
-<td><code>.env</code></td>
-<td>Compose file loaded into the container for server settings.</td>
-</tr>
-</tbody>
-</table>
-<div class="highlight"><pre><span></span><code><span class="nt">services</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">docsfy</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">volumes</span><span class="p">:</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./data:/data</span>
-<span class="w">    </span><span class="nt">env_file</span><span class="p">:</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">.env</span>
-</code></pre></div>
-
-<p>Effect: Persists the database and generated docs on the host across container restarts.</p>
-<blockquote>
-<p><strong>Note:</strong> If you change <code>DATA_DIR</code>, update the volume mount to point at the new container path.</p>
-</blockquote>
-<h2 id="browser-session-cookie">Browser Session Cookie</h2>
+<h2 id="sessions-and-storage">Sessions and Storage</h2>
 <h3 id="docsfy_session"><code>docsfy_session</code></h3>
-<p>Browser session cookie set on login.</p>
+<p>Browser session cookie used for authenticated UI and WebSocket traffic.</p>
 <table>
 <thead>
 <tr>
@@ -584,19 +324,19 @@ Default: main
 <td><code>value</code></td>
 <td>string</td>
 <td>generated</td>
-<td>Opaque session token returned on login.</td>
+<td>Opaque session token. The raw API key is not stored in the cookie.</td>
 </tr>
 <tr>
 <td><code>HttpOnly</code></td>
 <td>boolean</td>
 <td><code>true</code></td>
-<td>Client-side JavaScript cannot read the cookie.</td>
+<td>Browser JavaScript cannot read the cookie.</td>
 </tr>
 <tr>
 <td><code>SameSite</code></td>
 <td>string</td>
 <td><code>strict</code></td>
-<td>Same-site cookie policy.</td>
+<td>Same-site policy.</td>
 </tr>
 <tr>
 <td><code>Secure</code></td>
@@ -608,16 +348,212 @@ Default: main
 <td><code>Max-Age</code></td>
 <td>integer</td>
 <td><code>28800</code></td>
-<td>Session lifetime in seconds (8 hours).</td>
+<td>Session lifetime in seconds.</td>
+</tr>
+<tr>
+<td><code>server storage</code></td>
+<td>string</td>
+<td>SHA-256 hash</td>
+<td>The <code>sessions</code> table stores a SHA-256 hash of the token, not the raw token.</td>
 </tr>
 </tbody>
 </table>
 <div class="highlight"><pre><span></span><code><span class="err">Set-Cookie: docsfy_session=&lt;token&gt;; HttpOnly; SameSite=strict; Max-Age=28800; Secure</span>
 </code></pre></div>
 
-<p>Effect: Authenticates protected browser requests and WebSocket connections while the session is valid. The cookie stores an opaque token; the <code>sessions</code> table stores a SHA-256 hash of that token. The cookie is deleted on logout and after API key rotation.</p>
+<p>Effect: Authenticates browser requests until logout, expiry, or API key rotation. Logout and user key rotation delete the current session.</p>
+<h3 id="runtime-storage-layout">Runtime storage layout</h3>
+<p>Files and directories rooted under <code>DATA_DIR</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>DATA_DIR/docsfy.db</code></td>
+<td>file</td>
+<td><code>/data/docsfy.db</code></td>
+<td>SQLite database containing projects, users, access grants, and sessions.</td>
+</tr>
+<tr>
+<td><code>DATA_DIR/projects/</code></td>
+<td>directory</td>
+<td><code>/data/projects/</code></td>
+<td>Root directory for generated variants.</td>
+</tr>
+<tr>
+<td><code>DATA_DIR/projects/&lt;owner-or-_default&gt;/&lt;project&gt;/&lt;branch&gt;/&lt;provider&gt;/&lt;model&gt;/</code></td>
+<td>directory</td>
+<td>derived</td>
+<td>Per-variant working directory. Empty owners are stored as <code>_default</code>.</td>
+</tr>
+<tr>
+<td><code>.../plan.json</code></td>
+<td>file</td>
+<td>derived</td>
+<td>Saved documentation plan for the variant.</td>
+</tr>
+<tr>
+<td><code>.../site/</code></td>
+<td>directory</td>
+<td>derived</td>
+<td>Rendered static site served under <code>/docs/...</code>.</td>
+</tr>
+<tr>
+<td><code>.../cache/pages/</code></td>
+<td>directory</td>
+<td>derived</td>
+<td>Cached page markdown used for regeneration.</td>
+</tr>
+</tbody>
+</table>
+<div class="highlight"><pre><span></span><code>/data/docsfy.db
+/data/projects/alice/my-repo/main/claude/opus/plan.json
+/data/projects/alice/my-repo/main/claude/opus/site/index.html
+/data/projects/alice/my-repo/main/claude/opus/cache/pages/introduction.md
+</code></pre></div>
+
+<p>Effect: <code>init_db()</code> creates <code>docsfy.db</code> and <code>projects/</code> if they do not exist. Generated docs, cached pages, and saved plans are read from and written to this tree.</p>
 <blockquote>
-<p><strong>Warning:</strong> On plain <code>http://localhost</code>, browser logins do not persist unless <code>SECURE_COOKIES=false</code>.</p>
+<p><strong>Note:</strong> Branch, provider, and model values become path segments. Path traversal values such as <code>/</code>, <code>\</code>, <code>..</code>, or leading <code>.</code> are rejected.</p>
+</blockquote>
+<h2 id="ports-and-containers">Ports and Containers</h2>
+<h3 id="default-ports">Default ports</h3>
+<p>Network ports used by the checked-in launchers and development tools.</p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>8000</code></td>
+<td>TCP port</td>
+<td><code>8000</code></td>
+<td>Application server, REST API, docs serving, and <code>/health</code>.</td>
+</tr>
+<tr>
+<td><code>5173</code></td>
+<td>TCP port</td>
+<td><code>5173</code></td>
+<td>Vite development server used by <code>npm run dev</code> and container <code>DEV_MODE=true</code>.</td>
+</tr>
+</tbody>
+</table>
+<div class="highlight"><pre><span></span><code>http://localhost:8000/
+http://localhost:5173/
+</code></pre></div>
+
+<p>Effect: <code>8000</code> is the application port in direct runs and container runs. <code>5173</code> is only used for frontend development.</p>
+<blockquote>
+<p><strong>Note:</strong> The container image exposes both <code>8000</code> and <code>5173</code> and uses <code>curl -f http://localhost:8000/health</code> as its health check.</p>
+</blockquote>
+<h3 id="docker-composeyaml"><code>docker-compose.yaml</code></h3>
+<p>Checked-in Compose service definition for containerized runs.</p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>services.docsfy.build.context</code></td>
+<td>path</td>
+<td><code>.</code></td>
+<td>Build context used for the image.</td>
+</tr>
+<tr>
+<td><code>services.docsfy.build.dockerfile</code></td>
+<td>path</td>
+<td><code>Dockerfile</code></td>
+<td>Dockerfile used for the build.</td>
+</tr>
+<tr>
+<td><code>services.docsfy.ports[0]</code></td>
+<td>string</td>
+<td><code>"8000:8000"</code></td>
+<td>Maps the backend port to the host.</td>
+</tr>
+<tr>
+<td><code>services.docsfy.ports[1]</code></td>
+<td>string</td>
+<td>commented</td>
+<td>Optional <code>"5173:5173"</code> mapping for Vite development mode.</td>
+</tr>
+<tr>
+<td><code>services.docsfy.volumes[0]</code></td>
+<td>string</td>
+<td><code>"./data:/data"</code></td>
+<td>Persists database and generated docs on the host.</td>
+</tr>
+<tr>
+<td><code>services.docsfy.volumes[1]</code></td>
+<td>string</td>
+<td>commented</td>
+<td>Optional <code>"./frontend:/app/frontend"</code> bind mount for live frontend development.</td>
+</tr>
+<tr>
+<td><code>services.docsfy.env_file</code></td>
+<td>path</td>
+<td><code>.env</code></td>
+<td>Loads environment variables into the container.</td>
+</tr>
+<tr>
+<td><code>services.docsfy.environment.ADMIN_KEY</code></td>
+<td>string</td>
+<td><code>${ADMIN_KEY}</code></td>
+<td>Passes the admin secret into the container environment.</td>
+</tr>
+<tr>
+<td><code>services.docsfy.environment.DEV_MODE</code></td>
+<td>string</td>
+<td>commented</td>
+<td>Optional development mode toggle.</td>
+</tr>
+<tr>
+<td><code>services.docsfy.restart</code></td>
+<td>string</td>
+<td><code>unless-stopped</code></td>
+<td>Container restart policy.</td>
+</tr>
+</tbody>
+</table>
+<div class="highlight"><pre><span></span><code><span class="nt">services</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">docsfy</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">build</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">context</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">.</span>
+<span class="w">      </span><span class="nt">dockerfile</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Dockerfile</span>
+<span class="w">    </span><span class="nt">ports</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;8000:8000&quot;</span>
+<span class="w">      </span><span class="c1"># - &quot;5173:5173&quot;</span>
+<span class="w">    </span><span class="nt">volumes</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./data:/data</span>
+<span class="w">      </span><span class="c1"># - ./frontend:/app/frontend</span>
+<span class="w">    </span><span class="nt">env_file</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">.env</span>
+<span class="w">    </span><span class="nt">environment</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ADMIN_KEY=${ADMIN_KEY}</span>
+<span class="w">      </span><span class="c1"># - DEV_MODE=true</span>
+<span class="w">    </span><span class="nt">restart</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">unless-stopped</span>
+</code></pre></div>
+
+<p>Effect: Builds the local image and runs the server with persistent storage at <code>./data</code>. Uncommenting the development lines enables frontend hot-reload access from the host.</p>
+<blockquote>
+<p><strong>Warning:</strong> <code>ADMIN_KEY</code> must resolve to a non-empty value of at least 16 characters or the application exits during startup.</p>
+<p><strong>Note:</strong> If you change <code>DATA_DIR</code>, update the container-side volume target so it matches the new storage root.</p>
 </blockquote>
 <h2 id="cli-profiles">CLI Profiles</h2>
 <h3 id="configdocsfyconfigtoml"><code>~/.config/docsfy/config.toml</code></h3>
@@ -633,40 +569,46 @@ Default: main
 </thead>
 <tbody>
 <tr>
-<td><code>directory</code></td>
-<td>path</td>
-<td><code>~/.config/docsfy/</code></td>
-<td>CLI config directory.</td>
-</tr>
-<tr>
-<td><code>file</code></td>
+<td><code>path</code></td>
 <td>path</td>
 <td><code>~/.config/docsfy/config.toml</code></td>
 <td>CLI profile file.</td>
 </tr>
 <tr>
+<td><code>directory mode</code></td>
+<td>file mode</td>
+<td><code>0700</code></td>
+<td>Permission mode applied to <code>~/.config/docsfy/</code> when the CLI writes it.</td>
+</tr>
+<tr>
+<td><code>file mode</code></td>
+<td>file mode</td>
+<td><code>0600</code></td>
+<td>Permission mode applied to <code>config.toml</code> when the CLI writes it.</td>
+</tr>
+<tr>
 <td><code>[default].server</code></td>
 <td>string</td>
-<td>none</td>
+<td>unset</td>
 <td>Default profile name used when <code>--server</code> is omitted.</td>
 </tr>
 <tr>
 <td><code>[servers.&lt;name&gt;].url</code></td>
 <td>string</td>
-<td>none</td>
-<td>Base URL for a named server profile.</td>
+<td>unset</td>
+<td>Base URL for the named server profile.</td>
 </tr>
 <tr>
 <td><code>[servers.&lt;name&gt;].username</code></td>
 <td>string</td>
-<td>none</td>
-<td>Username stored with the profile for connection resolution and display.</td>
+<td>unset</td>
+<td>Username stored with the profile.</td>
 </tr>
 <tr>
 <td><code>[servers.&lt;name&gt;].password</code></td>
 <td>string</td>
-<td>none</td>
-<td>API key stored with the profile and sent as the CLI Bearer token.</td>
+<td>unset</td>
+<td>API key stored with the profile and used as the CLI Bearer token.</td>
 </tr>
 </tbody>
 </table>
@@ -679,14 +621,13 @@ Default: main
 <span class="n">password</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;&lt;API_KEY&gt;&quot;</span>
 </code></pre></div>
 
-<p>Effect: The CLI loads this file to resolve server URL and credentials for commands that connect to a docsfy server. The stored <code>password</code> value is what the CLI sends as the Bearer token.</p>
+<p>Effect: The CLI resolves connection details from this file before running commands. The stored <code>password</code> value is sent as the Bearer token for API requests.</p>
 <blockquote>
-<p><strong>Warning:</strong> <code>password</code> is stored verbatim in <code>config.toml</code>; the CLI relies on file permissions rather than encryption.
-<strong>Note:</strong> The CLI creates <code>~/.config/docsfy/</code> with owner-only permissions and writes <code>config.toml</code> with owner read/write only.
-<strong>Tip:</strong> <code>docsfy config set</code> accepts keys under <code>default.</code> and <code>servers.</code>.</p>
+<p><strong>Warning:</strong> <code>password</code> is stored verbatim in <code>config.toml</code>.</p>
+<p><strong>Note:</strong> <code>username</code> is stored with the profile, but CLI authentication uses the password/API key as the Bearer token.</p>
 </blockquote>
-<h3 id="connection-resolution">Connection resolution</h3>
-<p>Resolution order used by the CLI when building a server connection.</p>
+<h3 id="docsfy-config-init"><code>docsfy config init</code></h3>
+<p>Interactive profile creation.</p>
 <table>
 <thead>
 <tr>
@@ -698,70 +639,285 @@ Default: main
 </thead>
 <tbody>
 <tr>
-<td><code>--server</code></td>
-<td>CLI flag</td>
+<td><code>Profile name</code></td>
+<td>prompt</td>
+<td><code>dev</code></td>
+<td>Profile name written under <code>[servers.&lt;name&gt;]</code>.</td>
+</tr>
+<tr>
+<td><code>Server URL</code></td>
+<td>prompt</td>
 <td>none</td>
+<td>Base URL for the target server.</td>
+</tr>
+<tr>
+<td><code>Username</code></td>
+<td>prompt</td>
+<td>none</td>
+<td>Username stored with the profile.</td>
+</tr>
+<tr>
+<td><code>Password</code></td>
+<td>prompt</td>
+<td>none</td>
+<td>API key stored with the profile. Input is hidden.</td>
+</tr>
+</tbody>
+</table>
+<div class="highlight"><pre><span></span><code>$ docsfy config init
+Profile name [dev]: dev
+Server URL: http://localhost:8000
+Username: admin
+Password:
+Profile &#39;dev&#39; saved to ~/.config/docsfy/config.toml
+</code></pre></div>
+
+<p>Effect: Creates or updates the named profile. If <code>[default].server</code> is not already set, it is set to the new profile name. If a default already exists, <code>init</code> adds the new profile without changing the current default.</p>
+<h3 id="docsfy-config-show"><code>docsfy config show</code></h3>
+<p>Profile inspection command.</p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>command-specific options</code></td>
+<td>none</td>
+<td>none</td>
+<td>This command has no command-specific flags.</td>
+</tr>
+</tbody>
+</table>
+<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>config<span class="w"> </span>show
+</code></pre></div>
+
+<p>Effect: Prints the config file path, default profile, saved profiles, and masked passwords. Passwords are displayed as <code>***</code> or the first two characters followed by <code>***</code>.</p>
+<h3 id="docsfy-config-set"><code>docsfy config set</code></h3>
+<p>Nested value update command.</p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>key</code></td>
+<td>string</td>
+<td>none</td>
+<td>Nested key to update. Must start with <code>default.</code> or <code>servers.</code>.</td>
+</tr>
+<tr>
+<td><code>value</code></td>
+<td>string</td>
+<td>none</td>
+<td>Value written to the target key.</td>
+</tr>
+</tbody>
+</table>
+<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>config<span class="w"> </span><span class="nb">set</span><span class="w"> </span>default.server<span class="w"> </span>prod
+docsfy<span class="w"> </span>config<span class="w"> </span><span class="nb">set</span><span class="w"> </span>servers.prod.url<span class="w"> </span>https://docsfy.example.com
+docsfy<span class="w"> </span>config<span class="w"> </span><span class="nb">set</span><span class="w"> </span>servers.prod.password<span class="w"> </span>&lt;API_KEY&gt;
+</code></pre></div>
+
+<p>Effect: Updates <code>config.toml</code> in place. Missing nested tables are created automatically.</p>
+<blockquote>
+<p><strong>Tip:</strong> CLI connection resolution only reads <code>[default].server</code>, <code>servers.&lt;name&gt;.url</code>, <code>servers.&lt;name&gt;.username</code>, and <code>servers.&lt;name&gt;.password</code>.</p>
+</blockquote>
+<h3 id="docsfy-global-connection-options"><code>docsfy</code> global connection options</h3>
+<p>Global options accepted before any CLI command.</p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--server</code>, <code>-s</code></td>
+<td>string</td>
+<td>unset</td>
 <td>Selects a named profile from <code>[servers]</code>.</td>
 </tr>
 <tr>
 <td><code>--host</code></td>
-<td>CLI flag</td>
-<td>none</td>
-<td>Overrides the host portion of the resolved URL. If the selected profile URL begins with <code>http://</code>, the CLI keeps <code>http</code>; otherwise it uses <code>https</code>.</td>
+<td>string</td>
+<td>unset</td>
+<td>Overrides the resolved host. If the selected profile URL starts with <code>http://</code>, the CLI keeps <code>http</code>; otherwise it uses <code>https</code>.</td>
 </tr>
 <tr>
 <td><code>--port</code></td>
-<td>CLI flag</td>
-<td><code>8000</code> when <code>--host</code> is set</td>
-<td>Overrides or supplies the port for <code>--host</code>.</td>
+<td>integer</td>
+<td><code>8000</code> when <code>--host</code> is used</td>
+<td>Port used with <code>--host</code>.</td>
 </tr>
 <tr>
-<td><code>--username</code></td>
-<td>CLI flag</td>
-<td>none</td>
+<td><code>--username</code>, <code>-u</code></td>
+<td>string</td>
+<td>profile value</td>
 <td>Overrides the resolved username.</td>
 </tr>
 <tr>
-<td><code>--password</code></td>
-<td>CLI flag</td>
-<td>none</td>
+<td><code>--password</code>, <code>-p</code></td>
+<td>string</td>
+<td>profile value</td>
 <td>Overrides the resolved API key.</td>
-</tr>
-<tr>
-<td><code>[default].server</code></td>
-<td>config key</td>
-<td>none</td>
-<td>Fallback profile when <code>--server</code> is omitted.</td>
 </tr>
 </tbody>
 </table>
 <div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>--server<span class="w"> </span>prod<span class="w"> </span>health
-docsfy<span class="w"> </span>--host<span class="w"> </span>docsfy.example.com<span class="w"> </span>--port<span class="w"> </span><span class="m">8443</span><span class="w"> </span>-u<span class="w"> </span>admin<span class="w"> </span>-p<span class="w"> </span>&lt;API_KEY&gt;<span class="w"> </span>health
+docsfy<span class="w"> </span>--host<span class="w"> </span>myhost<span class="w"> </span>--port<span class="w"> </span><span class="m">9000</span><span class="w"> </span>-u<span class="w"> </span>admin<span class="w"> </span>-p<span class="w"> </span>&lt;API_KEY&gt;<span class="w"> </span>health
 </code></pre></div>
 
-<p>Effect: Resolution order is CLI flags, then the named profile, then <code>[default].server</code>. If no connection can be resolved, or if the selected profile does not exist, the CLI exits with an error. See <a href="#">CLI Command Reference</a> for command syntax.</p>
+<p>Effect: Resolution order is explicit CLI flags, then the <code>--server</code> profile, then <code>[default].server</code>. If no connection can be resolved, or the named profile does not exist, the CLI exits with an error.</p>
+<h2 id="local-development">Local Development</h2>
+<h3 id="frontend-development-proxy">Frontend development proxy</h3>
+<p>Vite development server settings from <code>frontend/vite.config.ts</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>API_TARGET</code></td>
+<td>URL</td>
+<td><code>http://localhost:8000</code></td>
+<td>Backend target for Vite proxying.</td>
+</tr>
+<tr>
+<td><code>server.host</code></td>
+<td>string</td>
+<td><code>0.0.0.0</code></td>
+<td>Vite bind host.</td>
+</tr>
+<tr>
+<td><code>server.port</code></td>
+<td>integer</td>
+<td><code>5173</code></td>
+<td>Vite bind port.</td>
+</tr>
+<tr>
+<td><code>proxy./api</code></td>
+<td>route</td>
+<td>enabled</td>
+<td>Proxies API requests to <code>API_TARGET</code>. WebSocket proxying is enabled.</td>
+</tr>
+<tr>
+<td><code>proxy./docs</code></td>
+<td>route</td>
+<td>enabled</td>
+<td>Proxies docs asset requests to <code>API_TARGET</code>.</td>
+</tr>
+<tr>
+<td><code>proxy./health</code></td>
+<td>route</td>
+<td>enabled</td>
+<td>Proxies health checks to <code>API_TARGET</code>.</td>
+</tr>
+</tbody>
+</table>
+<div class="highlight"><pre><span></span><code><span class="nb">cd</span><span class="w"> </span>frontend
+<span class="nv">API_TARGET</span><span class="o">=</span>http://localhost:8000<span class="w"> </span>npm<span class="w"> </span>run<span class="w"> </span>dev
+</code></pre></div>
+
+<p>Effect: Starts Vite on <code>5173</code> and forwards API, docs, health, and WebSocket traffic to the backend target.</p>
+<h3 id="container-dev_mode">Container <code>DEV_MODE</code></h3>
+<p>Development mode handled by <code>entrypoint.sh</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>DEV_MODE</code></td>
+<td>string</td>
+<td>unset</td>
+<td>When <code>true</code>, the entrypoint runs <code>npm ci</code>, starts Vite in the background, and starts uvicorn with <code>--reload --reload-dir /app/src</code>.</td>
+</tr>
+<tr>
+<td><code>backend bind</code></td>
+<td>host:port</td>
+<td><code>0.0.0.0:8000</code></td>
+<td>Fixed backend bind used by the container entrypoint.</td>
+</tr>
+<tr>
+<td><code>frontend bind</code></td>
+<td>port</td>
+<td><code>5173</code></td>
+<td>Vite port used in development mode.</td>
+</tr>
+<tr>
+<td><code>frontend mount</code></td>
+<td>path</td>
+<td>commented in Compose</td>
+<td>Optional <code>./frontend:/app/frontend</code> bind mount for live frontend changes.</td>
+</tr>
+</tbody>
+</table>
+<div class="highlight"><pre><span></span><code><span class="nt">services</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">docsfy</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">ports</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;8000:8000&quot;</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;5173:5173&quot;</span>
+<span class="w">    </span><span class="nt">volumes</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./data:/data</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./frontend:/app/frontend</span>
+<span class="w">    </span><span class="nt">environment</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">DEV_MODE=true</span>
+</code></pre></div>
+
+<p>Effect: Starts the backend and Vite together inside the container. Backend code reloads from <code>/app/src</code>. Frontend live changes require the frontend bind mount.</p>
+<blockquote>
+<p><strong>Note:</strong> When <code>DEV_MODE</code> is not <code>true</code>, the container serves the prebuilt frontend from <code>frontend/dist</code>.</p>
+<p><strong>Note:</strong> If <code>frontend/dist/index.html</code> is missing and Vite is not running, non-API routes return <code>404</code> with <code>Frontend not built. Run: cd frontend &amp;&amp; npm run build</code>.</p>
+</blockquote>
 <h2 id="related-pages">Related Pages</h2>
 <ul>
-<li><a href="#">Install and Run docsfy Without Docker</a></li>
-<li><a href="#">Configure AI Providers</a></li>
-<li><a href="#">Manage docsfy from the CLI</a></li>
-<li><a href="#">CLI Command Reference</a></li>
-<li><a href="#">Fix Setup and Generation Problems</a></li>
+<li>See <a href="install-and-run-docsfy-without-docker.html">Install and Run docsfy Without Docker</a> for details.</li>
+<li>See <a href="manage-docsfy-from-the-cli.html">Managing docsfy from the CLI</a> for details.</li>
+<li>See <a href="cli-command-reference.html">CLI Command Reference</a> for details.</li>
+<li>See <a href="fix-setup-and-generation-problems.html">Fixing Setup and Generation Problems</a> for details.</li>
+</ul>
+<h2 id="related-pages_1">Related Pages</h2>
+<ul>
+<li><a href="install-and-run-docsfy-without-docker.html">Install and Run docsfy Without Docker</a></li>
+<li><a href="manage-docsfy-from-the-cli.html">Managing docsfy from the CLI</a></li>
+<li><a href="cli-command-reference.html">CLI Command Reference</a></li>
+<li><a href="configure-ai-providers-and-models.html">Configuring AI Providers and Models</a></li>
+<li><a href="fix-setup-and-generation-problems.html">Fixing Setup and Generation Problems</a></li>
 </ul>
                 </div>
             </article>
             <nav class="page-nav">
                 
-                <a href="fix-setup-and-generation-problems.html" class="page-nav-link page-nav-prev">
+                <a href="http-api-and-websocket-reference.html" class="page-nav-link page-nav-prev">
                     <span class="page-nav-label">Previous</span>
-                    <span class="page-nav-title">Fix Setup and Generation Problems</span>
+                    <span class="page-nav-title">HTTP API and WebSocket Reference</span>
                 </a>
                 
                 
-                <a href="cli-command-reference.html" class="page-nav-link page-nav-next">
-                    <span class="page-nav-label">Next</span>
-                    <span class="page-nav-title">CLI Command Reference</span>
-                </a>
+                <div></div>
                 
             </nav>
             
@@ -770,37 +926,36 @@ docsfy<span class="w"> </span>--host<span class="w"> </span>docsfy.example.com<s
                     <h3>On this page</h3>
                     <div class="toc">
 <ul>
-<li><a href="#env-backed-server-settings">.env-Backed Server Settings</a><ul>
-<li><a href="#env">.env</a></li>
-<li><a href="#authentication-settings">Authentication settings</a></li>
-<li><a href="#generation-settings">Generation settings</a></li>
-<li><a href="#storage-and-logging-settings">Storage and logging settings</a></li>
+<li><a href="#admin-and-server-settings">Admin and Server Settings</a><ul>
+<li><a href="#server-environment-variables">Server environment variables</a></li>
+<li><a href="#docsfy-server">docsfy-server</a></li>
 </ul>
 </li>
-<li><a href="#direct-process-environment">Direct Process Environment</a><ul>
-<li><a href="#docsfy-server-launcher-variables">docsfy-server launcher variables</a></li>
-<li><a href="#container-and-frontend-development-variables">Container and frontend development variables</a></li>
-</ul>
-</li>
-<li><a href="#default-variant-setting">Default Variant Setting</a><ul>
-<li><a href="#branch">branch</a></li>
-</ul>
-</li>
-<li><a href="#data-locations">Data Locations</a><ul>
-<li><a href="#runtime-storage-layout">Runtime storage layout</a></li>
-<li><a href="#docker-compose-volume">Docker Compose volume</a></li>
-</ul>
-</li>
-<li><a href="#browser-session-cookie">Browser Session Cookie</a><ul>
+<li><a href="#sessions-and-storage">Sessions and Storage</a><ul>
 <li><a href="#docsfy_session">docsfy_session</a></li>
+<li><a href="#runtime-storage-layout">Runtime storage layout</a></li>
+</ul>
+</li>
+<li><a href="#ports-and-containers">Ports and Containers</a><ul>
+<li><a href="#default-ports">Default ports</a></li>
+<li><a href="#docker-composeyaml">docker-compose.yaml</a></li>
 </ul>
 </li>
 <li><a href="#cli-profiles">CLI Profiles</a><ul>
 <li><a href="#configdocsfyconfigtoml">~/.config/docsfy/config.toml</a></li>
-<li><a href="#connection-resolution">Connection resolution</a></li>
+<li><a href="#docsfy-config-init">docsfy config init</a></li>
+<li><a href="#docsfy-config-show">docsfy config show</a></li>
+<li><a href="#docsfy-config-set">docsfy config set</a></li>
+<li><a href="#docsfy-global-connection-options">docsfy global connection options</a></li>
+</ul>
+</li>
+<li><a href="#local-development">Local Development</a><ul>
+<li><a href="#frontend-development-proxy">Frontend development proxy</a></li>
+<li><a href="#container-dev_mode">Container DEV_MODE</a></li>
 </ul>
 </li>
 <li><a href="#related-pages">Related Pages</a></li>
+<li><a href="#related-pages_1">Related Pages</a></li>
 </ul>
 </div>
 
@@ -812,7 +967,7 @@ docsfy<span class="w"> </span>--host<span class="w"> </span>docsfy.example.com<s
 
         <footer class="page-footer">
             
-            <span class="footer-version">Generated from version 1.2.0</span>
+            <span class="footer-version">Generated from version 1.3.0</span>
             <span class="footer-sep">&middot;</span>
             
             Generated with <a href="https://github.com/myk-org/docsfy" target="_blank" rel="noopener">docs<span class="brand-accent">fy</span></a>

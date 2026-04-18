@@ -1,26 +1,26 @@
 # docsfy
 
-> Turn any Git repo into a polished, shareable documentation site in minutes
+> Turn any Git repo into a polished docs site you can generate, track, and share in minutes
 
 ## Getting Started
 
-- [Generate Your First Docs Site](generate-your-first-docs-site.md): Start docsfy with the fastest Docker-based path, sign in as admin, and generate docs for a repository right away.
-- [Configure AI Providers](configure-ai-providers.md): Install and authenticate the Claude, Gemini, or Cursor CLI so documentation generation can run successfully.
-- [Install and Run docsfy Without Docker](install-and-run-docsfy-without-docker.md): Set the required environment variables, build the frontend, and start the server and CLI directly on your machine.
+- [Generate Your First Docs Site](generate-your-first-docs-site.md): Get docsfy running with the fastest setup path, sign in as admin, and generate a searchable docs site for your first repository in one short flow.
+- [Install and Run docsfy Without Docker](install-and-run-docsfy-without-docker.md): Run docsfy locally with Python, Node, and the required AI CLIs when you want a non-container setup or a development-friendly workflow.
 
 ## User Guides
 
-- [Generate Documentation](generate-documentation.md): Add a repository, choose branch and model settings, and start a new generation from the dashboard.
-- [Track Generation Progress](track-generation-progress.md): Follow real-time status updates, understand each generation stage, and abort a run when needed.
-- [Regenerate for New Branches and Models](regenerate-for-new-branches-and-models.md): Create new variants for another branch or model and learn when docsfy reuses existing work.
-- [View, Download, and Publish Docs](view-download-and-publish-docs.md): Open the latest or exact variant, download the static site, and host the generated output elsewhere.
-- [Manage Users, Roles, and Access](manage-users-roles-and-access.md): Create users, assign roles, rotate passwords, and control who can see each project's docs.
-- [Manage docsfy from the CLI](manage-docsfy-from-the-cli.md): Configure a server profile and run health checks, generations, status checks, downloads, and admin tasks from the terminal.
-- [Fix Setup and Generation Problems](fix-setup-and-generation-problems.md): Diagnose login failures, provider setup issues, branch validation errors, conflicts, and failed generations.
+- [Generating Documentation](generate-documentation.md): Start a new run from the web app with the simplest valid inputs and launch documentation generation successfully.
+- [Tracking Generation Progress](track-generation-progress.md): Follow live stages, page counts, and activity logs so you can tell when a run is healthy, finished, or needs to be aborted.
+- [Viewing and Downloading Docs](view-and-download-docs.md): Open a finished docs site, use its search and navigation tools, and download a static copy for offline use or external hosting.
+- [Configuring AI Providers and Models](configure-ai-providers-and-models.md): Choose the right provider and model for each run, understand how server defaults and known models appear in the UI and CLI, and avoid mismatched settings.
+- [Regenerating After Code Changes](regenerate-after-code-changes.md): Refresh docs after a repository changes, understand when docsfy can reuse existing work, and force a clean rebuild when you need one.
+- [Regenerating for New Branches and Models](regenerate-for-new-branches-and-models.md): Create separate variants for other branches or models, understand how variant reuse works, and open or download the exact version you need.
+- [Managing docsfy from the CLI](manage-docsfy-from-the-cli.md): Set up the CLI profile and use terminal commands to generate docs, watch live progress, inspect variants, download output, and handle routine workflows without the web app.
+- [Managing Users and Access](manage-users-and-access.md): Create users, assign admin, user, or viewer roles, rotate keys safely, and grant or revoke project access so teammates only see the docs they should.
+- [Fixing Setup and Generation Problems](fix-setup-and-generation-problems.md): Diagnose failed logins, missing AI CLI tools, invalid repo inputs, and stalled or failed generations so you can get runs back to ready state.
 
 ## Reference
 
-- [Configuration Reference](configuration-reference.md): Look up environment variables, default settings, data locations, cookie options, and CLI profile fields.
-- [CLI Command Reference](cli-command-reference.md): Find syntax, flags, defaults, and examples for every docsfy command and subcommand.
-- [HTTP API Reference](http-api-reference.md): Find auth requirements, paths, parameters, and responses for models, auth, project, admin, download, and docs routes.
-- [WebSocket Reference](websocket-reference.md): Look up connection options and the sync, progress, status_change, and heartbeat messages.
+- [CLI Command Reference](cli-command-reference.md): Look up the exact syntax, flags, and output behavior for each docsfy command when you need a fast answer.
+- [HTTP API and WebSocket Reference](http-api-and-websocket-reference.md): Find the exact endpoints, auth rules, request shapes, download routes, and real-time message formats you need for integrations or automation.
+- [Configuration Reference](configuration-reference.md): Find the exact settings you need to configure admin access, AI defaults, data storage, cookies, ports, Docker Compose, CLI profiles, and local development behavior.

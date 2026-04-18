@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manage docsfy from the CLI - docsfy</title>
-    <meta name="description" content="Turn any Git repo into a polished, shareable documentation site in minutes">
+    <title>Managing docsfy from the CLI - docsfy</title>
+    <meta name="description" content="Turn any Git repo into a polished docs site you can generate, track, and share in minutes">
     <link rel="stylesheet" href="assets/style.css">
     <script>try{var t=localStorage.getItem('theme');if(t==='dark')document.documentElement.setAttribute('data-theme','dark')}catch(e){}</script>
     <link rel="alternate" type="text/plain" title="LLM Documentation Index" href="llms.txt">
@@ -14,7 +14,7 @@
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <a href="index.html" class="sidebar-logo">docsfy</a>
-            <p class="sidebar-tagline">Turn any Git repo into a polished, shareable documentation site in minutes</p>
+            <p class="sidebar-tagline">Turn any Git repo into a polished docs site you can generate, track, and share in minutes</p>
         </div>
 
         <div class="sidebar-search">
@@ -36,13 +36,6 @@
                     </li>
                     
                     <li>
-                        <a href="configure-ai-providers.html"
-                           class="nav-link">
-                            Configure AI Providers
-                        </a>
-                    </li>
-                    
-                    <li>
                         <a href="install-and-run-docsfy-without-docker.html"
                            class="nav-link">
                             Install and Run docsfy Without Docker
@@ -59,49 +52,63 @@
                     <li>
                         <a href="generate-documentation.html"
                            class="nav-link">
-                            Generate Documentation
+                            Generating Documentation
                         </a>
                     </li>
                     
                     <li>
                         <a href="track-generation-progress.html"
                            class="nav-link">
-                            Track Generation Progress
+                            Tracking Generation Progress
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="view-and-download-docs.html"
+                           class="nav-link">
+                            Viewing and Downloading Docs
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="configure-ai-providers-and-models.html"
+                           class="nav-link">
+                            Configuring AI Providers and Models
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="regenerate-after-code-changes.html"
+                           class="nav-link">
+                            Regenerating After Code Changes
                         </a>
                     </li>
                     
                     <li>
                         <a href="regenerate-for-new-branches-and-models.html"
                            class="nav-link">
-                            Regenerate for New Branches and Models
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="view-download-and-publish-docs.html"
-                           class="nav-link">
-                            View, Download, and Publish Docs
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="manage-users-roles-and-access.html"
-                           class="nav-link">
-                            Manage Users, Roles, and Access
+                            Regenerating for New Branches and Models
                         </a>
                     </li>
                     
                     <li>
                         <a href="manage-docsfy-from-the-cli.html"
                            class="nav-link active" aria-current="page">
-                            Manage docsfy from the CLI
+                            Managing docsfy from the CLI
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="manage-users-and-access.html"
+                           class="nav-link">
+                            Managing Users and Access
                         </a>
                     </li>
                     
                     <li>
                         <a href="fix-setup-and-generation-problems.html"
                            class="nav-link">
-                            Fix Setup and Generation Problems
+                            Fixing Setup and Generation Problems
                         </a>
                     </li>
                     
@@ -113,13 +120,6 @@
                 <ul class="nav-group-pages">
                     
                     <li>
-                        <a href="configuration-reference.html"
-                           class="nav-link">
-                            Configuration Reference
-                        </a>
-                    </li>
-                    
-                    <li>
                         <a href="cli-command-reference.html"
                            class="nav-link">
                             CLI Command Reference
@@ -127,16 +127,16 @@
                     </li>
                     
                     <li>
-                        <a href="http-api-reference.html"
+                        <a href="http-api-and-websocket-reference.html"
                            class="nav-link">
-                            HTTP API Reference
+                            HTTP API and WebSocket Reference
                         </a>
                     </li>
                     
                     <li>
-                        <a href="websocket-reference.html"
+                        <a href="configuration-reference.html"
                            class="nav-link">
-                            WebSocket Reference
+                            Configuration Reference
                         </a>
                     </li>
                     
@@ -189,37 +189,36 @@
                          converted to HTML server-side by the markdown library, not
                          user-supplied input. XSS risk is minimal and accepted since
                          the AI generates the content, not end users. -->
-                    <h1 id="manage-docsfy-from-the-cli">Manage docsfy from the CLI</h1>
-<p>Use the CLI when you want to manage docsfy from a shell, script, or remote session instead of the browser. A saved server profile makes health checks, generations, status lookups, downloads, and admin tasks faster and easier to repeat.</p>
+                    <h1 id="managing-docsfy-from-the-cli">Managing docsfy from the CLI</h1>
+<p>Run docsfy from a terminal when you want to save a profile, start a docs run, watch it finish, and fetch the result without opening the web app. That keeps repeat work fast in remote shells, local terminals, and simple scripts.</p>
 <h2 id="prerequisites">Prerequisites</h2>
 <ul>
 <li>A running docsfy server you can reach</li>
-<li>The <code>docsfy</code> command available on your machine</li>
+<li>The <code>docsfy</code> command installed on your machine. If you still need local setup, see <a href="install-and-run-docsfy-without-docker.html">Install and Run docsfy Without Docker</a>.</li>
 <li>An API key for that server</li>
-<li>For the built-in admin account, the username is <code>admin</code></li>
-<li>For generation, a server that already has a working AI provider configured</li>
+<li>A <code>user</code> or <code>admin</code> key if you want to run <code>generate</code>, <code>abort</code>, or <code>delete</code></li>
+<li>A Git repository URL the server can reach</li>
 </ul>
 <h2 id="quick-example">Quick Example</h2>
 <div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>config<span class="w"> </span>init
 docsfy<span class="w"> </span>health
-docsfy<span class="w"> </span>generate<span class="w"> </span>https://github.com/org/my-repo.git<span class="w"> </span>--watch
-docsfy<span class="w"> </span>status<span class="w"> </span>my-repo
-docsfy<span class="w"> </span>download<span class="w"> </span>my-repo
+docsfy<span class="w"> </span>generate<span class="w"> </span>https://github.com/myk-org/for-testing-only<span class="w"> </span>--watch
+docsfy<span class="w"> </span>status<span class="w"> </span><span class="k">for</span>-testing-only
+docsfy<span class="w"> </span>download<span class="w"> </span><span class="k">for</span>-testing-only<span class="w"> </span>--output<span class="w"> </span>./site
 </code></pre></div>
 
-<p>In this flow, <code>my-repo</code> is the project name derived from the Git URL. <code>download</code> fetches the newest ready variant you can access.</p>
-<div class="mermaid-diagram"><svg id="my-svg" width="100%" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="flowchart" style="max-width: 1146.2px; background-color: transparent;" viewBox="0 0 1146.203125 70" role="graphics-document document" aria-roledescription="flowchart-v2"><style>#my-svg{font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:16px;fill:#333;}@keyframes edge-animation-frame{from{stroke-dashoffset:0;}}@keyframes dash{to{stroke-dashoffset:0;}}#my-svg .edge-animation-slow{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 50s linear infinite;stroke-linecap:round;}#my-svg .edge-animation-fast{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 20s linear infinite;stroke-linecap:round;}#my-svg .error-icon{fill:#552222;}#my-svg .error-text{fill:#552222;stroke:#552222;}#my-svg .edge-thickness-normal{stroke-width:1px;}#my-svg .edge-thickness-thick{stroke-width:3.5px;}#my-svg .edge-pattern-solid{stroke-dasharray:0;}#my-svg .edge-thickness-invisible{stroke-width:0;fill:none;}#my-svg .edge-pattern-dashed{stroke-dasharray:3;}#my-svg .edge-pattern-dotted{stroke-dasharray:2;}#my-svg .marker{fill:#333333;stroke:#333333;}#my-svg .marker.cross{stroke:#333333;}#my-svg svg{font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:16px;}#my-svg p{margin:0;}#my-svg .label{font-family:"trebuchet ms",verdana,arial,sans-serif;color:#333;}#my-svg .cluster-label text{fill:#333;}#my-svg .cluster-label span{color:#333;}#my-svg .cluster-label span p{background-color:transparent;}#my-svg .label text,#my-svg span{fill:#333;color:#333;}#my-svg .node rect,#my-svg .node circle,#my-svg .node ellipse,#my-svg .node polygon,#my-svg .node path{fill:#ECECFF;stroke:#9370DB;stroke-width:1px;}#my-svg .rough-node .label text,#my-svg .node .label text,#my-svg .image-shape .label,#my-svg .icon-shape .label{text-anchor:middle;}#my-svg .node .katex path{fill:#000;stroke:#000;stroke-width:1px;}#my-svg .rough-node .label,#my-svg .node .label,#my-svg .image-shape .label,#my-svg .icon-shape .label{text-align:center;}#my-svg .node.clickable{cursor:pointer;}#my-svg .root .anchor path{fill:#333333!important;stroke-width:0;stroke:#333333;}#my-svg .arrowheadPath{fill:#333333;}#my-svg .edgePath .path{stroke:#333333;stroke-width:1px;}#my-svg .flowchart-link{stroke:#333333;fill:none;}#my-svg .edgeLabel{background-color:rgba(232,232,232, 0.8);text-align:center;}#my-svg .edgeLabel p{background-color:rgba(232,232,232, 0.8);}#my-svg .edgeLabel rect{opacity:0.5;background-color:rgba(232,232,232, 0.8);fill:rgba(232,232,232, 0.8);}#my-svg .labelBkg{background-color:rgba(232, 232, 232, 0.5);}#my-svg .cluster rect{fill:#ffffde;stroke:#aaaa33;stroke-width:1px;}#my-svg .cluster text{fill:#333;}#my-svg .cluster span{color:#333;}#my-svg div.mermaidTooltip{position:absolute;text-align:center;max-width:200px;padding:2px;font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:12px;background:hsl(80, 100%, 96.2745098039%);border:1px solid #aaaa33;border-radius:2px;pointer-events:none;z-index:100;}#my-svg .flowchartTitleText{text-anchor:middle;font-size:18px;fill:#333;}#my-svg rect.text{fill:none;stroke-width:0;}#my-svg .icon-shape,#my-svg .image-shape{background-color:rgba(232,232,232, 0.8);text-align:center;}#my-svg .icon-shape p,#my-svg .image-shape p{background-color:rgba(232,232,232, 0.8);padding:2px;}#my-svg .icon-shape .label rect,#my-svg .image-shape .label rect{opacity:0.5;background-color:rgba(232,232,232, 0.8);fill:rgba(232,232,232, 0.8);}#my-svg .label-icon{display:inline-block;height:1em;overflow:visible;vertical-align:-0.125em;}#my-svg .node .label-icon path{fill:currentColor;stroke:revert;stroke-width:revert;}#my-svg .node .neo-node{stroke:#9370DB;}#my-svg [data-look="neo"].node rect,#my-svg [data-look="neo"].cluster rect,#my-svg [data-look="neo"].node polygon{stroke:#9370DB;filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#my-svg [data-look="neo"].node path{stroke:#9370DB;stroke-width:1px;}#my-svg [data-look="neo"].node .outer-path{filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#my-svg [data-look="neo"].node .neo-line path{stroke:#9370DB;filter:none;}#my-svg [data-look="neo"].node circle{stroke:#9370DB;filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#my-svg [data-look="neo"].node circle .state-start{fill:#000000;}#my-svg [data-look="neo"].icon-shape .icon{fill:#9370DB;filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#my-svg [data-look="neo"].icon-shape .icon-neo path{stroke:#9370DB;filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#my-svg :root{--mermaid-font-family:"trebuchet ms",verdana,arial,sans-serif;}</style><g><marker id="my-svg_flowchart-v2-pointEnd" class="marker flowchart-v2" viewBox="0 0 10 10" refX="5" refY="5" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"/></marker><marker id="my-svg_flowchart-v2-pointStart" class="marker flowchart-v2" viewBox="0 0 10 10" refX="4.5" refY="5" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" orient="auto"><path d="M 0 5 L 10 10 L 10 0 z" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"/></marker><marker id="my-svg_flowchart-v2-pointEnd-margin" class="marker flowchart-v2" viewBox="0 0 11.5 14" refX="11.5" refY="7" markerUnits="userSpaceOnUse" markerWidth="10.5" markerHeight="14" orient="auto"><path d="M 0 0 L 11.5 7 L 0 14 z" class="arrowMarkerPath" style="stroke-width: 0; stroke-dasharray: 1, 0;"/></marker><marker id="my-svg_flowchart-v2-pointStart-margin" class="marker flowchart-v2" viewBox="0 0 11.5 14" refX="1" refY="7" markerUnits="userSpaceOnUse" markerWidth="11.5" markerHeight="14" orient="auto"><polygon points="0,7 11.5,14 11.5,0" class="arrowMarkerPath" style="stroke-width: 0; stroke-dasharray: 1, 0;"/></marker><marker id="my-svg_flowchart-v2-circleEnd" class="marker flowchart-v2" viewBox="0 0 10 10" refX="11" refY="5" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"/></marker><marker id="my-svg_flowchart-v2-circleStart" class="marker flowchart-v2" viewBox="0 0 10 10" refX="-1" refY="5" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"/></marker><marker id="my-svg_flowchart-v2-circleEnd-margin" class="marker flowchart-v2" viewBox="0 0 10 10" refY="5" refX="12.25" markerUnits="userSpaceOnUse" markerWidth="14" markerHeight="14" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 0; stroke-dasharray: 1, 0;"/></marker><marker id="my-svg_flowchart-v2-circleStart-margin" class="marker flowchart-v2" viewBox="0 0 10 10" refX="-2" refY="5" markerUnits="userSpaceOnUse" markerWidth="14" markerHeight="14" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 0; stroke-dasharray: 1, 0;"/></marker><marker id="my-svg_flowchart-v2-crossEnd" class="marker cross flowchart-v2" viewBox="0 0 11 11" refX="12" refY="5.2" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><path d="M 1,1 l 9,9 M 10,1 l -9,9" class="arrowMarkerPath" style="stroke-width: 2; stroke-dasharray: 1, 0;"/></marker><marker id="my-svg_flowchart-v2-crossStart" class="marker cross flowchart-v2" viewBox="0 0 11 11" refX="-1" refY="5.2" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><path d="M 1,1 l 9,9 M 10,1 l -9,9" class="arrowMarkerPath" style="stroke-width: 2; stroke-dasharray: 1, 0;"/></marker><marker id="my-svg_flowchart-v2-crossEnd-margin" class="marker cross flowchart-v2" viewBox="0 0 15 15" refX="17.7" refY="7.5" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" orient="auto"><path d="M 1,1 L 14,14 M 1,14 L 14,1" class="arrowMarkerPath" style="stroke-width: 2.5;"/></marker><marker id="my-svg_flowchart-v2-crossStart-margin" class="marker cross flowchart-v2" viewBox="0 0 15 15" refX="-3.5" refY="7.5" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" orient="auto"><path d="M 1,1 L 14,14 M 1,14 L 14,1" class="arrowMarkerPath" style="stroke-width: 2.5; stroke-dasharray: 1, 0;"/></marker><g class="root"><g class="clusters"/><g class="edgePaths"><path d="M162.906,35L167.073,35C171.24,35,179.573,35,187.24,35C194.906,35,201.906,35,205.406,35L208.906,35" id="my-svg-L_A_B_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_A_B_0" data-points="W3sieCI6MTYyLjkwNjI1LCJ5IjozNX0seyJ4IjoxODcuOTA2MjUsInkiOjM1fSx7IngiOjIxMi45MDYyNSwieSI6MzV9XQ==" data-look="classic" marker-end="url(#my-svg_flowchart-v2-pointEnd)"/><path d="M377.859,35L382.026,35C386.193,35,394.526,35,402.193,35C409.859,35,416.859,35,420.359,35L423.859,35" id="my-svg-L_B_C_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_B_C_0" data-points="W3sieCI6Mzc3Ljg1OTM3NSwieSI6MzV9LHsieCI6NDAyLjg1OTM3NSwieSI6MzV9LHsieCI6NDI3Ljg1OTM3NSwieSI6MzV9XQ==" data-look="classic" marker-end="url(#my-svg_flowchart-v2-pointEnd)"/><path d="M619.047,35L623.214,35C627.38,35,635.714,35,643.38,35C651.047,35,658.047,35,661.547,35L665.047,35" id="my-svg-L_C_D_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_C_D_0" data-points="W3sieCI6NjE5LjA0Njg3NSwieSI6MzV9LHsieCI6NjQ0LjA0Njg3NSwieSI6MzV9LHsieCI6NjY5LjA0Njg3NSwieSI6MzV9XQ==" data-look="classic" marker-end="url(#my-svg_flowchart-v2-pointEnd)"/><path d="M906.5,35L910.667,35C914.833,35,923.167,35,930.833,35C938.5,35,945.5,35,949,35L952.5,35" id="my-svg-L_D_E_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_D_E_0" data-points="W3sieCI6OTA2LjUsInkiOjM1fSx7IngiOjkzMS41LCJ5IjozNX0seyJ4Ijo5NTYuNSwieSI6MzV9XQ==" data-look="classic" marker-end="url(#my-svg_flowchart-v2-pointEnd)"/></g><g class="edgeLabels"><g class="edgeLabel"><g class="label" data-id="L_A_B_0" transform="translate(0, 0)"><foreignObject width="0" height="0"><div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="edgeLabel"></span></div></foreignObject></g></g><g class="edgeLabel"><g class="label" data-id="L_B_C_0" transform="translate(0, 0)"><foreignObject width="0" height="0"><div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="edgeLabel"></span></div></foreignObject></g></g><g class="edgeLabel"><g class="label" data-id="L_C_D_0" transform="translate(0, 0)"><foreignObject width="0" height="0"><div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="edgeLabel"></span></div></foreignObject></g></g><g class="edgeLabel"><g class="label" data-id="L_D_E_0" transform="translate(0, 0)"><foreignObject width="0" height="0"><div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="edgeLabel"></span></div></foreignObject></g></g></g><g class="nodes"><g class="node default" id="my-svg-flowchart-A-0" data-look="classic" transform="translate(85.453125, 35)"><rect class="basic label-container" style="" x="-77.453125" y="-27" width="154.90625" height="54"/><g class="label" style="" transform="translate(-47.453125, -12)"><rect/><foreignObject width="94.90625" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="nodeLabel"><p>Save profile</p></span></div></foreignObject></g></g><g class="node default" id="my-svg-flowchart-B-1" data-look="classic" transform="translate(295.3828125, 35)"><rect class="basic label-container" style="" x="-82.4765625" y="-27" width="164.953125" height="54"/><g class="label" style="" transform="translate(-52.4765625, -12)"><rect/><foreignObject width="104.953125" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="nodeLabel"><p>Check health</p></span></div></foreignObject></g></g><g class="node default" id="my-svg-flowchart-C-3" data-look="classic" transform="translate(523.453125, 35)"><rect class="basic label-container" style="" x="-95.59375" y="-27" width="191.1875" height="54"/><g class="label" style="" transform="translate(-65.59375, -12)"><rect/><foreignObject width="131.1875" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="nodeLabel"><p>Start generation</p></span></div></foreignObject></g></g><g class="node default" id="my-svg-flowchart-D-5" data-look="classic" transform="translate(787.7734375, 35)"><rect class="basic label-container" style="" x="-118.7265625" y="-27" width="237.453125" height="54"/><g class="label" style="" transform="translate(-88.7265625, -12)"><rect/><foreignObject width="177.453125" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="nodeLabel"><p>Watch or check status</p></span></div></foreignObject></g></g><g class="node default" id="my-svg-flowchart-E-7" data-look="classic" transform="translate(1047.3515625, 35)"><rect class="basic label-container" style="" x="-90.8515625" y="-27" width="181.703125" height="54"/><g class="label" style="" transform="translate(-60.8515625, -12)"><rect/><foreignObject width="121.703125" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="nodeLabel"><p>Download docs</p></span></div></foreignObject></g></g></g></g></g><defs><filter id="my-svg-drop-shadow" height="130%" width="130%"><feDropShadow dx="4" dy="4" stdDeviation="0" flood-opacity="0.06" flood-color="#000000"/></filter></defs><defs><filter id="my-svg-drop-shadow-small" height="150%" width="150%"><feDropShadow dx="2" dy="2" stdDeviation="0" flood-opacity="0.06" flood-color="#000000"/></filter></defs></svg></div>
+<p>Replace <code>https://github.com/myk-org/for-testing-only</code> with the repository you want to document. The rest of the flow stays the same.</p>
+<div class="mermaid-diagram"><svg id="my-svg" width="100%" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="flowchart" style="max-width: 1346.61px; background-color: transparent;" viewBox="0 0 1346.609375 70" role="graphics-document document" aria-roledescription="flowchart-v2"><style>#my-svg{font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:16px;fill:#333;}@keyframes edge-animation-frame{from{stroke-dashoffset:0;}}@keyframes dash{to{stroke-dashoffset:0;}}#my-svg .edge-animation-slow{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 50s linear infinite;stroke-linecap:round;}#my-svg .edge-animation-fast{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 20s linear infinite;stroke-linecap:round;}#my-svg .error-icon{fill:#552222;}#my-svg .error-text{fill:#552222;stroke:#552222;}#my-svg .edge-thickness-normal{stroke-width:1px;}#my-svg .edge-thickness-thick{stroke-width:3.5px;}#my-svg .edge-pattern-solid{stroke-dasharray:0;}#my-svg .edge-thickness-invisible{stroke-width:0;fill:none;}#my-svg .edge-pattern-dashed{stroke-dasharray:3;}#my-svg .edge-pattern-dotted{stroke-dasharray:2;}#my-svg .marker{fill:#333333;stroke:#333333;}#my-svg .marker.cross{stroke:#333333;}#my-svg svg{font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:16px;}#my-svg p{margin:0;}#my-svg .label{font-family:"trebuchet ms",verdana,arial,sans-serif;color:#333;}#my-svg .cluster-label text{fill:#333;}#my-svg .cluster-label span{color:#333;}#my-svg .cluster-label span p{background-color:transparent;}#my-svg .label text,#my-svg span{fill:#333;color:#333;}#my-svg .node rect,#my-svg .node circle,#my-svg .node ellipse,#my-svg .node polygon,#my-svg .node path{fill:#ECECFF;stroke:#9370DB;stroke-width:1px;}#my-svg .rough-node .label text,#my-svg .node .label text,#my-svg .image-shape .label,#my-svg .icon-shape .label{text-anchor:middle;}#my-svg .node .katex path{fill:#000;stroke:#000;stroke-width:1px;}#my-svg .rough-node .label,#my-svg .node .label,#my-svg .image-shape .label,#my-svg .icon-shape .label{text-align:center;}#my-svg .node.clickable{cursor:pointer;}#my-svg .root .anchor path{fill:#333333!important;stroke-width:0;stroke:#333333;}#my-svg .arrowheadPath{fill:#333333;}#my-svg .edgePath .path{stroke:#333333;stroke-width:1px;}#my-svg .flowchart-link{stroke:#333333;fill:none;}#my-svg .edgeLabel{background-color:rgba(232,232,232, 0.8);text-align:center;}#my-svg .edgeLabel p{background-color:rgba(232,232,232, 0.8);}#my-svg .edgeLabel rect{opacity:0.5;background-color:rgba(232,232,232, 0.8);fill:rgba(232,232,232, 0.8);}#my-svg .labelBkg{background-color:rgba(232, 232, 232, 0.5);}#my-svg .cluster rect{fill:#ffffde;stroke:#aaaa33;stroke-width:1px;}#my-svg .cluster text{fill:#333;}#my-svg .cluster span{color:#333;}#my-svg div.mermaidTooltip{position:absolute;text-align:center;max-width:200px;padding:2px;font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:12px;background:hsl(80, 100%, 96.2745098039%);border:1px solid #aaaa33;border-radius:2px;pointer-events:none;z-index:100;}#my-svg .flowchartTitleText{text-anchor:middle;font-size:18px;fill:#333;}#my-svg rect.text{fill:none;stroke-width:0;}#my-svg .icon-shape,#my-svg .image-shape{background-color:rgba(232,232,232, 0.8);text-align:center;}#my-svg .icon-shape p,#my-svg .image-shape p{background-color:rgba(232,232,232, 0.8);padding:2px;}#my-svg .icon-shape .label rect,#my-svg .image-shape .label rect{opacity:0.5;background-color:rgba(232,232,232, 0.8);fill:rgba(232,232,232, 0.8);}#my-svg .label-icon{display:inline-block;height:1em;overflow:visible;vertical-align:-0.125em;}#my-svg .node .label-icon path{fill:currentColor;stroke:revert;stroke-width:revert;}#my-svg .node .neo-node{stroke:#9370DB;}#my-svg [data-look="neo"].node rect,#my-svg [data-look="neo"].cluster rect,#my-svg [data-look="neo"].node polygon{stroke:#9370DB;filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#my-svg [data-look="neo"].node path{stroke:#9370DB;stroke-width:1px;}#my-svg [data-look="neo"].node .outer-path{filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#my-svg [data-look="neo"].node .neo-line path{stroke:#9370DB;filter:none;}#my-svg [data-look="neo"].node circle{stroke:#9370DB;filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#my-svg [data-look="neo"].node circle .state-start{fill:#000000;}#my-svg [data-look="neo"].icon-shape .icon{fill:#9370DB;filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#my-svg [data-look="neo"].icon-shape .icon-neo path{stroke:#9370DB;filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#my-svg :root{--mermaid-font-family:"trebuchet ms",verdana,arial,sans-serif;}</style><g><marker id="my-svg_flowchart-v2-pointEnd" class="marker flowchart-v2" viewBox="0 0 10 10" refX="5" refY="5" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"/></marker><marker id="my-svg_flowchart-v2-pointStart" class="marker flowchart-v2" viewBox="0 0 10 10" refX="4.5" refY="5" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" orient="auto"><path d="M 0 5 L 10 10 L 10 0 z" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"/></marker><marker id="my-svg_flowchart-v2-pointEnd-margin" class="marker flowchart-v2" viewBox="0 0 11.5 14" refX="11.5" refY="7" markerUnits="userSpaceOnUse" markerWidth="10.5" markerHeight="14" orient="auto"><path d="M 0 0 L 11.5 7 L 0 14 z" class="arrowMarkerPath" style="stroke-width: 0; stroke-dasharray: 1, 0;"/></marker><marker id="my-svg_flowchart-v2-pointStart-margin" class="marker flowchart-v2" viewBox="0 0 11.5 14" refX="1" refY="7" markerUnits="userSpaceOnUse" markerWidth="11.5" markerHeight="14" orient="auto"><polygon points="0,7 11.5,14 11.5,0" class="arrowMarkerPath" style="stroke-width: 0; stroke-dasharray: 1, 0;"/></marker><marker id="my-svg_flowchart-v2-circleEnd" class="marker flowchart-v2" viewBox="0 0 10 10" refX="11" refY="5" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"/></marker><marker id="my-svg_flowchart-v2-circleStart" class="marker flowchart-v2" viewBox="0 0 10 10" refX="-1" refY="5" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"/></marker><marker id="my-svg_flowchart-v2-circleEnd-margin" class="marker flowchart-v2" viewBox="0 0 10 10" refY="5" refX="12.25" markerUnits="userSpaceOnUse" markerWidth="14" markerHeight="14" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 0; stroke-dasharray: 1, 0;"/></marker><marker id="my-svg_flowchart-v2-circleStart-margin" class="marker flowchart-v2" viewBox="0 0 10 10" refX="-2" refY="5" markerUnits="userSpaceOnUse" markerWidth="14" markerHeight="14" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 0; stroke-dasharray: 1, 0;"/></marker><marker id="my-svg_flowchart-v2-crossEnd" class="marker cross flowchart-v2" viewBox="0 0 11 11" refX="12" refY="5.2" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><path d="M 1,1 l 9,9 M 10,1 l -9,9" class="arrowMarkerPath" style="stroke-width: 2; stroke-dasharray: 1, 0;"/></marker><marker id="my-svg_flowchart-v2-crossStart" class="marker cross flowchart-v2" viewBox="0 0 11 11" refX="-1" refY="5.2" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><path d="M 1,1 l 9,9 M 10,1 l -9,9" class="arrowMarkerPath" style="stroke-width: 2; stroke-dasharray: 1, 0;"/></marker><marker id="my-svg_flowchart-v2-crossEnd-margin" class="marker cross flowchart-v2" viewBox="0 0 15 15" refX="17.7" refY="7.5" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" orient="auto"><path d="M 1,1 L 14,14 M 1,14 L 14,1" class="arrowMarkerPath" style="stroke-width: 2.5;"/></marker><marker id="my-svg_flowchart-v2-crossStart-margin" class="marker cross flowchart-v2" viewBox="0 0 15 15" refX="-3.5" refY="7.5" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" orient="auto"><path d="M 1,1 L 14,14 M 1,14 L 14,1" class="arrowMarkerPath" style="stroke-width: 2.5; stroke-dasharray: 1, 0;"/></marker><g class="root"><g class="clusters"/><g class="edgePaths"><path d="M162.906,35L167.073,35C171.24,35,179.573,35,187.24,35C194.906,35,201.906,35,205.406,35L208.906,35" id="my-svg-L_A_B_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_A_B_0" data-points="W3sieCI6MTYyLjkwNjI1LCJ5IjozNX0seyJ4IjoxODcuOTA2MjUsInkiOjM1fSx7IngiOjIxMi45MDYyNSwieSI6MzV9XQ==" data-look="classic" marker-end="url(#my-svg_flowchart-v2-pointEnd)"/><path d="M377.859,35L382.026,35C386.193,35,394.526,35,402.193,35C409.859,35,416.859,35,420.359,35L423.859,35" id="my-svg-L_B_C_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_B_C_0" data-points="W3sieCI6Mzc3Ljg1OTM3NSwieSI6MzV9LHsieCI6NDAyLjg1OTM3NSwieSI6MzV9LHsieCI6NDI3Ljg1OTM3NSwieSI6MzV9XQ==" data-look="classic" marker-end="url(#my-svg_flowchart-v2-pointEnd)"/><path d="M619.047,35L623.214,35C627.38,35,635.714,35,643.38,35C651.047,35,658.047,35,661.547,35L665.047,35" id="my-svg-L_C_D_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_C_D_0" data-points="W3sieCI6NjE5LjA0Njg3NSwieSI6MzV9LHsieCI6NjQ0LjA0Njg3NSwieSI6MzV9LHsieCI6NjY5LjA0Njg3NSwieSI6MzV9XQ==" data-look="classic" marker-end="url(#my-svg_flowchart-v2-pointEnd)"/><path d="M853.016,35L857.182,35C861.349,35,869.682,35,877.349,35C885.016,35,892.016,35,895.516,35L899.016,35" id="my-svg-L_D_E_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_D_E_0" data-points="W3sieCI6ODUzLjAxNTYyNSwieSI6MzV9LHsieCI6ODc4LjAxNTYyNSwieSI6MzV9LHsieCI6OTAzLjAxNTYyNSwieSI6MzV9XQ==" data-look="classic" marker-end="url(#my-svg_flowchart-v2-pointEnd)"/><path d="M1091.219,35L1095.385,35C1099.552,35,1107.885,35,1115.552,35C1123.219,35,1130.219,35,1133.719,35L1137.219,35" id="my-svg-L_E_F_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_E_F_0" data-points="W3sieCI6MTA5MS4yMTg3NSwieSI6MzV9LHsieCI6MTExNi4yMTg3NSwieSI6MzV9LHsieCI6MTE0MS4yMTg3NSwieSI6MzV9XQ==" data-look="classic" marker-end="url(#my-svg_flowchart-v2-pointEnd)"/></g><g class="edgeLabels"><g class="edgeLabel"><g class="label" data-id="L_A_B_0" transform="translate(0, 0)"><foreignObject width="0" height="0"><div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="edgeLabel"></span></div></foreignObject></g></g><g class="edgeLabel"><g class="label" data-id="L_B_C_0" transform="translate(0, 0)"><foreignObject width="0" height="0"><div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="edgeLabel"></span></div></foreignObject></g></g><g class="edgeLabel"><g class="label" data-id="L_C_D_0" transform="translate(0, 0)"><foreignObject width="0" height="0"><div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="edgeLabel"></span></div></foreignObject></g></g><g class="edgeLabel"><g class="label" data-id="L_D_E_0" transform="translate(0, 0)"><foreignObject width="0" height="0"><div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="edgeLabel"></span></div></foreignObject></g></g><g class="edgeLabel"><g class="label" data-id="L_E_F_0" transform="translate(0, 0)"><foreignObject width="0" height="0"><div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="edgeLabel"></span></div></foreignObject></g></g></g><g class="nodes"><g class="node default" id="my-svg-flowchart-A-0" data-look="classic" transform="translate(85.453125, 35)"><rect class="basic label-container" style="" x="-77.453125" y="-27" width="154.90625" height="54"/><g class="label" style="" transform="translate(-47.453125, -12)"><rect/><foreignObject width="94.90625" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="nodeLabel"><p>Save profile</p></span></div></foreignObject></g></g><g class="node default" id="my-svg-flowchart-B-1" data-look="classic" transform="translate(295.3828125, 35)"><rect class="basic label-container" style="" x="-82.4765625" y="-27" width="164.953125" height="54"/><g class="label" style="" transform="translate(-52.4765625, -12)"><rect/><foreignObject width="104.953125" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="nodeLabel"><p>Check server</p></span></div></foreignObject></g></g><g class="node default" id="my-svg-flowchart-C-3" data-look="classic" transform="translate(523.453125, 35)"><rect class="basic label-container" style="" x="-95.59375" y="-27" width="191.1875" height="54"/><g class="label" style="" transform="translate(-65.59375, -12)"><rect/><foreignObject width="131.1875" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="nodeLabel"><p>Start generation</p></span></div></foreignObject></g></g><g class="node default" id="my-svg-flowchart-D-5" data-look="classic" transform="translate(761.03125, 35)"><rect class="basic label-container" style="" x="-91.984375" y="-27" width="183.96875" height="54"/><g class="label" style="" transform="translate(-61.984375, -12)"><rect/><foreignObject width="123.96875" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="nodeLabel"><p>Watch progress</p></span></div></foreignObject></g></g><g class="node default" id="my-svg-flowchart-E-7" data-look="classic" transform="translate(997.1171875, 35)"><rect class="basic label-container" style="" x="-94.1015625" y="-27" width="188.203125" height="54"/><g class="label" style="" transform="translate(-64.1015625, -12)"><rect/><foreignObject width="128.203125" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="nodeLabel"><p>Inspect variants</p></span></div></foreignObject></g></g><g class="node default" id="my-svg-flowchart-F-9" data-look="classic" transform="translate(1239.9140625, 35)"><rect class="basic label-container" style="" x="-98.6953125" y="-27" width="197.390625" height="54"/><g class="label" style="" transform="translate(-68.6953125, -12)"><rect/><foreignObject width="137.390625" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="nodeLabel"><p>Download output</p></span></div></foreignObject></g></g></g></g></g><defs><filter id="my-svg-drop-shadow" height="130%" width="130%"><feDropShadow dx="4" dy="4" stdDeviation="0" flood-opacity="0.06" flood-color="#000000"/></filter></defs><defs><filter id="my-svg-drop-shadow-small" height="150%" width="150%"><feDropShadow dx="2" dy="2" stdDeviation="0" flood-opacity="0.06" flood-color="#000000"/></filter></defs></svg></div>
 
-<h2 id="step-by-step">Step-by-Step</h2>
+<h2 id="step-by-step">Step-by-step</h2>
 <ol>
-<li>Save a reusable server profile.</li>
+<li>Save a reusable profile.</li>
 </ol>
 <div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>config<span class="w"> </span>init
 docsfy<span class="w"> </span>config<span class="w"> </span>show
 </code></pre></div>
 
-<p>When <code>docsfy config init</code> asks for <code>Password</code>, enter your API key.</p>
-<p>A saved profile looks like this:</p>
+<p>When <code>docsfy config init</code> asks for <code>Password</code>, enter your API key. For the built-in admin account, the username is <code>admin</code>.</p>
 <div class="highlight"><pre><span></span><code><span class="k">[default]</span>
 <span class="n">server</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;dev&quot;</span>
 
@@ -229,206 +228,173 @@ docsfy<span class="w"> </span>config<span class="w"> </span>show
 <span class="n">password</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;&lt;your-dev-key&gt;&quot;</span>
 </code></pre></div>
 
-<p>The first profile you create becomes the default server. Later profiles are added without changing the existing default.</p>
+<p>The first profile you create becomes the default. Later profiles are added without changing that default automatically.</p>
 <blockquote>
-<p><strong>Note:</strong> The CLI stores profiles in <code>~/.config/docsfy/config.toml</code>, masks saved passwords in <code>docsfy config show</code>, and writes the file with owner-only permissions.</p>
+<p><strong>Note:</strong> Profiles live in <code>~/.config/docsfy/config.toml</code>. <code>docsfy config show</code> masks the saved key, but the file stores the full value, so keep it private. See <a href="configuration-reference.html">Configuration Reference</a> for the full profile format.</p>
 </blockquote>
 <ol>
-<li>Confirm that the CLI can reach the right server.</li>
+<li>Confirm that the CLI is pointing at the right server.</li>
 </ol>
 <div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>health
 </code></pre></div>
 
-<p>A healthy server returns a short result like this:</p>
-<div class="highlight"><pre><span></span><code>Server: http://localhost:8000
-Status: ok
-</code></pre></div>
-
-<p>Run this first whenever you switch profiles or change environments.</p>
+<p>A working connection prints the server URL and <code>Status: ok</code>. Run this first whenever you switch environments or update a profile.</p>
 <ol>
-<li>Start a generation from a Git remote.</li>
+<li>Start a generation and watch it live.</li>
 </ol>
-<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>generate<span class="w"> </span>https://github.com/org/my-repo.git<span class="w"> </span>--watch
+<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>generate<span class="w"> </span>https://github.com/myk-org/for-testing-only<span class="w"> </span>--watch
 </code></pre></div>
 
-<p>Use a normal HTTPS or SSH Git URL. If you omit <code>--branch</code>, docsfy uses <code>main</code>. If you omit <code>--provider</code> and <code>--model</code>, the server uses its current defaults.</p>
-<p>Later CLI commands use the repository name, so <code>https://github.com/org/my-repo.git</code> becomes <code>my-repo</code>.</p>
+<p>Use an HTTPS or SSH Git URL. If you omit <code>--branch</code>, docsfy uses <code>main</code>. If you omit <code>--provider</code> and <code>--model</code>, the server uses its current defaults.</p>
+<p>Later commands use the repository name from the URL, with any <code>.git</code> suffix removed, so this repository becomes <code>for-testing-only</code>.</p>
+<div class="highlight"><pre><span></span><code>Project: for-testing-only
+Branch: main
+Status: generating
+Generation ID: &lt;GENERATION_ID&gt;
+Watching generation progress...
+[generating] cloning
+[generating] planning
+[generating] generating_pages (3 pages)
+Generation complete! (9 pages)
+</code></pre></div>
+
+<p>Save the generation ID if you want an exact handle for later commands. The exact stage list and page counts vary by run. See <a href="track-generation-progress.html">Tracking Generation Progress</a> for the meaning of each stage.</p>
 <blockquote>
-<p><strong>Warning:</strong> <code>docsfy generate</code> takes a Git URL, not a local filesystem path.</p>
-<p><strong>Warning:</strong> Branch names cannot contain <code>/</code>. Use names like <code>release-1.x</code>, not <code>release/1.x</code>.</p>
+<p><strong>Tip:</strong> If you want <code>--watch</code> to follow one exact variant from the start, run <code>docsfy models</code> first and pass both <code>--provider</code> and <code>--model</code> to <code>docsfy generate</code>.</p>
+<p><strong>Warning:</strong> <code>docsfy generate</code> accepts a remote Git URL, not a local path. Branch names cannot contain <code>/</code>, so use <code>release-1.x</code> instead of <code>release/1.x</code>.</p>
 </blockquote>
-<p>If you want to generate another branch or model on purpose, see <a href="#">Regenerate for New Branches and Models</a>.</p>
 <ol>
-<li>Check what is running and inspect the result.</li>
+<li>Inspect the variants you can access.</li>
 </ol>
 <div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>list
-docsfy<span class="w"> </span>status<span class="w"> </span>my-repo
+docsfy<span class="w"> </span>status<span class="w"> </span><span class="k">for</span>-testing-only
+docsfy<span class="w"> </span>status<span class="w"> </span>&lt;GENERATION_ID&gt;
 </code></pre></div>
 
-<p><code>list</code> gives you a table of accessible variants. Each row is one variant, so the same project can appear more than once.</p>
-<p><code>status</code> shows the details for one project, including the owner, current status, page count, last update time, short commit, current stage, and any error message.</p>
-<p>If you want one exact variant instead of every variant for the project, pass all three selectors together:</p>
-<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>status<span class="w"> </span>my-repo<span class="w"> </span>--branch<span class="w"> </span>main<span class="w"> </span>--provider<span class="w"> </span>cursor<span class="w"> </span>--model<span class="w"> </span>gpt-5.4-xhigh-fast
-</code></pre></div>
-
-<p>For the full meaning of statuses and stages, see <a href="#">Track Generation Progress</a>.</p>
-<ol>
-<li>Download the finished site.</li>
-</ol>
-<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>download<span class="w"> </span>my-repo
-</code></pre></div>
-
-<p>This saves the newest ready variant you can access as a <code>.tar.gz</code> file in your current directory.</p>
-<p>If you want to unpack it immediately instead:</p>
-<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>download<span class="w"> </span>my-repo<span class="w"> </span>--output<span class="w"> </span>./site
-</code></pre></div>
-
+<p><code>docsfy list</code> prints one row per variant, including <code>NAME</code>, <code>BRANCH</code>, <code>PROVIDER</code>, <code>MODEL</code>, <code>STATUS</code>, <code>OWNER</code>, <code>PAGES</code>, and <code>GEN ID</code>. <code>docsfy status</code> shows the fuller detail view, including stage, last update time, short commit, and any error message.</p>
 <blockquote>
-<p><strong>Tip:</strong> Use exact selectors when you need one specific variant instead of the latest ready one.</p>
+<p><strong>Tip:</strong> Use the generation ID from <code>docsfy generate</code> or <code>docsfy list</code> when you want the exact variant without retyping branch, provider, and model.</p>
 </blockquote>
-<p>See <a href="#">CLI Command Reference</a> for the full syntax and every flag.</p>
-<details><summary>Advanced Usage</summary>
-
-### Switch servers or override a saved profile
-
-
-<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>config<span class="w"> </span><span class="nb">set</span><span class="w"> </span>default.server<span class="w"> </span>prod
-docsfy<span class="w"> </span>--host<span class="w"> </span>myhost<span class="w"> </span>--port<span class="w"> </span><span class="m">9000</span><span class="w"> </span>-u<span class="w"> </span>admin<span class="w"> </span>-p<span class="w"> </span>&lt;your-api-key&gt;<span class="w"> </span>health
+<ol>
+<li>Download the finished output.</li>
+</ol>
+<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>download<span class="w"> </span><span class="k">for</span>-testing-only
+docsfy<span class="w"> </span>download<span class="w"> </span>&lt;GENERATION_ID&gt;<span class="w"> </span>--output<span class="w"> </span>./site
 </code></pre></div>
 
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>What you get</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>docsfy download for-testing-only</code></td>
+<td>A <code>.tar.gz</code> archive for the latest ready variant you can access, saved in your current directory.</td>
+</tr>
+<tr>
+<td><code>docsfy download &lt;GENERATION_ID&gt; --output ./site</code></td>
+<td>One exact variant, downloaded and extracted directly into <code>./site</code>.</td>
+</tr>
+</tbody>
+</table>
+<p>Without <code>--output</code>, the archive name is <code>&lt;project&gt;-docs.tar.gz</code>. With <code>--output</code>, docsfy creates the target directory if needed and extracts the archive there.</p>
+<h2 id="advanced-usage">Advanced Usage</h2>
+<h3 id="switch-profiles-or-override-them-for-one-command">Switch profiles or override them for one command</h3>
+<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>config<span class="w"> </span><span class="nb">set</span><span class="w"> </span>default.server<span class="w"> </span>prod
+docsfy<span class="w"> </span>--server<span class="w"> </span>prod<span class="w"> </span>health
+docsfy<span class="w"> </span>--host<span class="w"> </span>docsfy.example.com<span class="w"> </span>--port<span class="w"> </span><span class="m">443</span><span class="w"> </span>-u<span class="w"> </span>admin<span class="w"> </span>-p<span class="w"> </span>&lt;API_KEY&gt;<span class="w"> </span>health
+</code></pre></div>
 
-
-Use saved profiles for everyday work, and one-off flags when you need to hit a different host without changing `~/.config/docsfy/config.toml`.
-
-| If `-p` appears... | It means... |
-| --- | --- |
-| Before the subcommand, like `docsfy -p <your-api-key> health` | API key/password |
-| After `status`, `delete`, `abort`, or `download`, like `docsfy status my-repo -p cursor` | AI provider |
-
-> **Tip:** Global connection flags go before the subcommand.
-
-### Discover providers and models
-
-
+<p>Use <code>--server</code> when you already saved multiple profiles. Use <code>--host</code>, <code>--port</code>, <code>-u</code>, and <code>-p</code> before the subcommand when you need a one-off connection without changing the saved file.</p>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Meaning of <code>-p</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>docsfy --server prod -p &lt;API_KEY&gt; health</code></td>
+<td>API key/password, because it appears before the subcommand.</td>
+</tr>
+<tr>
+<td><code>docsfy status for-testing-only -p cursor</code></td>
+<td>AI provider, because it appears after <code>status</code>.</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Tip:</strong> Put global connection flags before the subcommand.</p>
+</blockquote>
+<h3 id="pick-an-exact-provider-model-or-branch">Pick an exact provider, model, or branch</h3>
 <div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>models
 docsfy<span class="w"> </span>models<span class="w"> </span>--provider<span class="w"> </span>cursor
-docsfy<span class="w"> </span>models<span class="w"> </span>--json
+docsfy<span class="w"> </span>generate<span class="w"> </span>https://github.com/myk-org/for-testing-only<span class="w"> </span>--branch<span class="w"> </span>dev<span class="w"> </span>--force
+docsfy<span class="w"> </span>status<span class="w"> </span><span class="k">for</span>-testing-only<span class="w"> </span>--branch<span class="w"> </span>main<span class="w"> </span>--provider<span class="w"> </span>cursor<span class="w"> </span>--model<span class="w"> </span>gpt-5.4-xhigh-fast
+docsfy<span class="w"> </span>download<span class="w"> </span><span class="k">for</span>-testing-only<span class="w"> </span>--branch<span class="w"> </span>main<span class="w"> </span>--provider<span class="w"> </span>cursor<span class="w"> </span>--model<span class="w"> </span>gpt-5.4-xhigh-fast<span class="w"> </span>--output<span class="w"> </span>./site
 </code></pre></div>
 
-
-
-Use `models` when you want to see the server defaults and the model names the server already knows about.
-
-### Work with exact variants, aborts, and deletes
-
-
-<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>abort<span class="w"> </span>my-repo
-docsfy<span class="w"> </span>abort<span class="w"> </span>my-repo<span class="w"> </span>--branch<span class="w"> </span>main<span class="w"> </span>--provider<span class="w"> </span>cursor<span class="w"> </span>--model<span class="w"> </span>gpt-5.4-xhigh-fast
-docsfy<span class="w"> </span>delete<span class="w"> </span>my-repo<span class="w"> </span>--branch<span class="w"> </span>main<span class="w"> </span>--provider<span class="w"> </span>cursor<span class="w"> </span>--model<span class="w"> </span>gpt-5.4-xhigh-fast<span class="w"> </span>--yes
-docsfy<span class="w"> </span>delete<span class="w"> </span>my-repo<span class="w"> </span>--all<span class="w"> </span>--yes
+<p>Use <code>docsfy models</code> to see the current default provider and model, plus model names the server already knows about. A provider can show <code>(no models used yet)</code> until a ready variant has been generated with it.</p>
+<p>Replace <code>cursor</code> and <code>gpt-5.4-xhigh-fast</code> with the values your server reports. Use <code>--force</code> when you want a full rebuild instead of reusing existing artifacts.</p>
+<p>If you intentionally keep separate outputs for other branches or models, see <a href="regenerate-for-new-branches-and-models.html">Regenerating for New Branches and Models</a>.</p>
+<h3 id="stop-or-clean-up-runs">Stop or clean up runs</h3>
+<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>abort<span class="w"> </span><span class="k">for</span>-testing-only
+docsfy<span class="w"> </span>abort<span class="w"> </span>&lt;GENERATION_ID&gt;
+docsfy<span class="w"> </span>delete<span class="w"> </span>&lt;GENERATION_ID&gt;<span class="w"> </span>--yes
+docsfy<span class="w"> </span>delete<span class="w"> </span><span class="k">for</span>-testing-only<span class="w"> </span>--all<span class="w"> </span>--yes
 </code></pre></div>
 
-
-
-Use the project-only `abort` form when there is just one active run for that project. If more than one variant is running, rerun the command with `--branch`, `--provider`, and `--model`.
-
-The same exact selector pattern is useful for downloads too:
-
-
-<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>download<span class="w"> </span>my-repo<span class="w"> </span>--branch<span class="w"> </span>main<span class="w"> </span>--provider<span class="w"> </span>cursor<span class="w"> </span>--model<span class="w"> </span>gpt-5.4-xhigh-fast<span class="w"> </span>--output<span class="w"> </span>./site
+<p>Project-level <code>abort</code> is convenient when only one active variant matches that project name. Use a generation ID when more than one run might be active, or when you want copy-paste-safe cleanup.</p>
+<p><code>docsfy delete ... --all --yes</code> removes every variant of that project that belongs to you. If you only want one variant, delete by generation ID instead.</p>
+<h3 id="use-json-output-for-scripts">Use JSON output for scripts</h3>
+<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>list<span class="w"> </span>--status<span class="w"> </span>ready<span class="w"> </span>--json
+docsfy<span class="w"> </span>status<span class="w"> </span><span class="k">for</span>-testing-only<span class="w"> </span>--json
+docsfy<span class="w"> </span>models<span class="w"> </span>--provider<span class="w"> </span>cursor<span class="w"> </span>--json
 </code></pre></div>
 
-
-
-> **Note:** When you use `--output`, docsfy extracts the archive into a subdirectory inside the target directory.
-
-> **Warning:** Use either `--all` or an exact variant selector with `delete`, not both.
-
-### Use `--owner` when you are an admin
-
-
+<p>These commands return JSON instead of table or plain-text output, which is easier to pipe into your own scripts. See <a href="cli-command-reference.html">CLI Command Reference</a> for the full flag list.</p>
+<h3 id="disambiguate-same-name-projects-as-an-admin">Disambiguate same-name projects as an admin</h3>
 <div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>status<span class="w"> </span>shared-name<span class="w"> </span>--branch<span class="w"> </span>main<span class="w"> </span>--provider<span class="w"> </span>claude<span class="w"> </span>--model<span class="w"> </span>opus<span class="w"> </span>--owner<span class="w"> </span>alice
-docsfy<span class="w"> </span>download<span class="w"> </span>shared-name<span class="w"> </span>--branch<span class="w"> </span>main<span class="w"> </span>--provider<span class="w"> </span>claude<span class="w"> </span>--model<span class="w"> </span>opus<span class="w"> </span>--owner<span class="w"> </span>alice
+docsfy<span class="w"> </span>download<span class="w"> </span>shared-name<span class="w"> </span>--branch<span class="w"> </span>main<span class="w"> </span>--provider<span class="w"> </span>claude<span class="w"> </span>--model<span class="w"> </span>opus<span class="w"> </span>--owner<span class="w"> </span>alice<span class="w"> </span>--output<span class="w"> </span>./site
 </code></pre></div>
 
-
-
-`--owner` is mainly for admins who need one specific copy of a project or variant when the same project name exists under multiple owners.
-
-### Run admin tasks
-
-
-<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>admin<span class="w"> </span>users<span class="w"> </span>list
-docsfy<span class="w"> </span>admin<span class="w"> </span>users<span class="w"> </span>create<span class="w"> </span>newuser<span class="w"> </span>--role<span class="w"> </span>user
-docsfy<span class="w"> </span>admin<span class="w"> </span>users<span class="w"> </span>rotate-key<span class="w"> </span>newuser
-docsfy<span class="w"> </span>admin<span class="w"> </span>access<span class="w"> </span>grant<span class="w"> </span>my-repo<span class="w"> </span>--username<span class="w"> </span>newuser<span class="w"> </span>--owner<span class="w"> </span>admin
-docsfy<span class="w"> </span>admin<span class="w"> </span>access<span class="w"> </span>list<span class="w"> </span>my-repo<span class="w"> </span>--owner<span class="w"> </span>admin
-docsfy<span class="w"> </span>admin<span class="w"> </span>access<span class="w"> </span>revoke<span class="w"> </span>my-repo<span class="w"> </span>--username<span class="w"> </span>newuser<span class="w"> </span>--owner<span class="w"> </span>admin
-</code></pre></div>
-
-
-
-Valid roles are `admin`, `user`, and `viewer`. New and rotated API keys are shown once, so save them immediately. Generated keys use the `docsfy_...` format.
-
-Access grants are project-wide for one owner, so granting access to `my-repo` also grants access to that owner's variants of the project.
-
-If you rotate a key for a saved profile, update the profile too:
-
-
-<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>config<span class="w"> </span><span class="nb">set</span><span class="w"> </span>servers.dev.password<span class="w"> </span>&lt;new-api-key&gt;
-</code></pre></div>
-
-
-
-> **Note:** `viewer` accounts can list, inspect, and download docs they can access, but they cannot generate, abort, or delete.
-
-> **Warning:** The username `admin` is reserved, custom keys must be at least 16 characters long, you cannot delete your own account, and a user cannot be deleted while they still have an active generation.
-
-### Use JSON output for scripts
-
-
-<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>list<span class="w"> </span>--json
-docsfy<span class="w"> </span>status<span class="w"> </span>my-repo<span class="w"> </span>--json
-docsfy<span class="w"> </span>admin<span class="w"> </span>users<span class="w"> </span>list<span class="w"> </span>--json
-</code></pre></div>
-
-
-
-Use `--json` when you want stable output for automation instead of the default tables and detail blocks.
-
-</details>
-
+<p>Use <code>--owner</code> only with fully specified variant commands. It helps when the same project name exists under more than one owner and you need one exact copy.</p>
 <h2 id="troubleshooting">Troubleshooting</h2>
 <ul>
-<li><code>No server configured</code>: run <code>docsfy config init</code>, or pass <code>--host</code>, <code>--username</code>, and <code>--password</code> before the subcommand.</li>
-<li><code>Server unreachable</code> or a redirect error: check the saved URL, host, and port with <code>docsfy config show</code> and <code>docsfy health</code>.</li>
-<li><code>Write access required</code>: you authenticated as a <code>viewer</code>; use a <code>user</code> or <code>admin</code> account for <code>generate</code>, <code>abort</code>, and <code>delete</code>.</li>
-<li><code>Variant not ready</code>: wait until <code>docsfy status my-repo</code> shows a ready variant, then download again.</li>
-<li><code>Multiple active variants found</code> or <code>Multiple owners found</code>: rerun the command with <code>--branch</code>, <code>--provider</code>, and <code>--model</code>; if you are an admin and need one owner's copy, add <code>--owner</code>.</li>
-<li><code>Invalid branch name</code>: rename the branch argument to something like <code>release-1.x</code>.</li>
-<li>A Git URL to <code>localhost</code> or another private network host is rejected: use a remote the server can reach.</li>
+<li><code>No server configured</code>: run <code>docsfy config init</code>, or pass <code>--host</code>, <code>--port</code>, <code>-u</code>, and <code>-p</code> before the subcommand.</li>
+<li><code>Server unreachable</code> or a redirect error: check the saved URL with <code>docsfy config show</code>, then rerun <code>docsfy health</code>.</li>
+<li><code>Write access required</code>: the API key belongs to a <code>viewer</code>; use a <code>user</code> or <code>admin</code> account for <code>generate</code>, <code>abort</code>, and <code>delete</code>.</li>
+<li><code>Invalid branch name</code>: branch names cannot contain <code>/</code>; use <code>release-1.x</code> instead.</li>
+<li>A project name points to more than one possible variant, or a run is already active: run <code>docsfy list</code>, then retry with the generation ID or a fully specified variant selector.</li>
+<li><code>Variant not ready</code>: wait until <code>docsfy status ...</code> shows <code>ready</code>, then download again.</li>
+<li>A repository URL that points to <code>localhost</code> or another private-network host is rejected: use a remote the server can reach.</li>
 </ul>
+<p>See <a href="fix-setup-and-generation-problems.html">Fixing Setup and Generation Problems</a> for broader setup and generation failures.</p>
 <h2 id="related-pages">Related Pages</h2>
 <ul>
-<li><a href="#">CLI Command Reference</a></li>
-<li><a href="#">Configuration Reference</a></li>
-<li><a href="#">Generate Documentation</a></li>
-<li><a href="#">Track Generation Progress</a></li>
-<li><a href="#">View, Download, and Publish Docs</a></li>
+<li><a href="cli-command-reference.html">CLI Command Reference</a></li>
+<li><a href="install-and-run-docsfy-without-docker.html">Install and Run docsfy Without Docker</a></li>
+<li><a href="configuration-reference.html">Configuration Reference</a></li>
+<li><a href="track-generation-progress.html">Tracking Generation Progress</a></li>
+<li><a href="view-and-download-docs.html">Viewing and Downloading Docs</a></li>
 </ul>
                 </div>
             </article>
             <nav class="page-nav">
                 
-                <a href="manage-users-roles-and-access.html" class="page-nav-link page-nav-prev">
+                <a href="regenerate-for-new-branches-and-models.html" class="page-nav-link page-nav-prev">
                     <span class="page-nav-label">Previous</span>
-                    <span class="page-nav-title">Manage Users, Roles, and Access</span>
+                    <span class="page-nav-title">Regenerating for New Branches and Models</span>
                 </a>
                 
                 
-                <a href="fix-setup-and-generation-problems.html" class="page-nav-link page-nav-next">
+                <a href="manage-users-and-access.html" class="page-nav-link page-nav-next">
                     <span class="page-nav-label">Next</span>
-                    <span class="page-nav-title">Fix Setup and Generation Problems</span>
+                    <span class="page-nav-title">Managing Users and Access</span>
                 </a>
                 
             </nav>
@@ -440,7 +406,15 @@ Use `--json` when you want stable output for automation instead of the default t
 <ul>
 <li><a href="#prerequisites">Prerequisites</a></li>
 <li><a href="#quick-example">Quick Example</a></li>
-<li><a href="#step-by-step">Step-by-Step</a></li>
+<li><a href="#step-by-step">Step-by-step</a></li>
+<li><a href="#advanced-usage">Advanced Usage</a><ul>
+<li><a href="#switch-profiles-or-override-them-for-one-command">Switch profiles or override them for one command</a></li>
+<li><a href="#pick-an-exact-provider-model-or-branch">Pick an exact provider, model, or branch</a></li>
+<li><a href="#stop-or-clean-up-runs">Stop or clean up runs</a></li>
+<li><a href="#use-json-output-for-scripts">Use JSON output for scripts</a></li>
+<li><a href="#disambiguate-same-name-projects-as-an-admin">Disambiguate same-name projects as an admin</a></li>
+</ul>
+</li>
 <li><a href="#troubleshooting">Troubleshooting</a></li>
 <li><a href="#related-pages">Related Pages</a></li>
 </ul>
@@ -454,7 +428,7 @@ Use `--json` when you want stable output for automation instead of the default t
 
         <footer class="page-footer">
             
-            <span class="footer-version">Generated from version 1.2.0</span>
+            <span class="footer-version">Generated from version 1.3.0</span>
             <span class="footer-sep">&middot;</span>
             
             Generated with <a href="https://github.com/myk-org/docsfy" target="_blank" rel="noopener">docs<span class="brand-accent">fy</span></a>
