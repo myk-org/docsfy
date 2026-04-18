@@ -1,160 +1,184 @@
 # Generate Your First Docs Site
 
-You want a working docs site fast, without wiring up the stack manually first. This guide uses the built-in Docker path so you can start the app, sign in as `admin`, and generate documentation for a repository right away.
+You want a working docs site quickly so you can prove your setup, sign in, and see a real result before tuning anything else. This guide uses the checked-in Docker path and a small public repository so you can get to a searchable site in one short flow.
 
 ## Prerequisites
 
 - Docker with Compose
-- A new `ADMIN_KEY` with at least 16 characters
+- An `ADMIN_KEY` you choose, at least 16 characters long
 - A Git repository URL over HTTPS or SSH
-- A supported AI provider that can run inside the container; the image includes `claude`, `gemini`, and `cursor`
+- At least one working provider and model where docsfy runs
+
+> **Note:** The checked-in container image installs the `claude`, `gemini`, and `cursor` CLIs. Your first generation still needs a provider/model pair that can authenticate and run in that environment.
 
 ## Quick Example
 
-```bash
+```shell
 cp .env.example .env
-mkdir -p data
 ```
 
 ```dotenv
-ADMIN_KEY=replace-with-a-strong-secret
+ADMIN_KEY=<a-16-plus-character-password>
 SECURE_COOKIES=false
 ```
 
-```bash
+```shell
 docker compose up --build -d
 curl http://localhost:8000/health
 ```
 
-1. Open `http://localhost:8000/login`.
-2. Sign in with username `admin` and the `ADMIN_KEY` value from `.env`.
-3. Click `New Generation`.
-4. Enter `https://github.com/myk-org/for-testing-only`.
-5. Leave `Branch` as `main`.
-6. Leave `Provider` as `cursor`.
-7. In `Model`, type `gpt-5.4-xhigh-fast`.
-8. Click `Generate`.
-9. When the status becomes `Ready`, click `View Documentation`.
+```text
+Login
+  URL: http://localhost:8000/login
+  Username: admin
+  Password: <ADMIN_KEY>
 
-> **Note:** `SECURE_COOKIES=false` is the right setting for plain local `http://localhost`. If you move docsfy behind HTTPS, turn it back on.
-
-> **Tip:** The `Model` field accepts typed values, so you can enter a model even when no suggestions are shown yet.
-
-```mermaid
-flowchart LR
-  A[Copy .env.example] --> B[Set ADMIN_KEY]
-  B --> C[Start docker compose]
-  C --> D[Sign in as admin]
-  D --> E[Create generation]
-  E --> F[Wait for Ready]
-  F --> G[Open the docs site]
+New Generation
+  Repository URL: https://github.com/myk-org/for-testing-only
+  Branch: main
+  Provider: cursor
+  Model: gpt-5.4-xhigh-fast
+  Force full regeneration: off
 ```
+
+Sign in, click `Generate`, wait for the run to reach `Ready`, then click `View Documentation`. In the docs tab, use the search field or press `Ctrl+K` / `Cmd+K` to confirm the site is searchable.
+
+> **Tip:** On a brand-new server, the `Model` field may have no suggestions yet. Type the model name manually and continue.
 
 ## Step-by-Step
 
-1. Create your local config.
+1. Prepare your local config.
 
-```bash
+```shell
 cp .env.example .env
 ```
 
+Set these values in `.env`:
+
 ```dotenv
-ADMIN_KEY=replace-with-a-strong-secret
+ADMIN_KEY=<a-16-plus-character-password>
 SECURE_COOKIES=false
 ```
 
-`ADMIN_KEY` is required at startup, and the built-in `admin` login uses that value as its password.
+For the fastest first run, keep the checked-in provider and model defaults from `.env.example` unless you already know you need a different pair.
 
-> **Warning:** `ADMIN_KEY` must be at least 16 characters long or the server will not start.
+> **Warning:** `ADMIN_KEY` is required, and the server rejects values shorter than 16 characters.
 
-> **Warning:** Keep `ADMIN_KEY` in a local `.env` or secret store, not in git-tracked files.
+2. Start docsfy.
 
-2. Start docsfy with Docker Compose.
-
-```bash
-mkdir -p data
+```shell
 docker compose up --build -d
 ```
 
-```bash
+```shell
 curl http://localhost:8000/health
 ```
 
-A successful response means the app is up. The app listens on `http://localhost:8000`, and `./data` keeps your database and generated sites between restarts.
+The app listens on `http://localhost:8000`. The compose file mounts `./data` into the container, so your database and generated docs survive restarts.
 
-3. Sign in as `admin`.
+> **Note:** The first build can take a few minutes because it builds the frontend and installs runtime dependencies. If the health check fails immediately, wait a bit and run it again.
 
-1. Open `http://localhost:8000/login`.
-2. Enter username `admin`.
-3. Enter the `ADMIN_KEY` value from `.env`.
-4. Click `Sign In`.
+3. Sign in as the built-in admin.
 
-After login, the dashboard opens and the `New Generation` flow is available immediately.
+Open `http://localhost:8000/login`, enter username `admin`, and enter your `ADMIN_KEY` in the `Password` field. After a successful sign-in, the dashboard opens and `New Generation` is available right away.
 
-4. Generate your first site.
+4. Start your first generation.
 
-1. Click `New Generation`.
-2. In `Repository URL`, enter `https://github.com/myk-org/for-testing-only`.
-3. Keep `Branch` as `main`.
-4. Leave `Provider` as `cursor`.
-5. In `Model`, type `gpt-5.4-xhigh-fast`.
-6. Click `Generate`.
+Click `New Generation`, then enter these values:
 
-If another provider is already working in the container, pick that provider instead and type the model you want to use.
-
-> **Note:** Repository URLs can use HTTPS or SSH. For a first run, a public HTTPS repo is the simplest path.
-
-5. Open the result.
-
-The detail view updates in real time while the site is being built. When the status changes to `Ready`, click `View Documentation` to open the generated site in a new tab.
-
-See [Track Generation Progress](track-generation-progress.html) for the live status view and activity log. See [View, Download, and Publish Docs](view-download-and-publish-docs.html) for downloading or publishing the output.
-
-<details><summary>Advanced Usage</summary>
-
-To keep the stack running in the background and watch logs only when you need them:
-
-```bash
-docker compose logs -f
+```text
+Repository URL: https://github.com/myk-org/for-testing-only
+Branch: main
+Provider: cursor
+Model: gpt-5.4-xhigh-fast
+Force full regeneration: off
 ```
 
-To stop the stack without deleting your data:
+Then click `Generate`. A small public HTTPS repository is the easiest first run because it avoids private Git access and branch guesswork.
 
-```bash
+If your environment is already set up for a different working provider, switch the provider and model before you submit. See [Generating Documentation](generate-documentation.html) for the full field-by-field workflow.
+
+5. Wait for the run to finish.
+
+docsfy opens the new variant detail view automatically and updates it in real time. When the status changes to `Ready`, the page shows `View Documentation`.
+
+See [Tracking Generation Progress](track-generation-progress.html) if you want the full meaning of each stage and status.
+
+6. Open the docs and test search.
+
+Click `View Documentation` to open the generated site in a new tab. The finished site includes sidebar navigation and search, so you can click the search field or press `Ctrl+K` / `Cmd+K`, search for a term from the repo, and jump straight to a result.
+
+```mermaid
+flowchart LR
+  A[Copy .env.example] --> B[Set ADMIN_KEY and SECURE_COOKIES]
+  B --> C[Run docker compose up --build -d]
+  C --> D[Sign in as admin]
+  D --> E[Generate for-testing-only]
+  E --> F[Wait for Ready]
+  F --> G[Open docs and search]
+```
+
+## Advanced Usage
+
+### Use Another Provider Or Model
+
+The checked-in defaults are `cursor` and `gpt-5.4-xhigh-fast`. If your docsfy environment is already working with `claude` or `gemini` instead, change those two fields before you click `Generate`.
+
+If the model list is empty, type the model name manually. Suggestions appear only after successful generations have already recorded known models.
+
+### Generate Another Branch
+
+Replace `main` with another branch when you need a different variant.
+
+| Use | Avoid | Why |
+| --- | --- | --- |
+| `main` | `.hidden` | Branches must start with a letter or number. |
+| `release-1.x` | `release/1.x` | `/` is rejected. |
+| `v2.0.1` | `../etc/passwd` | Traversal-like names are rejected. |
+
+See [Regenerating for New Branches and Models](regenerate-for-new-branches-and-models.html) for the multi-variant workflow.
+
+### Restart Or Change Defaults
+
+Use this to stop the stack without deleting your saved data:
+
+```shell
 docker compose down
 ```
 
-To run the same image without Compose:
+Start it again with:
 
-```bash
-docker build -t docsfy .
-docker run --rm \
-  -p 8000:8000 \
-  --env-file .env \
-  -v "$(pwd)/data:/data" \
-  docsfy
+```shell
+docker compose up -d
 ```
 
-`./data` persists your database and generated sites, so rebuilding or restarting the container does not wipe previous output.
+Use this when you want to watch server output:
 
-> **Warning:** The built-in `admin` account does not change its password from the dashboard. To change it, update `ADMIN_KEY` in `.env` and restart the container. See [Manage Users, Roles, and Access](manage-users-roles-and-access.html) for shared-instance guidance.
+```shell
+docker compose logs -f docsfy
+```
 
-See [Generate Documentation](generate-documentation.html) for more generation options. See [Regenerate for New Branches and Models](regenerate-for-new-branches-and-models.html) when you want another branch or model. See [Install and Run docsfy Without Docker](install-and-run-docsfy-without-docker.html) if you want a non-container setup.
+To change the built-in admin password or the default provider/model for future runs, edit `.env` and restart the stack. See [Configuration Reference](configuration-reference.html) for the full setting list.
 
-</details>
+### Other Workflows
+
+See [Install and Run docsfy Without Docker](install-and-run-docsfy-without-docker.html) for a non-container setup. See [Managing docsfy from the CLI](manage-docsfy-from-the-cli.html) if you want a terminal-first workflow.
+
+After your repository changes, see [Regenerating After Code Changes](regenerate-after-code-changes.html).
 
 ## Troubleshooting
 
-- The container exits immediately: check that `ADMIN_KEY` is set and at least 16 characters long.
-- The login page loads but you cannot stay signed in on `http://localhost:8000`: set `SECURE_COOKIES=false`, then restart the container.
-- A generation switches to `Error` right away: the selected provider or model is not ready in the container. Try a working provider/model pair or see [Fix Setup and Generation Problems](fix-setup-and-generation-problems.html).
-- A branch name is rejected: use a single branch segment such as `main`, `dev`, or `release-1.x`. Branch names with `/` are rejected.
-- A repository URL is rejected: use a Git URL over HTTPS or SSH, not a bare local path.
+- If the container exits immediately, `ADMIN_KEY` is missing or too short. Set it in `.env`, then start the stack again.
+- If the login page works but you bounce back to `/login` on plain `http://localhost`, set `SECURE_COOKIES=false` in `.env`, then restart.
+- If the generation switches to `Error` almost immediately, the selected provider/model is not ready in the environment running docsfy. Pick a working pair or see [Fixing Setup and Generation Problems](fix-setup-and-generation-problems.html).
+- If the repository URL is rejected, use a hosted Git URL such as `https://github.com/org/repo`, `https://github.com/org/repo.git`, or `git@github.com:org/repo.git`. The dashboard quick-start flow is for remote Git URLs, not local filesystem paths.
+- If the branch name is rejected, use a single branch segment such as `main`, `dev`, or `release-1.x`. Branch names with `/` are rejected.
+- If the `Model` field shows no suggestions, type the model name manually and continue.
 
 ## Related Pages
 
-- [Generate Documentation](generate-documentation.html)
-- [Track Generation Progress](track-generation-progress.html)
-- [View, Download, and Publish Docs](view-download-and-publish-docs.html)
-- [Regenerate for New Branches and Models](regenerate-for-new-branches-and-models.html)
+- [Generating Documentation](generate-documentation.html)
+- [Tracking Generation Progress](track-generation-progress.html)
+- [Viewing and Downloading Docs](view-and-download-docs.html)
 - [Install and Run docsfy Without Docker](install-and-run-docsfy-without-docker.html)
+- [Fixing Setup and Generation Problems](fix-setup-and-generation-problems.html)

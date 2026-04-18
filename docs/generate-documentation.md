@@ -1,113 +1,123 @@
-# Generate Documentation
+# Generating Documentation
 
-Use the dashboard to start a new documentation run for a Git repository, choose the branch, provider, and model you want, and get a browsable docs site from the same screen. This is the quickest path when you want to add a repo and launch generation without switching to a terminal.
+Use the dashboard to start a documentation run for a Git repository and get it into a successful `Generating` state with the fewest possible inputs. This is the fastest way to confirm that your repo URL, branch, and AI settings are accepted before you wait for the full documentation build.
 
 ## Prerequisites
 
-- Signed in to the dashboard as a `user` or `admin`
-- A remote Git repository URL in HTTPS or `git@...` form
-- Git access from the machine running docsfy if the repository is private or uses SSH
-- A provider and model that your docsfy server can run
+- A running docsfy server
+- A signed-in `user` or `admin` account
+- A remote Git repository URL in HTTPS or SSH form
+- Git access from the docsfy server if the repository is private or uses SSH
+- A provider/model pair that already works on your server
+
+> **Note:** If you still need the setup and first sign-in path, see [Generate Your First Docs Site](generate-your-first-docs-site.html).
 
 ## Quick Example
 
 ```text
 Repository URL: https://github.com/myk-org/for-testing-only
 Branch: main
-Provider: gemini
-Model: gemini-2.5-flash
+Provider: cursor
+Model: gpt-5.4-xhigh-fast
 Force full regeneration: off
 ```
 
-Click `New Generation`, enter those values, then click `Generate`. If your server uses a different provider or model, swap those two fields and keep the rest of the flow the same.
+Click `Generate`. A successful start shows `Generation started for for-testing-only`, adds the repository to the sidebar, and opens the new run with status `Generating`.
+
+> **Tip:** If your server is already set up for a different provider, change only `Provider` and `Model` and keep the rest of the example the same.
 
 ## Step-by-Step
 
-1. Open the form.  
-   In the dashboard sidebar, click `New Generation`.
+1. Open the form.
 
-2. Enter the repository URL.  
-   Paste the remote URL for the repository you want to document. docsfy uses the repository name from that URL as the project name, so `https://github.com/myk-org/for-testing-only` appears in the sidebar as `for-testing-only`.
+   In the sidebar, click `New Generation`. This action is available to `user` and `admin` accounts.
 
-3. Choose the branch.  
-   Leave the default `main` branch or type another branch such as `dev`.
+2. Enter the repository URL.
+
+   Paste a remote URL such as `https://github.com/myk-org/for-testing-only`. docsfy uses the repository name from that URL as the project name in the sidebar.
+
+> **Tip:** A public HTTPS repository is the easiest first run because it avoids extra Git authentication setup.
+
+3. Leave the branch as `main`.
+
+   `main` is the default for new runs. Use a different branch only when you want a separate run for that branch.
 
 > **Warning:** Branch names cannot contain `/`. Use `release-1.x`, not `release/1.x`.
 
-4. Choose the provider and model.  
-   Pick one of `claude`, `gemini`, or `cursor`, then choose a model from the suggestions or type one manually. The form starts with `cursor` selected, but you can change it before you submit.
+4. Choose the AI settings.
 
-> **Tip:** If the model list is empty, type the model name yourself. Suggestions only appear after successful generations have already recorded known models.
+   `Provider` offers `claude`, `gemini`, and `cursor`, and it opens on `cursor`. If `Model` is blank, enter `gpt-5.4-xhigh-fast` for the default setup, or type the model that matches the provider you actually use.
 
-5. Decide whether to force a full rebuild.  
-   Leave `Force full regeneration` off for a normal run. Turn it on when you want docsfy to ignore cached pages and rebuild everything from scratch.
+> **Tip:** The `Model` field accepts typed values, so you can start a run even when no suggestions are shown yet.
 
-6. Start the run.  
-   Click `Generate`. The new run is added to the sidebar, the dashboard opens its detail view automatically, and the status changes to `Generating`.
+5. Leave `Force full regeneration` off.
 
-7. Wait for the ready state.  
-   When the run finishes, the selected item shows `Ready`. At that point you can open or download the generated site from the same view.
+   This is the normal first-run choice. Turn it on only when you want a clean rebuild of an existing run.
+
+6. Start the run.
+
+   Click `Generate`. On success, the main panel switches from the form to the new run.
+
+7. Confirm that the run started correctly.
+
+   Look for the `Generating` status badge at the top of the detail view. If you want to follow the run until it finishes, see [Tracking Generation Progress](track-generation-progress.html).
 
 ```mermaid
 flowchart LR
-  A[Click New Generation] --> B[Enter repo URL, branch, provider, and model]
-  B --> C[Click Generate]
-  C --> D[Dashboard opens the new run]
-  D --> E[Generating]
-  E --> F[Ready]
+  A[Click New Generation] --> B[Paste repo URL]
+  B --> C[Confirm branch, provider, and model]
+  C --> D[Click Generate]
+  D --> E[Run opens in the dashboard]
+  E --> F[Status shows Generating]
 ```
 
-<details><summary>Advanced Usage</summary>
+## Advanced Usage
 
-### Accepted repository URL formats
+### Remote URL formats
 
 ```text
-https://github.com/org/repo
-https://github.com/org/repo.git
-git@github.com:org/repo.git
+https://github.com/myk-org/for-testing-only
+https://github.com/myk-org/for-testing-only.git
+git@github.com:myk-org/for-testing-only.git
 ```
+
+The dashboard accepts HTTPS URLs and `git@...` SSH URLs with a hostname. It does not accept bare local paths, and it rejects URLs that target `localhost` or private network addresses.
 
 > **Note:** SSH URLs work only if the machine running docsfy already has Git access to that host.
 
-### Normal run vs forced rebuild
+### Normal run vs clean rebuild
 
 | Setting | When to use it | What to expect |
 | --- | --- | --- |
-| `Force full regeneration` off | Everyday runs | docsfy can reuse existing work, skip unchanged runs, or update only what changed |
-| `Force full regeneration` on | Clean rebuilds, retries after a bad result, or when you want to ignore cached pages | docsfy clears cached page output and rebuilds the docs from scratch |
+| `Force full regeneration` off | First runs and routine retries | docsfy can reuse existing work when it makes sense |
+| `Force full regeneration` on | Clean rebuilds after a bad result or when you want to ignore earlier cached output | docsfy rebuilds that run from scratch |
 
-### Branch and model suggestions
+A non-force rerun can finish quickly and show `Documentation is already up to date.` when nothing changed.
 
-- The branch field suggests branches that already have successful generations for the same repository name.
-- The model field suggests models that already have successful generations for the selected provider.
-- You can still type a new branch or model even when there is no suggestion.
+### Suggestions in the form
 
-### Repository URL rules
+- Branch suggestions appear only after there is already a successful run for the same repository name.
+- Model suggestions appear only after there is already a successful run for that provider.
+- You can type a branch or model manually even when there are no suggestions.
 
-- Use a standard hosted Git remote in `host/owner/repo` form.
-- Do not use a local filesystem path in the dashboard.
-- URLs that point to `localhost` or private-network addresses are rejected.
+### Common alternatives
 
-### Terminal alternative
-
-If you prefer to start generations from a shell, see [Manage docsfy from the CLI](manage-docsfy-from-the-cli.html).
-
-</details>
+- To create a separate run for another branch or model, see [Regenerating for New Branches and Models](regenerate-for-new-branches-and-models.html).
+- To start runs from a terminal instead of the dashboard, see [Managing docsfy from the CLI](manage-docsfy-from-the-cli.html).
 
 ## Troubleshooting
 
-- **The repository URL is rejected:** Use an HTTPS URL like `https://github.com/org/repo.git` or an SSH URL like `git@github.com:org/repo.git`.
-- **The branch is rejected:** Remove `/` from the branch name and try a name such as `release-1.x`.
-- **No model suggestions appear:** Type the model name manually. Suggestions are learned from successful generations.
-- **The run fails during clone:** Make sure the docsfy server can reach the Git host and authenticate to the repository.
-- **You get an "already being generated" error:** That exact branch, provider, and model combination is already running. Wait for it to finish, or open it and abort the current run before retrying.
-- **You can view docs but cannot start a generation:** Your account is probably `viewer` role. Ask an admin for `user` or `admin` access.
-- **The run finishes almost immediately:** docsfy may have detected that the selected commit is already covered. If you need a clean rebuild, start another run with `Force full regeneration` turned on.
+- `New Generation` is missing: your account is probably `viewer`. Only `user` and `admin` accounts can start runs.
+- The form says `Please enter a repository URL`: enter the full HTTPS or SSH Git URL, not just the repository name.
+- The repository URL is rejected: use a remote URL with a hostname such as `https://github.com/org/repo` or `git@github.com:org/repo.git`.
+- The branch is rejected: use a branch that starts with a letter or number and contains only letters, numbers, `.`, `_`, or `-`.
+- The run will not start because the variant is already being generated: wait for that exact branch/provider/model combination to finish, or abort it and try again.
+- The run switches to `Error` quickly: the selected provider, model, branch, or repository access is not working on the server. See [Fixing Setup and Generation Problems](fix-setup-and-generation-problems.html).
 
 ## Related Pages
 
-- [Track Generation Progress](track-generation-progress.html)
-- [Regenerate for New Branches and Models](regenerate-for-new-branches-and-models.html)
-- [View, Download, and Publish Docs](view-download-and-publish-docs.html)
-- [Manage docsfy from the CLI](manage-docsfy-from-the-cli.html)
-- [Fix Setup and Generation Problems](fix-setup-and-generation-problems.html)
+- [Tracking Generation Progress](track-generation-progress.html)
+- [Viewing and Downloading Docs](view-and-download-docs.html)
+- [Configuring AI Providers and Models](configure-ai-providers-and-models.html)
+- [Regenerating for New Branches and Models](regenerate-for-new-branches-and-models.html)
+- [Fixing Setup and Generation Problems](fix-setup-and-generation-problems.html)
