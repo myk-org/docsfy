@@ -7,6 +7,7 @@ import {
   AlertTriangle,
   XCircle,
   Square,
+  Copy,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -201,6 +202,28 @@ function InfoGrid({ project, isAdmin }: { project: Project; isAdmin: boolean }) 
         <span className="text-muted-foreground">Last Generated</span>
         <div className="mt-0.5 font-medium">{formatDate(project.last_generated)}</div>
       </div>
+      {project.generation_id && (
+        <div>
+          <span className="text-muted-foreground">Generation ID</span>
+          <div className="mt-0.5 flex items-center gap-1.5">
+            <code className="text-sm font-mono font-medium break-all">{project.generation_id}</code>
+            <button
+              type="button"
+              className="shrink-0 p-0.5 rounded-sm text-muted-foreground hover:text-foreground transition-colors"
+              aria-label="Copy generation ID"
+              onClick={() => {
+                navigator.clipboard
+                  .writeText(project.generation_id!)
+                  .then(() => toast.success('Generation ID copied', { duration: TOAST_DEFAULT_MS }))
+                  .catch(() => toast.error('Failed to copy'))
+              }}
+              title="Copy generation ID"
+            >
+              <Copy className="size-3.5" />
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

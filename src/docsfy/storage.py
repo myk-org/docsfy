@@ -8,8 +8,10 @@ import re
 import secrets
 import shutil
 import sqlite3
+import uuid
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from typing import Any
 
 import aiosqlite
 from simple_logger.logger import get_logger
@@ -66,6 +68,7 @@ async def init_db(data_dir: str = "") -> None:
                 ai_provider TEXT NOT NULL DEFAULT '',
                 ai_model TEXT NOT NULL DEFAULT '',
                 owner TEXT NOT NULL DEFAULT '',
+                generation_id TEXT,
                 repo_url TEXT NOT NULL,
                 status TEXT NOT NULL DEFAULT 'generating',
                 current_stage TEXT,
@@ -135,6 +138,7 @@ async def init_db(data_dir: str = "") -> None:
                     ai_provider TEXT NOT NULL DEFAULT '',
                     ai_model TEXT NOT NULL DEFAULT '',
                     owner TEXT NOT NULL DEFAULT '',
+                    generation_id TEXT,
                     repo_url TEXT NOT NULL,
                     status TEXT NOT NULL DEFAULT 'generating',
                     current_stage TEXT,
@@ -172,6 +176,11 @@ async def init_db(data_dir: str = "") -> None:
                 if "owner" in old_columns
                 else "'' AS owner"
             )
+            select_cols.append(
+                "generation_id"
+                if "generation_id" in old_columns
+                else "NULL AS generation_id"
+            )
             select_cols.append("repo_url")
             select_cols.append("status")
             select_cols.append(
@@ -189,7 +198,7 @@ async def init_db(data_dir: str = "") -> None:
 
             await db.execute(f"""
                 INSERT OR IGNORE INTO projects_new
-                    (name, branch, ai_provider, ai_model, owner, repo_url, status, current_stage,
+                    (name, branch, ai_provider, ai_model, owner, generation_id, repo_url, status, current_stage,
                      last_commit_sha, last_generated, page_count, error_message,
                      plan_json, created_at, updated_at)
                 SELECT {", ".join(select_cols)}
@@ -198,6 +207,33 @@ async def init_db(data_dir: str = "") -> None:
             await db.execute("DROP TABLE projects")
             await db.execute("ALTER TABLE projects_new RENAME TO projects")
             logger.info("Database migration to 5-column PK complete")
+
+        # Migration: add generation_id column
+        try:
+            await db.execute("ALTER TABLE projects ADD COLUMN generation_id TEXT")
+            await db.commit()
+        except sqlite3.OperationalError as exc:
+            if "duplicate column name" not in str(exc).lower():
+                logger.exception("Migration failed while adding generation_id column")
+                raise
+
+        # Backfill generation_id for existing rows
+        async with db.execute(
+            "SELECT name, branch, ai_provider, ai_model, owner FROM projects WHERE generation_id IS NULL"
+        ) as cursor:
+            rows = await cursor.fetchall()
+        if rows:
+            await db.executemany(
+                "UPDATE projects SET generation_id = ? WHERE name = ? AND branch = ? AND ai_provider = ? AND ai_model = ? AND owner = ?",
+                [(str(uuid.uuid4()), r[0], r[1], r[2], r[3], r[4]) for r in rows],
+            )
+            await db.commit()
+
+        # Index on generation_id
+        await db.execute(
+            "CREATE UNIQUE INDEX IF NOT EXISTS idx_projects_generation_id ON projects(generation_id)"
+        )
+        await db.commit()
 
         # Reset orphaned "generating" projects from previous server run
         cursor = await db.execute(
@@ -294,23 +330,50 @@ async def save_project(
     ai_model: str = "",
     owner: str = "",
     branch: str = DEFAULT_BRANCH,
-) -> None:
+    generation_id: str | None = None,
+) -> str:
+    """Save or update a project variant. Returns the generation_id."""
     if status not in VALID_STATUSES:
         msg = f"Invalid project status: '{status}'. Valid: {', '.join(sorted(VALID_STATUSES))}"
         raise ValueError(msg)
     async with aiosqlite.connect(DB_PATH) as db:
+        # ON CONFLICT ... DO UPDATE uses COALESCE(projects.generation_id, excluded.generation_id)
+        # to preserve the existing row's generation_id when it is already set.
+        final_gen_id = generation_id or str(uuid.uuid4())
+
         await db.execute(
-            """INSERT INTO projects (name, branch, ai_provider, ai_model, owner, repo_url, status, updated_at)
-               VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+            """INSERT INTO projects (name, branch, ai_provider, ai_model, owner, generation_id, repo_url, status, updated_at)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
                ON CONFLICT(name, branch, ai_provider, ai_model, owner) DO UPDATE SET
                repo_url = excluded.repo_url,
                status = excluded.status,
+               generation_id = COALESCE(projects.generation_id, excluded.generation_id),
                error_message = NULL,
                current_stage = NULL,
                updated_at = CURRENT_TIMESTAMP""",
-            (name, branch, ai_provider, ai_model, owner, repo_url, status),
+            (
+                name,
+                branch,
+                ai_provider,
+                ai_model,
+                owner,
+                final_gen_id,
+                repo_url,
+                status,
+            ),
         )
         await db.commit()
+
+        # Re-read the actual persisted generation_id to handle race conditions
+        # where COALESCE preserved an existing value instead of our generated one
+        async with db.execute(
+            "SELECT generation_id FROM projects WHERE name = ? AND branch = ? AND ai_provider = ? AND ai_model = ? AND owner = ?",
+            (name, branch, ai_provider, ai_model, owner),
+        ) as cursor:
+            row = await cursor.fetchone()
+            if row and row[0]:
+                return str(row[0])
+    return final_gen_id
 
 
 async def update_project_status(
@@ -383,6 +446,18 @@ async def get_project(
         cursor = await db.execute(query, params)
         row = await cursor.fetchone()
         return dict(row) if row else None
+
+
+async def get_project_by_generation_id(generation_id: str) -> dict[str, Any] | None:
+    """Look up a project variant by its generation_id UUID."""
+    async with aiosqlite.connect(DB_PATH) as db:
+        db.row_factory = aiosqlite.Row
+        async with db.execute(
+            "SELECT * FROM projects WHERE generation_id = ?",
+            (generation_id,),
+        ) as cursor:
+            row = await cursor.fetchone()
+            return dict(row) if row else None
 
 
 async def list_projects(

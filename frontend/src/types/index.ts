@@ -16,6 +16,7 @@ export interface Project {
   page_count: number
   error_message: string | null
   plan_json: string | null
+  generation_id: string | null
   created_at: string
   updated_at: string
 }
@@ -104,6 +105,7 @@ export interface ProgressMessage {
   page_count?: number
   plan_json?: string | null
   error_message?: string | null
+  generation_id?: string | null
 }
 
 export interface StatusChangeMessage {
@@ -118,6 +120,7 @@ export interface StatusChangeMessage {
   last_generated?: string | null
   last_commit_sha?: string | null
   error_message?: string | null
+  generation_id?: string | null
 }
 
 export class ApiError extends Error {

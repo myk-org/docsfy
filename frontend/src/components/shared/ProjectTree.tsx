@@ -1,11 +1,12 @@
 import { useState, useMemo, useRef, useEffect } from 'react'
 import { useVirtualizer } from '@tanstack/react-virtual'
-import { ChevronRight, Trash2, GitBranch, ChevronsDown, ChevronsUp } from 'lucide-react'
+import { ChevronRight, Trash2, GitBranch, ChevronsDown, ChevronsUp, Copy } from 'lucide-react'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import StatusDot from './StatusDot'
 import { cn } from '@/lib/utils'
-import { TREE_EXPANDED_KEY } from '@/lib/constants'
+import { TREE_EXPANDED_KEY, TOAST_DEFAULT_MS } from '@/lib/constants'
 import type { Project } from '@/types'
 
 export interface SelectedVariant {
@@ -437,12 +438,19 @@ function VariantRow({
   onSelect: () => void
 }) {
   return (
-    <button
-      type="button"
+    <div
+      role="button"
+      tabIndex={0}
       onClick={onSelect}
+      onKeyDown={(e) => {
+        if ((e.key === 'Enter' || e.key === ' ') && e.target === e.currentTarget) {
+          e.preventDefault()
+          onSelect()
+        }
+      }}
       title={`${project.ai_provider}/${project.ai_model} — ${project.status}${project.page_count ? ` (${project.page_count} pages)` : ''}`}
       className={cn(
-        'flex items-center gap-2 w-full pl-11 pr-2 py-1.5 rounded-md transition-colors text-left',
+        'flex items-center gap-2 w-full pl-11 pr-2 py-1.5 rounded-md transition-colors text-left cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
         isSelected
           ? 'bg-accent text-accent-foreground'
           : 'hover:bg-muted/50 text-foreground'
@@ -452,11 +460,29 @@ function VariantRow({
       <span className="text-sm truncate flex-1 min-w-0">
         {project.ai_provider} / {project.ai_model}
       </span>
+      {project.generation_id && (
+        <button
+          type="button"
+          className="text-[10px] text-muted-foreground font-mono cursor-pointer hover:text-foreground shrink-0 flex items-center gap-0.5 bg-transparent border-none p-0"
+          title={`Click to copy: ${project.generation_id}`}
+          aria-label="Copy generation ID"
+          onClick={(e) => {
+            e.stopPropagation()
+            navigator.clipboard
+              .writeText(project.generation_id!)
+              .then(() => toast.success('Generation ID copied', { duration: TOAST_DEFAULT_MS }))
+              .catch(() => toast.error('Failed to copy'))
+          }}
+        >
+          {project.generation_id.slice(0, 8)}
+          <Copy className="size-2.5" />
+        </button>
+      )}
       {isAdmin && (
         <Badge variant="outline" className="text-[10px] px-1 h-4 shrink-0">
           {project.owner}
         </Badge>
       )}
-    </button>
+    </div>
   )
 }
