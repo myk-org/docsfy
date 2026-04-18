@@ -32,9 +32,11 @@ from docsfy.models import (
 )
 from docsfy.postprocess import (
     add_cross_links,
+    convert_details_to_headings,
     detect_version,
     fix_broken_internal_links,
     linkify_plain_references,
+    separate_adjacent_callouts,
     validate_pages,
 )
 from docsfy.renderer import render_site
@@ -1060,6 +1062,11 @@ async def _generate_from_path(
     site_dir = get_project_site_dir(
         project_name, ai_provider, ai_model, owner, branch=branch
     )
+    pages = {
+        slug: convert_details_to_headings(separate_adjacent_callouts(content))
+        for slug, content in pages.items()
+    }
+
     render_site(plan=plan, pages=pages, output_dir=site_dir)
 
     project_dir = get_project_dir(

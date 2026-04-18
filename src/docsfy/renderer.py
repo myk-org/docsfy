@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import contextlib
+import html as _html_mod
 import json
 import re
+import urllib.parse
 import shutil
 import subprocess
 import tempfile
@@ -58,16 +60,30 @@ def _sanitize_html(html: str) -> str:
     # anchor links (#section), relative paths (/page), and mailto: links.
     # All other schemes (javascript:, data:, vbscript:, etc.) are blocked
     # by replacing the URL with "#".
+    def _is_safe_url(url: str) -> bool:
+        """Check if a URL is safe to keep (not a dangerous scheme)."""
+        decoded = _html_mod.unescape(url).strip()
+        decoded_lower = decoded.lower()
+        if decoded_lower.startswith(("http://", "https://", "#", "mailto:")):
+            return True
+        # Allow absolute paths but reject protocol-relative URLs (//evil.com)
+        if decoded.startswith("/") and not decoded.startswith("//"):
+            return True
+        # Reject protocol-relative URLs (//evil.com)
+        if decoded.startswith("//"):
+            return False
+        # Allow relative URLs (no scheme) - e.g., "page-slug.html", "page.html#section:details"
+        # Use urlsplit to check for a scheme — it correctly handles
+        # colons in fragments/paths vs actual schemes
+        parsed = urllib.parse.urlsplit(decoded)
+        return not parsed.scheme  # No scheme = relative URL, safe
+
     def _sanitize_url_attr(match: re.Match) -> str:  # type: ignore[type-arg]
         attr = match.group(1)  # href or src
         quote = match.group(2)  # " or '
         url = match.group(3)  # the URL value
-        # Strip whitespace and decode common HTML entities
-        clean_url = url.strip()
-        # Check for safe schemes
-        if clean_url.startswith(("http://", "https://", "#", "/", "mailto:")):
-            return match.group(0)  # Keep as-is
-        # Block everything else (javascript:, data:, vbscript:, etc.)
+        if _is_safe_url(url):
+            return match.group(0)
         return f"{attr}={quote}#{quote}"
 
     html = re.sub(
@@ -80,8 +96,8 @@ def _sanitize_html(html: str) -> str:
     # Also handle unquoted URLs
     def _sanitize_unquoted_url(match: re.Match) -> str:  # type: ignore[type-arg]
         attr = match.group(1)
-        url = match.group(2).strip()
-        if url.startswith(("http://", "https://", "#", "/", "mailto:")):
+        url = match.group(2)
+        if _is_safe_url(url):
             return match.group(0)
         return f'{attr}="#"'
 

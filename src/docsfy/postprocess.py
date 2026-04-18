@@ -22,8 +22,99 @@ from docsfy.prompts import build_cross_links_prompt, build_validation_prompt
 
 logger = get_logger(name=__name__)
 
-# Regex to identify code fences and inline code that should be skipped
-_CODE_BLOCK_RE = re.compile(r"(```[\s\S]*?```|`[^`\n]+`)")
+
+_CALLOUT_RE = re.compile(r"^>\s*\*\*(Note|Warning|Tip):\*\*", re.IGNORECASE)
+
+_DETAILS_OPEN_RE = re.compile(
+    r"<details[^>]*>\s*<summary[^>]*>(.*?)</summary>",
+    re.IGNORECASE | re.DOTALL,
+)
+_DETAILS_CLOSE_RE = re.compile(
+    r"</details\s*>",
+    re.IGNORECASE,
+)
+
+# Regex to identify code fences (backtick and tilde) and inline code that should be skipped
+_CODE_BLOCK_RE = re.compile(r"(```[\s\S]*?```|~~~[\s\S]*?~~~|`[^`\n]+`)")
+
+
+def separate_adjacent_callouts(md_text: str) -> str:
+    """Separate adjacent blockquote callouts so each renders independently.
+
+    When the AI generates consecutive callouts like:
+        > **Warning:** text
+        > **Note:** text
+    they collapse into a single blockquote. This inserts blank lines
+    between them so each callout is styled independently.
+    """
+    lines = md_text.split("\n")
+    result: list[str] = []
+    in_fence = False
+    opening_fence_len = 0
+    opening_fence_char = "`"
+
+    for i, line in enumerate(lines):
+        stripped = line.strip()
+
+        # Track fenced code blocks (backtick and tilde fence matching)
+        if stripped.startswith(("```", "~~~")):
+            fence_char = stripped[0]
+            fence_count = len(stripped) - len(stripped.lstrip(fence_char))
+            rest = stripped[fence_count:].strip()
+            if not in_fence:
+                in_fence = True
+                opening_fence_len = fence_count
+                opening_fence_char = fence_char
+            elif (
+                fence_char == opening_fence_char
+                and fence_count >= opening_fence_len
+                and not rest
+            ):
+                in_fence = False
+                opening_fence_len = 0
+
+        if not in_fence and i > 0 and _CALLOUT_RE.match(stripped):
+            # Check if previous non-empty line was also a blockquote
+            prev_idx = i - 1
+            while prev_idx >= 0 and not lines[prev_idx].strip():
+                prev_idx -= 1
+            if prev_idx >= 0 and lines[prev_idx].strip().startswith(">"):
+                # Insert separator between adjacent callouts
+                # Remove any blank lines we just passed over
+                while result and not result[-1].strip():
+                    result.pop()
+                result.append("")
+                result.append("")
+
+        result.append(line)
+
+    return "\n".join(result)
+
+
+def convert_details_to_headings(md_text: str) -> str:
+    """Convert HTML <details><summary> blocks to regular Markdown headings.
+
+    The Python markdown library cannot parse Markdown inside raw HTML blocks,
+    so <details><summary>Title</summary>...</details> renders with literal
+    **bold** markers instead of <strong> tags. Convert these to ## headings.
+
+    Fenced code blocks are skipped to preserve code examples.
+    """
+    parts = _CODE_BLOCK_RE.split(md_text)
+    result: list[str] = []
+    for i, part in enumerate(parts):
+        if i % 2 == 1:
+            # Inside a code fence — preserve as-is
+            result.append(part)
+        else:
+            # Outside code fence — apply transforms
+            part = _DETAILS_OPEN_RE.sub(
+                lambda m: f"\n## {m.group(1).strip()}\n",
+                part,
+            )
+            part = _DETAILS_CLOSE_RE.sub("", part)
+            result.append(part)
+    return "".join(result)
 
 
 def fix_broken_internal_links(

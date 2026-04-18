@@ -109,6 +109,9 @@ Use these callout formats:
 - Warnings: > **Warning:** text
 - Tips: > **Tip:** text"""
 
+_NO_HTML_DETAILS = """
+- Do NOT use HTML <details> or <summary> tags — the Markdown parser cannot render Markdown inside raw HTML blocks. Use regular headings instead."""
+
 _GUIDE_WRITING_RULES = (
     """Write a task-oriented guide in markdown format. Follow these rules strictly:
 
@@ -119,8 +122,7 @@ STRUCTURE (in this order):
 3. Quick example: Show the simplest working example FIRST, before any explanation.
 4. Step-by-step: Walk through the common use case with clear steps.
 5. Advanced usage: AFTER the basics, cover advanced options, edge cases, or alternatives.
-   Wrap this section in a collapsible block using <details><summary>Advanced Usage</summary>...</details>
-   so it doesn't overwhelm users who only need the basics.
+   Use a regular markdown heading (## Advanced Usage) for this section.
 6. Troubleshooting: Common problems and solutions (only if relevant, keep brief).
 
 CONTENT RULES:
@@ -140,6 +142,7 @@ CONTENT RULES:
 - Prefer bullet lists and numbered steps over long prose.
 - Where architecture, data flow, or component relationships would benefit from a visual, include a Mermaid diagram using a ```mermaid code block. Use flowchart, sequence, or class diagrams as appropriate."""
     + _CALLOUT_FORMATS
+    + _NO_HTML_DETAILS
 )
 
 _REFERENCE_WRITING_RULES = (
@@ -160,6 +163,7 @@ CONTENT RULES:
 - Use code blocks generously.
 - Group related items under clear headings."""
     + _CALLOUT_FORMATS
+    + _NO_HTML_DETAILS
 )
 
 _RECIPE_WRITING_RULES = (
@@ -180,6 +184,7 @@ CONTENT RULES:
 - Practical over theoretical. If it can't be copy-pasted, it's not a recipe.
 - Include real values and realistic examples, not abstract placeholders."""
     + _CALLOUT_FORMATS
+    + _NO_HTML_DETAILS
 )
 
 _CONCEPT_WRITING_RULES = (
@@ -199,6 +204,7 @@ CONTENT RULES:
 - Where architecture, data flow, or component relationships would benefit from a visual, include a Mermaid diagram using a ```mermaid code block.
 - Use clear, approachable language — avoid jargon where possible."""
     + _CALLOUT_FORMATS
+    + _NO_HTML_DETAILS
 )
 
 
@@ -380,7 +386,8 @@ Instructions:
 
 When writing "new_text", follow these content rules:
 {_get_incremental_writing_rules(page_type)}
-{_CALLOUT_FORMATS}"""
+{_CALLOUT_FORMATS}
+{_NO_HTML_DETAILS}"""
 
 
 VALIDATION_SCHEMA = """[
