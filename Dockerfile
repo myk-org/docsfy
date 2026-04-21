@@ -43,7 +43,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   curl \
   nodejs \
   npm \
-  chromium \
   && rm -rf /var/lib/apt/lists/*
 
 # Create non-root user, data directory, and set permissions
@@ -59,13 +58,6 @@ COPY --from=ghcr.io/astral-sh/uv:0.5.14 /uv /usr/local/bin/uv
 # Switch to non-root user for CLI installs
 USER appuser
 
-# Puppeteer config for mermaid-cli (must be set before npm install)
-ENV PUPPETEER_EXECUTABLE_PATH="/usr/bin/chromium"
-ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD="true"
-
-# Puppeteer needs --no-sandbox in Docker (non-root user, no user namespaces)
-RUN printf '{"args":["--no-sandbox","--disable-setuid-sandbox"]}\n' > /home/appuser/.puppeteerrc.json
-
 # Always fetch the latest versions of these CLI tools at build time.
 
 # Install Claude Code CLI (installs to ~/.local/bin)
@@ -74,13 +66,10 @@ RUN /bin/bash -o pipefail -c "curl -fsSL https://claude.ai/install.sh | bash"
 # Install Cursor Agent CLI (installs to ~/.local/bin)
 RUN /bin/bash -o pipefail -c "curl -fsSL https://cursor.com/install | bash"
 
-# Configure npm for non-root global installs and install Gemini CLI + mermaid-cli
+# Configure npm for non-root global installs and install Gemini CLI
 RUN mkdir -p /home/appuser/.npm-global \
   && npm config set prefix '/home/appuser/.npm-global' \
-  && npm install -g @google/gemini-cli @mermaid-js/mermaid-cli@11
-
-# Verify mermaid-cli works
-RUN printf 'flowchart LR\n  A-->B\n' > /tmp/test.mmd && /home/appuser/.npm-global/bin/mmdc -p /home/appuser/.puppeteerrc.json -i /tmp/test.mmd -o /tmp/test.svg && rm /tmp/test.mmd /tmp/test.svg
+  && npm install -g @google/gemini-cli
 
 # Switch to root for file copies and permission fixes
 USER root
