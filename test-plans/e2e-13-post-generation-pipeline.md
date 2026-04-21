@@ -8,7 +8,7 @@
 
 ## Test 27: Post-Generation Pipeline
 
-This test group verifies the features added by the post-generation pipeline: version detection in the footer, Mermaid diagram rendering, related-pages cross-links, and the validation and cross-linking stages that appear during generation.
+This test group verifies the features added by the post-generation pipeline: version detection in the footer, related-pages cross-links, and the validation and cross-linking stages that appear during generation.
 
 **Precondition:** Log in as `testuser-e2e`. Ensure the `for-testing-only` repo is accessible.
 
@@ -129,57 +129,6 @@ agent-browser wait 2000
 ```
 
 **Expected result:** Returns `200`.
-
----
-
-### 27.3 Mermaid diagrams render as SVG
-
-**Precondition:** Docs for `for-testing-only/main/gemini/gemini-2.5-flash` are in `ready` state (generated in 27.1). This test requires `mmdc` (Mermaid CLI) to be installed on the server. If `mmdc` is not available, mark as `blocked`.
-
-**Check `mmdc` availability on the server:**
-
-```shell
-which mmdc || echo "mmdc not found"
-```
-
-If `mmdc not found`, mark this test as `blocked` with reason "Mermaid CLI (mmdc) not installed".
-
-**Navigate to a page that is expected to contain a diagram:**
-
-```shell
-agent-browser navigate http://localhost:8800/docs/for-testing-only/main/gemini/gemini-2.5-flash/
-agent-browser javascript "document.querySelectorAll('.mermaid-diagram, [class*=\"mermaid\"]').length"
-agent-browser screenshot
-```
-
-If the index page contains no Mermaid diagrams, navigate to another page in the sidebar that may contain one:
-
-```shell
-agent-browser javascript "Array.from(document.querySelectorAll('nav a[href*=\"/docs/\"]')).map(a => a.href).slice(0, 5)"
-```
-
-Navigate to each link in turn and check for Mermaid diagram elements:
-
-```shell
-# Navigate to the first sub-page and check
-agent-browser navigate <first-subpage-href>
-agent-browser javascript "document.querySelectorAll('.mermaid-diagram, [class*=\"mermaid\"]').length"
-agent-browser screenshot
-```
-
-**Expected result (when mmdc is available and a page contains a Mermaid block):**
-- `.mermaid-diagram` or a matching class element is present on at least one page
-- That element contains an `<svg>` child (not raw Mermaid source text)
-- The SVG has a non-zero `width` and `height`
-- No raw `graph TD` or `sequenceDiagram` text is visible in the rendered output
-
-**Check SVG content:**
-
-```shell
-agent-browser javascript "const el = document.querySelector('.mermaid-diagram, [class*=\"mermaid\"]'); el ? (el.querySelector('svg') !== null) : 'no diagram element found'"
-```
-
-**Expected result:** Returns `true`.
 
 ---
 

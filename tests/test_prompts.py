@@ -131,14 +131,13 @@ def test_truncate_diff_content_small_diff() -> None:
     assert result == small_diff
 
 
-def test_page_prompt_includes_mermaid_instructions() -> None:
+def test_page_prompt_excludes_mermaid_instructions() -> None:
     from docsfy.prompts import build_page_prompt
 
     prompt = build_page_prompt(
         "test-repo", "Architecture", "System architecture overview"
     )
-    assert "mermaid" in prompt.lower()
-    assert "flowchart" in prompt.lower() or "sequence" in prompt.lower()
+    assert "do not use mermaid" in prompt.lower()
 
 
 def test_page_prompt_with_exclusions() -> None:

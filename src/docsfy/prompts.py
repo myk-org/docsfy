@@ -140,7 +140,7 @@ CONTENT RULES:
 - Write for humans who want to GET THINGS DONE, not understand internals.
 - Use short paragraphs (2-3 sentences max).
 - Prefer bullet lists and numbered steps over long prose.
-- Where architecture, data flow, or component relationships would benefit from a visual, include a Mermaid diagram using a ```mermaid code block. Use flowchart, sequence, or class diagrams as appropriate."""
+- Do NOT use Mermaid diagrams (they render poorly). Instead, use structured text to show flows: numbered step lists, comparison tables, nested bullet points, and callout boxes."""
     + _CALLOUT_FORMATS
     + _NO_HTML_DETAILS
 )
@@ -192,16 +192,16 @@ _CONCEPT_WRITING_RULES = (
 
 STRUCTURE:
 1. Opening: What is this concept and WHY should the user care?
-2. The big picture: Use a diagram (Mermaid) if it helps understanding.
+2. The big picture: Use tables, step lists, or bullet points to explain architecture and flow.
 3. Key concepts: Explain each concept clearly with examples.
 4. How it affects the user: Connect internals back to user-visible behavior.
 5. Related pages: Point to guides and reference pages where users can take action.
 
 CONTENT RULES:
 - Always connect technical concepts back to user-visible effects.
-- Use diagrams (Mermaid) for architecture, data flow, or relationships.
+- Use tables and structured lists for architecture, data flow, or relationships.
 - Do NOT go deeper than the user needs — this is not a code walkthrough.
-- Where architecture, data flow, or component relationships would benefit from a visual, include a Mermaid diagram using a ```mermaid code block.
+- Do NOT use Mermaid diagrams (they render poorly). Use numbered steps, comparison tables, and callout boxes instead.
 - Use clear, approachable language — avoid jargon where possible."""
     + _CALLOUT_FORMATS
     + _NO_HTML_DETAILS
@@ -231,7 +231,7 @@ _INCREMENTAL_WRITING_RULES: dict[str, str] = {
     "guide": "Match the page's existing tone. For new_text: lead with examples, use short paragraphs, prefer bullet lists and numbered steps, avoid internal implementation details.",
     "reference": "Match the page's existing tone. For new_text: be precise and scannable, use tables for parameters, include code examples, avoid narrative explanations.",
     "recipe": "Match the page's existing tone. For new_text: keep recipes self-contained and copy-paste ready, short explanations only.",
-    "concept": "Match the page's existing tone. For new_text: connect concepts to user-visible effects, use diagrams where helpful, avoid deep code walkthroughs.",
+    "concept": "Match the page's existing tone. For new_text: connect concepts to user-visible effects, use tables and structured lists for flows, avoid deep code walkthroughs.",
 }
 if set(_INCREMENTAL_WRITING_RULES) != set(PAGE_TYPES):
     _missing = set(PAGE_TYPES) - set(_INCREMENTAL_WRITING_RULES)
