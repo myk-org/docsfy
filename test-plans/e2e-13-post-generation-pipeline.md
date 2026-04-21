@@ -132,7 +132,7 @@ agent-browser wait 2000
 
 ---
 
-### 27.4 Related Pages section links to other pages
+### 27.3 Related Pages section links to other pages
 
 **Precondition:** Docs for `for-testing-only/main/gemini/gemini-2.5-flash` are in `ready` state.
 
@@ -169,7 +169,7 @@ agent-browser javascript "Array.from(document.querySelectorAll('.related-pages a
 
 ---
 
-### 27.5 Validation and cross-linking stages appear in WebSocket progress
+### 27.4 Validation and cross-linking stages appear in WebSocket progress
 
 **Precondition:** Start a fresh generation with `force: true` and monitor the WebSocket for stage names.
 
@@ -214,7 +214,7 @@ agent-browser wait 3000
 
 ---
 
-### 27.6 Dashboard activity log shows validating and cross-linking stages
+### 27.5 Dashboard activity log shows validating and cross-linking stages
 
 **Precondition:** Start a fresh force generation and watch the activity log in the dashboard UI without refreshing the page.
 
@@ -273,7 +273,7 @@ agent-browser javascript "Array.from(document.querySelectorAll('[class*=\"activi
 
 ---
 
-### 27.7 Performance baseline: wall-clock generation time comparison
+### 27.6 Performance baseline: wall-clock generation time comparison
 
 **Note:** This test measures the overhead introduced by the post-generation pipeline (validation, cross-linking, version detection). Run the test on the current build (with the pipeline enabled). Compare the result against the documented baseline from before the pipeline was added.
 
@@ -307,7 +307,7 @@ echo "Generation wall-clock time: ${ELAPSED}s"
 **Record the result in `UI-TESTS-RESULTS.md`** using this format:
 
 ```markdown
-| 27.7 | Performance baseline (post-pipeline) | PASS | Wall-clock: Xs. Pre-pipeline baseline: Ys. Overhead: Zs (P%). |
+| 27.6 | Performance baseline (post-pipeline) | PASS | Wall-clock: Xs. Pre-pipeline baseline: Ys. Overhead: Zs (P%). |
 ```
 
 **Expected result:**
@@ -318,7 +318,7 @@ echo "Generation wall-clock time: ${ELAPSED}s"
 
 ---
 
-### 27.8 Cleanup
+### 27.7 Cleanup
 
 Delete variants created during Test 27 that are not needed by later tests:
 
@@ -330,4 +330,4 @@ agent-browser wait 2000
 
 **Expected result:** Returns `200` (deleted) or `404` (already gone). Both are acceptable.
 
-The `main`-branch variant generated in 27.1 / 27.7 may be kept for subsequent test sections that depend on an existing `ready` variant.
+The `main`-branch variant generated in 27.1 / 27.6 may be kept for subsequent test sections that depend on an existing `ready` variant.

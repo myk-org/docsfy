@@ -112,6 +112,9 @@ Use these callout formats:
 _NO_HTML_DETAILS = """
 - Do NOT use HTML <details> or <summary> tags — the Markdown parser cannot render Markdown inside raw HTML blocks. Use regular headings instead."""
 
+_NO_MERMAID_DIAGRAMS = """
+- Do NOT use Mermaid diagrams (they render poorly). Use structured text instead: numbered step lists, comparison tables, nested bullet points, and callout boxes."""
+
 _GUIDE_WRITING_RULES = (
     """Write a task-oriented guide in markdown format. Follow these rules strictly:
 
@@ -140,9 +143,10 @@ CONTENT RULES:
 - Write for humans who want to GET THINGS DONE, not understand internals.
 - Use short paragraphs (2-3 sentences max).
 - Prefer bullet lists and numbered steps over long prose.
-- Do NOT use Mermaid diagrams (they render poorly). Instead, use structured text to show flows: numbered step lists, comparison tables, nested bullet points, and callout boxes."""
+"""
     + _CALLOUT_FORMATS
     + _NO_HTML_DETAILS
+    + _NO_MERMAID_DIAGRAMS
 )
 
 _REFERENCE_WRITING_RULES = (
@@ -164,6 +168,7 @@ CONTENT RULES:
 - Group related items under clear headings."""
     + _CALLOUT_FORMATS
     + _NO_HTML_DETAILS
+    + _NO_MERMAID_DIAGRAMS
 )
 
 _RECIPE_WRITING_RULES = (
@@ -185,6 +190,7 @@ CONTENT RULES:
 - Include real values and realistic examples, not abstract placeholders."""
     + _CALLOUT_FORMATS
     + _NO_HTML_DETAILS
+    + _NO_MERMAID_DIAGRAMS
 )
 
 _CONCEPT_WRITING_RULES = (
@@ -201,10 +207,10 @@ CONTENT RULES:
 - Always connect technical concepts back to user-visible effects.
 - Use tables and structured lists for architecture, data flow, or relationships.
 - Do NOT go deeper than the user needs — this is not a code walkthrough.
-- Do NOT use Mermaid diagrams (they render poorly). Use numbered steps, comparison tables, and callout boxes instead.
 - Use clear, approachable language — avoid jargon where possible."""
     + _CALLOUT_FORMATS
     + _NO_HTML_DETAILS
+    + _NO_MERMAID_DIAGRAMS
 )
 
 
@@ -387,7 +393,8 @@ Instructions:
 When writing "new_text", follow these content rules:
 {_get_incremental_writing_rules(page_type)}
 {_CALLOUT_FORMATS}
-{_NO_HTML_DETAILS}"""
+{_NO_HTML_DETAILS}
+{_NO_MERMAID_DIAGRAMS}"""
 
 
 VALIDATION_SCHEMA = """[

@@ -43,7 +43,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   curl \
   nodejs \
   npm \
-  chromium \
   && rm -rf /var/lib/apt/lists/*
 
 # Create non-root user, data directory, and set permissions
