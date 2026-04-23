@@ -131,14 +131,34 @@ def test_truncate_diff_content_small_diff() -> None:
     assert result == small_diff
 
 
-def test_page_prompt_includes_mermaid_instructions() -> None:
-    from docsfy.prompts import build_page_prompt
+def test_page_prompt_excludes_mermaid_instructions() -> None:
+    from docsfy.models import PAGE_TYPES
+    from docsfy.prompts import build_incremental_page_prompt, build_page_prompt
 
-    prompt = build_page_prompt(
-        "test-repo", "Architecture", "System architecture overview"
-    )
-    assert "mermaid" in prompt.lower()
-    assert "flowchart" in prompt.lower() or "sequence" in prompt.lower()
+    for page_type in PAGE_TYPES:
+        prompt = build_page_prompt(
+            project_name="test-repo",
+            page_title="Test",
+            page_description="desc",
+            page_type=page_type,
+        )
+        assert "do not use mermaid" in prompt.lower(), (
+            f"Mermaid ban missing in {page_type} page prompt"
+        )
+
+    for page_type in PAGE_TYPES:
+        prompt = build_incremental_page_prompt(
+            project_name="test-repo",
+            page_title="Test",
+            page_description="desc",
+            existing_page_path="/tmp/existing.md",
+            changed_files=["file.py"],
+            diff_path="/tmp/diff.patch",
+            page_type=page_type,
+        )
+        assert "do not use mermaid" in prompt.lower(), (
+            f"Mermaid ban missing in {page_type} incremental prompt"
+        )
 
 
 def test_page_prompt_with_exclusions() -> None:
