@@ -27,12 +27,12 @@ import { useModal } from '@/components/shared/ModalProvider'
 import { api } from '@/lib/api'
 import { TOAST_DEFAULT_MS, TOAST_ERROR_MS, VALID_PROVIDERS } from '@/lib/constants'
 import { ApiError } from '@/types'
-import type { Project, LogEntry, DocPlan } from '@/types'
+import type { Project, LogEntry, DocPlan, AvailableModels } from '@/types'
 
 interface VariantDetailProps {
   project: Project
   logEntries: LogEntry[]
-  knownModels: Record<string, string[]>
+  availableModels: AvailableModels
   isAdmin: boolean
   role: string
   onDelete?: () => void
@@ -202,6 +202,12 @@ function InfoGrid({ project, isAdmin }: { project: Project; isAdmin: boolean }) 
         <span className="text-muted-foreground">Last Generated</span>
         <div className="mt-0.5 font-medium">{formatDate(project.last_generated)}</div>
       </div>
+      {project.total_cost_usd != null && (
+        <div>
+          <span className="text-muted-foreground">Generation Cost</span>
+          <div className="mt-0.5 font-medium">${project.total_cost_usd.toFixed(4)}</div>
+        </div>
+      )}
       {project.generation_id && (
         <div>
           <span className="text-muted-foreground">Generation ID</span>
@@ -230,12 +236,12 @@ function InfoGrid({ project, isAdmin }: { project: Project; isAdmin: boolean }) 
 
 function RegenerateSection({
   project,
-  knownModels,
+  availableModels,
   defaultForce,
   onRegenerate,
 }: {
   project: Project
-  knownModels: Record<string, string[]>
+  availableModels: AvailableModels
   defaultForce: boolean
   onRegenerate?: (provider: string, model: string, force: boolean) => void
 }) {
@@ -255,29 +261,28 @@ function RegenerateSection({
 
   const getDefaultModel = useCallback(
     (prov: string): string => {
-      const models = knownModels[prov]
-      return models && models.length > 0 ? models[0] : ''
+      const models = availableModels[prov]
+      return models && models.length > 0 ? models[0].id : ''
     },
-    [knownModels],
+    [availableModels],
   )
 
   useEffect(() => {
     setModel((prev) => {
-      const models = knownModels[provider]
+      const models = availableModels[provider]
       if (models && models.length > 0) {
-        if (prev && models.includes(prev)) return prev
-        return models[0]
+        return prev || models[0].id
       }
       return prev
     })
-  }, [provider, knownModels])
+  }, [provider, availableModels])
 
   function handleProviderChange(value: string) {
     setProvider(value)
-    const models = knownModels[value]
+    const models = availableModels[value]
     if (models && models.length > 0) {
-      if (!models.includes(model)) {
-        setModel(models[0])
+      if (!models.some(m => m.id === model)) {
+        setModel(models[0].id)
       }
     } else {
       setModel(getDefaultModel(value))
@@ -304,7 +309,7 @@ function RegenerateSection({
     }
   }
 
-  const modelOptions = knownModels[provider] ?? []
+  const modelOptions = (availableModels[provider] ?? []).map(m => ({ value: m.id, label: m.name || m.id }))
 
   return (
     <div className="border-t border-dashed pt-4 mt-4">
@@ -350,7 +355,7 @@ function RegenerateSection({
         <Button
           data-testid="data-regenerate-variant"
           onClick={handleRegenerate}
-          disabled={isStarting}
+          disabled={isStarting || !model}
           className="w-full sm:w-auto"
           title="Re-generate documentation with these settings"
         >
@@ -371,7 +376,7 @@ function RegenerateSection({
 function ReadyView({
   project,
   logEntries,
-  knownModels,
+  availableModels,
   isAdmin,
   role,
   onDelete,
@@ -456,7 +461,7 @@ function ReadyView({
       {role !== 'viewer' && (
         <RegenerateSection
           project={project}
-          knownModels={knownModels}
+          availableModels={availableModels}
           defaultForce={false}
           onRegenerate={onRegenerate}
         />
@@ -556,7 +561,7 @@ function GeneratingView({
 function ErrorAbortedView({
   project,
   logEntries,
-  knownModels,
+  availableModels,
   isAdmin,
   role,
   onDelete,
@@ -604,7 +609,7 @@ function ErrorAbortedView({
         <>
           <RegenerateSection
             project={project}
-            knownModels={knownModels}
+            availableModels={availableModels}
             defaultForce={true}
             onRegenerate={onRegenerate}
           />
@@ -637,7 +642,7 @@ function ErrorAbortedView({
 export default function VariantDetail({
   project,
   logEntries,
-  knownModels,
+  availableModels,
   isAdmin,
   role,
   onDelete,
@@ -657,7 +662,7 @@ export default function VariantDetail({
         <ReadyView
           project={project}
           logEntries={logEntries}
-          knownModels={knownModels}
+          availableModels={availableModels}
           isAdmin={isAdmin}
           role={role}
           onDelete={onDelete}
@@ -676,7 +681,7 @@ export default function VariantDetail({
         <ErrorAbortedView
           project={project}
           logEntries={logEntries}
-          knownModels={knownModels}
+          availableModels={availableModels}
           isAdmin={isAdmin}
           role={role}
           onDelete={onDelete}

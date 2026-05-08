@@ -13,7 +13,8 @@ from typing import Any
 
 from simple_logger.logger import get_logger
 
-from docsfy.ai_client import call_ai_cli, run_parallel_with_limit
+from docsfy.ai_client import AIResult, call_ai_cli, run_parallel_with_limit
+from docsfy.cost_tracker import add_cost
 from docsfy.generator import generate_full_page_content
 from docsfy.json_parser import parse_json_array_response, parse_json_response
 from docsfy.models import PAGE_TYPES
@@ -390,21 +391,25 @@ async def _validate_single_page(
 
     prompt = build_validation_prompt(str(temp_file))
     cli_flags = ["--trust"] if ai_provider == "cursor" else None
-    success, output = await call_ai_cli(
+    result: AIResult = await call_ai_cli(
         prompt=prompt,
         cwd=repo_path,
         ai_provider=ai_provider,
         ai_model=ai_model,
         ai_cli_timeout=ai_cli_timeout,
         cli_flags=cli_flags,
+        output_format="json",
     )
+    add_cost(result.usage.cost_usd if result.usage else None)
 
-    if not success:
+    if not result.success:
         logger.warning(f"[{project_name}] Validation AI call failed for page '{slug}'")
-        logger.debug(f"[{project_name}] Validation output for '{slug}': {output[:200]}")
+        logger.debug(
+            f"[{project_name}] Validation output for '{slug}': {result.text[:200]}"
+        )
         return content
 
-    stale_refs = parse_json_array_response(output)
+    stale_refs = parse_json_array_response(result.text)
     if stale_refs is None:
         logger.warning(
             f"[{project_name}] Validation returned invalid JSON for page '{slug}', keeping original content"
@@ -613,14 +618,16 @@ async def add_cross_links(
             pages_dir=str(pages_dir),
         )
         cli_flags = ["--trust"] if ai_provider == "cursor" else None
+        result: AIResult | None = None
         try:
-            success, output = await call_ai_cli(
+            result = await call_ai_cli(
                 prompt=prompt,
                 cwd=repo_path,
                 ai_provider=ai_provider,
                 ai_model=ai_model,
                 ai_cli_timeout=ai_cli_timeout,
                 cli_flags=cli_flags,
+                output_format="json",
             )
         except Exception as exc:
             logger.warning(
@@ -630,13 +637,19 @@ async def add_cross_links(
     finally:
         shutil.rmtree(pages_dir, ignore_errors=True)
 
-    if not success:
+    add_cost(result.usage.cost_usd if result and result.usage else None)
+
+    if result is None or not result.success:
         logger.warning(
             f"[{project_name}] add_cross_links: AI call failed, returning pages unchanged"
         )
+        if result is not None:
+            logger.debug(
+                f"[{project_name}] add_cross_links output: {result.text[:200]}"
+            )
         return pages
 
-    cross_links = parse_json_response(output)
+    cross_links = parse_json_response(result.text)
     if not isinstance(cross_links, dict):
         logger.warning(
             f"[{project_name}] add_cross_links: Invalid AI cross-links response, returning pages unchanged"

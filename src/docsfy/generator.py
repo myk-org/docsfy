@@ -10,7 +10,8 @@ from typing import Any
 
 from simple_logger.logger import get_logger
 
-from docsfy.ai_client import call_ai_cli, run_parallel_with_limit
+from docsfy.ai_client import AIResult, call_ai_cli, run_parallel_with_limit
+from docsfy.cost_tracker import add_cost
 from docsfy.json_parser import parse_json_array_response, parse_json_response
 from pydantic import ValidationError
 
@@ -95,18 +96,21 @@ async def _call_ai_or_raise(
     ai_model: str,
     ai_cli_timeout: int | None = None,
 ) -> str:
+    """Call AI CLI, accumulate cost, and raise on failure."""
     cli_flags = ["--trust"] if ai_provider == "cursor" else None
-    success, output = await call_ai_cli(
+    result: AIResult = await call_ai_cli(
         prompt=prompt,
         cwd=repo_path,
         ai_provider=ai_provider,
         ai_model=ai_model,
         ai_cli_timeout=ai_cli_timeout,
         cli_flags=cli_flags,
+        output_format="json",
     )
-    if not success:
-        raise RuntimeError(output)
-    return output
+    add_cost(result.usage.cost_usd if result.usage else None)
+    if not result.success:
+        raise RuntimeError(result.text[:2000])
+    return result.text
 
 
 def _normalize_incremental_planner_result(raw_result: list[Any]) -> list[str]:

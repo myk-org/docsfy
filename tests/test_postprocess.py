@@ -6,6 +6,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 import pytest
+from ai_cli_runner import AIResult
 
 
 def test_detect_version_pyproject_toml(tmp_path: Path) -> None:
@@ -108,7 +109,9 @@ async def test_validate_pages_no_issues(tmp_path: Path) -> None:
     from docsfy.postprocess import validate_pages
 
     pages = {"intro": "# Introduction\nThis is valid content."}
-    with patch("docsfy.postprocess.call_ai_cli", return_value=(True, "[]")):
+    with patch(
+        "docsfy.postprocess.call_ai_cli", return_value=AIResult(success=True, text="[]")
+    ):
         result = await validate_pages(
             pages=pages,
             repo_path=tmp_path,
@@ -144,7 +147,10 @@ async def test_validate_pages_with_stale_references(tmp_path: Path) -> None:
     )
     regen_content = "# Introduction\nUses the new React dashboard."
     with (
-        patch("docsfy.postprocess.call_ai_cli", return_value=(True, stale_refs)),
+        patch(
+            "docsfy.postprocess.call_ai_cli",
+            return_value=AIResult(success=True, text=stale_refs),
+        ),
         patch(
             "docsfy.postprocess.generate_full_page_content",
             return_value=regen_content,
@@ -167,7 +173,10 @@ async def test_validate_pages_ai_failure_preserves_pages(tmp_path: Path) -> None
     from docsfy.postprocess import validate_pages
 
     pages = {"intro": "# Introduction\nOriginal content."}
-    with patch("docsfy.postprocess.call_ai_cli", return_value=(False, "AI error")):
+    with patch(
+        "docsfy.postprocess.call_ai_cli",
+        return_value=AIResult(success=False, text="AI error"),
+    ):
         result = await validate_pages(
             pages=pages,
             repo_path=tmp_path,
@@ -219,7 +228,10 @@ async def test_add_cross_links(tmp_path: Path) -> None:
             "api": ["intro", "config"],
         }
     )
-    with patch("docsfy.postprocess.call_ai_cli", return_value=(True, cross_links_json)):
+    with patch(
+        "docsfy.postprocess.call_ai_cli",
+        return_value=AIResult(success=True, text=cross_links_json),
+    ):
         result = await add_cross_links(
             pages=pages,
             plan=plan,
@@ -246,7 +258,10 @@ async def test_add_cross_links_ai_failure_preserves_pages(tmp_path: Path) -> Non
             }
         ]
     }
-    with patch("docsfy.postprocess.call_ai_cli", return_value=(False, "AI error")):
+    with patch(
+        "docsfy.postprocess.call_ai_cli",
+        return_value=AIResult(success=False, text="AI error"),
+    ):
         result = await add_cross_links(
             pages=pages,
             plan=plan,
@@ -266,7 +281,9 @@ async def test_validate_pages_passes_ai_cli_timeout(tmp_path: Path) -> None:
     from docsfy.postprocess import validate_pages
 
     pages = {"intro": "# Intro\nContent."}
-    with patch("docsfy.postprocess.call_ai_cli", return_value=(True, "[]")) as mock_cli:
+    with patch(
+        "docsfy.postprocess.call_ai_cli", return_value=AIResult(success=True, text="[]")
+    ) as mock_cli:
         await validate_pages(
             pages=pages,
             repo_path=tmp_path,
@@ -279,6 +296,7 @@ async def test_validate_pages_passes_ai_cli_timeout(tmp_path: Path) -> None:
     mock_cli.assert_called_once()
     _, kwargs = mock_cli.call_args
     assert kwargs.get("ai_cli_timeout") == 42
+    assert kwargs.get("output_format") == "json"
 
 
 @pytest.mark.asyncio
@@ -287,7 +305,9 @@ async def test_validate_pages_cursor_passes_trust_flag(tmp_path: Path) -> None:
     from docsfy.postprocess import validate_pages
 
     pages = {"intro": "# Intro\nContent."}
-    with patch("docsfy.postprocess.call_ai_cli", return_value=(True, "[]")) as mock_cli:
+    with patch(
+        "docsfy.postprocess.call_ai_cli", return_value=AIResult(success=True, text="[]")
+    ) as mock_cli:
         await validate_pages(
             pages=pages,
             repo_path=tmp_path,
@@ -307,7 +327,9 @@ async def test_validate_pages_non_cursor_no_trust_flag(tmp_path: Path) -> None:
     from docsfy.postprocess import validate_pages
 
     pages = {"intro": "# Intro\nContent."}
-    with patch("docsfy.postprocess.call_ai_cli", return_value=(True, "[]")) as mock_cli:
+    with patch(
+        "docsfy.postprocess.call_ai_cli", return_value=AIResult(success=True, text="[]")
+    ) as mock_cli:
         await validate_pages(
             pages=pages,
             repo_path=tmp_path,
@@ -338,7 +360,10 @@ async def test_validate_pages_passes_timeout_to_regen(tmp_path: Path) -> None:
     stale_refs = json.dumps([{"reference": "old_feature", "reason": "removed"}])
     regen_content = "# Intro\nNew content."
     with (
-        patch("docsfy.postprocess.call_ai_cli", return_value=(True, stale_refs)),
+        patch(
+            "docsfy.postprocess.call_ai_cli",
+            return_value=AIResult(success=True, text=stale_refs),
+        ),
         patch(
             "docsfy.postprocess.generate_full_page_content",
             return_value=regen_content,
@@ -378,7 +403,8 @@ async def test_add_cross_links_passes_ai_cli_timeout(tmp_path: Path) -> None:
     }
     cross_links_json = json.dumps({"intro": ["api"]})
     with patch(
-        "docsfy.postprocess.call_ai_cli", return_value=(True, cross_links_json)
+        "docsfy.postprocess.call_ai_cli",
+        return_value=AIResult(success=True, text=cross_links_json),
     ) as mock_cli:
         await add_cross_links(
             pages=pages,
@@ -391,6 +417,7 @@ async def test_add_cross_links_passes_ai_cli_timeout(tmp_path: Path) -> None:
     mock_cli.assert_called_once()
     _, kwargs = mock_cli.call_args
     assert kwargs.get("ai_cli_timeout") == 77
+    assert kwargs.get("output_format") == "json"
 
 
 @pytest.mark.asyncio
@@ -408,7 +435,8 @@ async def test_add_cross_links_cursor_passes_trust_flag(tmp_path: Path) -> None:
         ]
     }
     with patch(
-        "docsfy.postprocess.call_ai_cli", return_value=(True, json.dumps({}))
+        "docsfy.postprocess.call_ai_cli",
+        return_value=AIResult(success=True, text=json.dumps({})),
     ) as mock_cli:
         await add_cross_links(
             pages=pages,
@@ -437,7 +465,8 @@ async def test_add_cross_links_non_cursor_no_trust_flag(tmp_path: Path) -> None:
         ]
     }
     with patch(
-        "docsfy.postprocess.call_ai_cli", return_value=(True, json.dumps({}))
+        "docsfy.postprocess.call_ai_cli",
+        return_value=AIResult(success=True, text=json.dumps({})),
     ) as mock_cli:
         await add_cross_links(
             pages=pages,
@@ -468,7 +497,7 @@ async def test_validate_single_page_empty_exclusions_returns_original(
     with (
         patch(
             "docsfy.postprocess.call_ai_cli",
-            return_value=(True, stale_refs_no_reference),
+            return_value=AIResult(success=True, text=stale_refs_no_reference),
         ),
         patch("docsfy.postprocess.generate_full_page_content") as mock_regen,
     ):
@@ -505,7 +534,10 @@ async def test_add_cross_links_accepts_project_name_parameter(
             }
         ]
     }
-    with patch("docsfy.postprocess.call_ai_cli", return_value=(True, json.dumps({}))):
+    with patch(
+        "docsfy.postprocess.call_ai_cli",
+        return_value=AIResult(success=True, text=json.dumps({})),
+    ):
         result = await add_cross_links(
             pages=pages,
             plan=plan,
@@ -534,7 +566,10 @@ async def test_add_cross_links_ai_failure_includes_project_name_in_log(
         ]
     }
     with (
-        patch("docsfy.postprocess.call_ai_cli", return_value=(False, "AI error")),
+        patch(
+            "docsfy.postprocess.call_ai_cli",
+            return_value=AIResult(success=False, text="AI error"),
+        ),
         patch("docsfy.postprocess.logger") as mock_logger,
     ):
         result = await add_cross_links(
@@ -569,7 +604,10 @@ async def test_add_cross_links_parse_failure_includes_project_name_in_log(
         ]
     }
     with (
-        patch("docsfy.postprocess.call_ai_cli", return_value=(True, "invalid json")),
+        patch(
+            "docsfy.postprocess.call_ai_cli",
+            return_value=AIResult(success=True, text="invalid json"),
+        ),
         patch("docsfy.postprocess.logger") as mock_logger,
     ):
         result = await add_cross_links(
@@ -602,7 +640,7 @@ async def test_validate_single_page_parse_failure_logs_warning(
     with (
         patch(
             "docsfy.postprocess.call_ai_cli",
-            return_value=(True, "not valid json at all"),
+            return_value=AIResult(success=True, text="not valid json at all"),
         ),
         patch("docsfy.postprocess.logger") as mock_logger,
     ):
@@ -631,7 +669,10 @@ async def test_validate_single_page_empty_list_no_warning(
 
     pages = {"intro": "# Intro\nContent."}
     with (
-        patch("docsfy.postprocess.call_ai_cli", return_value=(True, "[]")),
+        patch(
+            "docsfy.postprocess.call_ai_cli",
+            return_value=AIResult(success=True, text="[]"),
+        ),
         patch("docsfy.postprocess.logger") as mock_logger,
     ):
         result = await validate_pages(
@@ -702,7 +743,10 @@ async def test_add_cross_links_non_dict_json_returns_pages_unchanged(
     # Mock parse_json_response to return a list (non-dict) directly,
     # so we test the isinstance(cross_links, dict) guard, not parse failure
     with (
-        patch("docsfy.postprocess.call_ai_cli", return_value=(True, '["intro"]')),
+        patch(
+            "docsfy.postprocess.call_ai_cli",
+            return_value=AIResult(success=True, text='["intro"]'),
+        ),
         patch("docsfy.postprocess.parse_json_response", return_value=["intro"]),
         patch("docsfy.postprocess.logger") as mock_logger,
     ):
@@ -779,7 +823,10 @@ async def test_validate_pages_uses_confined_paths(tmp_path: Path) -> None:
 
     pages = {"../../etc/passwd": "# Malicious\nContent."}
     with (
-        patch("docsfy.postprocess.call_ai_cli", return_value=(True, "[]")),
+        patch(
+            "docsfy.postprocess.call_ai_cli",
+            return_value=AIResult(success=True, text="[]"),
+        ),
         patch("docsfy.postprocess.logger") as mock_logger,
     ):
         result = await validate_pages(
@@ -819,7 +866,10 @@ async def test_add_cross_links_uses_confined_paths(tmp_path: Path) -> None:
             }
         ]
     }
-    with patch("docsfy.postprocess.call_ai_cli", return_value=(True, json.dumps({}))):
+    with patch(
+        "docsfy.postprocess.call_ai_cli",
+        return_value=AIResult(success=True, text=json.dumps({})),
+    ):
         with pytest.raises(ValueError, match="Unsafe generated filename"):
             await add_cross_links(
                 pages=pages,
@@ -855,7 +905,10 @@ async def test_add_cross_links_skips_self_links(tmp_path: Path) -> None:
     }
     # AI suggests intro links to itself and config
     cross_links_json = json.dumps({"intro": ["intro", "config"]})
-    with patch("docsfy.postprocess.call_ai_cli", return_value=(True, cross_links_json)):
+    with patch(
+        "docsfy.postprocess.call_ai_cli",
+        return_value=AIResult(success=True, text=cross_links_json),
+    ):
         result = await add_cross_links(
             pages=pages,
             plan=plan,
@@ -890,7 +943,10 @@ async def test_add_cross_links_deduplicates(tmp_path: Path) -> None:
     }
     # AI suggests config twice
     cross_links_json = json.dumps({"intro": ["config", "config"]})
-    with patch("docsfy.postprocess.call_ai_cli", return_value=(True, cross_links_json)):
+    with patch(
+        "docsfy.postprocess.call_ai_cli",
+        return_value=AIResult(success=True, text=cross_links_json),
+    ):
         result = await add_cross_links(
             pages=pages,
             plan=plan,
@@ -922,7 +978,10 @@ async def test_add_cross_links_caps_at_five(tmp_path: Path) -> None:
     }
     # AI suggests 7 related pages for page0
     cross_links_json = json.dumps({"page0": slugs[1:]})
-    with patch("docsfy.postprocess.call_ai_cli", return_value=(True, cross_links_json)):
+    with patch(
+        "docsfy.postprocess.call_ai_cli",
+        return_value=AIResult(success=True, text=cross_links_json),
+    ):
         result = await add_cross_links(
             pages=pages,
             plan=plan,
@@ -951,7 +1010,7 @@ async def test_validate_pages_ai_failure_does_not_log_raw_output(
     with (
         patch(
             "docsfy.postprocess.call_ai_cli",
-            return_value=(False, raw_output),
+            return_value=AIResult(success=False, text=raw_output),
         ),
         patch("docsfy.postprocess.logger") as mock_logger,
     ):
@@ -1001,7 +1060,10 @@ async def test_add_cross_links_escapes_markdown_in_titles(tmp_path: Path) -> Non
         ]
     }
     cross_links_json = json.dumps({"intro": ["special"]})
-    with patch("docsfy.postprocess.call_ai_cli", return_value=(True, cross_links_json)):
+    with patch(
+        "docsfy.postprocess.call_ai_cli",
+        return_value=AIResult(success=True, text=cross_links_json),
+    ):
         result = await add_cross_links(
             pages=pages,
             plan=plan,
@@ -1038,7 +1100,10 @@ async def test_add_cross_links_fallback_to_slug_for_unknown_pages(
     }
     # AI suggests linking intro -> extra (extra is in pages but not in plan)
     cross_links_json = json.dumps({"intro": ["extra"]})
-    with patch("docsfy.postprocess.call_ai_cli", return_value=(True, cross_links_json)):
+    with patch(
+        "docsfy.postprocess.call_ai_cli",
+        return_value=AIResult(success=True, text=cross_links_json),
+    ):
         result = await add_cross_links(
             pages=pages,
             plan=plan,
