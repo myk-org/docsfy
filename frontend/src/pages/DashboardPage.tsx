@@ -34,6 +34,7 @@ import type {
   LogEntry,
   DocPlan,
 } from '@/types'
+import type { AvailableModels } from '@/types'
 import { ApiError } from '@/types'
 
 type SelectedView =
@@ -57,7 +58,8 @@ export default function DashboardPage() {
   // Data state
   const [projects, setProjects] = useState<Project[]>([])
   const [projectsLoaded, setProjectsLoaded] = useState(false)
-  const [knownModels, setKnownModels] = useState<Record<string, string[]>>({})
+  const [availableModels, setAvailableModels] = useState<AvailableModels>({})
+  const [totalCostUsd, setTotalCostUsd] = useState<number>(0)
   const [knownBranches, setKnownBranches] = useState<Record<string, string[]>>({})
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedView, setSelectedView] = useState<SelectedView>(() => {
@@ -122,7 +124,8 @@ export default function DashboardPage() {
         const data = await api.get<ProjectsResponse>('/api/projects')
         if (cancelled) return
         setProjects(data.projects)
-        setKnownModels(data.known_models)
+        setAvailableModels(data.available_models ?? {})
+        setTotalCostUsd(data.total_cost_usd ?? 0)
         setKnownBranches(data.known_branches)
       } catch {
         /* handled by api interceptor */
@@ -179,7 +182,8 @@ export default function DashboardPage() {
     if (message.type === 'sync') {
       console.debug('[Dashboard] WS sync received, projects:', message.projects.length)
       setProjects(message.projects)
-      setKnownModels(message.known_models)
+      setAvailableModels(message.available_models ?? {})
+      setTotalCostUsd(message.total_cost_usd ?? 0)
       setKnownBranches(message.known_branches)
     } else if (message.type === 'progress') {
       setProjects((prev) => {
@@ -192,7 +196,8 @@ export default function DashboardPage() {
           // Variant not yet in local state — trigger a full refresh
           api.get<ProjectsResponse>('/api/projects').then((data) => {
             setProjects(data.projects)
-            setKnownModels(data.known_models)
+            setAvailableModels(data.available_models ?? {})
+            setTotalCostUsd(data.total_cost_usd ?? 0)
             setKnownBranches(data.known_branches)
           }).catch(() => { /* best-effort */ })
           return prev
@@ -225,7 +230,8 @@ export default function DashboardPage() {
         if (!exists) {
           api.get<ProjectsResponse>('/api/projects').then((data) => {
             setProjects(data.projects)
-            setKnownModels(data.known_models)
+            setAvailableModels(data.available_models ?? {})
+            setTotalCostUsd(data.total_cost_usd ?? 0)
             setKnownBranches(data.known_branches)
           }).catch(() => { /* best-effort */ })
           return prev
@@ -297,7 +303,8 @@ export default function DashboardPage() {
         try {
           const data = await api.get<ProjectsResponse>('/api/projects')
           setProjects(data.projects)
-          setKnownModels(data.known_models)
+          setAvailableModels(data.available_models ?? {})
+          setTotalCostUsd(data.total_cost_usd ?? 0)
           setKnownBranches(data.known_branches)
         } catch {
           /* best-effort fallback */
@@ -463,7 +470,12 @@ export default function DashboardPage() {
         <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
           Projects
         </span>
-        <span className="text-[11px] text-muted-foreground" title={`${repoCount} unique repositories`}>{repoCount}</span>
+        <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
+          <span title={`${repoCount} unique repositories`}>{repoCount}</span>
+          {totalCostUsd > 0 && (
+            <span title="Total cost across all generations">· ${totalCostUsd.toFixed(2)}</span>
+          )}
+        </span>
       </div>
 
       {/* Project tree */}
@@ -562,7 +574,7 @@ export default function DashboardPage() {
         selectedView={selectedView}
         username={username}
         projects={projects}
-        knownModels={knownModels}
+        availableModels={availableModels}
         knownBranches={knownBranches}
         isAdmin={isAdmin}
         role={role}
@@ -732,7 +744,7 @@ function MainPanel({
   selectedView,
   username,
   projects,
-  knownModels,
+  availableModels,
   knownBranches,
   isAdmin,
   role,
@@ -743,7 +755,7 @@ function MainPanel({
   selectedView: SelectedView
   username: string
   projects: Project[]
-  knownModels: Record<string, string[]>
+  availableModels: AvailableModels
   knownBranches: Record<string, string[]>
   isAdmin: boolean
   role: string
@@ -766,7 +778,7 @@ function MainPanel({
   if (selectedView.type === 'generate') {
     return (
       <GenerateForm
-        knownModels={knownModels}
+        availableModels={availableModels}
         knownBranches={knownBranches}
         onGenerated={onGenerated}
       />
@@ -800,7 +812,7 @@ function MainPanel({
       <VariantDetail
         project={project}
         logEntries={logEntries}
-        knownModels={knownModels}
+        availableModels={availableModels}
         isAdmin={isAdmin}
         role={role}
         onDelete={() => onDelete(project.name, project.branch, project.ai_provider, project.ai_model, project.owner)}

@@ -423,7 +423,7 @@ def models(
         typer.Option("--json", "-j", help="Output as JSON"),
     ] = False,
 ) -> None:
-    """List available AI providers and known models."""
+    """List available AI providers and available models."""
     from docsfy.cli.main import get_client
 
     client = get_client()
@@ -435,7 +435,7 @@ def models(
     providers = data.get("providers", [])
     default_provider = data.get("default_provider", "")
     default_model = data.get("default_model", "")
-    known = data.get("known_models", {})
+    available = data.get("available_models", {})
 
     if provider:
         if provider not in providers:
@@ -448,7 +448,7 @@ def models(
                 "providers": [provider],
                 "default_provider": default_provider,
                 "default_model": default_model,
-                "known_models": {provider: known.get(provider, [])},
+                "available_models": {provider: available.get(provider, [])},
             }
             typer.echo(json.dumps(filtered, indent=2))
         else:
@@ -464,15 +464,16 @@ def models(
             label += " (default)"
         typer.echo(label)
 
-        models_list = known.get(p, [])
+        models_list = available.get(p, [])
         if not models_list:
-            typer.echo("  (no models used yet)")
+            typer.echo("  (no models available)")
         else:
-            for m in models_list:
+            for entry in models_list:
+                model_id = entry.get("id", "") if isinstance(entry, dict) else entry
                 suffix = (
                     "  (default)"
-                    if p == default_provider and m == default_model
+                    if p == default_provider and model_id == default_model
                     else ""
                 )
-                typer.echo(f"  {m}{suffix}")
+                typer.echo(f"  {model_id}{suffix}")
         typer.echo()

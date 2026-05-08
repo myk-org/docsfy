@@ -52,12 +52,12 @@ async def client(tmp_path: Path):
 
 
 async def test_list_projects_empty(client: AsyncClient) -> None:
-    """GET /api/projects returns empty list with known_models and known_branches."""
+    """GET /api/projects returns empty list with available_models and known_branches."""
     response = await client.get("/api/status")
     assert response.status_code == 200
     data = response.json()
     assert data["projects"] == []
-    assert "known_models" in data
+    assert "available_models" in data
     assert "known_branches" in data
 
 
@@ -88,16 +88,16 @@ async def test_get_project_not_found(client: AsyncClient) -> None:
 
 
 async def test_get_models_returns_valid_structure(client: AsyncClient) -> None:
-    """GET /api/models returns providers, defaults, and known_models."""
+    """GET /api/models returns providers, defaults, and available_models."""
     response = await client.get("/api/models")
     assert response.status_code == 200
     data = response.json()
     assert "providers" in data
     assert "default_provider" in data
     assert "default_model" in data
-    assert "known_models" in data
+    assert "available_models" in data
     assert isinstance(data["providers"], list)
-    assert isinstance(data["known_models"], dict)
+    assert isinstance(data["available_models"], dict)
 
 
 async def test_get_models_includes_valid_providers(client: AsyncClient) -> None:
@@ -152,3 +152,13 @@ async def test_get_models_no_auth_required() -> None:
             storage.DATA_DIR = orig_data
             storage.PROJECTS_DIR = orig_projects
             get_settings.cache_clear()
+
+
+async def test_get_cost_returns_total(client: AsyncClient) -> None:
+    """GET /api/cost returns total_cost_usd."""
+    response = await client.get("/api/cost")
+    assert response.status_code == 200
+    data = response.json()
+    assert "total_cost_usd" in data
+    assert isinstance(data["total_cost_usd"], (int, float))
+    assert data["total_cost_usd"] >= 0

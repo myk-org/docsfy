@@ -66,7 +66,7 @@ If health check fails, inform the user that the docsfy server is not reachable a
 |-----------|----------|------------|
 | Repository URL | Yes | Ask user or infer from current repo's git remote |
 | AI Provider | Yes | From `docsfy models --json` → `providers` array |
-| AI Model | Yes | From `docsfy models --json` → `known_models.<provider>` array |
+| AI Model | Yes | From `docsfy models --json` → `available_models.<provider>` array of `{id, name}` objects |
 | Branch | No | Default: `main` |
 | Output directory | No | Default: `docs/` |
 | Force regeneration | No | Only offered when re-generating an existing project |
@@ -117,15 +117,16 @@ Key fields per entry:
   "providers": ["claude", "gemini", "cursor"],
   "default_provider": "cursor",
   "default_model": "gpt-5.4-xhigh-fast",
-  "known_models": {
-    "claude": ["claude-opus-4-6[1m]"],
-    "cursor": ["composer-2-fast"]
+  "available_models": {
+    "claude": [{"id": "claude-opus-4-6", "name": "Claude Opus 4"}],
+    "cursor": [{"id": "composer-2-fast", "name": "Composer 2 Fast"}]
   }
 }
 ```
 
-Extract `providers` for provider selection and `known_models` for model selection.
-Note: not all providers may have entries in `known_models` (e.g., `gemini` above has no models listed).
+Extract `providers` for provider selection and `available_models` for model selection.
+Each model entry has `id` (use for API calls) and `name` (use for display).
+Note: not all providers may have entries in `available_models` (e.g., `gemini` above has no models listed).
 
 **Fallback behavior:**
 
@@ -152,10 +153,11 @@ Show the user what was used before and present smart defaults:
 - Force regeneration: **always offer `--force`** since this is a re-generation of an existing project.
   Show when it was last generated: "Last generated: {last_generated}"
 
-**Round 2** — After provider is selected, present models from `known_models.<selected_provider>`.
+**Round 2** — After provider is selected, present models from `available_models.<selected_provider>`.
+Use the `name` field for display and the `id` field for API calls.
 If the user kept the same provider as before, show the previous `ai_model` as first option "(Previously used)".
 Mark `default_model` as "(Recommended)" if it appears in the list and is different from the previous model.
-If `known_models` does not contain the selected provider or the array is empty,
+If `available_models` does not contain the selected provider or the array is empty,
 fall back to free-form model input.
 
 **If NO previous generation exists:**
@@ -164,10 +166,10 @@ fall back to free-form model input.
 output directory. Do NOT offer `--force` (it does nothing for new generations).
 
 **Round 2** — After provider is selected, present that provider's models from
-`known_models.<selected_provider>` as `AskUserQuestion` options.
+`available_models.<selected_provider>` as `AskUserQuestion` options (use `name` for display, `id` for value).
 If the provider matches `default_provider` and `default_model` appears in the list,
 mark it as "(Recommended)" in the AskUserQuestion options.
-If `known_models` does not contain the selected provider or the array is empty,
+If `available_models` does not contain the selected provider or the array is empty,
 fall back to free-form model input.
 
 ### GitHub Pages Setup (GitHub repos only)

@@ -14,6 +14,7 @@ import {
 import Combobox from '@/components/shared/Combobox'
 import { api } from '@/lib/api'
 import { TOAST_DEFAULT_MS, TOAST_ERROR_MS, VALID_PROVIDERS } from '@/lib/constants'
+import type { AvailableModels } from '@/types'
 import { ApiError } from '@/types'
 const DEFAULT_PROVIDER = 'cursor'
 const DEFAULT_BRANCH = 'main'
@@ -23,7 +24,7 @@ const SK_BRANCH = 'docsfy-branch'
 const SK_FORCE = 'docsfy-force'
 
 interface GenerateFormProps {
-  knownModels: Record<string, string[]>
+  availableModels: AvailableModels
   knownBranches: Record<string, string[]>
   onGenerated?: (name: string, branch: string, provider: string, model: string) => void
 }
@@ -38,7 +39,7 @@ function extractRepoName(url: string): string {
 }
 
 export default function GenerateForm({
-  knownModels,
+  availableModels,
   knownBranches,
   onGenerated,
 }: GenerateFormProps) {
@@ -52,10 +53,10 @@ export default function GenerateForm({
   // Determine the default model for a given provider
   const getDefaultModel = useCallback(
     (prov: string): string => {
-      const models = knownModels[prov]
-      return models && models.length > 0 ? models[0] : ''
+      const models = availableModels[prov]
+      return models && models.length > 0 ? models[0].id : ''
     },
-    [knownModels],
+    [availableModels],
   )
 
   // Restore form state from sessionStorage on mount
@@ -69,21 +70,20 @@ export default function GenerateForm({
     if (savedForce === 'true') setForce(true)
   }, [])
 
-  // Set default model when provider or knownModels changes.
-  // When knownModels arrives asynchronously (via API / WebSocket) and the
+  // Set default model when provider or availableModels changes.
+  // When availableModels arrives asynchronously (via API / WebSocket) and the
   // model field is still empty, this fills it with the first available model
   // for the current provider.
   useEffect(() => {
-    const models = knownModels[provider]
+    const models = availableModels[provider]
     if (!models || models.length === 0) return
 
     setModel((prev) => {
-      // Keep current model if it's valid for this provider
-      if (prev && models.includes(prev)) return prev
-      // Otherwise pick the first known model
-      return models[0]
+      // Only auto-fill when the field is empty.
+      // Explicit provider switches are handled in handleProviderChange().
+      return prev || models[0].id
     })
-  }, [provider, knownModels])
+  }, [provider, availableModels])
 
   function sanitizeRepoUrlForStorage(value: string): string {
     try {
@@ -124,10 +124,10 @@ export default function GenerateForm({
   function handleProviderChange(value: string) {
     setProvider(value)
     // Auto-fill model with first model for new provider if current model is not valid
-    const models = knownModels[value]
+    const models = availableModels[value]
     if (models && models.length > 0) {
-      if (!models.includes(model)) {
-        setModel(models[0])
+      if (!models.some(m => m.id === model)) {
+        setModel(models[0].id)
       }
     } else {
       setModel('')
@@ -180,7 +180,7 @@ export default function GenerateForm({
 
   const repoName = repoUrl.trim() ? extractRepoName(repoUrl) : ''
   const branchOptions = repoName && knownBranches[repoName] ? knownBranches[repoName] : []
-  const modelOptions = knownModels[provider] ?? []
+  const modelOptions = (availableModels[provider] ?? []).map(m => ({ value: m.id, label: m.name || m.id }))
 
   return (
     <div className="flex items-start justify-center h-full p-8">

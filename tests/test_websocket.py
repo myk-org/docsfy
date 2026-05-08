@@ -69,7 +69,9 @@ def test_websocket_accepts_bearer_token(sync_client: TestClient) -> None:
         data = ws.receive_json()
         assert data["type"] == "sync"
         assert "projects" in data
-        assert "known_models" in data
+        assert "available_models" in data
+        assert "total_cost_usd" in data
+        assert isinstance(data["total_cost_usd"], (int, float))
         assert "known_branches" in data
         # projects should be a list (possibly empty)
         assert isinstance(data["projects"], list)

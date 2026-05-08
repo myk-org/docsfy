@@ -77,6 +77,7 @@ async def init_db(data_dir: str = "") -> None:
                 page_count INTEGER DEFAULT 0,
                 error_message TEXT,
                 plan_json TEXT,
+                total_cost_usd REAL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 PRIMARY KEY (name, branch, ai_provider, ai_model, owner)
@@ -147,6 +148,7 @@ async def init_db(data_dir: str = "") -> None:
                     page_count INTEGER DEFAULT 0,
                     error_message TEXT,
                     plan_json TEXT,
+                    total_cost_usd REAL,
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     PRIMARY KEY (name, branch, ai_provider, ai_model, owner)
@@ -193,6 +195,11 @@ async def init_db(data_dir: str = "") -> None:
             select_cols.append("page_count")
             select_cols.append("error_message")
             select_cols.append("plan_json")
+            select_cols.append(
+                "total_cost_usd"
+                if "total_cost_usd" in old_columns
+                else "NULL AS total_cost_usd"
+            )
             select_cols.append("created_at")
             select_cols.append("updated_at")
 
@@ -200,13 +207,22 @@ async def init_db(data_dir: str = "") -> None:
                 INSERT OR IGNORE INTO projects_new
                     (name, branch, ai_provider, ai_model, owner, generation_id, repo_url, status, current_stage,
                      last_commit_sha, last_generated, page_count, error_message,
-                     plan_json, created_at, updated_at)
+                     plan_json, total_cost_usd, created_at, updated_at)
                 SELECT {", ".join(select_cols)}
                 FROM projects
             """)
             await db.execute("DROP TABLE projects")
             await db.execute("ALTER TABLE projects_new RENAME TO projects")
             logger.info("Database migration to 5-column PK complete")
+
+        # Migration: add total_cost_usd column
+        try:
+            await db.execute("ALTER TABLE projects ADD COLUMN total_cost_usd REAL")
+            await db.commit()
+        except sqlite3.OperationalError as exc:
+            if "duplicate column name" not in str(exc).lower():
+                logger.exception("Migration failed while adding total_cost_usd column")
+                raise
 
         # Migration: add generation_id column
         try:
@@ -350,6 +366,7 @@ async def save_project(
                generation_id = COALESCE(projects.generation_id, excluded.generation_id),
                error_message = NULL,
                current_stage = NULL,
+               total_cost_usd = NULL,
                updated_at = CURRENT_TIMESTAMP""",
             (
                 name,
@@ -388,13 +405,14 @@ async def update_project_status(
     error_message: str | None = None,
     plan_json: str | None = None,
     current_stage: str | None | object = _UNSET,
+    total_cost_usd: float | None = None,
 ) -> None:
     if status not in VALID_STATUSES:
         msg = f"Invalid project status: '{status}'. Valid: {', '.join(sorted(VALID_STATUSES))}"
         raise ValueError(msg)
     async with aiosqlite.connect(DB_PATH) as db:
         fields = ["status = ?", "updated_at = CURRENT_TIMESTAMP"]
-        values: list[str | int | None] = [status]
+        values: list[str | int | float | None] = [status]
         if current_stage is not _UNSET:
             fields.append("current_stage = ?")
             values.append(current_stage)  # type: ignore[arg-type]
@@ -410,6 +428,9 @@ async def update_project_status(
         if plan_json is not None:
             fields.append("plan_json = ?")
             values.append(plan_json)
+        if total_cost_usd is not None:
+            fields.append("total_cost_usd = ?")
+            values.append(total_cost_usd)
         if status == "ready":
             fields.append("last_generated = CURRENT_TIMESTAMP")
         values.append(name)
@@ -426,6 +447,52 @@ async def update_project_status(
             values,
         )
         await db.commit()
+
+
+async def set_generation_cost(
+    name: str,
+    ai_provider: str,
+    ai_model: str,
+    cost_usd: float,
+    branch: str = DEFAULT_BRANCH,
+    owner: str = "",
+) -> None:
+    """Set (overwrite) the generation cost for a specific variant."""
+    async with aiosqlite.connect(DB_PATH) as db:
+        await db.execute(
+            "UPDATE projects SET total_cost_usd = ? WHERE name = ? AND branch = ? AND ai_provider = ? AND ai_model = ? AND owner = ?",
+            (cost_usd, name, branch, ai_provider, ai_model, owner),
+        )
+        await db.commit()
+        if db.total_changes == 0:
+            logger.warning(
+                "set_generation_cost: no matching variant for %s/%s/%s (branch=%s, owner=%s)",
+                name,
+                ai_provider,
+                ai_model,
+                branch,
+                owner,
+            )
+
+
+async def get_total_cost(owner: str | None = None) -> float:
+    """Return the sum of total_cost_usd across project variants.
+
+    When *owner* is provided, only sums costs for that owner's projects.
+    When ``None``, sums all projects (admin view).
+    """
+    async with aiosqlite.connect(DB_PATH) as db:
+        if owner is not None:
+            cursor = await db.execute(
+                "SELECT COALESCE(SUM(total_cost_usd), 0) FROM projects WHERE owner = ?",
+                (owner,),
+            )
+        else:
+            cursor = await db.execute(
+                "SELECT COALESCE(SUM(total_cost_usd), 0) FROM projects"
+            )
+        row = await cursor.fetchone()
+        return float(row[0]) if row else 0.0
 
 
 async def get_project(
@@ -694,22 +761,6 @@ async def get_latest_variant(
         cursor = await db.execute(query, params)
         row = await cursor.fetchone()
         return dict(row) if row else None
-
-
-async def get_known_models() -> dict[str, list[str]]:
-    """Get distinct ai_model values per ai_provider from completed projects."""
-    async with aiosqlite.connect(DB_PATH) as db:
-        cursor = await db.execute(
-            "SELECT DISTINCT ai_provider, ai_model FROM projects WHERE ai_provider != '' AND ai_model != '' AND status = 'ready' ORDER BY ai_provider, ai_model"
-        )
-        rows = await cursor.fetchall()
-        models: dict[str, list[str]] = {}
-        for provider, model in rows:
-            if provider not in models:
-                models[provider] = []
-            if model not in models[provider]:
-                models[provider].append(model)
-        return models
 
 
 async def get_known_branches(owner: str | None = None) -> dict[str, list[str]]:

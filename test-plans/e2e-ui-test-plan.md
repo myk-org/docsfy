@@ -164,7 +164,7 @@ Each linked sub-file contains only the detailed test bodies for its assigned sec
 | [e2e-11-websocket.md](e2e-11-websocket.md) | 23 | WebSocket Connection, Auth, Real-time Updates |
 | [e2e-12-cli.md](e2e-12-cli.md) | 24 | CLI Commands (config, generate, list, status, admin) |
 | [e2e-13-post-generation-pipeline.md](e2e-13-post-generation-pipeline.md) | 27 | Post-Generation Pipeline (version footer, related pages, validation/cross-linking stages, performance) |
-| [e2e-14-models-command.md](e2e-14-models-command.md) | 28 | Models Command (CLI providers/models listing, JSON output, API endpoint, known_models) |
+| [e2e-14-models-command.md](e2e-14-models-command.md) | 28 | Models Command (CLI providers/models listing, JSON output, API endpoint, available_models) |
 | [e2e-09-cleanup.md](e2e-09-cleanup.md) | 21 | Cleanup and Teardown |
 
 **`e2e-09-cleanup.md` must always be executed last, after all other test files.**
@@ -202,4 +202,18 @@ Each linked sub-file contains only the detailed test bodies for its assigned sec
 | 26 | Dialog Theme Consistency | 26.1-26.2 |
 | 27 | Post-Generation Pipeline | 27.1-27.8 |
 | 28 | Models Command | 28.1-28.8 |
+| 29 | Cost Tracking | 29.1-29.6 |
 | 21 | Cleanup and Teardown | 21.1-21.5 |
+
+---
+
+### Cost Tracking
+
+| Step | Action | Expected |
+|------|--------|----------|
+| 1 | Generate docs and wait for completion | Generation completes successfully |
+| 2 | Check sidebar header | Shows total cost (e.g., `$1.46`) next to project count |
+| 3 | Click on the completed variant | Variant detail shows "Generation Cost" field with dollar amount |
+| 4 | Call `GET /api/cost` | Returns `{"total_cost_usd": <positive number>}` |
+| 5 | Call `GET /api/projects` | Response includes `total_cost_usd` at top level |
+| 6 | Check variant in projects list | Each variant object has `total_cost_usd` field |
