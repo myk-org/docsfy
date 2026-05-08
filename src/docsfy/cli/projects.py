@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import shutil
 import tarfile
 import tempfile
 from pathlib import Path
@@ -357,6 +358,9 @@ def download(
         "-o",
         help="Output directory to extract to (default: save tar.gz to current dir)",
     ),
+    flatten: bool = typer.Option(  # noqa: M511
+        False, "--flatten", help="Flatten extracted directory structure into output dir"
+    ),
 ) -> None:
     """Download generated documentation as tar.gz or extract to a directory."""
     from docsfy.cli.main import get_client
@@ -378,6 +382,10 @@ def download(
                 "or omit all three to download the default variant.",
                 err=True,
             )
+            raise typer.Exit(code=1)
+
+        if flatten and not output:
+            typer.echo("--flatten requires --output", err=True)
             raise typer.Exit(code=1)
 
         owner_qs = f"?owner={owner}" if owner else ""
@@ -402,7 +410,44 @@ def download(
                 output_dir.mkdir(parents=True, exist_ok=True)
                 with tarfile.open(tmp_path, "r:gz") as tar:
                     tar.extractall(path=output_dir, filter="data")
-                typer.echo(f"Extracted to {output_dir}")
+                if flatten:
+                    # Look for the expected nested directory from the archive
+                    expected_name = (
+                        f"{name}-{branch}-{provider}-{model}"
+                        if branch and provider and model
+                        else name
+                    )
+                    expected_dir = output_dir / expected_name
+                    nested_dir: Path | None = None
+                    if expected_dir.is_dir():
+                        nested_dir = expected_dir
+                    else:
+                        # Fall back to single top-level directory
+                        subdirs = [
+                            d
+                            for d in output_dir.iterdir()
+                            if d.is_dir() and not d.name.startswith(".")
+                        ]
+                        if len(subdirs) == 1:
+                            nested_dir = subdirs[0]
+                    if nested_dir is not None:
+                        # Move all contents up to the output directory
+                        for item in list(nested_dir.iterdir()):
+                            dest_path = output_dir / item.name
+                            if dest_path.exists():
+                                if dest_path.is_dir():
+                                    shutil.rmtree(dest_path)
+                                else:
+                                    dest_path.unlink()
+                            item.rename(dest_path)
+                        nested_dir.rmdir()
+                        typer.echo(f"Extracted and flattened to {output_dir}")
+                    else:
+                        typer.echo(
+                            f"Extracted to {output_dir} (flatten skipped: no matching subdirectory found)"
+                        )
+                else:
+                    typer.echo(f"Extracted to {output_dir}")
             finally:
                 tmp_path.unlink(missing_ok=True)
         else:
