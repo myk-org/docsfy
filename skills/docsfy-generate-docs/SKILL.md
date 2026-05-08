@@ -132,6 +132,7 @@ Note: not all providers may have entries in `available_models` (e.g., `gemini` a
 
 - If `docsfy models` fails or returns empty/malformed JSON → fall back to hardcoded
   providers (`claude`, `gemini`, `cursor`) and free-form model input.
+- If a provider's `available_models` list is empty → allow free-form model input for that provider.
 - If `docsfy list` fails → treat as no previous generation (lose smart defaults
   but still use `models` data for provider/model selection).
 - If both fail → hardcoded providers + free-form model + no smart defaults.
@@ -246,23 +247,22 @@ git checkout -B docs/docsfy-<project_name> origin/<branch>
 
 This ensures docs changes are on a separate branch, not directly on the current working branch.
 
-### Phase 4: Download and Flatten Generated Docs
+### Phase 4: Download Generated Docs
 
 ```bash
-docsfy download <project_name> --branch <branch> --provider <provider> --model <model> --output <output_dir>
+docsfy download <project_name> --branch <branch> --provider <provider> --model <model> --output <output_dir> --flatten
 ```
 
 `<project_name>` is the same value extracted in Phase 3.
 
-The download creates a nested subdirectory: `<output_dir>/<project>-<branch>-<provider>-<model>/`. Verify it exists, then flatten so all files are directly under `<output_dir>/`:
+The `--flatten` flag extracts docs directly into `<output_dir>/` instead of creating a nested subdirectory. It also handles model names with special characters (e.g., brackets) safely.
 
-**IMPORTANT: Clear existing content first to prevent silent mv failures (see issue #207).**
+If `--flatten` is not available (older CLI version), fall back to manual extraction:
 
 ```bash
 NESTED_DIR="<output_dir>/<project>-<branch>-<provider>-<model>"
 OUTPUT_DIR="<output_dir>"
 
-# Verify nested dir exists
 if [ ! -d "$NESTED_DIR" ]; then
     echo "Error: Expected directory $NESTED_DIR not found"
     exit 1
@@ -271,14 +271,14 @@ fi
 # Clear old content in output dir (preserve the nested dir itself)
 find "$OUTPUT_DIR" -mindepth 1 -maxdepth 1 ! -path "$NESTED_DIR" -exec rm -rf {} +
 
-# Move new content (use dotglob to handle hidden files safely)
-shopt -s dotglob
-mv "$NESTED_DIR"/* "$OUTPUT_DIR"/
-shopt -u dotglob
+# Move new content (POSIX-compatible; avoids glob issues with brackets in model names)
+find "$NESTED_DIR" -mindepth 1 -maxdepth 1 -exec mv {} "$OUTPUT_DIR/" \;
 rm -rf "$NESTED_DIR"
 ```
 
 If the nested subdirectory does not exist after download, the project name or parameters may not match what was used during generation — surface the error to the user.
+
+**IMPORTANT: Never edit generated documentation files.** The files in `<output_dir>/` are generated artifacts. If they contain errors, leaked secrets, or incorrect content, report the issue to docsfy (the generation pipeline) — do not manually edit the output files. Manual edits will be overwritten on the next regeneration.
 
 ### Phase 5: Security Scan
 
@@ -308,6 +308,18 @@ Run Grep searches across all files in `<output_dir>/` for these patterns:
   - **Abort** → Stop the workflow.
 
 **After choosing Fix or Abort**, ask the user if they want to open a GitHub issue on `https://github.com/myk-org/docsfy` to report the leak. docsfy generated this content — if it's leaking sensitive data, that's a bug in the generation pipeline that needs to be fixed at the source. Include the leaked patterns, file names, and matched content in the issue body.
+
+#### Secret Scanner Conflicts
+
+Generated docs may contain placeholder tokens (e.g., `ghp_xxxxxxxxxxxx`, `sk-xxx`) that trigger secret scanning tools (pre-commit hooks, CI checks, GitHub Actions, etc.). These are not real secrets — they are example values in the documentation.
+
+If committing or pushing fails due to secret scanner errors, exclude `<output_dir>/` from the scanner's configuration. The exact method depends on the tool:
+- `.pre-commit-config.yaml` → add `exclude` pattern
+- `.gitleaks.toml` → add path to `[allowlist]`
+- `.detect-secrets` baseline → regenerate with `--exclude-files`
+- CI pipeline config → add path exclusion
+
+Ask the user before modifying any scanner configuration.
 
 ### Phase 6: GitHub Pages Post-Setup (conditional)
 
@@ -345,7 +357,7 @@ If NOT simplified (or no README exists), ask the user:
 
 > GitHub Pages is serving your docs. Would you like to simplify the project README to point to the docs site?
 
-- **Yes** → Create a simplified version that keeps ONLY:
+- **Yes, simplify README** → Create a simplified version that keeps ONLY:
   - Project title + one-line description
   - Link to the docs site prominently (use the URL from Phase 6a)
   - Quick start (e.g., docker run or install command, 5 lines max)
@@ -354,7 +366,11 @@ If NOT simplified (or no README exists), ask the user:
   - License section
 
   Remove all other detailed content (API docs, configuration guides, detailed usage, etc.).
-- **No** → Skip and continue.
+- **No, but add a docs link** → Keep the existing README content unchanged, but add a prominent link to the docs site near the top (after the title/description). Use a format like:
+  ```markdown
+  📖 **[Full Documentation](<docs_site_url>)**
+  ```
+- **No** → Skip entirely, make no changes to README.
 
 ### Phase 7: Commit, Push, and PR (optional)
 
@@ -369,6 +385,19 @@ Options:
 If **Yes**:
 
 1. Stage all files in `<output_dir>/` and `README.md` (if simplified)
+1b. **Offer to add docs guardrail** (if not already present):
+       Check if `AGENTS.md` (or `CLAUDE.md`) contains a rule about not editing generated docs.
+       If not, ask the user via `AskUserQuestion`:
+       > "Would you like to add a rule to AGENTS.md that `<output_dir>/` should never be edited manually?"
+       - **Yes** → Append to AGENTS.md:
+         ```
+         ## Generated Documentation
+
+         The `<output_dir>/` directory contains AI-generated documentation from docsfy.
+         **NEVER edit these files manually.** To update documentation, regenerate using docsfy.
+         ```
+         Stage `AGENTS.md` alongside the docs files.
+       - **No** → Skip.
 2. Commit with message: `docs: generate documentation with docsfy (<provider>/<model>)`
 3. Push the branch: `git push -u origin docs/docsfy-<project_name>`
 4. Create PR against the repository's default branch:
@@ -426,5 +455,7 @@ Display:
 | Downloading before creating branch | Always create a docs branch before downloading |
 | Showing docs link without Pages serving docs/ | Only show docs URL if GitHub Pages serves from `docs/` on target branch |
 | Skipping security scan | Always scan docs for leaked private data before committing |
+| Not excluding docs/ from secret scanners | Generated docs contain placeholder tokens that trigger secret scanners — exclude the output dir from the scanner's configuration |
+| Editing generated docs manually | Generated docs must NEVER be edited — fix issues at the source (docsfy server/prompts), not in the output |
 | Skipping --force when re-running existing project | When a prior generation exists for this repo+branch, always offer --force |
 | Offering --force for new projects | Only offer --force when a matching `docsfy list` entry exists for this repo+branch |
