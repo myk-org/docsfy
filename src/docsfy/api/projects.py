@@ -17,7 +17,12 @@ from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import StreamingResponse
 from simple_logger.logger import get_logger
 
-from docsfy.ai_client import check_ai_cli_available
+from docsfy.ai_client import check_ai_cli_available, model_cache
+from docsfy.cost_tracker import (
+    CostAccumulator,
+    set_cost_accumulator,
+    reset_cost_accumulator,
+)
 from docsfy.config import get_settings
 from docsfy.generator import (
     generate_all_pages,
@@ -49,9 +54,9 @@ from docsfy.repository import (
 )
 from docsfy.storage import (
     _validate_name,
+    set_generation_cost,
     delete_project,
     get_known_branches,
-    get_known_models,
     get_latest_variant,
     get_project,
     get_project_access,
@@ -59,6 +64,7 @@ from docsfy.storage import (
     get_project_cache_dir,
     get_project_dir,
     get_project_site_dir,
+    get_total_cost,
     get_user_accessible_projects,
     list_projects,
     list_variants,
@@ -119,6 +125,7 @@ async def update_and_notify(
     plan_json: str | None = None,
     current_stage: str | None | object = None,
     generation_id: str | None = None,
+    total_cost_usd: float | None = None,
 ) -> None:
     """Update project status in DB and send WebSocket notification."""
     ups_kwargs: dict[str, Any] = {
@@ -135,6 +142,8 @@ async def update_and_notify(
         ups_kwargs["error_message"] = error_message
     if plan_json is not None:
         ups_kwargs["plan_json"] = plan_json
+    if total_cost_usd is not None:
+        ups_kwargs["total_cost_usd"] = total_cost_usd
 
     # Always pass current_stage through so that None clears the stage in the DB.
     ups_kwargs["current_stage"] = current_stage
@@ -528,7 +537,7 @@ async def _replace_variant(
     )
 
     # Notify connected clients so the deleted variant disappears from the UI
-    await notify_sync(owner)
+    await notify_sync()
 
 
 async def _run_generation(
@@ -544,12 +553,14 @@ async def _run_generation(
     generation_id: str | None = None,
 ) -> None:
     gen_key = f"{owner}/{project_name}/{branch}/{ai_provider}/{ai_model}"
+    cost_acc = CostAccumulator()
+    cost_token = set_cost_accumulator(cost_acc)
     try:
         cli_flags = ["--trust"] if ai_provider == "cursor" else None
-        available, msg = await check_ai_cli_available(
+        check_result = await check_ai_cli_available(
             ai_provider, ai_model, cli_flags=cli_flags
         )
-        if not available:
+        if not check_result.success:
             await update_and_notify(
                 gen_key,
                 project_name,
@@ -558,7 +569,7 @@ async def _run_generation(
                 status="error",
                 owner=owner,
                 branch=branch,
-                error_message=msg,
+                error_message=check_result.text,
                 generation_id=generation_id,
             )
             return
@@ -645,6 +656,30 @@ async def _run_generation(
             generation_id=generation_id,
         )
     finally:
+        reset_cost_accumulator(cost_token)
+        # Persist generation cost and re-sync so clients see the updated value
+        if cost_acc.call_count > 0:
+            try:
+                await set_generation_cost(
+                    project_name,
+                    ai_provider,
+                    ai_model,
+                    branch=branch,
+                    owner=owner,
+                    cost_usd=cost_acc.total_cost_usd,
+                )
+            except Exception as exc:
+                logger.warning(
+                    f"[{project_name}] Failed to persist generation cost "
+                    f"(${cost_acc.total_cost_usd:.4f} for {ai_provider}/{ai_model}): {exc}"
+                )
+            else:
+                try:
+                    await notify_sync()
+                except Exception as exc:
+                    logger.debug(
+                        f"[{project_name}] Failed to send cost sync notification: {exc}"
+                    )
         async with _gen_lock:
             _generating.pop(gen_key, None)
 
@@ -1169,6 +1204,18 @@ async def _resolve_latest_accessible_variant(
 # ---------------------------------------------------------------------------
 
 
+async def _load_available_models() -> dict[str, list[dict[str, str]]]:
+    """Load available models for all providers from ai-cli-runner's model cache."""
+    result: dict[str, list[dict[str, str]]] = {}
+    for provider in VALID_PROVIDERS:
+        try:
+            result[provider] = await model_cache.list_models(provider)
+        except Exception as exc:
+            logger.warning("Failed to list models for %s: %s", provider, exc)
+            result[provider] = []
+    return result
+
+
 async def build_projects_payload(username: str, is_admin: bool) -> dict[str, Any]:
     """Build the projects sync payload for the given user.
 
@@ -1182,32 +1229,42 @@ async def build_projects_payload(username: str, is_admin: bool) -> dict[str, Any
         projects = await list_projects(owner=username, accessible=accessible)
         known_branches = await get_known_branches(owner=username)
 
-    known_models = await get_known_models()
+    available_models = await _load_available_models()
+    total_cost = await get_total_cost(owner=None if is_admin else username)
     return {
         "projects": projects,
-        "known_models": known_models,
         "known_branches": known_branches,
+        "available_models": available_models,
+        "total_cost_usd": total_cost,
     }
 
 
 @router.get("/models")
 async def get_models_endpoint() -> dict[str, Any]:
-    """Return available AI providers, server defaults, and known models.
+    """Return available AI providers, server defaults, and available models.
 
+    Models are discovered from AI CLI tools (cursor) and LiteLLM pricing
+    data (claude, gemini) via ai-cli-runner's model cache.
     No authentication required -- this is a discovery endpoint.
     """
     settings = get_settings()
-    try:
-        known_models = await get_known_models()
-    except Exception as exc:
-        logger.warning(f"/api/models: failed to load known_models: {exc}")
-        known_models = {}
+    available_models = await _load_available_models()
     return {
         "providers": list(VALID_PROVIDERS),
         "default_provider": settings.ai_provider,
         "default_model": settings.ai_model,
-        "known_models": known_models,
+        "available_models": available_models,
     }
+
+
+@router.get("/cost")
+async def get_cost_endpoint(request: Request) -> dict[str, float]:
+    """Return total generation cost. Admins see all; users see their own."""
+    if request.state.is_admin:
+        total = await get_total_cost()
+    else:
+        total = await get_total_cost(owner=request.state.username)
+    return {"total_cost_usd": total}
 
 
 @router.get("/projects/by-id/{generation_id}")
@@ -1381,7 +1438,7 @@ async def get_variant_details(
     branch: str,
     provider: str,
     model: str,
-) -> dict[str, str | int | None]:
+) -> dict[str, str | int | float | None]:
     name = _validate_project_name(name)
     project = await _resolve_project(
         request,

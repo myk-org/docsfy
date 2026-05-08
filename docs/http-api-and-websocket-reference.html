@@ -357,6 +357,11 @@
 <td>Stringified JSON plan. This field is not parsed for you.</td>
 </tr>
 <tr>
+<td><code>total_cost_usd</code></td>
+<td>number or <code>null</code></td>
+<td>Cost of the most recent generation for this variant in USD. Resets on each regeneration. <code>null</code> when not yet tracked.</td>
+</tr>
+<tr>
 <td><code>generation_id</code></td>
 <td>string or <code>null</code></td>
 <td>Hyphenated UUID that identifies the variant.</td>
@@ -472,6 +477,7 @@
 <span class="w">  </span><span class="nt">&quot;error_message&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
 <span class="w">  </span><span class="nt">&quot;plan_json&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;{\&quot;project_name\&quot;:\&quot;for-testing-only\&quot;,\&quot;tagline\&quot;:\&quot;Test repo\&quot;,\&quot;navigation\&quot;:[]}&quot;</span><span class="p">,</span>
 <span class="w">  </span><span class="nt">&quot;generation_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;5bf1495b-b6fa-4318-841c-dced628a2c5b&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;total_cost_usd&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">1.4628</span><span class="p">,</span>
 <span class="w">  </span><span class="nt">&quot;created_at&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-04-18 12:00:00&quot;</span><span class="p">,</span>
 <span class="w">  </span><span class="nt">&quot;updated_at&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-04-18 12:34:56&quot;</span>
 <span class="p">}</span>
@@ -495,9 +501,14 @@
 <td>Visible variants for the caller, including non-ready variants.</td>
 </tr>
 <tr>
-<td><code>known_models</code></td>
+<td><code>available_models</code></td>
 <td>object</td>
-<td>Ready models grouped by provider. This list is global, not access-filtered.</td>
+<td>Available models grouped by provider. Each value is an array of <code>{id, name}</code> objects discovered from AI CLI tools and LiteLLM pricing data.</td>
+</tr>
+<tr>
+<td><code>total_cost_usd</code></td>
+<td>number</td>
+<td>Sum of per-variant generation costs in USD. Admins see all variants; non-admin users see only their own.</td>
 </tr>
 <tr>
 <td><code>known_branches</code></td>
@@ -523,14 +534,16 @@
 <span class="w">      </span><span class="nt">&quot;error_message&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
 <span class="w">      </span><span class="nt">&quot;plan_json&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
 <span class="w">      </span><span class="nt">&quot;generation_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;5bf1495b-b6fa-4318-841c-dced628a2c5b&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;total_cost_usd&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">1.4628</span><span class="p">,</span>
 <span class="w">      </span><span class="nt">&quot;created_at&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-04-18 12:00:00&quot;</span><span class="p">,</span>
 <span class="w">      </span><span class="nt">&quot;updated_at&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-04-18 12:34:56&quot;</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="w">  </span><span class="p">],</span>
-<span class="w">  </span><span class="nt">&quot;known_models&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;claude&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;opus&quot;</span><span class="p">],</span>
-<span class="w">    </span><span class="nt">&quot;cursor&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;gpt-5.4-xhigh-fast&quot;</span><span class="p">]</span>
+<span class="w">  </span><span class="nt">&quot;available_models&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;claude&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[{</span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;opus&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Claude Opus&quot;</span><span class="p">}],</span>
+<span class="w">    </span><span class="nt">&quot;cursor&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[{</span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;gpt-5.4-xhigh-fast&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;GPT-5.4 XHigh Fast&quot;</span><span class="p">}]</span>
 <span class="w">  </span><span class="p">},</span>
+<span class="w">  </span><span class="nt">&quot;total_cost_usd&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">1.23</span><span class="p">,</span>
 <span class="w">  </span><span class="nt">&quot;known_branches&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="nt">&quot;for-testing-only&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;main&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;dev&quot;</span><span class="p">]</span>
 <span class="w">  </span><span class="p">}</span>
@@ -569,7 +582,7 @@
 
 <p>Returns <code>200 OK</code> when the service is up.</p>
 <h3 id="get-apimodels"><code>GET /api/models</code></h3>
-<p>Public discovery endpoint for supported providers, server defaults, and known ready models.</p>
+<p>Public discovery endpoint for supported providers, server defaults, and discovered models from provider APIs.</p>
 <p>Auth: <code>Public</code></p>
 <p>No parameters.</p>
 <p>Response body:</p>
@@ -598,9 +611,9 @@
 <td>Server default model used when <code>POST /api/generate</code> omits <code>ai_model</code>.</td>
 </tr>
 <tr>
-<td><code>known_models</code></td>
+<td><code>available_models</code></td>
 <td>object</td>
-<td>Ready models grouped by provider.</td>
+<td>Available models grouped by provider. Each value is an array of <code>{id, name}</code> objects.</td>
 </tr>
 </tbody>
 </table>
@@ -611,14 +624,43 @@
 <span class="w">  </span><span class="nt">&quot;providers&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;claude&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;gemini&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;cursor&quot;</span><span class="p">],</span>
 <span class="w">  </span><span class="nt">&quot;default_provider&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;cursor&quot;</span><span class="p">,</span>
 <span class="w">  </span><span class="nt">&quot;default_model&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;gpt-5.4-xhigh-fast&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;known_models&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;claude&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;opus&quot;</span><span class="p">],</span>
-<span class="w">    </span><span class="nt">&quot;gemini&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;pro&quot;</span><span class="p">]</span>
+<span class="w">  </span><span class="nt">&quot;available_models&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;claude&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[{</span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;opus&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Claude Opus&quot;</span><span class="p">}],</span>
+<span class="w">    </span><span class="nt">&quot;gemini&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[{</span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;pro&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Gemini Pro&quot;</span><span class="p">}]</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
 
-<p>Returns <code>200 OK</code>. <code>known_models</code> is derived from ready variants only.</p>
+<p>Returns <code>200 OK</code>. <code>available_models</code> is discovered from AI CLI tools and LiteLLM pricing data.</p>
+<h3 id="get-apicost"><code>GET /api/cost</code></h3>
+<p>Return the total accumulated cost across all generations.</p>
+<p>Auth: <code>Bearer token or session cookie</code></p>
+<p>No parameters.</p>
+<p>Response body:</p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>total_cost_usd</code></td>
+<td>number</td>
+<td>Sum of per-variant generation costs in USD. Admins see all variants; non-admin users see only their own.</td>
+</tr>
+</tbody>
+</table>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-H<span class="w"> </span><span class="s2">&quot;Authorization: Bearer &lt;USER_API_KEY&gt;&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>http://localhost:8000/api/cost
+</code></pre></div>
+
+<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="nt">&quot;total_cost_usd&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">4.56</span><span class="p">}</span>
+</code></pre></div>
+
+<p>Returns <code>200 OK</code>.</p>
 <h2 id="authentication-endpoints">Authentication endpoints</h2>
 <h3 id="post-apiauthlogin"><code>POST /api/auth/login</code></h3>
 <p>Create a session cookie and return the authenticated identity.</p>
@@ -815,7 +857,7 @@
 <p>Returns <code>200 OK</code>, invalidates all sessions for that user, and clears the caller's <code>docsfy_session</code>. Returns <code>400</code> for malformed JSON, non-object JSON, short custom keys, or when the caller is the bootstrap <code>ADMIN_KEY</code> identity.</p>
 <h2 id="project-listing-and-lookup">Project listing and lookup</h2>
 <h3 id="get-apiprojects-and-get-apistatus"><code>GET /api/projects</code> and <code>GET /api/status</code></h3>
-<p>List visible project variants and the known ready models and branches.</p>
+<p>List visible project variants and the discovered models from provider APIs and branches.</p>
 <p>Auth: <code>Bearer token or session cookie</code></p>
 <p>No parameters.</p>
 <div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-H<span class="w"> </span><span class="s2">&quot;Authorization: Bearer &lt;USER_API_KEY&gt;&quot;</span><span class="w"> </span><span class="se">\</span>
@@ -839,13 +881,15 @@
 <span class="w">      </span><span class="nt">&quot;error_message&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
 <span class="w">      </span><span class="nt">&quot;plan_json&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
 <span class="w">      </span><span class="nt">&quot;generation_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;5bf1495b-b6fa-4318-841c-dced628a2c5b&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;total_cost_usd&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">1.4628</span><span class="p">,</span>
 <span class="w">      </span><span class="nt">&quot;created_at&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-04-18 12:00:00&quot;</span><span class="p">,</span>
 <span class="w">      </span><span class="nt">&quot;updated_at&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-04-18 12:34:56&quot;</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="w">  </span><span class="p">],</span>
-<span class="w">  </span><span class="nt">&quot;known_models&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;claude&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;opus&quot;</span><span class="p">]</span>
+<span class="w">  </span><span class="nt">&quot;available_models&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;claude&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[{</span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;opus&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Claude Opus&quot;</span><span class="p">}]</span>
 <span class="w">  </span><span class="p">},</span>
+<span class="w">  </span><span class="nt">&quot;total_cost_usd&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">1.23</span><span class="p">,</span>
 <span class="w">  </span><span class="nt">&quot;known_branches&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="nt">&quot;for-testing-only&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;main&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;dev&quot;</span><span class="p">]</span>
 <span class="w">  </span><span class="p">}</span>
@@ -894,6 +938,7 @@
 <span class="w">  </span><span class="nt">&quot;error_message&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
 <span class="w">  </span><span class="nt">&quot;plan_json&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
 <span class="w">  </span><span class="nt">&quot;generation_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;5bf1495b-b6fa-4318-841c-dced628a2c5b&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;total_cost_usd&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">1.4628</span><span class="p">,</span>
 <span class="w">  </span><span class="nt">&quot;created_at&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-04-18 12:00:00&quot;</span><span class="p">,</span>
 <span class="w">  </span><span class="nt">&quot;updated_at&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-04-18 12:34:56&quot;</span>
 <span class="p">}</span>
@@ -944,6 +989,7 @@
 <span class="w">      </span><span class="nt">&quot;error_message&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
 <span class="w">      </span><span class="nt">&quot;plan_json&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
 <span class="w">      </span><span class="nt">&quot;generation_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;5bf1495b-b6fa-4318-841c-dced628a2c5b&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;total_cost_usd&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">1.4628</span><span class="p">,</span>
 <span class="w">      </span><span class="nt">&quot;created_at&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-04-18 12:00:00&quot;</span><span class="p">,</span>
 <span class="w">      </span><span class="nt">&quot;updated_at&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-04-18 12:34:56&quot;</span>
 <span class="w">    </span><span class="p">}</span>
@@ -1030,6 +1076,7 @@
 <span class="w">  </span><span class="nt">&quot;error_message&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
 <span class="w">  </span><span class="nt">&quot;plan_json&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
 <span class="w">  </span><span class="nt">&quot;generation_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;5bf1495b-b6fa-4318-841c-dced628a2c5b&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;total_cost_usd&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">1.4628</span><span class="p">,</span>
 <span class="w">  </span><span class="nt">&quot;created_at&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-04-18 12:00:00&quot;</span><span class="p">,</span>
 <span class="w">  </span><span class="nt">&quot;updated_at&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-04-18 12:34:56&quot;</span>
 <span class="p">}</span>
@@ -2198,8 +2245,13 @@
 <td>Full visible project snapshot.</td>
 </tr>
 <tr>
-<td><code>known_models</code></td>
+<td><code>available_models</code></td>
 <td>object</td>
+<td>Same structure as <code>GET /api/projects</code>.</td>
+</tr>
+<tr>
+<td><code>total_cost_usd</code></td>
+<td>number</td>
 <td>Same structure as <code>GET /api/projects</code>.</td>
 </tr>
 <tr>
@@ -2227,13 +2279,15 @@
 <span class="w">      </span><span class="nt">&quot;error_message&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
 <span class="w">      </span><span class="nt">&quot;plan_json&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
 <span class="w">      </span><span class="nt">&quot;generation_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;5bf1495b-b6fa-4318-841c-dced628a2c5b&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;total_cost_usd&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">1.4628</span><span class="p">,</span>
 <span class="w">      </span><span class="nt">&quot;created_at&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-04-18 12:00:00&quot;</span><span class="p">,</span>
 <span class="w">      </span><span class="nt">&quot;updated_at&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-04-18 12:34:56&quot;</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="w">  </span><span class="p">],</span>
-<span class="w">  </span><span class="nt">&quot;known_models&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;claude&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;opus&quot;</span><span class="p">]</span>
+<span class="w">  </span><span class="nt">&quot;available_models&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;claude&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[{</span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;opus&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Claude Opus&quot;</span><span class="p">}]</span>
 <span class="w">  </span><span class="p">},</span>
+<span class="w">  </span><span class="nt">&quot;total_cost_usd&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">1.23</span><span class="p">,</span>
 <span class="w">  </span><span class="nt">&quot;known_branches&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="nt">&quot;for-testing-only&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;main&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;dev&quot;</span><span class="p">]</span>
 <span class="w">  </span><span class="p">}</span>
@@ -2507,6 +2561,7 @@
 <li><a href="#health-and-discovery">Health and discovery</a><ul>
 <li><a href="#get-health">GET /health</a></li>
 <li><a href="#get-apimodels">GET /api/models</a></li>
+<li><a href="#get-apicost">GET /api/cost</a></li>
 </ul>
 </li>
 <li><a href="#authentication-endpoints">Authentication endpoints</a><ul>

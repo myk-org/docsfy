@@ -319,9 +319,9 @@ class TestModels:
             "providers": ["claude", "gemini", "cursor"],
             "default_provider": "cursor",
             "default_model": "gpt-5.4-xhigh-fast",
-            "known_models": {
-                "cursor": ["gpt-5.4-xhigh-fast"],
-                "claude": ["sonnet-4"],
+            "available_models": {
+                "cursor": [{"id": "gpt-5.4-xhigh-fast", "name": "GPT 5.4"}],
+                "claude": [{"id": "sonnet-4", "name": "Sonnet 4"}],
             },
         }
         result = runner.invoke(app, ["models"])
@@ -335,8 +335,11 @@ class TestModels:
             "providers": ["claude", "cursor"],
             "default_provider": "cursor",
             "default_model": "gpt-5.4-xhigh-fast",
-            "known_models": {
-                "cursor": ["gpt-5.4-xhigh-fast", "gpt-4"],
+            "available_models": {
+                "cursor": [
+                    {"id": "gpt-5.4-xhigh-fast", "name": "GPT 5.4"},
+                    {"id": "gpt-4", "name": "GPT 4"},
+                ],
             },
         }
         result = runner.invoke(app, ["models"])
@@ -356,9 +359,9 @@ class TestModels:
             "providers": ["claude", "gemini", "cursor"],
             "default_provider": "cursor",
             "default_model": "gpt-5.4-xhigh-fast",
-            "known_models": {
-                "claude": ["sonnet-4"],
-                "cursor": ["gpt-5.4-xhigh-fast"],
+            "available_models": {
+                "claude": [{"id": "sonnet-4", "name": "Sonnet 4"}],
+                "cursor": [{"id": "gpt-5.4-xhigh-fast", "name": "GPT 5.4"}],
             },
         }
         result = runner.invoke(app, ["models", "--provider", "claude"])
@@ -373,31 +376,31 @@ class TestModels:
             "providers": ["claude", "gemini", "cursor"],
             "default_provider": "cursor",
             "default_model": "gpt-5.4-xhigh-fast",
-            "known_models": {},
+            "available_models": {},
         }
         result = runner.invoke(app, ["models", "--provider", "invalid"])
         assert result.exit_code == 1
         assert "Unknown provider" in result.output
 
-    def test_models_no_models_yet(self, mock_client: MagicMock) -> None:
+    def test_models_no_models_available(self, mock_client: MagicMock) -> None:
         mock_client.get_models.return_value = {
             "providers": ["claude", "gemini", "cursor"],
             "default_provider": "cursor",
             "default_model": "gpt-5.4-xhigh-fast",
-            "known_models": {},
+            "available_models": {},
         }
         result = runner.invoke(app, ["models"])
         assert result.exit_code == 0
-        assert "(no models used yet)" in result.output
+        assert "(no models available)" in result.output
 
     def test_models_json_output(self, mock_client: MagicMock) -> None:
         api_data = {
             "providers": ["claude", "gemini", "cursor"],
             "default_provider": "cursor",
             "default_model": "gpt-5.4-xhigh-fast",
-            "known_models": {
-                "cursor": ["gpt-5.4-xhigh-fast"],
-                "claude": ["sonnet-4"],
+            "available_models": {
+                "cursor": [{"id": "gpt-5.4-xhigh-fast", "name": "GPT 5.4"}],
+                "claude": [{"id": "sonnet-4", "name": "Sonnet 4"}],
             },
         }
         mock_client.get_models.return_value = api_data
@@ -411,9 +414,9 @@ class TestModels:
             "providers": ["claude", "gemini", "cursor"],
             "default_provider": "cursor",
             "default_model": "gpt-5.4-xhigh-fast",
-            "known_models": {
-                "cursor": ["gpt-5.4-xhigh-fast"],
-                "claude": ["sonnet-4"],
+            "available_models": {
+                "cursor": [{"id": "gpt-5.4-xhigh-fast", "name": "GPT 5.4"}],
+                "claude": [{"id": "sonnet-4", "name": "Sonnet 4"}],
             },
         }
         result = runner.invoke(app, ["models", "--json", "--provider", "claude"])
@@ -422,9 +425,11 @@ class TestModels:
         assert data["providers"] == ["claude"]
         assert data["default_provider"] == "cursor"
         assert data["default_model"] == "gpt-5.4-xhigh-fast"
-        assert data["known_models"] == {"claude": ["sonnet-4"]}
+        assert data["available_models"] == {
+            "claude": [{"id": "sonnet-4", "name": "Sonnet 4"}]
+        }
         # Must not contain other providers' models
-        assert "cursor" not in data["known_models"]
+        assert "cursor" not in data["available_models"]
 
 
 class TestDownload:

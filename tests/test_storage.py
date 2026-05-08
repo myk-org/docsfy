@@ -146,63 +146,6 @@ async def test_get_nonexistent_project(db_path: Path) -> None:
     assert project is None
 
 
-async def test_get_known_models(db_path: Path) -> None:
-    from docsfy.storage import get_known_models, save_project, update_project_status
-
-    await save_project(
-        name="repo-a",
-        repo_url="https://github.com/org/a.git",
-        status="generating",
-        ai_provider="claude",
-        ai_model="opus-4-6",
-        owner="testuser",
-    )
-    await update_project_status(
-        "repo-a",
-        "claude",
-        "opus-4-6",
-        status="ready",
-        owner="testuser",
-    )
-    await save_project(
-        name="repo-b",
-        repo_url="https://github.com/org/b.git",
-        status="generating",
-        ai_provider="claude",
-        ai_model="sonnet-4-6",
-        owner="testuser",
-    )
-    await update_project_status(
-        "repo-b",
-        "claude",
-        "sonnet-4-6",
-        status="ready",
-        owner="testuser",
-    )
-    await save_project(
-        name="repo-c",
-        repo_url="https://github.com/org/c.git",
-        status="generating",
-        ai_provider="gemini",
-        ai_model="gemini-2.5-pro",
-        owner="testuser",
-    )
-    await update_project_status(
-        "repo-c",
-        "gemini",
-        "gemini-2.5-pro",
-        status="ready",
-        owner="testuser",
-    )
-
-    models = await get_known_models()
-    assert "claude" in models
-    assert "opus-4-6" in models["claude"]
-    assert "sonnet-4-6" in models["claude"]
-    assert "gemini" in models
-    assert "gemini-2.5-pro" in models["gemini"]
-
-
 async def test_init_db_resets_orphaned_generating(db_path: Path) -> None:
     from docsfy.storage import get_project, init_db, save_project
 
@@ -946,3 +889,185 @@ async def test_get_known_branches(db_path: Path) -> None:
     assert "main" in branches["repo1"]
     assert "v2.0" in branches["repo1"]
     assert "dev" not in branches["repo1"]
+
+
+async def test_set_generation_cost(tmp_path: Path) -> None:
+    """set_generation_cost sets total_cost_usd on a variant."""
+    import docsfy.storage as storage
+
+    orig_db = storage.DB_PATH
+    orig_projects = storage.PROJECTS_DIR
+    orig_data = storage.DATA_DIR
+    try:
+        storage.DB_PATH = tmp_path / "test.db"
+        storage.PROJECTS_DIR = tmp_path / "projects"
+        await storage.init_db(data_dir=str(tmp_path))
+
+        await storage.save_project(
+            name="cost-test",
+            repo_url="https://github.com/test/repo",
+            ai_provider="cursor",
+            ai_model="gpt-5",
+            owner="user1",
+        )
+        await storage.update_project_status(
+            "cost-test",
+            "cursor",
+            "gpt-5",
+            status="ready",
+            owner="user1",
+        )
+        await storage.set_generation_cost(
+            "cost-test",
+            "cursor",
+            "gpt-5",
+            cost_usd=1.23,
+            owner="user1",
+        )
+
+        project = await storage.get_project(
+            "cost-test",
+            ai_provider="cursor",
+            ai_model="gpt-5",
+            owner="user1",
+        )
+        assert project is not None
+        assert project["total_cost_usd"] == 1.23
+    finally:
+        storage.DB_PATH = orig_db
+        storage.PROJECTS_DIR = orig_projects
+        storage.DATA_DIR = orig_data
+
+
+async def test_get_total_cost(tmp_path: Path) -> None:
+    """get_total_cost sums total_cost_usd across all variants."""
+    import docsfy.storage as storage
+
+    orig_db = storage.DB_PATH
+    orig_projects = storage.PROJECTS_DIR
+    orig_data = storage.DATA_DIR
+    try:
+        storage.DB_PATH = tmp_path / "test.db"
+        storage.PROJECTS_DIR = tmp_path / "projects"
+        await storage.init_db(data_dir=str(tmp_path))
+
+        # Empty DB
+        total = await storage.get_total_cost()
+        assert total == 0.0
+
+        # Add two variants with costs
+        for i, cost in enumerate([0.50, 1.75]):
+            await storage.save_project(
+                name=f"proj-{i}",
+                repo_url="https://github.com/test/repo",
+                ai_provider="cursor",
+                ai_model="gpt-5",
+                owner="user1",
+            )
+            await storage.update_project_status(
+                f"proj-{i}",
+                "cursor",
+                "gpt-5",
+                status="ready",
+                owner="user1",
+            )
+            await storage.set_generation_cost(
+                f"proj-{i}",
+                "cursor",
+                "gpt-5",
+                cost_usd=cost,
+                owner="user1",
+            )
+
+        total = await storage.get_total_cost()
+        assert total == pytest.approx(2.25)
+    finally:
+        storage.DB_PATH = orig_db
+        storage.PROJECTS_DIR = orig_projects
+        storage.DATA_DIR = orig_data
+
+
+async def test_get_total_cost_owner_scoped(tmp_path: Path) -> None:
+    """get_total_cost(owner=...) only sums that owner's costs."""
+    import docsfy.storage as storage
+
+    orig_db = storage.DB_PATH
+    orig_data = storage.DATA_DIR
+    orig_projects = storage.PROJECTS_DIR
+    try:
+        storage.DB_PATH = tmp_path / "test.db"
+        storage.PROJECTS_DIR = tmp_path / "projects"
+        await storage.init_db(data_dir=str(tmp_path))
+
+        # Two owners with different costs
+        for owner, cost in [("alice", 1.00), ("bob", 2.50)]:
+            await storage.save_project(
+                name=f"proj-{owner}",
+                repo_url="https://github.com/test/repo",
+                ai_provider="cursor",
+                ai_model="gpt-5",
+                owner=owner,
+            )
+            await storage.set_generation_cost(
+                f"proj-{owner}",
+                "cursor",
+                "gpt-5",
+                cost_usd=cost,
+                owner=owner,
+            )
+
+        assert await storage.get_total_cost(owner="alice") == pytest.approx(1.00)
+        assert await storage.get_total_cost(owner="bob") == pytest.approx(2.50)
+        assert await storage.get_total_cost() == pytest.approx(3.50)
+    finally:
+        storage.DB_PATH = orig_db
+        storage.DATA_DIR = orig_data
+        storage.PROJECTS_DIR = orig_projects
+
+
+async def test_save_project_resets_cost(tmp_path: Path) -> None:
+    """save_project resets total_cost_usd to NULL for a new generation."""
+    import docsfy.storage as storage
+
+    orig_db = storage.DB_PATH
+    orig_projects = storage.PROJECTS_DIR
+    orig_data = storage.DATA_DIR
+    try:
+        storage.DB_PATH = tmp_path / "test.db"
+        storage.PROJECTS_DIR = tmp_path / "projects"
+        await storage.init_db(data_dir=str(tmp_path))
+
+        await storage.save_project(
+            name="reset-test",
+            repo_url="https://github.com/test/repo",
+            ai_provider="cursor",
+            ai_model="gpt-5",
+            owner="user1",
+        )
+        await storage.set_generation_cost(
+            "reset-test",
+            "cursor",
+            "gpt-5",
+            cost_usd=5.00,
+            owner="user1",
+        )
+        # Re-save (new generation) should reset cost
+        await storage.save_project(
+            name="reset-test",
+            repo_url="https://github.com/test/repo",
+            ai_provider="cursor",
+            ai_model="gpt-5",
+            owner="user1",
+        )
+        project = await storage.get_project(
+            "reset-test",
+            ai_provider="cursor",
+            ai_model="gpt-5",
+            owner="user1",
+        )
+        assert project is not None
+        assert project["total_cost_usd"] is None
+    finally:
+        storage.DB_PATH = orig_db
+        storage.PROJECTS_DIR = orig_projects
+        storage.DATA_DIR = orig_data

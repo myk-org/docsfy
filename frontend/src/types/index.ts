@@ -1,6 +1,12 @@
 export type ProjectStatus = 'generating' | 'ready' | 'error' | 'aborted'
 export type UserRole = 'admin' | 'user' | 'viewer'
 export type AIProvider = 'claude' | 'gemini' | 'cursor'
+export type AvailableModels = Record<string, Array<{id: string; name: string}>>
+
+export interface ComboboxOption {
+  value: string
+  label: string
+}
 
 export interface Project {
   name: string
@@ -16,6 +22,7 @@ export interface Project {
   page_count: number
   error_message: string | null
   plan_json: string | null
+  total_cost_usd: number | null
   generation_id: string | null
   created_at: string
   updated_at: string
@@ -64,8 +71,9 @@ export interface AuthResponse {
 
 export interface ProjectsResponse {
   projects: Project[]
-  known_models: Record<string, string[]>
   known_branches: Record<string, string[]>
+  available_models: AvailableModels
+  total_cost_usd: number
 }
 
 export interface CreateUserResponse {
@@ -89,8 +97,9 @@ export type WebSocketMessage = SyncMessage | ProgressMessage | StatusChangeMessa
 export interface SyncMessage {
   type: 'sync'
   projects: Project[]
-  known_models: Record<string, string[]>
   known_branches: Record<string, string[]>
+  available_models: AvailableModels
+  total_cost_usd: number
 }
 
 export interface ProgressMessage {

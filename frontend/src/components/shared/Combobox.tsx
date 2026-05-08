@@ -1,9 +1,10 @@
 import { useState, useRef, useEffect, useCallback, useId } from 'react'
 import { ChevronDown } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import type { ComboboxOption } from '@/types'
 
 interface ComboboxProps {
-  options: string[]
+  options: (string | ComboboxOption)[]
   value: string
   onChange: (value: string) => void
   placeholder?: string
@@ -29,8 +30,13 @@ export default function Combobox({
   const instanceId = useId()
   const listboxId = `combobox-listbox-${instanceId}`
 
-  const filtered = options.filter((opt) =>
-    opt.toLowerCase().includes(value.toLowerCase())
+  const normalizedOptions: ComboboxOption[] = options.map(opt =>
+    typeof opt === 'string' ? { value: opt, label: opt } : opt
+  )
+
+  const filtered = normalizedOptions.filter((opt) =>
+    opt.label.toLowerCase().includes(value.toLowerCase()) ||
+    opt.value.toLowerCase().includes(value.toLowerCase())
   )
 
   const closeDropdown = useCallback(() => {
@@ -71,7 +77,7 @@ export default function Combobox({
       // Only prevent default and commit when dropdown is open with a highlighted option
       if (isOpen && highlightedIndex >= 0 && highlightedIndex < filtered.length) {
         e.preventDefault()
-        onChange(filtered[highlightedIndex])
+        onChange(filtered[highlightedIndex].value)
         closeDropdown()
       }
     } else if (e.key === 'Escape') {
@@ -120,7 +126,7 @@ export default function Combobox({
         >
           {filtered.map((option, index) => (
             <li
-              key={`${index}-${option}`}
+              key={option.value}
               id={`combobox-option-${instanceId}-${index}`}
               role="option"
               aria-selected={index === highlightedIndex}
@@ -132,12 +138,15 @@ export default function Combobox({
               )}
               onMouseDown={(e) => {
                 e.preventDefault()
-                onChange(option)
+                onChange(option.value)
                 closeDropdown()
               }}
               onMouseEnter={() => setHighlightedIndex(index)}
             >
-              {option}
+              <span>{option.label}</span>
+              {option.label !== option.value && (
+                <span className="ml-1.5 text-xs text-muted-foreground">{option.value}</span>
+              )}
             </li>
           ))}
         </ul>
