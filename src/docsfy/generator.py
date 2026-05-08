@@ -292,8 +292,13 @@ async def run_planner(
         ai_cli_timeout=ai_cli_timeout,
     )
 
-    plan = parse_json_response(output)
+    plan = parse_json_response(_strip_ai_artifacts(output))
     if plan is None:
+        logger.warning(
+            f"[{project_name}] Planner output is not valid JSON "
+            f"({len(output)} chars). Use DEBUG level to see content."
+        )
+        logger.debug(f"[{project_name}] Planner output preview: {output[:500]}")
         msg = "Failed to parse planner output as JSON"
         raise RuntimeError(msg)
 
@@ -570,7 +575,7 @@ async def run_incremental_planner(
     finally:
         shutil.rmtree(job_dir, ignore_errors=True)
 
-    raw_result = parse_json_array_response(output)
+    raw_result = parse_json_array_response(_strip_ai_artifacts(output))
     if raw_result is None or not isinstance(raw_result, list):
         logger.warning(
             f"[{project_name}] Incremental planner returned unparseable output, "
