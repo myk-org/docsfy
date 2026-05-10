@@ -10,7 +10,8 @@ from typing import Any
 
 from simple_logger.logger import get_logger
 
-from docsfy.ai_client import call_ai_cli, run_parallel_with_limit
+from docsfy.ai_client import AIResult, call_ai_cli, run_parallel_with_limit
+from docsfy.cost_tracker import add_cost
 from docsfy.json_parser import parse_json_array_response, parse_json_response
 from pydantic import ValidationError
 
@@ -95,18 +96,21 @@ async def _call_ai_or_raise(
     ai_model: str,
     ai_cli_timeout: int | None = None,
 ) -> str:
+    """Call AI CLI, accumulate cost, and raise on failure."""
     cli_flags = ["--trust"] if ai_provider == "cursor" else None
-    success, output = await call_ai_cli(
+    result: AIResult = await call_ai_cli(
         prompt=prompt,
         cwd=repo_path,
         ai_provider=ai_provider,
         ai_model=ai_model,
         ai_cli_timeout=ai_cli_timeout,
         cli_flags=cli_flags,
+        output_format="json",
     )
-    if not success:
-        raise RuntimeError(output)
-    return output
+    add_cost(result.usage.cost_usd if result.usage else None)
+    if not result.success:
+        raise RuntimeError(result.text[:2000])
+    return result.text
 
 
 def _normalize_incremental_planner_result(raw_result: list[Any]) -> list[str]:
@@ -288,8 +292,13 @@ async def run_planner(
         ai_cli_timeout=ai_cli_timeout,
     )
 
-    plan = parse_json_response(output)
+    plan = parse_json_response(_strip_ai_artifacts(output))
     if plan is None:
+        logger.warning(
+            f"[{project_name}] Planner output is not valid JSON "
+            f"({len(output)} chars). Use DEBUG level to see content."
+        )
+        logger.debug(f"[{project_name}] Planner output preview: {output[:500]}")
         msg = "Failed to parse planner output as JSON"
         raise RuntimeError(msg)
 
@@ -566,7 +575,7 @@ async def run_incremental_planner(
     finally:
         shutil.rmtree(job_dir, ignore_errors=True)
 
-    raw_result = parse_json_array_response(output)
+    raw_result = parse_json_array_response(_strip_ai_artifacts(output))
     if raw_result is None or not isinstance(raw_result, list):
         logger.warning(
             f"[{project_name}] Incremental planner returned unparseable output, "

@@ -58,6 +58,7 @@ Used by project listing, project lookup, generation lookup, and WebSocket `sync`
 | `page_count` | integer | Current or final page count. |
 | `error_message` | string or `null` | Terminal error text for `error` or `aborted` variants. |
 | `plan_json` | string or `null` | Stringified JSON plan. This field is not parsed for you. |
+| `total_cost_usd` | number or `null` | Cost of the most recent generation for this variant in USD. Resets on each regeneration. `null` when not yet tracked. |
 | `generation_id` | string or `null` | Hyphenated UUID that identifies the variant. |
 | `created_at` | string | Row creation timestamp in `YYYY-MM-DD HH:MM:SS` format. |
 | `updated_at` | string | Last update timestamp in `YYYY-MM-DD HH:MM:SS` format. |
@@ -101,6 +102,7 @@ Status values:
   "error_message": null,
   "plan_json": "{\"project_name\":\"for-testing-only\",\"tagline\":\"Test repo\",\"navigation\":[]}",
   "generation_id": "5bf1495b-b6fa-4318-841c-dced628a2c5b",
+  "total_cost_usd": 1.4628,
   "created_at": "2026-04-18 12:00:00",
   "updated_at": "2026-04-18 12:34:56"
 }
@@ -115,7 +117,8 @@ Used by `GET /api/projects`, `GET /api/status`, and WebSocket `sync`.
 | Name | Type | Description |
 | --- | --- | --- |
 | `projects` | array of `ProjectVariant` | Visible variants for the caller, including non-ready variants. |
-| `known_models` | object | Ready models grouped by provider. This list is global, not access-filtered. |
+| `available_models` | object | Available models grouped by provider. Each value is an array of `{id, name}` objects discovered from AI CLI tools and LiteLLM pricing data. |
+| `total_cost_usd` | number | Sum of per-variant generation costs in USD. Admins see all variants; non-admin users see only their own. |
 | `known_branches` | object | Ready branches grouped by project name. Admins see all owners; non-admin callers see only their own ready branches. |
 
 ```json
@@ -136,14 +139,16 @@ Used by `GET /api/projects`, `GET /api/status`, and WebSocket `sync`.
       "error_message": null,
       "plan_json": null,
       "generation_id": "5bf1495b-b6fa-4318-841c-dced628a2c5b",
+      "total_cost_usd": 1.4628,
       "created_at": "2026-04-18 12:00:00",
       "updated_at": "2026-04-18 12:34:56"
     }
   ],
-  "known_models": {
-    "claude": ["opus"],
-    "cursor": ["gpt-5.4-xhigh-fast"]
+  "available_models": {
+    "claude": [{"id": "opus", "name": "Claude Opus"}],
+    "cursor": [{"id": "gpt-5.4-xhigh-fast", "name": "GPT-5.4 XHigh Fast"}]
   },
+  "total_cost_usd": 1.23,
   "known_branches": {
     "for-testing-only": ["main", "dev"]
   }
@@ -197,7 +202,7 @@ Returns `200 OK` when the service is up.
 
 ### `GET /api/models`
 
-Public discovery endpoint for supported providers, server defaults, and known ready models.
+Public discovery endpoint for supported providers, server defaults, and discovered models from provider APIs.
 
 Auth: `Public`
 
@@ -210,7 +215,7 @@ Response body:
 | `providers` | array of strings | Supported provider IDs. The current set is `claude`, `gemini`, `cursor`. |
 | `default_provider` | string | Server default provider used when `POST /api/generate` omits `ai_provider`. |
 | `default_model` | string | Server default model used when `POST /api/generate` omits `ai_model`. |
-| `known_models` | object | Ready models grouped by provider. |
+| `available_models` | object | Available models grouped by provider. Each value is an array of `{id, name}` objects. |
 
 ```bash
 curl http://localhost:8000/api/models
@@ -221,14 +226,39 @@ curl http://localhost:8000/api/models
   "providers": ["claude", "gemini", "cursor"],
   "default_provider": "cursor",
   "default_model": "gpt-5.4-xhigh-fast",
-  "known_models": {
-    "claude": ["opus"],
-    "gemini": ["pro"]
+  "available_models": {
+    "claude": [{"id": "opus", "name": "Claude Opus"}],
+    "gemini": [{"id": "pro", "name": "Gemini Pro"}]
   }
 }
 ```
 
-Returns `200 OK`. `known_models` is derived from ready variants only.
+Returns `200 OK`. `available_models` is discovered from AI CLI tools and LiteLLM pricing data.
+
+### `GET /api/cost`
+
+Return the total accumulated cost across all generations.
+
+Auth: `Bearer token or session cookie`
+
+No parameters.
+
+Response body:
+
+| Name | Type | Description |
+| --- | --- | --- |
+| `total_cost_usd` | number | Sum of per-variant generation costs in USD. Admins see all variants; non-admin users see only their own. |
+
+```bash
+curl -H "Authorization: Bearer <USER_API_KEY>" \
+  http://localhost:8000/api/cost
+```
+
+```json
+{"total_cost_usd": 4.56}
+```
+
+Returns `200 OK`.
 
 ## Authentication endpoints
 
@@ -364,7 +394,7 @@ Returns `200 OK`, invalidates all sessions for that user, and clears the caller'
 
 ### `GET /api/projects` and `GET /api/status`
 
-List visible project variants and the known ready models and branches.
+List visible project variants and the discovered models from provider APIs and branches.
 
 Auth: `Bearer token or session cookie`
 
@@ -393,13 +423,15 @@ curl -H "Authorization: Bearer <USER_API_KEY>" \
       "error_message": null,
       "plan_json": null,
       "generation_id": "5bf1495b-b6fa-4318-841c-dced628a2c5b",
+      "total_cost_usd": 1.4628,
       "created_at": "2026-04-18 12:00:00",
       "updated_at": "2026-04-18 12:34:56"
     }
   ],
-  "known_models": {
-    "claude": ["opus"]
+  "available_models": {
+    "claude": [{"id": "opus", "name": "Claude Opus"}]
   },
+  "total_cost_usd": 1.23,
   "known_branches": {
     "for-testing-only": ["main", "dev"]
   }
@@ -441,6 +473,7 @@ curl -H "Authorization: Bearer <USER_API_KEY>" \
   "error_message": null,
   "plan_json": null,
   "generation_id": "5bf1495b-b6fa-4318-841c-dced628a2c5b",
+  "total_cost_usd": 1.4628,
   "created_at": "2026-04-18 12:00:00",
   "updated_at": "2026-04-18 12:34:56"
 }
@@ -484,6 +517,7 @@ curl -H "Authorization: Bearer <ADMIN_KEY>" \
       "error_message": null,
       "plan_json": null,
       "generation_id": "5bf1495b-b6fa-4318-841c-dced628a2c5b",
+      "total_cost_usd": 1.4628,
       "created_at": "2026-04-18 12:00:00",
       "updated_at": "2026-04-18 12:34:56"
     }
@@ -535,6 +569,7 @@ curl -H "Authorization: Bearer <ADMIN_KEY>" \
   "error_message": null,
   "plan_json": null,
   "generation_id": "5bf1495b-b6fa-4318-841c-dced628a2c5b",
+  "total_cost_usd": 1.4628,
   "created_at": "2026-04-18 12:00:00",
   "updated_at": "2026-04-18 12:34:56"
 }
@@ -1172,7 +1207,8 @@ Fields:
 | --- | --- | --- |
 | `type` | string | Always `sync`. |
 | `projects` | array of `ProjectVariant` | Full visible project snapshot. |
-| `known_models` | object | Same structure as `GET /api/projects`. |
+| `available_models` | object | Same structure as `GET /api/projects`. |
+| `total_cost_usd` | number | Same structure as `GET /api/projects`. |
 | `known_branches` | object | Same structure as `GET /api/projects`. |
 
 ```json
@@ -1194,13 +1230,15 @@ Fields:
       "error_message": null,
       "plan_json": null,
       "generation_id": "5bf1495b-b6fa-4318-841c-dced628a2c5b",
+      "total_cost_usd": 1.4628,
       "created_at": "2026-04-18 12:00:00",
       "updated_at": "2026-04-18 12:34:56"
     }
   ],
-  "known_models": {
-    "claude": ["opus"]
+  "available_models": {
+    "claude": [{"id": "opus", "name": "Claude Opus"}]
   },
+  "total_cost_usd": 1.23,
   "known_branches": {
     "for-testing-only": ["main", "dev"]
   }

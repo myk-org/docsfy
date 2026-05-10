@@ -319,9 +319,9 @@ class TestModels:
             "providers": ["claude", "gemini", "cursor"],
             "default_provider": "cursor",
             "default_model": "gpt-5.4-xhigh-fast",
-            "known_models": {
-                "cursor": ["gpt-5.4-xhigh-fast"],
-                "claude": ["sonnet-4"],
+            "available_models": {
+                "cursor": [{"id": "gpt-5.4-xhigh-fast", "name": "GPT 5.4"}],
+                "claude": [{"id": "sonnet-4", "name": "Sonnet 4"}],
             },
         }
         result = runner.invoke(app, ["models"])
@@ -335,8 +335,11 @@ class TestModels:
             "providers": ["claude", "cursor"],
             "default_provider": "cursor",
             "default_model": "gpt-5.4-xhigh-fast",
-            "known_models": {
-                "cursor": ["gpt-5.4-xhigh-fast", "gpt-4"],
+            "available_models": {
+                "cursor": [
+                    {"id": "gpt-5.4-xhigh-fast", "name": "GPT 5.4"},
+                    {"id": "gpt-4", "name": "GPT 4"},
+                ],
             },
         }
         result = runner.invoke(app, ["models"])
@@ -356,9 +359,9 @@ class TestModels:
             "providers": ["claude", "gemini", "cursor"],
             "default_provider": "cursor",
             "default_model": "gpt-5.4-xhigh-fast",
-            "known_models": {
-                "claude": ["sonnet-4"],
-                "cursor": ["gpt-5.4-xhigh-fast"],
+            "available_models": {
+                "claude": [{"id": "sonnet-4", "name": "Sonnet 4"}],
+                "cursor": [{"id": "gpt-5.4-xhigh-fast", "name": "GPT 5.4"}],
             },
         }
         result = runner.invoke(app, ["models", "--provider", "claude"])
@@ -373,31 +376,31 @@ class TestModels:
             "providers": ["claude", "gemini", "cursor"],
             "default_provider": "cursor",
             "default_model": "gpt-5.4-xhigh-fast",
-            "known_models": {},
+            "available_models": {},
         }
         result = runner.invoke(app, ["models", "--provider", "invalid"])
         assert result.exit_code == 1
         assert "Unknown provider" in result.output
 
-    def test_models_no_models_yet(self, mock_client: MagicMock) -> None:
+    def test_models_no_models_available(self, mock_client: MagicMock) -> None:
         mock_client.get_models.return_value = {
             "providers": ["claude", "gemini", "cursor"],
             "default_provider": "cursor",
             "default_model": "gpt-5.4-xhigh-fast",
-            "known_models": {},
+            "available_models": {},
         }
         result = runner.invoke(app, ["models"])
         assert result.exit_code == 0
-        assert "(no models used yet)" in result.output
+        assert "(no models available)" in result.output
 
     def test_models_json_output(self, mock_client: MagicMock) -> None:
         api_data = {
             "providers": ["claude", "gemini", "cursor"],
             "default_provider": "cursor",
             "default_model": "gpt-5.4-xhigh-fast",
-            "known_models": {
-                "cursor": ["gpt-5.4-xhigh-fast"],
-                "claude": ["sonnet-4"],
+            "available_models": {
+                "cursor": [{"id": "gpt-5.4-xhigh-fast", "name": "GPT 5.4"}],
+                "claude": [{"id": "sonnet-4", "name": "Sonnet 4"}],
             },
         }
         mock_client.get_models.return_value = api_data
@@ -411,9 +414,9 @@ class TestModels:
             "providers": ["claude", "gemini", "cursor"],
             "default_provider": "cursor",
             "default_model": "gpt-5.4-xhigh-fast",
-            "known_models": {
-                "cursor": ["gpt-5.4-xhigh-fast"],
-                "claude": ["sonnet-4"],
+            "available_models": {
+                "cursor": [{"id": "gpt-5.4-xhigh-fast", "name": "GPT 5.4"}],
+                "claude": [{"id": "sonnet-4", "name": "Sonnet 4"}],
             },
         }
         result = runner.invoke(app, ["models", "--json", "--provider", "claude"])
@@ -422,9 +425,11 @@ class TestModels:
         assert data["providers"] == ["claude"]
         assert data["default_provider"] == "cursor"
         assert data["default_model"] == "gpt-5.4-xhigh-fast"
-        assert data["known_models"] == {"claude": ["sonnet-4"]}
+        assert data["available_models"] == {
+            "claude": [{"id": "sonnet-4", "name": "Sonnet 4"}]
+        }
         # Must not contain other providers' models
-        assert "cursor" not in data["known_models"]
+        assert "cursor" not in data["available_models"]
 
 
 class TestDownload:
@@ -455,3 +460,75 @@ class TestDownload:
                 ],
             )
         assert result.exit_code == 0
+
+    def test_download_flatten_requires_output(
+        self, mock_client: MagicMock, tmp_path: Path
+    ) -> None:
+        """--flatten without --output should fail."""
+        result = runner.invoke(
+            app,
+            [
+                "download",
+                "my-repo",
+                "-b",
+                "main",
+                "-p",
+                "cursor",
+                "-m",
+                "gpt-5",
+                "--flatten",
+            ],
+        )
+        assert result.exit_code == 1
+        assert "--flatten requires --output" in result.output
+
+    def test_download_flatten(self, mock_client: MagicMock, tmp_path: Path) -> None:
+        """--flatten should move files from nested dir to output root."""
+        output_dir = tmp_path / "docs"
+
+        def fake_download(url_path: str, output_path: Path) -> None:
+            # Create a real tar.gz with a nested directory
+            import io
+            import tarfile as tf
+
+            buf = io.BytesIO()
+            with tf.open(fileobj=buf, mode="w:gz") as tar:
+                # Add a nested directory with files
+                info = tf.TarInfo(name="my-repo-main-cursor-gpt-5/index.html")
+                content = b"<html>test</html>"
+                info.size = len(content)
+                tar.addfile(info, io.BytesIO(content))
+
+                info2 = tf.TarInfo(name="my-repo-main-cursor-gpt-5/page.html")
+                content2 = b"<html>page</html>"
+                info2.size = len(content2)
+                tar.addfile(info2, io.BytesIO(content2))
+
+            buf.seek(0)
+            output_path.write_bytes(buf.read())
+
+        mock_client.download.side_effect = fake_download
+
+        result = runner.invoke(
+            app,
+            [
+                "download",
+                "my-repo",
+                "-b",
+                "main",
+                "-p",
+                "cursor",
+                "-m",
+                "gpt-5",
+                "--output",
+                str(output_dir),
+                "--flatten",
+            ],
+        )
+        assert result.exit_code == 0
+        assert "flattened" in result.output.lower()
+        # Files should be directly in output_dir, not in a subdirectory
+        assert (output_dir / "index.html").exists()
+        assert (output_dir / "page.html").exists()
+        # Nested directory should be gone
+        assert not (output_dir / "my-repo-main-cursor-gpt-5").exists()

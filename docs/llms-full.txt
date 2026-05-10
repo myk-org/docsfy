@@ -132,7 +132,7 @@ flowchart LR
 
 The checked-in defaults are `cursor` and `gpt-5.4-xhigh-fast`. If your docsfy environment is already working with `claude` or `gemini` instead, change those two fields before you click `Generate`.
 
-If the model list is empty, type the model name manually. Suggestions appear only after successful generations have already recorded known models.
+If the model list is empty, type the model name manually. Models are discovered from provider APIs and LiteLLM pricing data.
 
 ### Generate Another Branch
 
@@ -865,7 +865,7 @@ AI_CLI_TIMEOUT=60
 
 These values are the server-side fallback when a run does not supply a provider, a model, or a timeout. After you change them, restart `docsfy-server`. See [Configuration Reference](configuration-reference.html) for the full settings list.
 
-2. Check how defaults and known models appear.
+2. Check how defaults and available models appear.
 
 ```shell
 docsfy models
@@ -875,13 +875,13 @@ docsfy models --provider gemini
 | Surface | What you can choose or see | How defaults appear |
 | --- | --- | --- |
 | Web app `New Generation` | Fixed provider list: `claude`, `gemini`, `cursor`; model suggestions for the selected provider; typed model names | The form does not mark the server default provider or model |
-| `docsfy models` | All supported providers and known models | `(default)` marks the server default provider and model |
+| `docsfy models` | All supported providers and available models | `(default)` marks the server default provider and model |
 | `docsfy generate` | `--provider` and `--model`, or omitted values | Any missing value is filled by the server default |
 
-> **Note:** Known models come from successful `Ready` generations. They are not a live catalog of every model your provider account could use.
+> **Note:** Available models are discovered from provider APIs and LiteLLM pricing data.
 
 
-> **Tip:** On a brand-new server, `docsfy models` can show `(no models used yet)` and the web app model suggestions can be empty. You can still type a model manually.
+> **Tip:** On a brand-new server, `docsfy models` can show `(no models available)` and the web app model suggestions can be empty. You can still type a model manually.
 
 3. Start the run with an explicit pair when you want a predictable result.
 
@@ -931,7 +931,7 @@ Use this table when you want to avoid the most common mismatches:
 
 The web app model field is free-form. If the model you want is not suggested yet, type it exactly and start the run anyway.
 
-After a generation reaches `Ready`, that model becomes part of docsfy’s known-model list for that provider. It then appears in `docsfy models` and in later web app suggestions for that provider.
+Models are discovered from provider APIs. They appear in `docsfy models` and in the web app suggestions for that provider.
 
 The web app remembers the repository URL, branch, and `Force full regeneration` checkbox in the current browser session, but it does not keep your provider or model choice. Each new form starts on `cursor`, so re-check both fields every time if you usually run with `claude` or `gemini`.
 
@@ -946,7 +946,7 @@ See [CLI Command Reference](cli-command-reference.html) for the full command syn
 
 ## Troubleshooting
 
-- `docsfy models` shows `(no models used yet)`: the server can still be healthy. It only means there is no successful `Ready` generation recorded yet for that provider.
+- `docsfy models` shows `(no models available)`: the server can still be healthy. It means provider discovery has not returned models for that provider yet.
 - The web app started on `cursor` again: expected. Provider and model are not remembered between runs.
 - The CLI shows the default pair, but the web app does not: expected. The web app does not mark server defaults.
 - A run used the wrong model: start the next run with both provider and model set explicitly, then verify it with `docsfy status`.
@@ -1403,7 +1403,7 @@ docsfy status for-testing-only --branch main --provider cursor --model gpt-5.4-x
 docsfy download for-testing-only --branch main --provider cursor --model gpt-5.4-xhigh-fast --output ./site
 ```
 
-Use `docsfy models` to see the current default provider and model, plus model names the server already knows about. A provider can show `(no models used yet)` until a ready variant has been generated with it.
+Use `docsfy models` to see the current default provider and model, plus models discovered from provider APIs. A provider can show `(no models available)` if discovery has not returned models for it yet.
 
 Replace `cursor` and `gpt-5.4-xhigh-fast` with the values your server reports. Use `--force` when you want a full rebuild instead of reusing existing artifacts.
 
@@ -1691,11 +1691,11 @@ docsfy models
 docsfy generate https://github.com/myk-org/for-testing-only --branch main --provider cursor --model gpt-5.4-xhigh-fast --force
 ```
 
-Use only `claude`, `gemini`, or `cursor` as provider names. `docsfy models` shows the server defaults and any models docsfy has already seen in ready runs.
+Use only `claude`, `gemini`, or `cursor` as provider names. `docsfy models` shows the server defaults and models discovered from provider APIs.
 
-A provider or model appearing in the UI or in `docsfy models` is not a live health check. Those suggestions come from previous ready variants, so a new generation can still fail immediately if the provider CLI is missing, not signed in, or cannot use that model.
+A provider or model appearing in the UI or in `docsfy models` is not a live health check. Those suggestions come from provider discovery, so a new generation can still fail immediately if the provider CLI is missing, not signed in, or cannot use that model.
 
-On a brand-new server, `docsfy models` can show `(no models used yet)` and still be healthy.
+On a brand-new server, `docsfy models` can show `(no models available)` and still be healthy.
 
 If you run docsfy without Docker, make sure the provider CLI you selected is installed and authenticated on the server machine, then restart the server. See [Install and Run docsfy Without Docker](install-and-run-docsfy-without-docker.html) for the setup steps.
 
@@ -1736,7 +1736,7 @@ Always inspect the exact `branch` / `provider` / `model` combination you are fix
 
 If a run comes back `ready` with an `up_to_date` stage, nothing is broken. docsfy decided the existing docs already match the current repository state.
 
-Where the run stopped helps you narrow the cause. Problems in or before `cloning` usually point to repo or provider setup, while later failures are best diagnosed from the variant’s `Error` field. See [Tracking Generation Progress](track-generation-progress.html) for the fuller stage-by-stage view.
+Where the run stopped helps you narrow the cause. Problems in or before `cloning` usually point to repo or provider setup, while later failures are best diagnosed from the variant's `Error` field. See [Tracking Generation Progress](track-generation-progress.html) for the fuller stage-by-stage view.
 
 ## Advanced Usage
 
@@ -1769,7 +1769,7 @@ Every run gets a generation ID, and the CLI accepts that ID anywhere it normally
 docsfy status for-testing-only --branch main --provider cursor --model gpt-5.4-xhigh-fast --owner <owner>
 ```
 
-Admins can see more than one owner’s copy of the same variant. If you hit a `Multiple owners found` error, rerun the command with `--owner`.
+Admins can see more than one owner's copy of the same variant. If you hit a `Multiple owners found` error, rerun the command with `--owner`.
 
 ### When `--watch` is the only thing failing
 
@@ -1782,7 +1782,7 @@ The CLI `--watch` mode depends on the WebSocket connection. If it times out or d
 
 ### When a branch or model is missing from the web app suggestions
 
-The branch and model fields accept typed values. Their suggestion lists only include branches and models from previous ready variants, so a missing suggestion does not mean the value is invalid.
+The branch and model fields accept typed values. Their model suggestion lists come from provider discovery, and branch suggestions come from previous ready variants, so a missing suggestion does not mean the value is invalid.
 
 ### If you use a local repository path
 
@@ -1903,7 +1903,7 @@ Prints the current config file and all saved profiles.
 
 | Name | Type | Default | Description |
 | --- | --- | --- | --- |
-| `—` | `—` | `—` | No positional arguments or command-specific options. |
+| `-` | `-` | `-` | No positional arguments or command-specific options. |
 
 ```shell
 $ docsfy config show
@@ -1967,7 +1967,7 @@ Checks whether the configured server responds to `/health`.
 
 | Name | Type | Default | Description |
 | --- | --- | --- | --- |
-| `—` | `—` | `—` | No positional arguments or command-specific options. |
+| `-` | `-` | `-` | No positional arguments or command-specific options. |
 
 ```shell
 $ docsfy health
@@ -2184,7 +2184,7 @@ Provider: claude
   sonnet-4
 
 Provider: gemini
-  (no models used yet)
+  (no models available)
 
 Provider: cursor (default)
   gpt-5.4-xhigh-fast  (default)
@@ -2194,7 +2194,7 @@ Provider: cursor (default)
 - Plain-text output prints one section per provider.
 - The default provider is marked with `(default)`.
 - The default model under the default provider is marked with `  (default)`.
-- Providers with no ready models print `  (no models used yet)`.
+- Providers with no discovered models print `  (no models available)`.
 - `--json` prints the server payload; filtered JSON still includes `default_provider` and `default_model`.
 - Unknown providers print `Unknown provider: <provider>` and exit `1`.
 
@@ -2442,6 +2442,7 @@ Used by project listing, project lookup, generation lookup, and WebSocket `sync`
 | `page_count` | integer | Current or final page count. |
 | `error_message` | string or `null` | Terminal error text for `error` or `aborted` variants. |
 | `plan_json` | string or `null` | Stringified JSON plan. This field is not parsed for you. |
+| `total_cost_usd` | number or `null` | Cost of the most recent generation for this variant in USD. Resets on each regeneration. `null` when not yet tracked. |
 | `generation_id` | string or `null` | Hyphenated UUID that identifies the variant. |
 | `created_at` | string | Row creation timestamp in `YYYY-MM-DD HH:MM:SS` format. |
 | `updated_at` | string | Last update timestamp in `YYYY-MM-DD HH:MM:SS` format. |
@@ -2485,6 +2486,7 @@ Status values:
   "error_message": null,
   "plan_json": "{\"project_name\":\"for-testing-only\",\"tagline\":\"Test repo\",\"navigation\":[]}",
   "generation_id": "5bf1495b-b6fa-4318-841c-dced628a2c5b",
+  "total_cost_usd": 1.4628,
   "created_at": "2026-04-18 12:00:00",
   "updated_at": "2026-04-18 12:34:56"
 }
@@ -2499,7 +2501,8 @@ Used by `GET /api/projects`, `GET /api/status`, and WebSocket `sync`.
 | Name | Type | Description |
 | --- | --- | --- |
 | `projects` | array of `ProjectVariant` | Visible variants for the caller, including non-ready variants. |
-| `known_models` | object | Ready models grouped by provider. This list is global, not access-filtered. |
+| `available_models` | object | Available models grouped by provider. Each value is an array of `{id, name}` objects discovered from AI CLI tools and LiteLLM pricing data. |
+| `total_cost_usd` | number | Sum of per-variant generation costs in USD. Admins see all variants; non-admin users see only their own. |
 | `known_branches` | object | Ready branches grouped by project name. Admins see all owners; non-admin callers see only their own ready branches. |
 
 ```json
@@ -2520,14 +2523,16 @@ Used by `GET /api/projects`, `GET /api/status`, and WebSocket `sync`.
       "error_message": null,
       "plan_json": null,
       "generation_id": "5bf1495b-b6fa-4318-841c-dced628a2c5b",
+      "total_cost_usd": 1.4628,
       "created_at": "2026-04-18 12:00:00",
       "updated_at": "2026-04-18 12:34:56"
     }
   ],
-  "known_models": {
-    "claude": ["opus"],
-    "cursor": ["gpt-5.4-xhigh-fast"]
+  "available_models": {
+    "claude": [{"id": "opus", "name": "Claude Opus"}],
+    "cursor": [{"id": "gpt-5.4-xhigh-fast", "name": "GPT-5.4 XHigh Fast"}]
   },
+  "total_cost_usd": 1.23,
   "known_branches": {
     "for-testing-only": ["main", "dev"]
   }
@@ -2550,7 +2555,7 @@ Most explicit HTTP errors use a `detail` field. Request validation failures use 
     {
       "type": "value_error",
       "loc": ["body", "branch"],
-      "msg": "Value error, Invalid branch name: 'release/1.0'. Branch names cannot contain slashes — use hyphens instead (e.g., release-1.x).",
+      "msg": "Value error, Invalid branch name: 'release/1.0'. Branch names cannot contain slashes - use hyphens instead (e.g., release-1.x).",
       "input": "release/1.0"
     }
   ]
@@ -2581,7 +2586,7 @@ Returns `200 OK` when the service is up.
 
 ### `GET /api/models`
 
-Public discovery endpoint for supported providers, server defaults, and known ready models.
+Public discovery endpoint for supported providers, server defaults, and discovered models.
 
 Auth: `Public`
 
@@ -2594,7 +2599,7 @@ Response body:
 | `providers` | array of strings | Supported provider IDs. The current set is `claude`, `gemini`, `cursor`. |
 | `default_provider` | string | Server default provider used when `POST /api/generate` omits `ai_provider`. |
 | `default_model` | string | Server default model used when `POST /api/generate` omits `ai_model`. |
-| `known_models` | object | Ready models grouped by provider. |
+| `available_models` | object | Available models grouped by provider. Each value is an array of `{id, name}` objects. |
 
 ```bash
 curl http://localhost:8000/api/models
@@ -2605,14 +2610,39 @@ curl http://localhost:8000/api/models
   "providers": ["claude", "gemini", "cursor"],
   "default_provider": "cursor",
   "default_model": "gpt-5.4-xhigh-fast",
-  "known_models": {
-    "claude": ["opus"],
-    "gemini": ["pro"]
+  "available_models": {
+    "claude": [{"id": "opus", "name": "Claude Opus"}],
+    "gemini": [{"id": "pro", "name": "Gemini Pro"}]
   }
 }
 ```
 
-Returns `200 OK`. `known_models` is derived from ready variants only.
+Returns `200 OK`. `available_models` is discovered from AI CLI tools and LiteLLM pricing data.
+
+### `GET /api/cost`
+
+Return the sum of currently stored per-variant costs (resets on regeneration, decreases on deletion).
+
+Auth: `Bearer token or session cookie`
+
+No parameters.
+
+Response body:
+
+| Name | Type | Description |
+| --- | --- | --- |
+| `total_cost_usd` | number | Sum of per-variant generation costs in USD. Admins see all variants; non-admin users see only their own. |
+
+```bash
+curl -H "Authorization: Bearer <USER_API_KEY>" \
+  http://localhost:8000/api/cost
+```
+
+```json
+{"total_cost_usd": 4.56}
+```
+
+Returns `200 OK`.
 
 ## Authentication endpoints
 
@@ -2748,7 +2778,7 @@ Returns `200 OK`, invalidates all sessions for that user, and clears the caller'
 
 ### `GET /api/projects` and `GET /api/status`
 
-List visible project variants and the known ready models and branches.
+List visible project variants and the discovered models and branches.
 
 Auth: `Bearer token or session cookie`
 
@@ -2777,13 +2807,15 @@ curl -H "Authorization: Bearer <USER_API_KEY>" \
       "error_message": null,
       "plan_json": null,
       "generation_id": "5bf1495b-b6fa-4318-841c-dced628a2c5b",
+      "total_cost_usd": 1.4628,
       "created_at": "2026-04-18 12:00:00",
       "updated_at": "2026-04-18 12:34:56"
     }
   ],
-  "known_models": {
-    "claude": ["opus"]
+  "available_models": {
+    "claude": [{"id": "opus", "name": "Claude Opus"}]
   },
+  "total_cost_usd": 1.23,
   "known_branches": {
     "for-testing-only": ["main", "dev"]
   }
@@ -2825,6 +2857,7 @@ curl -H "Authorization: Bearer <USER_API_KEY>" \
   "error_message": null,
   "plan_json": null,
   "generation_id": "5bf1495b-b6fa-4318-841c-dced628a2c5b",
+  "total_cost_usd": 1.4628,
   "created_at": "2026-04-18 12:00:00",
   "updated_at": "2026-04-18 12:34:56"
 }
@@ -2868,6 +2901,7 @@ curl -H "Authorization: Bearer <ADMIN_KEY>" \
       "error_message": null,
       "plan_json": null,
       "generation_id": "5bf1495b-b6fa-4318-841c-dced628a2c5b",
+      "total_cost_usd": 1.4628,
       "created_at": "2026-04-18 12:00:00",
       "updated_at": "2026-04-18 12:34:56"
     }
@@ -2919,6 +2953,7 @@ curl -H "Authorization: Bearer <ADMIN_KEY>" \
   "error_message": null,
   "plan_json": null,
   "generation_id": "5bf1495b-b6fa-4318-841c-dced628a2c5b",
+  "total_cost_usd": 1.4628,
   "created_at": "2026-04-18 12:00:00",
   "updated_at": "2026-04-18 12:34:56"
 }
@@ -3556,7 +3591,8 @@ Fields:
 | --- | --- | --- |
 | `type` | string | Always `sync`. |
 | `projects` | array of `ProjectVariant` | Full visible project snapshot. |
-| `known_models` | object | Same structure as `GET /api/projects`. |
+| `available_models` | object | Same structure as `GET /api/projects`. |
+| `total_cost_usd` | number | Same structure as `GET /api/projects`. |
 | `known_branches` | object | Same structure as `GET /api/projects`. |
 
 ```json
@@ -3578,13 +3614,15 @@ Fields:
       "error_message": null,
       "plan_json": null,
       "generation_id": "5bf1495b-b6fa-4318-841c-dced628a2c5b",
+      "total_cost_usd": 1.4628,
       "created_at": "2026-04-18 12:00:00",
       "updated_at": "2026-04-18 12:34:56"
     }
   ],
-  "known_models": {
-    "claude": ["opus"]
+  "available_models": {
+    "claude": [{"id": "opus", "name": "Claude Opus"}]
   },
+  "total_cost_usd": 1.23,
   "known_branches": {
     "for-testing-only": ["main", "dev"]
   }

@@ -98,8 +98,9 @@ class WebSocketManager {
         const syncMessage: WebSocketMessage = {
           type: 'sync' as const,
           projects: data.projects,
-          known_models: data.known_models,
           known_branches: data.known_branches,
+          available_models: data.available_models ?? {},
+          total_cost_usd: data.total_cost_usd ?? 0,
         }
         this.handlers.forEach(handler => handler(syncMessage))
       } catch {

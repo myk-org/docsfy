@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import shutil
 import tarfile
 import tempfile
 from pathlib import Path
@@ -357,6 +358,9 @@ def download(
         "-o",
         help="Output directory to extract to (default: save tar.gz to current dir)",
     ),
+    flatten: bool = typer.Option(  # noqa: M511
+        False, "--flatten", help="Flatten extracted directory structure into output dir"
+    ),
 ) -> None:
     """Download generated documentation as tar.gz or extract to a directory."""
     from docsfy.cli.main import get_client
@@ -378,6 +382,10 @@ def download(
                 "or omit all three to download the default variant.",
                 err=True,
             )
+            raise typer.Exit(code=1)
+
+        if flatten and not output:
+            typer.echo("--flatten requires --output", err=True)
             raise typer.Exit(code=1)
 
         owner_qs = f"?owner={owner}" if owner else ""
@@ -402,7 +410,44 @@ def download(
                 output_dir.mkdir(parents=True, exist_ok=True)
                 with tarfile.open(tmp_path, "r:gz") as tar:
                     tar.extractall(path=output_dir, filter="data")
-                typer.echo(f"Extracted to {output_dir}")
+                if flatten:
+                    # Look for the expected nested directory from the archive
+                    expected_name = (
+                        f"{name}-{branch}-{provider}-{model}"
+                        if branch and provider and model
+                        else name
+                    )
+                    expected_dir = output_dir / expected_name
+                    nested_dir: Path | None = None
+                    if expected_dir.is_dir():
+                        nested_dir = expected_dir
+                    else:
+                        # Fall back to single top-level directory
+                        subdirs = [
+                            d
+                            for d in output_dir.iterdir()
+                            if d.is_dir() and not d.name.startswith(".")
+                        ]
+                        if len(subdirs) == 1:
+                            nested_dir = subdirs[0]
+                    if nested_dir is not None:
+                        # Move all contents up to the output directory
+                        for item in list(nested_dir.iterdir()):
+                            dest_path = output_dir / item.name
+                            if dest_path.exists():
+                                if dest_path.is_dir():
+                                    shutil.rmtree(dest_path)
+                                else:
+                                    dest_path.unlink()
+                            item.rename(dest_path)
+                        nested_dir.rmdir()
+                        typer.echo(f"Extracted and flattened to {output_dir}")
+                    else:
+                        typer.echo(
+                            f"Extracted to {output_dir} (flatten skipped: no matching subdirectory found)"
+                        )
+                else:
+                    typer.echo(f"Extracted to {output_dir}")
             finally:
                 tmp_path.unlink(missing_ok=True)
         else:
@@ -423,7 +468,7 @@ def models(
         typer.Option("--json", "-j", help="Output as JSON"),
     ] = False,
 ) -> None:
-    """List available AI providers and known models."""
+    """List available AI providers and available models."""
     from docsfy.cli.main import get_client
 
     client = get_client()
@@ -435,7 +480,7 @@ def models(
     providers = data.get("providers", [])
     default_provider = data.get("default_provider", "")
     default_model = data.get("default_model", "")
-    known = data.get("known_models", {})
+    available = data.get("available_models", {})
 
     if provider:
         if provider not in providers:
@@ -448,7 +493,7 @@ def models(
                 "providers": [provider],
                 "default_provider": default_provider,
                 "default_model": default_model,
-                "known_models": {provider: known.get(provider, [])},
+                "available_models": {provider: available.get(provider, [])},
             }
             typer.echo(json.dumps(filtered, indent=2))
         else:
@@ -464,15 +509,16 @@ def models(
             label += " (default)"
         typer.echo(label)
 
-        models_list = known.get(p, [])
+        models_list = available.get(p, [])
         if not models_list:
-            typer.echo("  (no models used yet)")
+            typer.echo("  (no models available)")
         else:
-            for m in models_list:
+            for entry in models_list:
+                model_id = entry.get("id", "") if isinstance(entry, dict) else entry
                 suffix = (
                     "  (default)"
-                    if p == default_provider and m == default_model
+                    if p == default_provider and model_id == default_model
                     else ""
                 )
-                typer.echo(f"  {m}{suffix}")
+                typer.echo(f"  {model_id}{suffix}")
         typer.echo()
