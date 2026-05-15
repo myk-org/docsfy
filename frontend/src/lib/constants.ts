@@ -1,5 +1,7 @@
 export const VALID_PROVIDERS = ['claude', 'gemini', 'cursor'] as const
 
+export const VALID_REPO_TYPES = ['app', 'tests', 'library', 'framework'] as const
+
 export const DOCSFY_DOCS_URL = 'https://myk-org.github.io/docsfy/'
 export const DOCSFY_REPO_URL = 'https://github.com/myk-org/docsfy'
 
@@ -13,6 +15,11 @@ export const WS_HEARTBEAT_INTERVAL_MS = 30000
 export const WS_RECONNECT_MAX_DELAY_MS = 30000
 export const WS_POLLING_FALLBACK_MS = 10000
 export const RELOAD_DELAY_MS = 1000
+
+export const SK_REPO = 'docsfy-repo'
+export const SK_BRANCH = 'docsfy-branch'
+export const SK_FORCE = 'docsfy-force'
+export const SK_REPO_TYPE = 'docsfy-repo-type'
 
 export const TREE_EXPANDED_KEY = 'docsfy-tree-expanded'
 export const SELECTED_VIEW_KEY = 'docsfy-selected-view'
