@@ -14,6 +14,9 @@ DEFAULT_BRANCH = "main"
 DOCSFY_DOCS_URL = "https://myk-org.github.io/docsfy/"
 DOCSFY_REPO_URL = "https://github.com/myk-org/docsfy"
 
+RepoType = Literal["app", "tests", "library", "framework"]
+REPO_TYPES: tuple[str, ...] = get_args(RepoType)
+
 
 class GenerateRequest(BaseModel):
     repo_url: str | None = Field(
@@ -25,6 +28,9 @@ class GenerateRequest(BaseModel):
     ai_cli_timeout: int | None = Field(default=None, gt=0)
     force: bool = Field(
         default=False, description="Force full regeneration, ignoring cache"
+    )
+    repo_type: RepoType | None = Field(
+        default=None, description="Repository type (auto-detected if not specified)"
     )
     branch: str = Field(
         default=DEFAULT_BRANCH, description="Git branch to generate docs from"
@@ -115,6 +121,7 @@ class NavGroup(BaseModel):
 class DocPlan(BaseModel):
     project_name: str
     tagline: str = ""
+    repo_type: RepoType = "app"
     navigation: list[NavGroup] = Field(default_factory=list)
     version: str | None = None
 

@@ -168,6 +168,12 @@ function InfoGrid({ project, isAdmin }: { project: Project; isAdmin: boolean }) 
         <span className="text-muted-foreground">Branch</span>
         <div className="mt-0.5 font-medium">{project.branch}</div>
       </div>
+      {project.repo_type && (
+        <div>
+          <span className="text-muted-foreground">Repo Type</span>
+          <div className="mt-0.5 font-medium capitalize">{project.repo_type}</div>
+        </div>
+      )}
       <div>
         <span className="text-muted-foreground" title="Number of documentation pages generated">Pages</span>
         <div className="mt-0.5 font-medium">{project.page_count}</div>

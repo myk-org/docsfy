@@ -204,11 +204,12 @@ treat it as not configured for Phase 6 purposes.
 Run the generation command using **`Bash(run_in_background=true)`** since it is a long-running blocking operation:
 
 ```bash
-docsfy generate <repo_url> --branch <branch> --provider <provider> --model <model> --watch [--force]
+docsfy generate <repo_url> --branch <branch> --provider <provider> --model <model> --watch [--force] [--repo-type <type>]
 ```
 
 - Always use `--watch` for real-time WebSocket progress
 - Add `--force` only if user requested force regeneration
+- Add `--repo-type <type>` if user specifies the repository type (app, tests, library, framework). If not specified, the AI auto-detects the type.
 - **Use `run_in_background=true`** on the Bash tool so the main conversation is not blocked.
   You will be notified when the command completes.
 
@@ -432,6 +433,7 @@ Display:
 | Command | Purpose |
 |---------|---------|
 | `docsfy generate <url> --watch` | Generate docs with live progress |
+| `docsfy generate <url> --watch --repo-type tests` | Generate docs for a test suite repo |
 | `docsfy status <name>` | Check generation status |
 | `docsfy download <name> -o <dir>` | Download docs to directory |
 | `docsfy list` | List all projects |

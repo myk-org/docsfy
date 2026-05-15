@@ -32,6 +32,7 @@ from docsfy.generator import (
 )
 from docsfy.models import (
     DEFAULT_BRANCH,
+    REPO_TYPES,
     VALID_PROVIDERS,
     GenerateRequest,
     is_uuid,
@@ -126,6 +127,7 @@ async def update_and_notify(
     current_stage: str | None | object = None,
     generation_id: str | None = None,
     total_cost_usd: float | None = None,
+    repo_type: str | None = None,
 ) -> None:
     """Update project status in DB and send WebSocket notification."""
     ups_kwargs: dict[str, Any] = {
@@ -144,6 +146,8 @@ async def update_and_notify(
         ups_kwargs["plan_json"] = plan_json
     if total_cost_usd is not None:
         ups_kwargs["total_cost_usd"] = total_cost_usd
+    if repo_type is not None:
+        ups_kwargs["repo_type"] = repo_type
 
     # Always pass current_stage through so that None clears the stage in the DB.
     ups_kwargs["current_stage"] = current_stage
@@ -551,6 +555,7 @@ async def _run_generation(
     owner: str = "",
     branch: str = DEFAULT_BRANCH,
     generation_id: str | None = None,
+    repo_type: str | None = None,
 ) -> None:
     gen_key = f"{owner}/{project_name}/{branch}/{ai_provider}/{ai_model}"
     cost_acc = CostAccumulator()
@@ -603,6 +608,7 @@ async def _run_generation(
                 owner,
                 branch=branch,
                 generation_id=generation_id,
+                repo_type=repo_type,
             )
         else:
             # Remote repository - clone to temp dir
@@ -625,6 +631,7 @@ async def _run_generation(
                     owner,
                     branch=branch,
                     generation_id=generation_id,
+                    repo_type=repo_type,
                 )
 
     except asyncio.CancelledError:
@@ -696,6 +703,7 @@ async def _generate_from_path(
     owner: str = "",
     branch: str = DEFAULT_BRANCH,
     generation_id: str | None = None,
+    repo_type: str | None = None,
 ) -> None:
     cache_dir = get_project_cache_dir(
         project_name, ai_provider, ai_model, owner, branch=branch
@@ -983,11 +991,21 @@ async def _generate_from_path(
             ai_provider=ai_provider,
             ai_model=ai_model,
             ai_cli_timeout=ai_cli_timeout,
+            repo_type=repo_type,
         )
 
     if plan is None:
         raise RuntimeError("Plan was not generated")
     plan["repo_url"] = source_url
+
+    # Extract auto-detected or provided repo_type from plan
+    detected_repo_type = plan.get("repo_type", "app")
+    if detected_repo_type not in REPO_TYPES:
+        logger.warning(
+            f"[{project_name}] Planner returned unknown repo_type "
+            f"'{detected_repo_type}', defaulting to 'app'"
+        )
+        detected_repo_type = "app"
 
     if not use_cache and cache_dir.exists():
         # A full regeneration should start from a clean cache so progress reflects
@@ -1012,6 +1030,7 @@ async def _generate_from_path(
         plan_json=json.dumps(plan),
         page_count=current_page_count,
         generation_id=generation_id,
+        repo_type=detected_repo_type,
     )
 
     async def _on_page_generated(page_count: int) -> None:
@@ -1038,6 +1057,7 @@ async def _generate_from_path(
         diff_content=diff_content,
         branch=branch,
         on_page_generated=_on_page_generated,
+        repo_type=detected_repo_type,
     )
 
     # --- Post-generation pipeline ---
@@ -1384,6 +1404,12 @@ async def generate(
 
     # Fix 6: Use lock to prevent race condition between check and add
     branch = gen_request.branch
+    repo_type = gen_request.repo_type
+    if repo_type is not None and repo_type not in REPO_TYPES:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid repo type: '{repo_type}'. Must be one of {', '.join(REPO_TYPES)}.",
+        )
     gen_key = f"{owner}/{project_name}/{branch}/{ai_provider}/{ai_model}"
     async with _gen_lock:
         if gen_key in _generating:
@@ -1400,6 +1426,7 @@ async def generate(
             ai_model=ai_model,
             owner=owner,
             branch=branch,
+            repo_type=repo_type,
         )
 
         try:
@@ -1416,6 +1443,7 @@ async def generate(
                     owner=owner,
                     branch=branch,
                     generation_id=gen_id,
+                    repo_type=repo_type,
                 )
             )
             _generating[gen_key] = task
@@ -1428,6 +1456,7 @@ async def generate(
         "status": "generating",
         "branch": branch,
         "generation_id": gen_id,
+        "repo_type": repo_type,
     }
 
 
