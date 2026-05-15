@@ -1,5 +1,7 @@
 export const VALID_PROVIDERS = ['claude', 'gemini', 'cursor'] as const
 
+export const VALID_REPO_TYPES = ['app', 'tests', 'library', 'framework'] as const
+
 export const DOCSFY_DOCS_URL = 'https://myk-org.github.io/docsfy/'
 export const DOCSFY_REPO_URL = 'https://github.com/myk-org/docsfy'
 

@@ -213,6 +213,7 @@ async def generate_full_page_content(
     exclusions_path: str | None = None,
     page_type: str = "guide",
     other_pages_path: str | None = None,
+    repo_type: str = "app",
 ) -> str:
     prompt = build_page_prompt(
         project_name=project_name,
@@ -221,6 +222,7 @@ async def generate_full_page_content(
         page_type=page_type,
         exclusions_path=exclusions_path,
         other_pages_path=other_pages_path,
+        repo_type=repo_type,
     )
     output = await _call_ai_or_raise(
         prompt=prompt,
@@ -244,6 +246,7 @@ async def _generate_incremental_page_content(
     ai_model: str,
     ai_cli_timeout: int | None = None,
     page_type: str = "guide",
+    repo_type: str = "app",
 ) -> str:
     job_dir = Path(tempfile.mkdtemp(prefix="docsfy-incremental-page-"))
     try:
@@ -262,6 +265,7 @@ async def _generate_incremental_page_content(
             changed_files=changed_files,
             diff_path=str(diff_file),
             page_type=page_type,
+            repo_type=repo_type,
         )
         output = await _call_ai_or_raise(
             prompt=prompt,
@@ -281,9 +285,10 @@ async def run_planner(
     ai_provider: str,
     ai_model: str,
     ai_cli_timeout: int | None = None,
+    repo_type: str | None = None,
 ) -> dict[str, Any]:
     logger.info(f"[{project_name}] Calling AI planner")
-    prompt = build_planner_prompt(project_name)
+    prompt = build_planner_prompt(project_name, repo_type=repo_type)
     output = await _call_ai_or_raise(
         prompt=prompt,
         repo_path=repo_path,
@@ -339,6 +344,7 @@ async def generate_page(
     on_page_generated: Callable[[int], Awaitable[None]] | None = None,
     page_type: str = "guide",
     other_pages_path: str | None = None,
+    repo_type: str = "app",
 ) -> str:
     _label = project_name or repo_path.name
     prompt_project_name = project_name or repo_path.name
@@ -371,6 +377,7 @@ async def generate_page(
                     ai_model=ai_model,
                     ai_cli_timeout=ai_cli_timeout,
                     page_type=page_type,
+                    repo_type=repo_type,
                 )
             except (RuntimeError, ValueError) as exc:
                 logger.warning(
@@ -387,6 +394,7 @@ async def generate_page(
                     ai_cli_timeout=ai_cli_timeout,
                     page_type=page_type,
                     other_pages_path=other_pages_path,
+                    repo_type=repo_type,
                 )
         else:
             output = await generate_full_page_content(
@@ -399,6 +407,7 @@ async def generate_page(
                 ai_cli_timeout=ai_cli_timeout,
                 page_type=page_type,
                 other_pages_path=other_pages_path,
+                repo_type=repo_type,
             )
     except RuntimeError as exc:
         logger.warning(f"[{_label}] Failed to generate page '{slug}': {exc}")
@@ -448,6 +457,7 @@ async def generate_all_pages(
     diff_content: str | None = None,
     branch: str = DEFAULT_BRANCH,
     on_page_generated: Callable[[int], Awaitable[None]] | None = None,
+    repo_type: str = "app",
 ) -> dict[str, str]:
     _label = project_name or repo_path.name
 
@@ -511,6 +521,7 @@ async def generate_all_pages(
                 branch=branch,
                 on_page_generated=on_page_generated,
                 other_pages_path=str(pages_manifest_path),
+                repo_type=repo_type,
             )
             for p in all_pages
         ]

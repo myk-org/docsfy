@@ -1,6 +1,7 @@
 export type ProjectStatus = 'generating' | 'ready' | 'error' | 'aborted'
 export type UserRole = 'admin' | 'user' | 'viewer'
 export type AIProvider = 'claude' | 'gemini' | 'cursor'
+export type RepoType = 'app' | 'tests' | 'library' | 'framework'
 export type AvailableModels = Record<string, Array<{id: string; name: string}>>
 
 export interface ComboboxOption {
@@ -22,6 +23,7 @@ export interface Project {
   page_count: number
   error_message: string | null
   plan_json: string | null
+  repo_type: string | null
   total_cost_usd: number | null
   generation_id: string | null
   created_at: string
@@ -36,6 +38,7 @@ export interface GenerateRequest {
   ai_cli_timeout?: number
   force?: boolean
   branch?: string
+  repo_type?: string
 }
 
 export interface DocPlan {

@@ -2,16 +2,20 @@ from __future__ import annotations
 
 from simple_logger.logger import get_logger
 
-from docsfy.models import PAGE_TYPES
+from docsfy.models import PAGE_TYPES, REPO_TYPES
 
 logger = get_logger(name=__name__)
 
 _PAGE_TYPE_VALUES = ", ".join(PAGE_TYPES)
+_REPO_TYPE_VALUES = ", ".join(REPO_TYPES)
 
 PLAN_SCHEMA = (
     """{
   "project_name": "string - project name",
   "tagline": "string - one-line project description (what it does for the user, not what it is)",
+  "repo_type": "string - one of: """
+    + _REPO_TYPE_VALUES
+    + """",
   "navigation": [
     {
       "group": "string - section group name",
@@ -30,16 +34,7 @@ PLAN_SCHEMA = (
 }"""
 )
 
-
-def build_planner_prompt(project_name: str) -> str:
-    return f"""You are a documentation planner focused on the USER EXPERIENCE. Explore this repository thoroughly.
-Read source code, configuration files, tests, CI/CD pipelines, and project structure.
-Do NOT rely on the README — understand the project from its code and configuration.
-
-Then create a documentation plan as a JSON object. The plan must be structured as a USER JOURNEY,
-not an architecture tour. Think: "What does a new user need to do first? Then what?"
-
-NAVIGATION STRUCTURE (use these groups in order, skip any that don't apply):
+_NAV_STRUCTURE_APP = """NAVIGATION STRUCTURE (use these groups in order, skip any that don't apply):
 
 1. "Getting Started" — Installation, prerequisites, quickstart. Get the user productive in 60 seconds.
    Page types: guide
@@ -60,7 +55,137 @@ NAVIGATION STRUCTURE (use these groups in order, skip any that don't apply):
 
 5. "Internals" — Architecture, data model, internal design. ONLY if the project is a framework/library
    where users genuinely need to understand internals to use it effectively. Skip for most tools/apps.
+   Page types: concept"""
+
+_NAV_STRUCTURE_TESTS = """NAVIGATION STRUCTURE (use these groups in order, skip any that don't apply):
+
+1. "Getting Started" — Prerequisites, environment setup, how to run the test suite, container-based execution.
+   Page types: guide
+
+2. "Test Domains" — One page per major functional domain (e.g., virtualization tests, network tests, storage tests).
+   Each page should cover: purpose, sub-areas, key test files, required fixtures, markers, and configuration.
+   Page types: guide
+
+3. "Framework & Patterns" — Shared testing patterns, fixture hierarchy and scoping strategy,
+   parameterization schemes, resource lifecycle management (setup/teardown), validation utilities.
+   Include source file references (paths) so developers can navigate to implementations.
    Page types: concept
+
+4. "Writing Tests" — How to add new tests, how to use shared fixtures, naming conventions,
+   how to add new test domains, common pitfalls.
+   Page types: guide
+
+5. "Utilities Reference" — Organized reference of utility modules with function tables.
+   Each entry should include: function name, purpose, file path, and key parameters.
+   Page types: reference
+
+6. "Development Workflow" — Code quality tooling, CI/CD pipeline, pre-commit hooks, container builds,
+   dependency management, linting and type checking.
+   Page types: guide
+
+7. "Advanced Topics" — Cross-component testing, scale/performance testing, upgrade/lifecycle testing,
+   multi-environment setup, specialized configurations.
+   Page types: concept"""
+
+_NAV_STRUCTURE_LIBRARY = """NAVIGATION STRUCTURE (use these groups in order, skip any that don't apply):
+
+1. "Getting Started" — Installation, quick start, minimal working example. Get the developer productive fast.
+   Page types: guide
+
+2. "User Guides" — Task-oriented pages for common use cases. Each page answers "How do I do X?"
+   Page types: guide
+
+3. "API Reference" — Complete public API documentation. Every public class, function, and method.
+   Include signatures, parameter types, return types, and examples.
+   Page types: reference
+
+4. "Architecture" — Internal design, data flow, key abstractions. How the library is structured
+   and why. Include component relationship diagrams (text-based).
+   Page types: concept
+
+5. "Recipes" — Copy-paste-ready code patterns for common integrations and use cases.
+   Page types: recipe
+
+6. "Advanced Usage" — Extension points, customization, plugin development, performance tuning.
+   Page types: guide"""
+
+_NAV_STRUCTURE_FRAMEWORK = """NAVIGATION STRUCTURE (use these groups in order, skip any that don't apply):
+
+1. "Getting Started" — Installation, scaffolding, hello-world project. Get a minimal app running.
+   Page types: guide
+
+2. "Core Concepts" — Framework lifecycle, request/response flow, middleware pipeline,
+   dependency injection, configuration system. The mental model for the framework.
+   Page types: concept
+
+3. "User Guides" — Building features with the framework. Each page covers one area:
+   routing, templates, database, authentication, etc.
+   Page types: guide
+
+4. "Plugin & Extension Development" — How to write plugins, hooks, custom middleware,
+   lifecycle events, extension points, registry system.
+   Page types: guide
+
+5. "API Reference" — Complete public API. Classes, decorators, configuration options,
+   CLI commands, environment variables.
+   Page types: reference
+
+6. "Recipes" — Common patterns and integrations. Deployment recipes, testing recipes,
+   database patterns, caching strategies.
+   Page types: recipe
+
+7. "Internals" — Architecture deep dives for contributors. Source code organization,
+   build system, contribution workflow.
+   Page types: concept"""
+
+_NAV_STRUCTURE_MAP: dict[str, str] = {
+    "app": _NAV_STRUCTURE_APP,
+    "tests": _NAV_STRUCTURE_TESTS,
+    "library": _NAV_STRUCTURE_LIBRARY,
+    "framework": _NAV_STRUCTURE_FRAMEWORK,
+}
+
+# "app" is the default fallback, so the map must cover all repo types
+if set(_NAV_STRUCTURE_MAP) != set(REPO_TYPES):
+    _missing_nav = set(REPO_TYPES) - set(_NAV_STRUCTURE_MAP)
+    raise RuntimeError(
+        f"Navigation structure must cover all repo types: {_missing_nav} missing"
+    )
+
+
+def _get_navigation_structure(repo_type: str | None) -> str:
+    """Return type-specific navigation structure instructions."""
+    if repo_type is None or repo_type not in _NAV_STRUCTURE_MAP:
+        return _NAV_STRUCTURE_MAP["app"]
+    return _NAV_STRUCTURE_MAP[repo_type]
+
+
+def build_planner_prompt(project_name: str, repo_type: str | None = None) -> str:
+    if repo_type is not None:
+        repo_type_block = f"""Repository type: {repo_type}
+Include the repo type in your response as "repo_type": "{repo_type}"."""
+    else:
+        repo_type_block = """REPO TYPE DETECTION:
+First, analyze the repository to determine its type:
+- "app" — A tool, service, or application that end users interact with directly
+- "tests" — A test suite or test framework (look for: pytest fixtures, test runners, conftest.py, test directories)
+- "library" — A reusable package/module with a public API (look for: published package, API exports, __init__.py with public classes)
+- "framework" — An extensible platform with plugin/hook systems (look for: plugin registries, lifecycle hooks, abstract base classes for extension)
+
+Include the detected type in your response as "repo_type": "<type>"."""
+
+    nav_structure = _get_navigation_structure(repo_type)
+
+    return f"""You are a documentation planner focused on the USER EXPERIENCE. Explore this repository thoroughly.
+Read source code, configuration files, tests, CI/CD pipelines, and project structure.
+Do NOT rely on the README — understand the project from its code and configuration.
+
+Then create a documentation plan as a JSON object. The plan must be structured as a USER JOURNEY,
+not an architecture tour. Think: "What does a new user need to do first? Then what?"
+
+{repo_type_block}
+
+{nav_structure}
 
 CRITICAL RULES:
 - Do NOT create an "Introduction" or "Overview" page — fold that into the Getting Started quickstart page
@@ -233,6 +358,57 @@ def _get_writing_rules(page_type: str) -> str:
     return _WRITING_RULES_MAP[page_type]
 
 
+_REPO_TYPE_RULES_TESTS = """
+REPO TYPE RULES (test suite):
+- Include source file paths (e.g., `tests/virt/conftest.py`) when referencing test files, fixtures, or utilities.
+- Document fixture scoping (session, module, class, function) and explain lifecycle implications.
+- Show pytest markers and their effects on test collection and execution.
+- Include function/class tables mapping names to purposes and file locations.
+- Document shared patterns with concrete code examples from the actual test suite."""
+
+_REPO_TYPE_RULES_LIBRARY = """
+REPO TYPE RULES (library):
+- Document the public API surface — every public class, function, and constant.
+- Include type signatures, parameter descriptions, return types, and concrete examples.
+- Show import paths so developers know how to access each component.
+- Document exceptions and error handling for each public function."""
+
+_REPO_TYPE_RULES_FRAMEWORK = """
+REPO TYPE RULES (framework):
+- Document extension points and hook signatures.
+- Show the lifecycle flow and where hooks/middleware execute.
+- Include both "using" and "extending" perspectives for each feature.
+- Document configuration options with defaults, types, and effects."""
+
+_REPO_TYPE_WRITING_RULES_MAP: dict[str, str] = {
+    "tests": _REPO_TYPE_RULES_TESTS,
+    "library": _REPO_TYPE_RULES_LIBRARY,
+    "framework": _REPO_TYPE_RULES_FRAMEWORK,
+}
+
+# "app" has no extra writing rules — only non-app types need entries
+_EXPECTED_REPO_TYPE_RULES = set(REPO_TYPES) - {"app"}
+if set(_REPO_TYPE_WRITING_RULES_MAP) != _EXPECTED_REPO_TYPE_RULES:
+    _missing_rt = _EXPECTED_REPO_TYPE_RULES - set(_REPO_TYPE_WRITING_RULES_MAP)
+    raise RuntimeError(
+        f"Repo-type writing rules must cover all non-app repo types: {_missing_rt} missing"
+    )
+
+# Page types that receive repo-type-specific rules
+_REPO_TYPE_APPLICABLE_PAGE_TYPES = {"guide", "concept", "reference"}
+
+
+def _get_repo_type_writing_rules(page_type: str, repo_type: str = "app") -> str:
+    """Return combined writing rules for a page type and repo type."""
+    base_rules = _get_writing_rules(page_type)
+    if (
+        repo_type in _REPO_TYPE_WRITING_RULES_MAP
+        and page_type in _REPO_TYPE_APPLICABLE_PAGE_TYPES
+    ):
+        return base_rules + _REPO_TYPE_WRITING_RULES_MAP[repo_type]
+    return base_rules
+
+
 _INCREMENTAL_WRITING_RULES: dict[str, str] = {
     "guide": "Match the page's existing tone. For new_text: lead with examples, use short paragraphs, prefer bullet lists and numbered steps, avoid internal implementation details.",
     "reference": "Match the page's existing tone. For new_text: be precise and scannable, use tables for parameters, include code examples, avoid narrative explanations.",
@@ -254,6 +430,30 @@ def _get_incremental_writing_rules(page_type: str) -> str:
         )
         page_type = "guide"
     return _INCREMENTAL_WRITING_RULES[page_type]
+
+
+_INCREMENTAL_REPO_TYPE_RULES: dict[str, str] = {
+    "tests": "Include source file paths when referencing tests/fixtures. Document fixture scoping and pytest markers. Use function/class tables.",
+    "library": "Document public API surface with type signatures and import paths. Document exceptions and error handling.",
+    "framework": "Document extension points and hook signatures. Show lifecycle flow. Include using and extending perspectives.",
+}
+
+if set(_INCREMENTAL_REPO_TYPE_RULES) != _EXPECTED_REPO_TYPE_RULES:
+    _missing_inc_rt = _EXPECTED_REPO_TYPE_RULES - set(_INCREMENTAL_REPO_TYPE_RULES)
+    raise RuntimeError(
+        f"Incremental repo-type rules must cover all non-app repo types: {_missing_inc_rt} missing"
+    )
+
+
+def _get_incremental_repo_type_rules(page_type: str, repo_type: str = "app") -> str:
+    """Return combined incremental writing rules for a page type and repo type."""
+    base_rules = _get_incremental_writing_rules(page_type)
+    if (
+        repo_type in _INCREMENTAL_REPO_TYPE_RULES
+        and page_type in _REPO_TYPE_APPLICABLE_PAGE_TYPES
+    ):
+        return base_rules + " " + _INCREMENTAL_REPO_TYPE_RULES[repo_type]
+    return base_rules
 
 
 INCREMENTAL_PAGE_UPDATE_SCHEMA = """{
@@ -290,8 +490,9 @@ def build_page_prompt(
     page_type: str = "guide",
     exclusions_path: str | None = None,
     other_pages_path: str | None = None,
+    repo_type: str = "app",
 ) -> str:
-    writing_rules = _get_writing_rules(page_type)
+    writing_rules = _get_repo_type_writing_rules(page_type, repo_type)
     exclusions_block = ""
     if exclusions_path:
         exclusions_block = f"""
@@ -345,6 +546,7 @@ def build_incremental_page_prompt(
     changed_files: list[str],
     diff_path: str,
     page_type: str = "guide",
+    repo_type: str = "app",
 ) -> str:
     return f"""You are a technical documentation writer. The repository "{project_name}" has been updated.
 Your task is to update the existing "{page_title}" documentation page by editing ONLY the relevant sections.
@@ -391,7 +593,7 @@ Instructions:
 - Do NOT add explanations, comments, markdown fences, or any text outside the JSON object
 
 When writing "new_text", follow these content rules:
-{_get_incremental_writing_rules(page_type)}
+{_get_incremental_repo_type_rules(page_type, repo_type)}
 {_CALLOUT_FORMATS}
 {_NO_HTML_DETAILS}
 {_NO_MERMAID_DIAGRAMS}"""
