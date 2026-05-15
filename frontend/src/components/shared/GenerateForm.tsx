@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import { Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -13,15 +13,11 @@ import {
 } from '@/components/ui/select'
 import Combobox from '@/components/shared/Combobox'
 import { api } from '@/lib/api'
-import { TOAST_DEFAULT_MS, TOAST_ERROR_MS, VALID_PROVIDERS } from '@/lib/constants'
+import { SK_REPO, SK_BRANCH, SK_FORCE, SK_REPO_TYPE, TOAST_DEFAULT_MS, TOAST_ERROR_MS, VALID_PROVIDERS, VALID_REPO_TYPES } from '@/lib/constants'
 import type { AvailableModels } from '@/types'
 import { ApiError } from '@/types'
 const DEFAULT_PROVIDER = 'cursor'
 const DEFAULT_BRANCH = 'main'
-
-const SK_REPO = 'docsfy-repo'
-const SK_BRANCH = 'docsfy-branch'
-const SK_FORCE = 'docsfy-force'
 
 interface GenerateFormProps {
   availableModels: AvailableModels
@@ -48,16 +44,8 @@ export default function GenerateForm({
   const [provider, setProvider] = useState<string>(DEFAULT_PROVIDER)
   const [model, setModel] = useState('')
   const [force, setForce] = useState(false)
+  const [repoType, setRepoType] = useState<string>('')
   const [isSubmitting, setIsSubmitting] = useState(false)
-
-  // Determine the default model for a given provider
-  const getDefaultModel = useCallback(
-    (prov: string): string => {
-      const models = availableModels[prov]
-      return models && models.length > 0 ? models[0].id : ''
-    },
-    [availableModels],
-  )
 
   // Restore form state from sessionStorage on mount
   useEffect(() => {
@@ -65,25 +53,13 @@ export default function GenerateForm({
     const savedBranch = sessionStorage.getItem(SK_BRANCH)
     const savedForce = sessionStorage.getItem(SK_FORCE)
 
+    const savedRepoType = sessionStorage.getItem(SK_REPO_TYPE)
+
     if (savedRepo) setRepoUrl(savedRepo)
     if (savedBranch) setBranch(savedBranch)
     if (savedForce === 'true') setForce(true)
+    if (savedRepoType && (VALID_REPO_TYPES as readonly string[]).includes(savedRepoType)) setRepoType(savedRepoType)
   }, [])
-
-  // Set default model when provider or availableModels changes.
-  // When availableModels arrives asynchronously (via API / WebSocket) and the
-  // model field is still empty, this fills it with the first available model
-  // for the current provider.
-  useEffect(() => {
-    const models = availableModels[provider]
-    if (!models || models.length === 0) return
-
-    setModel((prev) => {
-      // Only auto-fill when the field is empty.
-      // Explicit provider switches are handled in handleProviderChange().
-      return prev || models[0].id
-    })
-  }, [provider, availableModels])
 
   function sanitizeRepoUrlForStorage(value: string): string {
     try {
@@ -104,11 +80,13 @@ export default function GenerateForm({
     sessionStorage.removeItem(SK_REPO)
     sessionStorage.removeItem(SK_BRANCH)
     sessionStorage.removeItem(SK_FORCE)
+    sessionStorage.removeItem(SK_REPO_TYPE)
     setRepoUrl('')
     setBranch(DEFAULT_BRANCH)
     setProvider(DEFAULT_PROVIDER)
-    setModel(getDefaultModel(DEFAULT_PROVIDER))
+    setModel('')
     setForce(false)
+    setRepoType('')
   }
 
   function handleRepoChange(value: string) {
@@ -123,11 +101,11 @@ export default function GenerateForm({
 
   function handleProviderChange(value: string) {
     setProvider(value)
-    // Auto-fill model with first model for new provider if current model is not valid
+    // Clear model if current selection is not valid for the new provider
     const models = availableModels[value]
     if (models && models.length > 0) {
       if (!models.some(m => m.id === model)) {
-        setModel(models[0].id)
+        setModel('')
       }
     } else {
       setModel('')
@@ -155,13 +133,19 @@ export default function GenerateForm({
 
     setIsSubmitting(true)
     try {
-      await api.post('/api/generate', {
+      const payload: Record<string, unknown> = {
         repo_url: submittedRepoUrl,
         branch: submittedBranch,
         ai_provider: submittedProvider,
-        ai_model: submittedModel,
         force: submittedForce,
-      })
+      }
+      if (submittedModel) {
+        payload.ai_model = submittedModel
+      }
+      if (repoType) {
+        payload.repo_type = repoType
+      }
+      await api.post('/api/generate', payload)
 
       const projectName = extractRepoName(submittedRepoUrl)
       toast.success(`Generation started for ${projectName}`, {
@@ -217,6 +201,24 @@ export default function GenerateForm({
             disabled={isSubmitting}
             data-testid="branch-input"
           />
+        </div>
+
+        {/* Repository Type */}
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="repo-type-select" title="Type of repository (auto-detected if not specified)">Repository Type</Label>
+          <Select disabled={isSubmitting} value={repoType || 'auto'} onValueChange={(v) => { if (!v) return; setRepoType(v === 'auto' ? '' : v); if (v !== 'auto') saveToSession(SK_REPO_TYPE, v); else sessionStorage.removeItem(SK_REPO_TYPE) }}>
+            <SelectTrigger id="repo-type-select" data-testid="repo-type-select" className="w-full">
+              <SelectValue placeholder="Auto-detect" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="auto">Auto-detect</SelectItem>
+              {VALID_REPO_TYPES.map((t) => (
+                <SelectItem key={t} value={t}>
+                  {t.charAt(0).toUpperCase() + t.slice(1)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         {/* Provider */}

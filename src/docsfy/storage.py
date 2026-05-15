@@ -77,6 +77,7 @@ async def init_db(data_dir: str = "") -> None:
                 page_count INTEGER DEFAULT 0,
                 error_message TEXT,
                 plan_json TEXT,
+                repo_type TEXT,
                 total_cost_usd REAL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -148,6 +149,7 @@ async def init_db(data_dir: str = "") -> None:
                     page_count INTEGER DEFAULT 0,
                     error_message TEXT,
                     plan_json TEXT,
+                    repo_type TEXT,
                     total_cost_usd REAL,
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -196,6 +198,9 @@ async def init_db(data_dir: str = "") -> None:
             select_cols.append("error_message")
             select_cols.append("plan_json")
             select_cols.append(
+                "repo_type" if "repo_type" in old_columns else "NULL AS repo_type"
+            )
+            select_cols.append(
                 "total_cost_usd"
                 if "total_cost_usd" in old_columns
                 else "NULL AS total_cost_usd"
@@ -207,7 +212,7 @@ async def init_db(data_dir: str = "") -> None:
                 INSERT OR IGNORE INTO projects_new
                     (name, branch, ai_provider, ai_model, owner, generation_id, repo_url, status, current_stage,
                      last_commit_sha, last_generated, page_count, error_message,
-                     plan_json, total_cost_usd, created_at, updated_at)
+                     plan_json, repo_type, total_cost_usd, created_at, updated_at)
                 SELECT {", ".join(select_cols)}
                 FROM projects
             """)
@@ -231,6 +236,15 @@ async def init_db(data_dir: str = "") -> None:
         except sqlite3.OperationalError as exc:
             if "duplicate column name" not in str(exc).lower():
                 logger.exception("Migration failed while adding generation_id column")
+                raise
+
+        # Migration: add repo_type column
+        try:
+            await db.execute("ALTER TABLE projects ADD COLUMN repo_type TEXT")
+            await db.commit()
+        except sqlite3.OperationalError as exc:
+            if "duplicate column name" not in str(exc).lower():
+                logger.exception("Migration failed while adding repo_type column")
                 raise
 
         # Backfill generation_id for existing rows
@@ -347,6 +361,7 @@ async def save_project(
     owner: str = "",
     branch: str = DEFAULT_BRANCH,
     generation_id: str | None = None,
+    repo_type: str | None = None,
 ) -> str:
     """Save or update a project variant. Returns the generation_id."""
     if status not in VALID_STATUSES:
@@ -358,12 +373,13 @@ async def save_project(
         final_gen_id = generation_id or str(uuid.uuid4())
 
         await db.execute(
-            """INSERT INTO projects (name, branch, ai_provider, ai_model, owner, generation_id, repo_url, status, updated_at)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+            """INSERT INTO projects (name, branch, ai_provider, ai_model, owner, generation_id, repo_url, status, repo_type, updated_at)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
                ON CONFLICT(name, branch, ai_provider, ai_model, owner) DO UPDATE SET
                repo_url = excluded.repo_url,
                status = excluded.status,
                generation_id = COALESCE(projects.generation_id, excluded.generation_id),
+               repo_type = COALESCE(excluded.repo_type, projects.repo_type),
                error_message = NULL,
                current_stage = NULL,
                total_cost_usd = NULL,
@@ -377,6 +393,7 @@ async def save_project(
                 final_gen_id,
                 repo_url,
                 status,
+                repo_type,
             ),
         )
         await db.commit()
@@ -406,6 +423,7 @@ async def update_project_status(
     plan_json: str | None = None,
     current_stage: str | None | object = _UNSET,
     total_cost_usd: float | None = None,
+    repo_type: str | None = None,
 ) -> None:
     if status not in VALID_STATUSES:
         msg = f"Invalid project status: '{status}'. Valid: {', '.join(sorted(VALID_STATUSES))}"
@@ -431,6 +449,9 @@ async def update_project_status(
         if total_cost_usd is not None:
             fields.append("total_cost_usd = ?")
             values.append(total_cost_usd)
+        if repo_type is not None:
+            fields.append("repo_type = ?")
+            values.append(repo_type)
         if status == "ready":
             fields.append("last_generated = CURRENT_TIMESTAMP")
         values.append(name)
