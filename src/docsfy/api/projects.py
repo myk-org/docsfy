@@ -32,7 +32,6 @@ from docsfy.generator import (
 )
 from docsfy.models import (
     DEFAULT_BRANCH,
-    REPO_TYPES,
     VALID_PROVIDERS,
     GenerateRequest,
     is_uuid,
@@ -1006,13 +1005,6 @@ async def _generate_from_path(
 
     # Extract auto-detected or provided repo_type from plan
     detected_repo_type = repo_type or plan.get("repo_type", "app")
-    if detected_repo_type not in REPO_TYPES:
-        logger.warning(
-            f"[{project_name}] Planner returned unknown repo_type "
-            f"'{detected_repo_type}', defaulting to 'app'"
-        )
-        detected_repo_type = "app"
-
     plan["repo_type"] = detected_repo_type
 
     if not use_cache and cache_dir.exists():
@@ -1416,7 +1408,7 @@ async def generate(
     gen_key = f"{owner}/{project_name}/{branch}/{ai_provider}/{ai_model}"
     async with _gen_lock:
         if gen_key in _generating:
-            raise HTTPException(
+
                 status_code=409,
                 detail=f"Variant '{project_name}/{branch}/{ai_provider}/{ai_model}' is already being generated",
             )
