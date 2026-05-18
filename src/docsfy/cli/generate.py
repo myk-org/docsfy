@@ -141,6 +141,12 @@ def generate(
         None, "--provider", help="AI provider (claude, gemini, cursor)"
     ),
     model: Optional[str] = typer.Option(None, "--model", "-m", help="AI model name"),  # noqa: M511
+    repo_type: Optional[str] = typer.Option(  # noqa: M511
+        None,
+        "--repo-type",
+        "-t",
+        help="Repository type (app, tests, library, framework). Auto-detected if not specified.",
+    ),
     force: bool = typer.Option(False, "--force", "-f", help="Force full regeneration"),  # noqa: M511
     watch: bool = typer.Option(  # noqa: M511
         False, "--watch", "-w", help="Watch generation progress via WebSocket"
@@ -148,6 +154,15 @@ def generate(
 ) -> None:
     """Generate documentation for a Git repository."""
     from docsfy.cli.main import _state, get_client
+
+    from docsfy.models import REPO_TYPES
+
+    if repo_type and repo_type not in REPO_TYPES:
+        typer.echo(
+            f"Invalid repo type: '{repo_type}'. Must be one of: {', '.join(REPO_TYPES)}",
+            err=True,
+        )
+        raise typer.Exit(code=1)
 
     client = get_client()
     try:
@@ -160,6 +175,8 @@ def generate(
             payload["ai_provider"] = provider
         if model:
             payload["ai_model"] = model
+        if repo_type:
+            payload["repo_type"] = repo_type
 
         response = client.post("/api/generate", json=payload)
         data = response.json()
@@ -170,6 +187,8 @@ def generate(
 
         typer.echo(f"Project: {project_name}")
         typer.echo(f"Branch: {result_branch}")
+        if repo_type:
+            typer.echo(f"Repo Type: {repo_type}")
         typer.echo(f"Status: {status}")
         if gen_id:
             typer.echo(f"Generation ID: {gen_id}")
