@@ -974,6 +974,27 @@ async def _generate_from_path(
                         f"[{project_name}] Failed to parse existing plan, doing full regeneration"
                     )
 
+    # Pre-build code knowledge graph for AI context
+    from docsfy.code_graph import build_code_graph
+
+    await update_and_notify(
+        gen_key,
+        project_name,
+        ai_provider,
+        ai_model,
+        status="generating",
+        owner=owner,
+        branch=branch,
+        current_stage="analyzing",
+        page_count=0,
+        generation_id=generation_id,
+    )
+    graph_report = await build_code_graph(
+        repo_dir, ai_provider, ai_model, ai_cli_timeout
+    )
+    if graph_report:
+        logger.info(f"[{project_name}] Code graph ready: {graph_report}")
+
     if plan is None:
         await update_and_notify(
             gen_key,

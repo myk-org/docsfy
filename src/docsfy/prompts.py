@@ -197,6 +197,14 @@ CRITICAL RULES:
   Bad: "AI-powered documentation generator using FastAPI and React"
 - Each page description should state what the user will learn or accomplish, not what the page contains
 
+CODEBASE KNOWLEDGE GRAPH:
+A pre-built knowledge graph of the codebase is available at graphify-out/GRAPH_REPORT.md
+Read it FIRST before exploring source files. It contains:
+- God Nodes: the most-connected components in the codebase
+- Community structure: logical groupings of related code
+- Surprising connections: non-obvious relationships between components
+Use this to structure your documentation plan around the actual architecture.
+
 Project name: {project_name}
 
 CRITICAL: Your response must be ONLY a valid JSON object. No text before or after. No markdown code blocks.
@@ -539,6 +547,9 @@ Page type: {page_type}
 
 Explore the codebase as needed. Read source files, configs, tests, and CI/CD pipelines
 to write accurate documentation based on the actual code. Do NOT rely on the README.
+
+A code knowledge graph is available at graphify-out/GRAPH_REPORT.md — read it first
+for an architecture overview before diving into source files.
 
 {writing_rules}
 

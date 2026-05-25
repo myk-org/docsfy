@@ -18,6 +18,7 @@ dependencies = [
     "tomli-w",
     "httpx",
     "websockets",
+    "graphifyy",
 ]
 
 [project.urls]
@@ -55,3 +56,15 @@ strict_equality = true
 extra_checks = true
 warn_unused_configs = true
 warn_redundant_casts = true
+
+[[tool.mypy.overrides]]
+module = [
+    "simple_logger.*",
+    "graphify.*",
+]
+ignore_missing_imports = true
+
+[dependency-groups]
+dev = [
+    "mypy>=2.1.0",
+]
