@@ -167,6 +167,19 @@ async def _extract_semantic_chunk(
             "Semantic extraction chunk %d returned non-dict JSON", chunk_index
         )
         parsed = {"nodes": [], "edges": [], "hyperedges": []}
+
+    # Validate shape — nodes/edges/hyperedges must be lists
+    for key in ("nodes", "edges", "hyperedges"):
+        val = parsed.get(key)
+        if not isinstance(val, list):
+            logger.debug(
+                "Semantic chunk %d: '%s' is %s, defaulting to []",
+                chunk_index,
+                key,
+                type(val).__name__,
+            )
+            parsed[key] = []
+
     logger.debug(
         "Semantic chunk %d result: %d nodes, %d edges",
         chunk_index,
