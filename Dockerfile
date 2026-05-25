@@ -60,7 +60,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Copy Node.js from sidecar builder for runtime parity
 COPY --from=sidecar-builder /usr/local/bin/node /usr/local/bin/node
 COPY --from=sidecar-builder /usr/local/lib/node_modules/npm /usr/local/lib/node_modules/npm
-RUN ln -s /usr/local/lib/node_modules/npm/bin/npm-cli.js /usr/local/bin/npm
+RUN ln -s /usr/local/lib/node_modules/npm/bin/npm-cli.js /usr/local/bin/npm \
+  && ln -s /usr/local/lib/node_modules/npm/bin/npx-cli.js /usr/local/bin/npx
 
 # Create non-root user, data directory, and set permissions
 # OpenShift runs containers as a random UID in the root group (GID 0)
