@@ -87,6 +87,7 @@ async def _extract_semantic_chunk(
     ai_provider: str,
     ai_model: str,
     ai_call_timeout: int | None = None,
+    chunk_index: int = 0,
 ) -> dict[str, Any]:
     """Extract semantic nodes/edges from a chunk of files via pi-sidecar."""
     user_message = _read_files(chunk, root)
@@ -99,20 +100,38 @@ async def _extract_semantic_chunk(
             "output_tokens": 0,
         }
 
+    # Write chunk content to temp file (GOLDEN RULE: no content in prompts)
+    chunk_file = root / "graphify-out" / f"chunk_{chunk_index}.txt"
+    chunk_file.write_text(user_message, encoding="utf-8")
     logger.debug(
-        "Semantic chunk: %d files, prompt size: %d chars", len(chunk), len(user_message)
+        "Semantic chunk %d: %d files, written to %s",
+        chunk_index,
+        len(chunk),
+        chunk_file,
+    )
+
+    prompt = (
+        f"Read the source files at: {chunk_file}\n\n"
+        "Extract a knowledge graph fragment from these files.\n"
+        "Output ONLY valid JSON following this schema:\n"
+        '{"nodes":[{"id":"stem_entity","label":"Human Name","file_type":"code|document","source_file":"path"}],'
+        '"edges":[{"source":"id","target":"id","relation":"calls|implements|references","confidence":"EXTRACTED|INFERRED","confidence_score":1.0,"source_file":"path"}],'
+        '"hyperedges":[]}'
     )
 
     result: AIResult = await call_ai_once(
-        user_message,
+        prompt,
         ai_provider=ai_provider,
         ai_model=ai_model,
         system_prompt=_EXTRACTION_SYSTEM,
+        cwd=str(root),
         ai_call_timeout=ai_call_timeout,
     )
 
     if not result.success:
-        logger.warning("Semantic extraction chunk failed: %s", result.text[:200])
+        logger.warning(
+            "Semantic extraction chunk %d failed: %s", chunk_index, result.text[:200]
+        )
         return {
             "nodes": [],
             "edges": [],
@@ -123,7 +142,8 @@ async def _extract_semantic_chunk(
 
     if not result.text or not result.text.strip():
         logger.warning(
-            "Semantic extraction chunk returned empty text (input_tokens=%d, output_tokens=%d)",
+            "Semantic extraction chunk %d returned empty text (input_tokens=%d, output_tokens=%d)",
+            chunk_index,
             result.usage.input_tokens if result.usage else 0,
             result.usage.output_tokens if result.usage else 0,
         )
@@ -136,13 +156,14 @@ async def _extract_semantic_chunk(
         }
 
     parsed = _parse_llm_json(result.text)
-    parsed["input_tokens"] = result.usage.input_tokens if result.usage else 0
-    parsed["output_tokens"] = result.usage.output_tokens if result.usage else 0
     logger.debug(
-        "Semantic chunk result: %d nodes, %d edges",
+        "Semantic chunk %d result: %d nodes, %d edges",
+        chunk_index,
         len(parsed.get("nodes", [])),
         len(parsed.get("edges", [])),
     )
+    parsed["input_tokens"] = result.usage.input_tokens if result.usage else 0
+    parsed["output_tokens"] = result.usage.output_tokens if result.usage else 0
     return parsed
 
 
@@ -192,8 +213,10 @@ async def _extract_semantic(
     logger.info("Semantic extraction: %d files in %d chunks", len(files), len(chunks))
 
     coroutines = [
-        _extract_semantic_chunk(chunk, root, ai_provider, ai_model, ai_call_timeout)
-        for chunk in chunks
+        _extract_semantic_chunk(
+            chunk, root, ai_provider, ai_model, ai_call_timeout, chunk_index=idx
+        )
+        for idx, chunk in enumerate(chunks)
     ]
     results = await run_parallel_with_limit(coroutines, max_concurrency=max_concurrency)
 
@@ -241,6 +264,7 @@ async def _extract_semantic(
 async def _label_communities(
     communities: dict[int, list[str]],
     graph: Any,  # nx.Graph
+    repo_dir: Path,
     ai_provider: str,
     ai_model: str,
     ai_call_timeout: int | None = None,
@@ -249,30 +273,35 @@ async def _label_communities(
     if not communities:
         return {}
 
-    logger.debug("Labeling %d communities", len(communities))
-
-    # Build a prompt with community node labels
-    community_descriptions: list[str] = []
+    # Write community data to a temp file (GOLDEN RULE: no content in prompts)
+    community_lines: list[str] = []
     for cid, nodes in sorted(communities.items()):
         node_labels = []
-        for nid in nodes[:15]:  # Cap at 15 nodes per community for prompt size
+        for nid in nodes[:15]:
             data = graph.nodes.get(nid, {})
             label = data.get("label", nid)
             node_labels.append(label)
-        community_descriptions.append(f"Community {cid}: {', '.join(node_labels)}")
+        community_lines.append(f"Community {cid}: {', '.join(node_labels)}")
+
+    communities_file = repo_dir / "graphify-out" / "communities.txt"
+    communities_file.write_text("\n".join(community_lines), encoding="utf-8")
+    logger.debug(
+        "Wrote %d community descriptions to %s", len(communities), communities_file
+    )
 
     prompt = (
-        "For each community below, write a 2-5 word plain-language name that describes "
-        "what the nodes in that community have in common. "
-        "Return a JSON object mapping community ID (as string) to the label.\n\n"
-        + "\n".join(community_descriptions)
-        + "\n\nRespond with ONLY a JSON object. No explanation."
+        f"Read the community list at: {communities_file}\n\n"
+        "For each community, write a 2-5 word plain-language name that describes "
+        "what the nodes have in common.\n"
+        "Return a JSON object mapping community ID (as string) to the label.\n"
+        "Respond with ONLY a JSON object. No explanation."
     )
 
     result: AIResult = await call_ai_once(
         prompt,
         ai_provider=ai_provider,
         ai_model=ai_model,
+        cwd=str(repo_dir),
         ai_call_timeout=ai_call_timeout,
     )
 
@@ -295,9 +324,10 @@ async def _label_communities(
             labels[cid] = label
         else:
             labels[cid] = f"Community {cid}"
+
     logger.info(
         "Community labeling complete: %s",
-        ", ".join(f"{cid}={label}" for cid, label in labels.items()),
+        ", ".join(f"{cid}={label}" for cid, label in sorted(labels.items())[:10]),
     )
     return labels
 
@@ -436,7 +466,7 @@ async def build_code_graph(
 
         # Step 8: Label communities via AI
         labels = await _label_communities(
-            communities, G, ai_provider, ai_model, ai_call_timeout
+            communities, G, repo_dir, ai_provider, ai_model, ai_call_timeout
         )
 
         # Step 9: Generate suggested questions
