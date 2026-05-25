@@ -39,6 +39,19 @@ if [ -f /app/sidecar-helper/dist/server.js ]; then
 
     # Monitor sidecar — if it dies, kill the main process too
     (while kill -0 $SIDECAR_PID 2>/dev/null; do sleep 5; done; echo "[sidecar] Sidecar died, shutting down container"; kill 1 2>/dev/null) &
+
+    # Wait for sidecar to be ready
+    echo "[sidecar] Waiting for sidecar to be ready..."
+    for i in $(seq 1 30); do
+        if curl -sf http://localhost:${SIDECAR_PORT}/health > /dev/null 2>&1; then
+            echo "[sidecar] Sidecar is ready"
+            break
+        fi
+        if [ "$i" -eq 30 ]; then
+            echo "[sidecar] WARNING: Sidecar not ready after 30s, starting anyway"
+        fi
+        sleep 1
+    done
 fi
 
 # Resolve PORT with a default
@@ -49,7 +62,12 @@ if [ "$DEV_MODE" = "true" ]; then
     uv run --no-sync uvicorn docsfy.main:app \
         --host 0.0.0.0 --port "$PORT" \
         --reload --reload-dir /app/src
+elif [ -n "${SIDECAR_PID:-}" ]; then
+    # Sidecar is running — don't exec so EXIT trap fires for cleanup
+    uv run --no-sync uvicorn docsfy.main:app \
+        --host 0.0.0.0 --port "$PORT"
 else
+    # No sidecar — exec for efficiency
     exec uv run --no-sync uvicorn docsfy.main:app \
         --host 0.0.0.0 --port "$PORT"
 fi

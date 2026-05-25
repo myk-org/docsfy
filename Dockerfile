@@ -50,14 +50,17 @@ FROM python:3.14-slim
 
 WORKDIR /app
 
-# Install bash (needed for CLI install scripts), git (required at runtime for gitpython), curl (for health checks), and nodejs/npm (for sidecar and acpx)
+# Install bash (needed for CLI install scripts), git (required at runtime for gitpython), curl (for health checks)
 RUN apt-get update && apt-get install -y --no-install-recommends \
   bash \
   git \
   curl \
-  nodejs \
-  npm \
   && rm -rf /var/lib/apt/lists/*
+
+# Copy Node.js from sidecar builder for runtime parity
+COPY --from=sidecar-builder /usr/local/bin/node /usr/local/bin/node
+COPY --from=sidecar-builder /usr/local/lib/node_modules/npm /usr/local/lib/node_modules/npm
+RUN ln -s /usr/local/lib/node_modules/npm/bin/npm-cli.js /usr/local/bin/npm
 
 # Create non-root user, data directory, and set permissions
 # OpenShift runs containers as a random UID in the root group (GID 0)
