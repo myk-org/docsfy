@@ -390,7 +390,7 @@ async def build_code_graph(
     try:
         # Step 1: Detect files
         logger.info("Code graph: detecting files in %s", repo_dir)
-        detection = detect(repo_dir, follow_symlinks=False)
+        detection = await asyncio.to_thread(detect, repo_dir, follow_symlinks=False)
         total_files = detection.get("total_files", 0)
         if total_files == 0:
             logger.warning("Code graph: no supported files found")
@@ -398,13 +398,17 @@ async def build_code_graph(
         logger.info("Code graph: detected %d files", total_files)
 
         # Step 2: AST extraction (deterministic, free)
-        code_files: list[Path] = []
-        for f in detection.get("files", {}).get("code", []):
-            p = Path(f)
-            if p.is_dir():
-                code_files.extend(collect_files(p))
-            else:
-                code_files.append(p)
+        def _collect_code_files(detection: dict[str, Any]) -> list[Path]:
+            _files: list[Path] = []
+            for f in detection.get("files", {}).get("code", []):
+                p = Path(f)
+                if p.is_dir():
+                    _files.extend(collect_files(p))
+                else:
+                    _files.append(p)
+            return _files
+
+        code_files = await asyncio.to_thread(_collect_code_files, detection)
 
         ast_result: dict[str, Any] = {
             "nodes": [],
@@ -477,19 +481,19 @@ async def build_code_graph(
             len(merged_nodes),
             len(merged_edges),
         )
-        G = build_from_json(merged_extraction)
+        G = await asyncio.to_thread(build_from_json, merged_extraction)
         if G.number_of_nodes() == 0:
             logger.warning("Code graph: graph is empty after build")
             return None
 
         # Step 6: Cluster
-        communities = cluster(G)
-        cohesion = score_all(G, communities)
+        communities = await asyncio.to_thread(cluster, G)
+        cohesion = await asyncio.to_thread(score_all, G, communities)
         logger.info("Code graph: %d communities detected", len(communities))
 
         # Step 7: Analysis
-        gods = god_nodes(G)
-        surprises = surprising_connections(G, communities)
+        gods = await asyncio.to_thread(god_nodes, G)
+        surprises = await asyncio.to_thread(surprising_connections, G, communities)
 
         # Step 8: Label communities via AI
         labels = await _label_communities(
@@ -497,14 +501,15 @@ async def build_code_graph(
         )
 
         # Step 9: Generate suggested questions
-        questions = suggest_questions(G, communities, labels)
+        questions = await asyncio.to_thread(suggest_questions, G, communities, labels)
 
         # Step 10: Generate report
         tokens = {
             "input": merged_extraction.get("input_tokens", 0),
             "output": merged_extraction.get("output_tokens", 0),
         }
-        report = generate_report(
+        report = await asyncio.to_thread(
+            generate_report,
             G,
             communities,
             cohesion,
@@ -519,8 +524,8 @@ async def build_code_graph(
 
         # Step 11: Write outputs
         report_path = output_dir / "GRAPH_REPORT.md"
-        report_path.write_text(report, encoding="utf-8")
-        to_json(G, communities, str(output_dir / "graph.json"))
+        await asyncio.to_thread(report_path.write_text, report, "utf-8")
+        await asyncio.to_thread(to_json, G, communities, str(output_dir / "graph.json"))
 
         logger.info(
             "Code graph: complete — %d nodes, %d edges, %d communities. Report: %s",
