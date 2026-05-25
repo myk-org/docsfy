@@ -1,6 +1,6 @@
 """Generation-scoped cost accumulator.
 
-Uses ``contextvars.ContextVar`` so that every ``call_ai_cli`` invocation
+Uses ``contextvars.ContextVar`` so that every ``call_ai_once`` invocation
 within a generation run can add its cost without changing function signatures.
 
 Usage in the generation orchestrator (``_run_generation``)::
@@ -14,7 +14,7 @@ Usage in the generation orchestrator (``_run_generation``)::
     total_cost = acc.total_cost_usd  # aggregated cost from all AI calls
 
 The ``add_cost`` helper is called from ``_call_ai_or_raise`` and direct
-``call_ai_cli`` call-sites — it's a no-op when no accumulator is active.
+``call_ai_once`` call-sites — it's a no-op when no accumulator is active.
 """
 
 from __future__ import annotations

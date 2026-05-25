@@ -32,6 +32,7 @@ When adding new code:
 | Data models | `src/docsfy/models.py` | `GenerateRequest`, `DocPlan`, `DocPage`, `NavGroup`, `RepoType` |
 | DB constants & validators | `src/docsfy/storage.py` | `VALID_STATUSES`, `VALID_ROLES`, `_validate_name()`, `_validate_owner()` |
 | Git timeouts | `src/docsfy/repository.py` | `_CLONE_TIMEOUT`, `_FETCH_TIMEOUT`, `_DIFF_TIMEOUT` |
+| Sidecar wrapper | `sidecar-helper/` | `startSidecar()` — Pi SDK HTTP sidecar for AI provider calls |
 | Prompt constants | `src/docsfy/prompts.py` | `_MAX_DIFF_LENGTH`, `_GUIDE_WRITING_RULES`, `_REFERENCE_WRITING_RULES`, `_RECIPE_WRITING_RULES`, `_CONCEPT_WRITING_RULES`, `_INCREMENTAL_WRITING_RULES`, `_NAV_STRUCTURE_MAP`, `_REPO_TYPE_WRITING_RULES_MAP`, `truncate_diff_content()` |
 | Frontend constants | `frontend/src/lib/constants.ts` | API base URL, poll intervals, toast durations |
 | Frontend types | `frontend/src/types/index.ts` | `Project`, `User`, `Variant`, `AuthState` |
@@ -74,6 +75,7 @@ When adding new code:
 - Configured via environment variables (pydantic_settings loads environment variables which override config defaults)
 - Currently: `cursor` / `gpt-5.4-xhigh-fast`
 - The UI always uses server defaults for new repos — provider/model are NOT persisted in sessionStorage
+- AI calls are routed through pi-sidecar-client to a local HTTP sidecar service (default port 9100 via `SIDECAR_PORT` env var)
 
 ## Testing
 

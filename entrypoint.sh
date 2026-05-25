@@ -1,21 +1,55 @@
 #!/bin/bash
 set -e
 
-if [ "$DEV_MODE" = "true" ]; then
-    echo "DEV_MODE enabled - installing frontend dependencies..."
+# Dev mode: start Vite dev server in background for frontend HMR
+if [ "$DEV_MODE" = "true" ] && [ -f /app/frontend/package.json ]; then
+    echo "[DEV] Frontend source detected, starting Vite dev server..."
     cd /app/frontend || exit 1
     npm ci
-    echo "Starting Vite dev server on port 5173..."
-    npm run dev &
-    VITE_PID=$!
-    # Forward signals to the background Vite process for clean shutdown
-    trap 'kill $VITE_PID 2>/dev/null; wait $VITE_PID 2>/dev/null' SIGTERM SIGINT
+    npm run dev -- --host 0.0.0.0 --port 5173 &
     cd /app
-    echo "Starting FastAPI with hot reload on port 8000..."
+fi
+
+# Start Pi SDK sidecar in background with lifecycle coupling
+# Dev mode: rebuild TypeScript from source before starting
+if [ "${DEV_MODE:-}" = "true" ] && [ -f /app/sidecar-helper/src/server.ts ]; then
+    echo "[sidecar] Dev mode: compiling TypeScript..."
+    cd /app/sidecar-helper || { echo "[sidecar] Failed to enter sidecar-helper"; exit 1; }
+    npm install --ignore-scripts || { echo "[sidecar] npm install failed"; exit 1; }
+    npx tsc || { echo "[sidecar] TypeScript build failed"; exit 1; }
+    cd /app || { echo "[sidecar] Failed to return to /app"; exit 1; }
+fi
+if [ -f /app/sidecar-helper/dist/server.js ]; then
+    export SIDECAR_PORT="${SIDECAR_PORT:-9100}"
+    # Resolve ACPX extension path (location varies with npm hoisting)
+    for _acpx_candidate in \
+        "/app/sidecar-helper/node_modules/pi-orchestrator-config/extensions/acpx-provider/index.ts" \
+        "/app/sidecar-helper/node_modules/@myk-org/pi-sidecar/node_modules/pi-orchestrator-config/extensions/acpx-provider/index.ts"; do
+        if [ -f "$_acpx_candidate" ]; then
+            export SIDECAR_ACPX_EXTENSION_PATH="$_acpx_candidate"
+            break
+        fi
+    done
+    node /app/sidecar-helper/dist/server.js &
+    SIDECAR_PID=$!
+    echo "[sidecar] Started Pi SDK sidecar (PID $SIDECAR_PID) on port $SIDECAR_PORT"
+
+    # Kill sidecar when main process exits
+    trap 'kill $SIDECAR_PID 2>/dev/null; wait $SIDECAR_PID 2>/dev/null' EXIT
+
+    # Monitor sidecar — if it dies, kill the main process too
+    (while kill -0 $SIDECAR_PID 2>/dev/null; do sleep 5; done; echo "[sidecar] Sidecar died, shutting down container"; kill 1 2>/dev/null) &
+fi
+
+# Resolve PORT with a default
+export PORT="${PORT:-8000}"
+
+if [ "$DEV_MODE" = "true" ]; then
+    echo "Starting FastAPI with hot reload on port $PORT..."
     uv run --no-sync uvicorn docsfy.main:app \
-        --host 0.0.0.0 --port 8000 \
+        --host 0.0.0.0 --port "$PORT" \
         --reload --reload-dir /app/src
 else
     exec uv run --no-sync uvicorn docsfy.main:app \
-        --host 0.0.0.0 --port 8000
+        --host 0.0.0.0 --port "$PORT"
 fi

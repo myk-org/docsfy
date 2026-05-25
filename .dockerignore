@@ -1,0 +1,4 @@
+**/node_modules
+**/.git
+frontend/dist
+sidecar-helper/dist

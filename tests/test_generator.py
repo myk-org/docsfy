@@ -5,7 +5,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 import pytest
-from ai_cli_runner import AIResult
+from docsfy.ai_client import AIResult
 
 
 @pytest.fixture
@@ -37,7 +37,7 @@ async def test_run_planner(tmp_path: Path, sample_plan: dict) -> None:
     from docsfy.generator import run_planner
 
     with patch(
-        "docsfy.generator.call_ai_cli",
+        "docsfy.generator.call_ai_once",
         return_value=AIResult(success=True, text=json.dumps(sample_plan)),
     ):
         plan = await run_planner(
@@ -56,7 +56,7 @@ async def test_run_planner_ai_failure(tmp_path: Path) -> None:
     from docsfy.generator import run_planner
 
     with patch(
-        "docsfy.generator.call_ai_cli",
+        "docsfy.generator.call_ai_once",
         return_value=AIResult(success=False, text="AI error"),
     ):
         with pytest.raises(RuntimeError, match="AI error"):
@@ -72,7 +72,7 @@ async def test_run_planner_bad_json(tmp_path: Path) -> None:
     from docsfy.generator import run_planner
 
     with patch(
-        "docsfy.generator.call_ai_cli",
+        "docsfy.generator.call_ai_once",
         return_value=AIResult(success=True, text="not json"),
     ):
         with pytest.raises(RuntimeError, match="Failed to parse"):
@@ -91,7 +91,7 @@ async def test_generate_page(tmp_path: Path) -> None:
     cache_dir.mkdir()
 
     with patch(
-        "docsfy.generator.call_ai_cli",
+        "docsfy.generator.call_ai_once",
         return_value=AIResult(success=True, text="# Introduction\n\nWelcome!"),
     ):
         md = await generate_page(
@@ -128,7 +128,7 @@ async def test_generate_page_applies_incremental_updates(tmp_path: Path) -> None
     )
 
     with patch(
-        "docsfy.generator.call_ai_cli",
+        "docsfy.generator.call_ai_once",
         return_value=AIResult(success=True, text=incremental_response),
     ):
         md = await generate_page(
@@ -169,7 +169,7 @@ async def test_generate_page_falls_back_to_full_generation_on_invalid_incrementa
     full_page_response = "# Introduction\n\nRegenerated content.\n"
 
     with patch(
-        "docsfy.generator.call_ai_cli",
+        "docsfy.generator.call_ai_once",
         side_effect=[
             AIResult(success=True, text=invalid_incremental_response),
             AIResult(success=True, text=full_page_response),
@@ -218,7 +218,7 @@ async def test_run_incremental_planner(tmp_path: Path, sample_plan: dict) -> Non
     from docsfy.generator import run_incremental_planner
 
     with patch(
-        "docsfy.generator.call_ai_cli",
+        "docsfy.generator.call_ai_once",
         return_value=AIResult(success=True, text='["introduction"]'),
     ):
         result = await run_incremental_planner(
@@ -239,7 +239,7 @@ async def test_run_incremental_planner_preserves_empty_result(
     from docsfy.generator import run_incremental_planner
 
     with patch(
-        "docsfy.generator.call_ai_cli",
+        "docsfy.generator.call_ai_once",
         return_value=AIResult(success=True, text="[]"),
     ):
         result = await run_incremental_planner(
@@ -260,7 +260,7 @@ async def test_run_incremental_planner_returns_all_on_non_string_items(
     from docsfy.generator import run_incremental_planner
 
     with patch(
-        "docsfy.generator.call_ai_cli",
+        "docsfy.generator.call_ai_once",
         return_value=AIResult(success=True, text='[1, "valid", null]'),
     ):
         result = await run_incremental_planner(
@@ -281,7 +281,7 @@ async def test_run_incremental_planner_returns_all_on_mixed_all_and_slug(
     from docsfy.generator import run_incremental_planner
 
     with patch(
-        "docsfy.generator.call_ai_cli",
+        "docsfy.generator.call_ai_once",
         return_value=AIResult(success=True, text='["all", "introduction"]'),
     ):
         result = await run_incremental_planner(
@@ -302,7 +302,7 @@ async def test_run_incremental_planner_returns_all_on_empty_slug(
     from docsfy.generator import run_incremental_planner
 
     with patch(
-        "docsfy.generator.call_ai_cli",
+        "docsfy.generator.call_ai_once",
         return_value=AIResult(success=True, text='["   "]'),
     ):
         result = await run_incremental_planner(
@@ -323,7 +323,7 @@ async def test_run_incremental_planner_deduplicates_and_trims_slugs(
     from docsfy.generator import run_incremental_planner
 
     with patch(
-        "docsfy.generator.call_ai_cli",
+        "docsfy.generator.call_ai_once",
         return_value=AIResult(
             success=True, text='[" introduction ", "introduction", "quickstart"]'
         ),
@@ -346,7 +346,7 @@ async def test_run_incremental_planner_returns_all_on_failure(
     from docsfy.generator import run_incremental_planner
 
     with patch(
-        "docsfy.generator.call_ai_cli",
+        "docsfy.generator.call_ai_once",
         return_value=AIResult(success=False, text="AI error"),
     ):
         result = await run_incremental_planner(
@@ -367,7 +367,7 @@ async def test_run_incremental_planner_returns_all_on_bad_json(
     from docsfy.generator import run_incremental_planner
 
     with patch(
-        "docsfy.generator.call_ai_cli",
+        "docsfy.generator.call_ai_once",
         return_value=AIResult(success=True, text="not json at all"),
     ):
         result = await run_incremental_planner(

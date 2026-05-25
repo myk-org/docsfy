@@ -13,7 +13,7 @@ from typing import Any
 
 from simple_logger.logger import get_logger
 
-from docsfy.ai_client import AIResult, call_ai_cli, run_parallel_with_limit
+from docsfy.ai_client import AIResult, call_ai_once, run_parallel_with_limit
 from docsfy.cost_tracker import add_cost
 from docsfy.generator import generate_full_page_content
 from docsfy.json_parser import parse_json_array_response, parse_json_response
@@ -390,15 +390,12 @@ async def _validate_single_page(
     await asyncio.to_thread(temp_file.write_text, content, "utf-8")
 
     prompt = build_validation_prompt(str(temp_file))
-    cli_flags = ["--trust"] if ai_provider == "cursor" else None
-    result: AIResult = await call_ai_cli(
-        prompt=prompt,
-        cwd=repo_path,
+    result: AIResult = await call_ai_once(
+        prompt,
         ai_provider=ai_provider,
         ai_model=ai_model,
-        ai_cli_timeout=ai_cli_timeout,
-        cli_flags=cli_flags,
-        output_format="json",
+        cwd=str(repo_path),
+        ai_call_timeout=ai_cli_timeout,
     )
     add_cost(result.usage.cost_usd if result.usage else None)
 
@@ -617,17 +614,14 @@ async def add_cross_links(
             manifest_path=str(manifest_path),
             pages_dir=str(pages_dir),
         )
-        cli_flags = ["--trust"] if ai_provider == "cursor" else None
         result: AIResult | None = None
         try:
-            result = await call_ai_cli(
-                prompt=prompt,
-                cwd=repo_path,
+            result = await call_ai_once(
+                prompt,
                 ai_provider=ai_provider,
                 ai_model=ai_model,
-                ai_cli_timeout=ai_cli_timeout,
-                cli_flags=cli_flags,
-                output_format="json",
+                cwd=str(repo_path),
+                ai_call_timeout=ai_cli_timeout,
             )
         except Exception as exc:
             logger.warning(

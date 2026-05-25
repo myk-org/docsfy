@@ -3,16 +3,6 @@ revision = 3
 requires-python = ">=3.12"
 
 [[package]]
-name = "ai-cli-runner"
-version = "0.3.0"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "httpx" },
-    { name = "python-simple-logger" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/04/a2/a03bd995c8278ea985423ad0401c328195480ff74b7e1d846b87faad5721/ai_cli_runner-0.3.0.tar.gz", hash = "sha256:bbb0cdf1ecb80203aa3d659e631ed13123dbb2ee1ac0b78a2c76a8e5ed45bd90", size = 45632, upload-time = "2026-05-04T16:05:43.296Z" }
-
-[[package]]
 name = "aiosqlite"
 version = "0.22.1"
 source = { registry = "https://pypi.org/simple" }
@@ -99,12 +89,12 @@ name = "docsfy"
 version = "1.5.0"
 source = { editable = "." }
 dependencies = [
-    { name = "ai-cli-runner" },
     { name = "aiosqlite" },
     { name = "fastapi" },
     { name = "httpx" },
     { name = "jinja2" },
     { name = "markdown" },
+    { name = "pi-sidecar-client" },
     { name = "pydantic-settings" },
     { name = "pygments" },
     { name = "python-multipart" },
@@ -124,12 +114,12 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "ai-cli-runner", specifier = ">=0.3.0" },
     { name = "aiosqlite" },
     { name = "fastapi" },
     { name = "httpx" },
     { name = "jinja2" },
     { name = "markdown" },
+    { name = "pi-sidecar-client", specifier = ">=1.0.4" },
     { name = "pydantic-settings" },
     { name = "pygments" },
     { name = "pytest", marker = "extra == 'dev'" },
@@ -337,6 +327,16 @@ sdist = { url = "https://files.pythonhosted.org/packages/65/ee/299d360cdc32edc7d
 wheels = [
     { url = "https://files.pythonhosted.org/packages/b7/b9/c538f279a4e237a006a2c98387d081e9eb060d203d8ed34467cc0f0b9b53/packaging-26.0-py3-none-any.whl", hash = "sha256:b36f1fef9334a5588b4166f8bcd26a14e521f2b55e6b9de3aaa80d3ff7a37529", size = 74366, upload-time = "2026-01-21T20:50:37.788Z" },
 ]
+
+[[package]]
+name = "pi-sidecar-client"
+version = "1.0.5"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "httpx" },
+    { name = "python-simple-logger" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/8a/58/d47b2d3670eb34e73d3a2bce912bb783756d72f5ff789c8dde831103af73/pi_sidecar_client-1.0.5.tar.gz", hash = "sha256:eb816caea285f3848dc7741e16eef3d155dee87cc1af9f606ff68e1c01990769", size = 11770, upload-time = "2026-05-20T17:57:45.106Z" }
 
 [[package]]
 name = "pluggy"
