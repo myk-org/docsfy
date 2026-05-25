@@ -124,6 +124,20 @@ async def _extract_semantic_chunk(
             "output_tokens": 0,
         }
 
+    if not result.text or not result.text.strip():
+        logger.warning(
+            "Semantic extraction chunk returned empty text (input_tokens=%d, output_tokens=%d)",
+            result.usage.input_tokens if result.usage else 0,
+            result.usage.output_tokens if result.usage else 0,
+        )
+        return {
+            "nodes": [],
+            "edges": [],
+            "hyperedges": [],
+            "input_tokens": result.usage.input_tokens if result.usage else 0,
+            "output_tokens": result.usage.output_tokens if result.usage else 0,
+        }
+
     parsed = _parse_llm_json(result.text)
     parsed["input_tokens"] = result.usage.input_tokens if result.usage else 0
     parsed["output_tokens"] = result.usage.output_tokens if result.usage else 0
@@ -267,6 +281,10 @@ async def _label_communities(
 
     if not result.success:
         logger.warning("Community labeling failed: %s", result.text[:200])
+        return {cid: f"Community {cid}" for cid in communities}
+
+    if not result.text or not result.text.strip():
+        logger.warning("Community labeling returned empty text")
         return {cid: f"Community {cid}" for cid in communities}
 
     parsed = _parse_llm_json(result.text)
