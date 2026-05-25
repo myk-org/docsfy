@@ -211,6 +211,7 @@ async def generate_full_page_content(
     page_type: str = "guide",
     other_pages_path: str | None = None,
     repo_type: str = "app",
+    graph_report_available: bool = False,
 ) -> str:
     prompt = build_page_prompt(
         project_name=project_name,
@@ -220,6 +221,7 @@ async def generate_full_page_content(
         exclusions_path=exclusions_path,
         other_pages_path=other_pages_path,
         repo_type=repo_type,
+        graph_report_available=graph_report_available,
     )
     output = await _call_ai_or_raise(
         prompt=prompt,
@@ -283,9 +285,12 @@ async def run_planner(
     ai_model: str,
     ai_cli_timeout: int | None = None,
     repo_type: str | None = None,
+    graph_report_available: bool = False,
 ) -> dict[str, Any]:
     logger.info(f"[{project_name}] Calling AI planner")
-    prompt = build_planner_prompt(project_name, repo_type=repo_type)
+    prompt = build_planner_prompt(
+        project_name, repo_type=repo_type, graph_report_available=graph_report_available
+    )
     output = await _call_ai_or_raise(
         prompt=prompt,
         repo_path=repo_path,
@@ -342,6 +347,7 @@ async def generate_page(
     page_type: str = "guide",
     other_pages_path: str | None = None,
     repo_type: str = "app",
+    graph_report_available: bool = False,
 ) -> str:
     _label = project_name or repo_path.name
     prompt_project_name = project_name or repo_path.name
@@ -392,6 +398,7 @@ async def generate_page(
                     page_type=page_type,
                     other_pages_path=other_pages_path,
                     repo_type=repo_type,
+                    graph_report_available=graph_report_available,
                 )
         else:
             output = await generate_full_page_content(
@@ -405,6 +412,7 @@ async def generate_page(
                 page_type=page_type,
                 other_pages_path=other_pages_path,
                 repo_type=repo_type,
+                graph_report_available=graph_report_available,
             )
     except RuntimeError as exc:
         logger.warning(f"[{_label}] Failed to generate page '{slug}': {exc}")
@@ -455,6 +463,7 @@ async def generate_all_pages(
     branch: str = DEFAULT_BRANCH,
     on_page_generated: Callable[[int], Awaitable[None]] | None = None,
     repo_type: str = "app",
+    graph_report_available: bool = False,
 ) -> dict[str, str]:
     _label = project_name or repo_path.name
 
@@ -519,6 +528,7 @@ async def generate_all_pages(
                 on_page_generated=on_page_generated,
                 other_pages_path=str(pages_manifest_path),
                 repo_type=repo_type,
+                graph_report_available=graph_report_available,
             )
             for p in all_pages
         ]

@@ -627,6 +627,7 @@ function buildLogEntries(project: Project): LogEntry[] {
   const currentIdx = stages.indexOf((project.current_stage || '') as typeof GENERATION_STAGES[number])
 
   const cloneIdx = stages.indexOf('cloning')
+  const analyzeIdx = stages.indexOf('analyzing')
   const planIdx = stages.indexOf('planning')
   const incrementalPlanIdx = stages.indexOf('incremental_planning')
   const genPagesIdx = stages.indexOf('generating_pages')
@@ -655,7 +656,6 @@ function buildLogEntries(project: Project): LogEntry[] {
   }
 
   // Analyzing (code knowledge graph)
-  const analyzeIdx = stages.indexOf('analyzing')
   if (currentIdx > analyzeIdx) {
     entries.push({ id: 'analyze', type: 'done', message: 'Analyzed codebase structure', timestamp: Date.now() })
   } else if (currentIdx === analyzeIdx) {

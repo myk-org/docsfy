@@ -40,6 +40,12 @@ _FILE_CHAR_CAP = 20_000
 # Max files per semantic extraction chunk
 _CHUNK_SIZE = 20
 
+# Max node labels per community in the labeling prompt
+_MAX_COMMUNITY_LABELS = 15
+
+# Max concurrency for semantic extraction chunks
+_SEMANTIC_MAX_CONCURRENCY = 3
+
 
 def _read_files(paths: list[Path], root: Path) -> str:
     """Format file contents for the semantic extraction prompt."""
@@ -156,6 +162,11 @@ async def _extract_semantic_chunk(
         }
 
     parsed = _parse_llm_json(result.text)
+    if not isinstance(parsed, dict):
+        logger.warning(
+            "Semantic extraction chunk %d returned non-dict JSON", chunk_index
+        )
+        parsed = {"nodes": [], "edges": [], "hyperedges": []}
     logger.debug(
         "Semantic chunk %d result: %d nodes, %d edges",
         chunk_index,
@@ -173,7 +184,7 @@ async def _extract_semantic(
     ai_provider: str,
     ai_model: str,
     ai_call_timeout: int | None = None,
-    max_concurrency: int = 3,
+    max_concurrency: int = _SEMANTIC_MAX_CONCURRENCY,
 ) -> dict[str, Any]:
     """Extract semantic relationships from all files in parallel chunks."""
     if not files:
@@ -277,10 +288,10 @@ async def _label_communities(
     community_lines: list[str] = []
     for cid, nodes in sorted(communities.items()):
         node_labels = []
-        for nid in nodes[:15]:
+        for nid in nodes[:_MAX_COMMUNITY_LABELS]:
             data = graph.nodes.get(nid, {})
             label = data.get("label", nid)
-            node_labels.append(label)
+            node_labels.append(str(label))
         community_lines.append(f"Community {cid}: {', '.join(node_labels)}")
 
     communities_file = repo_dir / "graphify-out" / "communities.txt"
@@ -363,9 +374,6 @@ async def build_code_graph(
         )
         return None
 
-    output_dir = repo_dir / "graphify-out"
-    output_dir.mkdir(parents=True, exist_ok=True)
-
     try:
         # Step 1: Detect files
         logger.info("Code graph: detecting files in %s", repo_dir)
@@ -399,6 +407,12 @@ async def build_code_graph(
                 len(ast_result.get("nodes", [])),
                 len(ast_result.get("edges", [])),
             )
+
+        # Create output directory after detect + AST extraction but before
+        # semantic extraction (which writes temp chunk files here).  This ensures
+        # detect() does not accidentally pick up its own output files.
+        output_dir = repo_dir / "graphify-out"
+        output_dir.mkdir(parents=True, exist_ok=True)
 
         # Step 3: Semantic extraction via sidecar (LLM-powered)
         # Collect non-code files for semantic extraction

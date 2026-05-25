@@ -160,7 +160,11 @@ def _get_navigation_structure(repo_type: str | None) -> str:
     return _NAV_STRUCTURE_MAP[repo_type]
 
 
-def build_planner_prompt(project_name: str, repo_type: str | None = None) -> str:
+def build_planner_prompt(
+    project_name: str,
+    repo_type: str | None = None,
+    graph_report_available: bool = False,
+) -> str:
     if repo_type is not None:
         repo_type_block = f"""Repository type: {repo_type}
 Include the repo type in your response as "repo_type": "{repo_type}"."""
@@ -175,6 +179,18 @@ First, analyze the repository to determine its type:
 Include the detected type in your response as "repo_type": "<type>"."""
 
     nav_structure = _get_navigation_structure(repo_type)
+
+    graph_block = ""
+    if graph_report_available:
+        graph_block = """
+CODEBASE KNOWLEDGE GRAPH:
+A pre-built knowledge graph of the codebase is available at graphify-out/GRAPH_REPORT.md
+Read it FIRST before exploring source files. It contains:
+- God Nodes: the most-connected components in the codebase
+- Community structure: logical groupings of related code
+- Surprising connections: non-obvious relationships between components
+Use this to structure your documentation plan around the actual architecture.
+"""
 
     return f"""You are a documentation planner focused on the USER EXPERIENCE. Explore this repository thoroughly.
 Read source code, configuration files, tests, CI/CD pipelines, and project structure.
@@ -196,15 +212,7 @@ CRITICAL RULES:
   Good: "Turn any Git repo into a polished documentation site in minutes"
   Bad: "AI-powered documentation generator using FastAPI and React"
 - Each page description should state what the user will learn or accomplish, not what the page contains
-
-CODEBASE KNOWLEDGE GRAPH:
-A pre-built knowledge graph of the codebase is available at graphify-out/GRAPH_REPORT.md
-Read it FIRST before exploring source files. It contains:
-- God Nodes: the most-connected components in the codebase
-- Community structure: logical groupings of related code
-- Surprising connections: non-obvious relationships between components
-Use this to structure your documentation plan around the actual architecture.
-
+{graph_block}
 Project name: {project_name}
 
 CRITICAL: Your response must be ONLY a valid JSON object. No text before or after. No markdown code blocks.
@@ -513,6 +521,7 @@ def build_page_prompt(
     exclusions_path: str | None = None,
     other_pages_path: str | None = None,
     repo_type: str = "app",
+    graph_report_available: bool = False,
 ) -> str:
     writing_rules = _get_repo_type_writing_rules(page_type, repo_type)
     exclusions_block = ""
@@ -539,6 +548,11 @@ Do NOT write plain text like "See Page Title" \u2014 always make it a clickable 
 
     audience = _AUDIENCE_MAP.get(repo_type, _AUDIENCE_MAP["app"])
 
+    graph_line = ""
+    if graph_report_available:
+        graph_line = """\nA code knowledge graph is available at graphify-out/GRAPH_REPORT.md — read it first
+for an architecture overview before diving into source files.\n"""
+
     return f"""You are a technical documentation writer. Explore this repository to write
 the "{page_title}" page for the {project_name} documentation.
 
@@ -547,9 +561,7 @@ Page type: {page_type}
 
 Explore the codebase as needed. Read source files, configs, tests, and CI/CD pipelines
 to write accurate documentation based on the actual code. Do NOT rely on the README.
-
-A code knowledge graph is available at graphify-out/GRAPH_REPORT.md — read it first
-for an architecture overview before diving into source files.
+{graph_line}
 
 {writing_rules}
 

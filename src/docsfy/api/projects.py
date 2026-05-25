@@ -1016,6 +1016,7 @@ async def _generate_from_path(
             ai_model=ai_model,
             ai_cli_timeout=ai_cli_timeout,
             repo_type=repo_type,
+            graph_report_available=graph_report is not None,
         )
 
     if plan is None:
@@ -1084,6 +1085,7 @@ async def _generate_from_path(
         branch=branch,
         on_page_generated=_on_page_generated,
         repo_type=detected_repo_type,
+        graph_report_available=graph_report is not None,
     )
 
     # --- Post-generation pipeline ---
@@ -1258,10 +1260,18 @@ async def _load_available_models() -> dict[str, list[dict[str, str]]]:
         for model in all_models:
             provider = model.get("provider", "")
             # Match sidecar provider names to VALID_PROVIDERS
+            matched_provider = False
             for p in VALID_PROVIDERS:
                 if p in provider:
                     result[p].append(model)
+                    matched_provider = True
                     break
+            if not matched_provider:
+                logger.debug(
+                    "Skipping model with unmatched provider %r: %s",
+                    provider,
+                    model.get("id", ""),
+                )
         total = sum(len(v) for v in result.values())
         logger.info(
             "Loaded %d models (%s)",
