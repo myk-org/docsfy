@@ -459,6 +459,19 @@ async def _validate_single_page(
         return content
 
 
+def _build_page_manifest_lines(plan: dict[str, Any]) -> list[str]:
+    """Build manifest lines from a documentation plan for AI cross-referencing."""
+    lines: list[str] = []
+    for group in plan.get("navigation", []):
+        for page in group.get("pages", []):
+            slug = page.get("slug", "")
+            title = page.get("title", slug)
+            desc = page.get("description", "")
+            if slug:
+                lines.append(f"- [{title}]({slug}.html) \u2014 {desc}")
+    return lines
+
+
 async def validate_pages(
     pages: dict[str, str],
     repo_path: Path,
@@ -515,10 +528,7 @@ async def validate_pages(
         # Write page manifest for cross-referencing
         manifest_path: Path | None = None
         if slug_meta:
-            manifest_lines = [
-                f"- [{meta.get('title', s)}]({s}.html) \u2014 {meta.get('description', '')}"
-                for s, meta in slug_meta.items()
-            ]
+            manifest_lines = _build_page_manifest_lines(plan) if plan else []
             manifest_path = job_dir / "pages.txt"
             await asyncio.to_thread(
                 manifest_path.write_text, "\n".join(manifest_lines), "utf-8"
@@ -585,14 +595,7 @@ async def check_and_fill_completeness(
     # Write page manifest to temp file (GOLDEN RULE: no content in prompts)
     job_dir = Path(tempfile.mkdtemp(prefix="docsfy-completeness-"))
     try:
-        manifest_lines: list[str] = []
-        for group in plan.get("navigation", []):
-            manifest_lines.append(f"## {group.get('group', '')}")
-            for page in group.get("pages", []):
-                slug = page.get("slug", "")
-                title = page.get("title", slug)
-                desc = page.get("description", "")
-                manifest_lines.append(f"- [{title}]({slug}.html) \u2014 {desc}")
+        manifest_lines = _build_page_manifest_lines(plan)
 
         manifest_path = job_dir / "pages_manifest.txt"
         manifest_path.write_text("\n".join(manifest_lines), encoding="utf-8")
@@ -638,6 +641,8 @@ async def check_and_fill_completeness(
         if not valid_gaps:
             logger.info(f"[{project_name}] Completeness check: docs are complete")
             return pages, plan
+
+        pages_added: list[str] = []
 
         logger.info(
             f"[{project_name}] Completeness check found {len(valid_gaps)} gap(s): "
@@ -685,6 +690,7 @@ async def check_and_fill_completeness(
                     graph_report_available=graph_report_available,
                 )
                 pages[slug] = content
+                pages_added.append(slug)
 
                 # Add to plan navigation
                 target_group = gap.get("group", "User Guides")
@@ -724,6 +730,25 @@ async def check_and_fill_completeness(
                 logger.warning(
                     f"[{project_name}] Failed to generate gap page '{slug}': {exc}"
                 )
+
+        # Validate gap pages for stale references (same as initial pages)
+        if pages_added:
+            logger.info(f"[{project_name}] Validating {len(pages_added)} gap page(s)")
+            gap_pages_to_validate = {
+                slug: pages[slug] for slug in pages_added if slug in pages
+            }
+            if gap_pages_to_validate:
+                validated_gap_pages = await validate_pages(
+                    pages=gap_pages_to_validate,
+                    repo_path=repo_path,
+                    ai_provider=ai_provider,
+                    ai_model=ai_model,
+                    cache_dir=cache_dir,
+                    project_name=project_name,
+                    plan=plan,
+                    ai_cli_timeout=ai_cli_timeout,
+                )
+                pages.update(validated_gap_pages)
 
     finally:
         shutil.rmtree(job_dir, ignore_errors=True)

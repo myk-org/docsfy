@@ -1147,6 +1147,20 @@ async def _generate_from_path(
             owner=owner,
             branch=branch,
         )
+        # Update page count after gap pages were generated
+        if len(pages) > 0:
+            await update_and_notify(
+                gen_key,
+                project_name,
+                ai_provider,
+                ai_model,
+                status="generating",
+                owner=owner,
+                branch=branch,
+                current_stage="completeness_check",
+                page_count=len(pages),
+                generation_id=generation_id,
+            )
     except Exception as exc:
         logger.warning(f"[{project_name}] Completeness check failed: {exc}")
 
