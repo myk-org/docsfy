@@ -1251,14 +1251,25 @@ async def _resolve_latest_accessible_variant(
 
 
 async def _load_available_models() -> dict[str, list[dict[str, str]]]:
-    """Load available models for all providers via pi-sidecar-client."""
-    result: dict[str, list[dict[str, str]]] = {}
-    for provider in VALID_PROVIDERS:
-        try:
-            result[provider] = await list_models(provider)
-        except Exception as exc:
-            logger.warning("Failed to list models for %s: %s", provider, exc)
-            result[provider] = []
+    """Load available models for all providers in a single sidecar call."""
+    result: dict[str, list[dict[str, str]]] = {p: [] for p in VALID_PROVIDERS}
+    try:
+        all_models = await list_models()
+        for model in all_models:
+            provider = model.get("provider", "")
+            # Match sidecar provider names to VALID_PROVIDERS
+            for p in VALID_PROVIDERS:
+                if p in provider:
+                    result[p].append(model)
+                    break
+        total = sum(len(v) for v in result.values())
+        logger.info(
+            "Loaded %d models (%s)",
+            total,
+            ", ".join(f"{p}:{len(result[p])}" for p in VALID_PROVIDERS),
+        )
+    except Exception as exc:
+        logger.warning("Failed to load models from sidecar: %s", exc)
     return result
 
 

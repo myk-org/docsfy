@@ -46,6 +46,7 @@ _MAX_TOTAL_FILES = 500
 
 def _read_files(paths: list[Path], root: Path) -> str:
     """Format file contents for the semantic extraction prompt."""
+    logger.debug("Reading %d files for semantic extraction", len(paths))
     parts: list[str] = []
     for p in paths:
         try:
@@ -101,6 +102,10 @@ async def _extract_semantic_chunk(
             "output_tokens": 0,
         }
 
+    logger.debug(
+        "Semantic chunk: %d files, prompt size: %d chars", len(chunk), len(user_message)
+    )
+
     result: AIResult = await call_ai_once(
         user_message,
         ai_provider=ai_provider,
@@ -122,6 +127,11 @@ async def _extract_semantic_chunk(
     parsed = _parse_llm_json(result.text)
     parsed["input_tokens"] = result.usage.input_tokens if result.usage else 0
     parsed["output_tokens"] = result.usage.output_tokens if result.usage else 0
+    logger.debug(
+        "Semantic chunk result: %d nodes, %d edges",
+        len(parsed.get("nodes", [])),
+        len(parsed.get("edges", [])),
+    )
     return parsed
 
 
@@ -208,6 +218,12 @@ async def _extract_semantic(
         merged["input_tokens"] += r.get("input_tokens", 0)
         merged["output_tokens"] += r.get("output_tokens", 0)
 
+    logger.info(
+        "Semantic extraction complete: %d nodes, %d edges from %d chunks",
+        len(merged["nodes"]),
+        len(merged["edges"]),
+        len(chunks),
+    )
     return merged
 
 
@@ -221,6 +237,8 @@ async def _label_communities(
     """Use AI to label each community with a 2-5 word descriptive name."""
     if not communities:
         return {}
+
+    logger.debug("Labeling %d communities", len(communities))
 
     # Build a prompt with community node labels
     community_descriptions: list[str] = []
@@ -262,6 +280,10 @@ async def _label_communities(
             labels[cid] = label
         else:
             labels[cid] = f"Community {cid}"
+    logger.info(
+        "Community labeling complete: %s",
+        ", ".join(f"{cid}={label}" for cid, label in labels.items()),
+    )
     return labels
 
 
@@ -334,6 +356,11 @@ async def build_code_graph(
         if code_files:
             logger.info("Code graph: AST extraction on %d code files", len(code_files))
             ast_result = await asyncio.to_thread(extract, code_files, repo_dir)
+            logger.info(
+                "Code graph: AST result \u2014 %d nodes, %d edges",
+                len(ast_result.get("nodes", [])),
+                len(ast_result.get("edges", [])),
+            )
 
         # Step 3: Semantic extraction via sidecar (LLM-powered)
         # Collect non-code files for semantic extraction
@@ -364,6 +391,11 @@ async def build_code_graph(
                 merged_nodes.append(n)
                 seen_ids.add(n["id"])
         merged_edges = ast_result.get("edges", []) + semantic_result.get("edges", [])
+        logger.info(
+            "Code graph: merged \u2014 %d nodes, %d edges",
+            len(merged_nodes),
+            len(merged_edges),
+        )
         merged_extraction = {
             "nodes": merged_nodes,
             "edges": merged_edges,
