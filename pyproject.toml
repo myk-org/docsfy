@@ -4,7 +4,7 @@ version = "1.5.0"
 description = "AI-powered documentation generator - generates polished static HTML docs from GitHub repos"
 requires-python = ">=3.12"
 dependencies = [
-    "pi-sidecar-client>=1.0.4",
+    "pi-sidecar-client>=1.0.6",
     "fastapi",
     "uvicorn",
     "pydantic-settings",
@@ -18,6 +18,7 @@ dependencies = [
     "tomli-w",
     "httpx",
     "websockets",
+    "graphifyy",
 ]
 
 [project.urls]
@@ -55,3 +56,15 @@ strict_equality = true
 extra_checks = true
 warn_unused_configs = true
 warn_redundant_casts = true
+
+[[tool.mypy.overrides]]
+module = [
+    "simple_logger.*",
+    "graphify.*",
+]
+ignore_missing_imports = true
+
+[dependency-groups]
+dev = [
+    "mypy>=2.1.0",
+]

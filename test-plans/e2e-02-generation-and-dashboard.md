@@ -128,6 +128,27 @@ agent-browser screenshot
 
 ---
 
+### 6.4a Verify "analyzing" stage appears between cloning and planning
+
+**Precondition:** Generation is in progress (started in 6.2).
+
+**Commands:**
+
+```shell
+agent-browser navigate http://localhost:8800/status/for-testing-only/main/gemini/gemini-2.5-flash
+agent-browser wait 10000
+agent-browser javascript "JSON.stringify(Array.from(document.querySelectorAll('[class*=\"activity\"] li, [class*=\"log\"] li, [class*=\"progress\"] li')).map(el => el.textContent))"
+```
+
+**Check:** The activity log includes an "analyzing" stage that appears after "cloning" and before "planning".
+
+**Expected result:**
+- The log entries contain a stage matching `"analyzing"` (e.g., "analyzing" or "Analyzing repository")
+- The "analyzing" entry appears after any "cloning" entry and before any "planning" entry
+- This confirms the Graphify code-graph analysis runs between clone and plan phases
+
+---
+
 ### 6.5 Wait for completion
 
 **Commands:**

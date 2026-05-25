@@ -9,6 +9,7 @@ import tempfile
 import uuid
 from configparser import ConfigParser
 from pathlib import Path
+from collections.abc import Awaitable, Callable
 from typing import Any
 
 from simple_logger.logger import get_logger
@@ -19,7 +20,11 @@ from docsfy.generator import generate_full_page_content
 from docsfy.json_parser import parse_json_array_response, parse_json_response
 from docsfy.models import PAGE_TYPES
 from docsfy.config import get_settings
-from docsfy.prompts import build_cross_links_prompt, build_validation_prompt
+from docsfy.prompts import (
+    build_completeness_prompt,
+    build_cross_links_prompt,
+    build_validation_prompt,
+)
 
 logger = get_logger(name=__name__)
 
@@ -454,6 +459,19 @@ async def _validate_single_page(
         return content
 
 
+def _build_page_manifest_lines(plan: dict[str, Any]) -> list[str]:
+    """Build manifest lines from a documentation plan for AI cross-referencing."""
+    lines: list[str] = []
+    for group in plan.get("navigation", []):
+        for page in group.get("pages", []):
+            slug = page.get("slug", "")
+            title = page.get("title", slug)
+            desc = page.get("description", "")
+            if slug:
+                lines.append(f"- [{title}]({slug}.html) \u2014 {desc}")
+    return lines
+
+
 async def validate_pages(
     pages: dict[str, str],
     repo_path: Path,
@@ -510,10 +528,7 @@ async def validate_pages(
         # Write page manifest for cross-referencing
         manifest_path: Path | None = None
         if slug_meta:
-            manifest_lines = [
-                f"- [{meta.get('title', s)}]({s}.html) \u2014 {meta.get('description', '')}"
-                for s, meta in slug_meta.items()
-            ]
+            manifest_lines = _build_page_manifest_lines(plan) if plan else []
             manifest_path = job_dir / "pages.txt"
             await asyncio.to_thread(
                 manifest_path.write_text, "\n".join(manifest_lines), "utf-8"
@@ -555,6 +570,190 @@ async def validate_pages(
             updated[slug] = result
 
     return updated
+
+
+async def check_and_fill_completeness(
+    pages: dict[str, str],
+    repo_path: Path,
+    plan: dict[str, Any],
+    ai_provider: str,
+    ai_model: str,
+    cache_dir: Path,
+    project_name: str,
+    ai_cli_timeout: int | None = None,
+    graph_report_path: Path | None = None,
+    graph_report_available: bool = False,
+    repo_type: str = "app",
+    on_page_generated: Callable[[int], Awaitable[None]] | None = None,
+    owner: str = "",
+    branch: str = "main",
+) -> tuple[dict[str, str], dict[str, Any]]:
+    """Check docs completeness and generate pages for any gaps.
+
+    Returns updated (pages, plan) tuple with any new pages added.
+    """
+    # Write page manifest to temp file (GOLDEN RULE: no content in prompts)
+    job_dir = Path(tempfile.mkdtemp(prefix="docsfy-completeness-"))
+    try:
+        manifest_lines = _build_page_manifest_lines(plan)
+
+        manifest_path = job_dir / "pages_manifest.txt"
+        manifest_path.write_text("\n".join(manifest_lines), encoding="utf-8")
+
+        prompt = build_completeness_prompt(
+            pages_manifest_path=str(manifest_path),
+            graph_report_path=str(graph_report_path) if graph_report_path else None,
+        )
+
+        result: AIResult = await call_ai_once(
+            prompt,
+            ai_provider=ai_provider,
+            ai_model=ai_model,
+            cwd=str(repo_path),
+            ai_call_timeout=ai_cli_timeout,
+        )
+        add_cost(result.usage.cost_usd if result.usage else None)
+
+        if not result.success:
+            logger.warning(
+                f"[{project_name}] Completeness check failed: {result.text[:200]}"
+            )
+            return pages, plan
+
+        if not result.text or not result.text.strip():
+            logger.warning(
+                f"[{project_name}] Completeness check returned empty response"
+            )
+            return pages, plan
+
+        from docsfy.generator import _strip_ai_artifacts
+
+        gaps = parse_json_array_response(_strip_ai_artifacts(result.text))
+        if gaps is None or not isinstance(gaps, list):
+            logger.warning(f"[{project_name}] Completeness check returned invalid JSON")
+            return pages, plan
+
+        # Filter to valid entries only
+        valid_gaps = [
+            g for g in gaps if isinstance(g, dict) and g.get("slug") and g.get("title")
+        ]
+
+        if not valid_gaps:
+            logger.info(f"[{project_name}] Completeness check: docs are complete")
+            return pages, plan
+
+        pages_added: list[str] = []
+
+        logger.info(
+            f"[{project_name}] Completeness check found {len(valid_gaps)} gap(s): "
+            + ", ".join(g.get("title", "") for g in valid_gaps)
+        )
+
+        # Generate pages for each gap
+        from docsfy.generator import generate_page
+
+        # Write updated manifest including new pages for cross-referencing
+        all_manifest_lines = list(manifest_lines)
+        for gap in valid_gaps:
+            all_manifest_lines.append(
+                f"- [{gap['title']}]({gap['slug']}.html) \u2014 {gap.get('description', '')}"
+            )
+        updated_manifest = job_dir / "pages_full.txt"
+        updated_manifest.write_text("\n".join(all_manifest_lines), encoding="utf-8")
+
+        for gap in valid_gaps:
+            slug = gap["slug"]
+            title = gap["title"]
+            description = gap.get("description", "")
+            page_type = gap.get("type", "guide")
+            if page_type not in PAGE_TYPES:
+                page_type = "guide"
+
+            logger.info(f"[{project_name}] Generating gap page: {title} ({slug})")
+            try:
+                content = await generate_page(
+                    repo_path=repo_path,
+                    slug=slug,
+                    title=title,
+                    description=description,
+                    cache_dir=cache_dir,
+                    ai_provider=ai_provider,
+                    ai_model=ai_model,
+                    ai_cli_timeout=ai_cli_timeout,
+                    project_name=project_name,
+                    owner=owner,
+                    branch=branch,
+                    on_page_generated=on_page_generated,
+                    page_type=page_type,
+                    other_pages_path=str(updated_manifest),
+                    repo_type=repo_type,
+                    graph_report_available=graph_report_available,
+                )
+                pages[slug] = content
+                pages_added.append(slug)
+
+                # Add to plan navigation
+                target_group = gap.get("group", "User Guides")
+                group_found = False
+                for nav_group in plan.get("navigation", []):
+                    if nav_group.get("group") == target_group:
+                        nav_group["pages"].append(
+                            {
+                                "slug": slug,
+                                "title": title,
+                                "description": description,
+                                "type": page_type,
+                            }
+                        )
+                        group_found = True
+                        break
+                if not group_found:
+                    # Add to last non-reference group, or create new
+                    plan.setdefault("navigation", []).append(
+                        {
+                            "group": target_group,
+                            "pages": [
+                                {
+                                    "slug": slug,
+                                    "title": title,
+                                    "description": description,
+                                    "type": page_type,
+                                }
+                            ],
+                        }
+                    )
+
+                logger.info(
+                    f"[{project_name}] Gap page generated: {title} ({len(content)} chars)"
+                )
+            except Exception as exc:
+                logger.warning(
+                    f"[{project_name}] Failed to generate gap page '{slug}': {exc}"
+                )
+
+        # Validate gap pages for stale references (same as initial pages)
+        if pages_added:
+            logger.info(f"[{project_name}] Validating {len(pages_added)} gap page(s)")
+            gap_pages_to_validate = {
+                slug: pages[slug] for slug in pages_added if slug in pages
+            }
+            if gap_pages_to_validate:
+                validated_gap_pages = await validate_pages(
+                    pages=gap_pages_to_validate,
+                    repo_path=repo_path,
+                    ai_provider=ai_provider,
+                    ai_model=ai_model,
+                    cache_dir=cache_dir,
+                    project_name=project_name,
+                    plan=plan,
+                    ai_cli_timeout=ai_cli_timeout,
+                )
+                pages.update(validated_gap_pages)
+
+    finally:
+        shutil.rmtree(job_dir, ignore_errors=True)
+
+    return pages, plan
 
 
 async def add_cross_links(

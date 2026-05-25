@@ -160,7 +160,11 @@ def _get_navigation_structure(repo_type: str | None) -> str:
     return _NAV_STRUCTURE_MAP[repo_type]
 
 
-def build_planner_prompt(project_name: str, repo_type: str | None = None) -> str:
+def build_planner_prompt(
+    project_name: str,
+    repo_type: str | None = None,
+    graph_report_available: bool = False,
+) -> str:
     if repo_type is not None:
         repo_type_block = f"""Repository type: {repo_type}
 Include the repo type in your response as "repo_type": "{repo_type}"."""
@@ -175,6 +179,18 @@ First, analyze the repository to determine its type:
 Include the detected type in your response as "repo_type": "<type>"."""
 
     nav_structure = _get_navigation_structure(repo_type)
+
+    graph_block = ""
+    if graph_report_available:
+        graph_block = """
+CODEBASE KNOWLEDGE GRAPH:
+A pre-built knowledge graph of the codebase is available at graphify-out/GRAPH_REPORT.md
+Read it FIRST before exploring source files. It contains:
+- God Nodes: the most-connected components in the codebase
+- Community structure: logical groupings of related code
+- Surprising connections: non-obvious relationships between components
+Use this to structure your documentation plan around the actual architecture.
+"""
 
     return f"""You are a documentation planner focused on the USER EXPERIENCE. Explore this repository thoroughly.
 Read source code, configuration files, tests, CI/CD pipelines, and project structure.
@@ -196,7 +212,7 @@ CRITICAL RULES:
   Good: "Turn any Git repo into a polished documentation site in minutes"
   Bad: "AI-powered documentation generator using FastAPI and React"
 - Each page description should state what the user will learn or accomplish, not what the page contains
-
+{graph_block}
 Project name: {project_name}
 
 CRITICAL: Your response must be ONLY a valid JSON object. No text before or after. No markdown code blocks.
@@ -505,6 +521,7 @@ def build_page_prompt(
     exclusions_path: str | None = None,
     other_pages_path: str | None = None,
     repo_type: str = "app",
+    graph_report_available: bool = False,
 ) -> str:
     writing_rules = _get_repo_type_writing_rules(page_type, repo_type)
     exclusions_block = ""
@@ -531,6 +548,11 @@ Do NOT write plain text like "See Page Title" \u2014 always make it a clickable 
 
     audience = _AUDIENCE_MAP.get(repo_type, _AUDIENCE_MAP["app"])
 
+    graph_line = ""
+    if graph_report_available:
+        graph_line = """\nA code knowledge graph is available at graphify-out/GRAPH_REPORT.md — read it first
+for an architecture overview before diving into source files.\n"""
+
     return f"""You are a technical documentation writer. Explore this repository to write
 the "{page_title}" page for the {project_name} documentation.
 
@@ -539,6 +561,7 @@ Page type: {page_type}
 
 Explore the codebase as needed. Read source files, configs, tests, and CI/CD pipelines
 to write accurate documentation based on the actual code. Do NOT rely on the README.
+{graph_line}
 
 {writing_rules}
 
@@ -643,6 +666,54 @@ If all references are valid, return exactly: []
 
 If stale references are found, return:
 {VALIDATION_SCHEMA}"""
+
+
+def build_completeness_prompt(
+    pages_manifest_path: str,
+    graph_report_path: str | None = None,
+) -> str:
+    """Build prompt to check if docs cover all major codebase features."""
+    graph_block = ""
+    if graph_report_path:
+        graph_block = f"""
+Read the code knowledge graph at:
+{graph_report_path}
+Use the God Nodes and Community structure to identify the most important components."""
+
+    return f"""You are a documentation completeness auditor. Explore this repository thoroughly.
+Read source files, API endpoints, CLI commands, configuration, and key modules.
+{graph_block}
+
+Then read the documentation page manifest at:
+{pages_manifest_path}
+
+Compare what the codebase offers vs what the docs cover. Identify MAJOR features,
+modules, or capabilities that exist in the code but have NO documentation page.
+
+CRITICAL RULES:
+- Only flag genuinely important user-facing features that are completely undocumented
+- Do NOT flag internal implementation details, utilities, or helper modules
+- Do NOT flag features that are mentioned within other pages (even if they lack a dedicated page)
+- Do NOT flag test files, dev tooling, or CI/CD configuration
+- Focus on features a USER would need to know about
+
+Your response must be ONLY a valid JSON array. No text before or after.
+
+If docs are complete, return exactly: []
+
+If undocumented features are found, return:
+[
+  {{
+    "feature": "string - name of the undocumented feature",
+    "source_files": ["string - key source files implementing this feature"],
+    "slug": "string - URL-friendly page slug",
+    "title": "string - page title",
+    "description": "string - what this page should cover",
+    "type": "string - one of: {_PAGE_TYPE_VALUES}",
+    "group": "string - which navigation group this page belongs in (use an existing group name if it fits)",
+    "priority": "string - HIGH or MEDIUM"
+  }}
+]"""
 
 
 def build_cross_links_prompt(manifest_path: str, pages_dir: str) -> str:

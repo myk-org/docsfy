@@ -32,10 +32,12 @@ export const SIDEBAR_DEFAULT_WIDTH = 256
 
 export const GENERATION_STAGES = [
   'cloning',
+  'analyzing',
   'planning',
   'incremental_planning',
   'generating_pages',
   'validating',
+  'completeness_check',
   'cross_linking',
   'rendering',
 ] as const

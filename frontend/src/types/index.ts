@@ -75,7 +75,7 @@ export interface AuthResponse {
 export interface ProjectsResponse {
   projects: Project[]
   known_branches: Record<string, string[]>
-  available_models: AvailableModels
+  available_models?: AvailableModels
   total_cost_usd: number
 }
 
@@ -101,7 +101,6 @@ export interface SyncMessage {
   type: 'sync'
   projects: Project[]
   known_branches: Record<string, string[]>
-  available_models: AvailableModels
   total_cost_usd: number
 }
 
