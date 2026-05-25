@@ -654,6 +654,14 @@ function buildLogEntries(project: Project): LogEntry[] {
     entries.push({ id: 'clone', type: 'active', message: 'Cloning repository...', timestamp: Date.now() })
   }
 
+  // Analyzing (code knowledge graph)
+  const analyzeIdx = stages.indexOf('analyzing')
+  if (currentIdx > analyzeIdx) {
+    entries.push({ id: 'analyze', type: 'done', message: 'Analyzed codebase structure', timestamp: Date.now() })
+  } else if (currentIdx === analyzeIdx) {
+    entries.push({ id: 'analyze', type: 'active', message: 'Analyzing codebase structure...', timestamp: Date.now() })
+  }
+
   // Planning (covers both 'planning' and 'incremental_planning')
   if (currentIdx > incrementalPlanIdx) {
     entries.push({
