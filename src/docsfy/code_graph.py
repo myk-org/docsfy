@@ -40,9 +40,6 @@ _FILE_CHAR_CAP = 20_000
 # Max files per semantic extraction chunk
 _CHUNK_SIZE = 20
 
-# Maximum files to process (prevents DoS on huge repos)
-_MAX_TOTAL_FILES = 500
-
 
 def _read_files(paths: list[Path], root: Path) -> str:
     """Format file contents for the semantic extraction prompt."""
@@ -346,13 +343,6 @@ async def build_code_graph(
         total_files = detection.get("total_files", 0)
         if total_files == 0:
             logger.warning("Code graph: no supported files found")
-            return None
-        if total_files > _MAX_TOTAL_FILES:
-            logger.warning(
-                "Code graph: %d files exceeds cap of %d, skipping graph generation",
-                total_files,
-                _MAX_TOTAL_FILES,
-            )
             return None
         logger.info("Code graph: detected %d files", total_files)
 
