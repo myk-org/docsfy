@@ -5,7 +5,6 @@ from pathlib import Path
 from unittest.mock import patch
 
 import pytest
-from ai_cli_runner import AIResult
 from httpx import ASGITransport, AsyncClient
 
 TEST_ADMIN_KEY = "test-admin-secret-key"
@@ -73,8 +72,8 @@ async def test_full_flow_mock(client: AsyncClient, tmp_path: Path) -> None:
 
     with (
         patch(
-            "docsfy.api.projects.check_ai_cli_available",
-            return_value=AIResult(success=True, text=""),
+            "docsfy.api.projects.check_sidecar_available",
+            return_value=(True, "ok"),
         ),
         patch(
             "docsfy.api.projects.clone_repo",
@@ -189,8 +188,8 @@ async def test_full_flow_with_branch(client: AsyncClient, tmp_path: Path) -> Non
 
     with (
         patch(
-            "docsfy.api.projects.check_ai_cli_available",
-            return_value=AIResult(success=True, text=""),
+            "docsfy.api.projects.check_sidecar_available",
+            return_value=(True, "ok"),
         ),
         patch("docsfy.api.projects.clone_repo", side_effect=mock_clone),
         patch("docsfy.api.projects.run_planner", return_value=sample_plan),

@@ -17,7 +17,7 @@ from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import StreamingResponse
 from simple_logger.logger import get_logger
 
-from docsfy.ai_client import check_ai_cli_available, model_cache
+from docsfy.ai_client import check_sidecar_available, list_models
 from docsfy.cost_tracker import (
     CostAccumulator,
     set_cost_accumulator,
@@ -561,11 +561,8 @@ async def _run_generation(
     cost_acc = CostAccumulator()
     cost_token = set_cost_accumulator(cost_acc)
     try:
-        cli_flags = ["--trust"] if ai_provider == "cursor" else None
-        check_result = await check_ai_cli_available(
-            ai_provider, ai_model, cli_flags=cli_flags
-        )
-        if not check_result.success:
+        available, msg = await check_sidecar_available()
+        if not available:
             await update_and_notify(
                 gen_key,
                 project_name,
@@ -574,7 +571,7 @@ async def _run_generation(
                 status="error",
                 owner=owner,
                 branch=branch,
-                error_message=check_result.text,
+                error_message=msg,
                 generation_id=generation_id,
             )
             return
@@ -1233,11 +1230,11 @@ async def _resolve_latest_accessible_variant(
 
 
 async def _load_available_models() -> dict[str, list[dict[str, str]]]:
-    """Load available models for all providers from ai-cli-runner's model cache."""
+    """Load available models for all providers via pi-sidecar-client."""
     result: dict[str, list[dict[str, str]]] = {}
     for provider in VALID_PROVIDERS:
         try:
-            result[provider] = await model_cache.list_models(provider)
+            result[provider] = await list_models(provider)
         except Exception as exc:
             logger.warning("Failed to list models for %s: %s", provider, exc)
             result[provider] = []
@@ -1271,8 +1268,7 @@ async def build_projects_payload(username: str, is_admin: bool) -> dict[str, Any
 async def get_models_endpoint() -> dict[str, Any]:
     """Return available AI providers, server defaults, and available models.
 
-    Models are discovered from AI CLI tools (cursor) and LiteLLM pricing
-    data (claude, gemini) via ai-cli-runner's model cache.
+    Models are discovered via pi-sidecar-client.
     No authentication required -- this is a discovery endpoint.
     """
     settings = get_settings()

@@ -1,27 +1,17 @@
-from __future__ import annotations
+"""AI client adapter — re-exports from pi-sidecar-client."""
 
-from ai_cli_runner import (
-    PROVIDERS,
-    VALID_AI_PROVIDERS,
+from pi_sidecar_client import (
     AIResult,
-    ProviderConfig,
-    call_ai_cli,
-    check_ai_cli_available,
-    get_ai_cli_timeout,
-    model_cache,
-    pricing_cache,
+    call_ai_once,
+    check_sidecar_available,
+    list_models,
     run_parallel_with_limit,
 )
 
 __all__ = [
-    "PROVIDERS",
-    "VALID_AI_PROVIDERS",
     "AIResult",
-    "ProviderConfig",
-    "call_ai_cli",
-    "check_ai_cli_available",
-    "get_ai_cli_timeout",
-    "model_cache",
-    "pricing_cache",
+    "call_ai_once",
+    "check_sidecar_available",
+    "list_models",
     "run_parallel_with_limit",
 ]

@@ -23,7 +23,6 @@ from docsfy.api.projects import (
     _validate_project_name,
     router as projects_router,
 )
-from docsfy.ai_client import pricing_cache
 from docsfy.config import get_settings
 from docsfy.models import DEFAULT_BRANCH
 from docsfy.storage import (
@@ -55,13 +54,6 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 
     _generating.clear()
     await init_db(data_dir=settings.data_dir)
-
-    try:
-        await pricing_cache.load()
-    except Exception:  # noqa: BLE001
-        logger.warning(
-            "pricing_cache.load() failed; cost tracking will be degraded", exc_info=True
-        )
 
     await cleanup_expired_sessions()
     yield

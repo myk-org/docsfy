@@ -175,7 +175,7 @@ print(f'Providers with models: {providers_with_models}')
 - `available_models` is a dictionary keyed by provider name
 - Each value is an array of objects with `id` and `name` fields (e.g., `[{"id": "gemini-2.5-flash", "name": "Gemini 2.5 Flash"}, ...]`)
 - At least one provider has discovered models
-- Models are discovered from AI CLI tools and LiteLLM pricing data, not from completed generations
+- Models are discovered via pi-sidecar-client from the Pi SDK sidecar service, not from completed generations
 
 ---
 
