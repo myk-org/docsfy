@@ -124,7 +124,6 @@ export default function DashboardPage() {
         const data = await api.get<ProjectsResponse>('/api/projects')
         if (cancelled) return
         setProjects(data.projects)
-        setAvailableModels(data.available_models ?? {})
         setTotalCostUsd(data.total_cost_usd ?? 0)
         setKnownBranches(data.known_branches)
       } catch {
@@ -133,7 +132,17 @@ export default function DashboardPage() {
         if (!cancelled) setProjectsLoaded(true)
       }
     }
+    async function loadModels() {
+      try {
+        const data = await api.get<{ available_models: AvailableModels }>('/api/models')
+        if (cancelled) return
+        setAvailableModels(data.available_models ?? {})
+      } catch {
+        /* best-effort — models dropdown will be empty */
+      }
+    }
     loadProjects()
+    loadModels()
     return () => { cancelled = true }
   }, [authChecked])
 
@@ -182,7 +191,6 @@ export default function DashboardPage() {
     if (message.type === 'sync') {
       console.debug('[Dashboard] WS sync received, projects:', message.projects.length)
       setProjects(message.projects)
-      setAvailableModels(message.available_models ?? {})
       setTotalCostUsd(message.total_cost_usd ?? 0)
       setKnownBranches(message.known_branches)
     } else if (message.type === 'progress') {
@@ -196,7 +204,6 @@ export default function DashboardPage() {
           // Variant not yet in local state — trigger a full refresh
           api.get<ProjectsResponse>('/api/projects').then((data) => {
             setProjects(data.projects)
-            setAvailableModels(data.available_models ?? {})
             setTotalCostUsd(data.total_cost_usd ?? 0)
             setKnownBranches(data.known_branches)
           }).catch(() => { /* best-effort */ })
@@ -230,7 +237,6 @@ export default function DashboardPage() {
         if (!exists) {
           api.get<ProjectsResponse>('/api/projects').then((data) => {
             setProjects(data.projects)
-            setAvailableModels(data.available_models ?? {})
             setTotalCostUsd(data.total_cost_usd ?? 0)
             setKnownBranches(data.known_branches)
           }).catch(() => { /* best-effort */ })
@@ -303,7 +309,6 @@ export default function DashboardPage() {
         try {
           const data = await api.get<ProjectsResponse>('/api/projects')
           setProjects(data.projects)
-          setAvailableModels(data.available_models ?? {})
           setTotalCostUsd(data.total_cost_usd ?? 0)
           setKnownBranches(data.known_branches)
         } catch {
@@ -632,6 +637,7 @@ function buildLogEntries(project: Project): LogEntry[] {
   const incrementalPlanIdx = stages.indexOf('incremental_planning')
   const genPagesIdx = stages.indexOf('generating_pages')
   const validatingIdx = stages.indexOf('validating')
+  const completenessIdx = stages.indexOf('completeness_check')
   const crossLinkIdx = stages.indexOf('cross_linking')
   const renderIdx = stages.indexOf('rendering')
 
@@ -713,6 +719,13 @@ function buildLogEntries(project: Project): LogEntry[] {
     entries.push({ id: 'validate', type: 'done', message: 'Validated documentation against codebase', timestamp: Date.now() })
   } else if (currentIdx === validatingIdx) {
     entries.push({ id: 'validate', type: 'active', message: 'Validating documentation against codebase...', timestamp: Date.now() })
+  }
+
+  // Completeness check
+  if (currentIdx > completenessIdx) {
+    entries.push({ id: 'completeness', type: 'done', message: 'Verified documentation completeness', timestamp: Date.now() })
+  } else if (currentIdx === completenessIdx) {
+    entries.push({ id: 'completeness', type: 'active', message: 'Checking documentation completeness...', timestamp: Date.now() })
   }
 
   // Cross-linking

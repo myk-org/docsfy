@@ -668,6 +668,54 @@ If stale references are found, return:
 {VALIDATION_SCHEMA}"""
 
 
+def build_completeness_prompt(
+    pages_manifest_path: str,
+    graph_report_path: str | None = None,
+) -> str:
+    """Build prompt to check if docs cover all major codebase features."""
+    graph_block = ""
+    if graph_report_path:
+        graph_block = f"""
+Read the code knowledge graph at:
+{graph_report_path}
+Use the God Nodes and Community structure to identify the most important components."""
+
+    return f"""You are a documentation completeness auditor. Explore this repository thoroughly.
+Read source files, API endpoints, CLI commands, configuration, and key modules.
+{graph_block}
+
+Then read the documentation page manifest at:
+{pages_manifest_path}
+
+Compare what the codebase offers vs what the docs cover. Identify MAJOR features,
+modules, or capabilities that exist in the code but have NO documentation page.
+
+CRITICAL RULES:
+- Only flag genuinely important user-facing features that are completely undocumented
+- Do NOT flag internal implementation details, utilities, or helper modules
+- Do NOT flag features that are mentioned within other pages (even if they lack a dedicated page)
+- Do NOT flag test files, dev tooling, or CI/CD configuration
+- Focus on features a USER would need to know about
+
+Your response must be ONLY a valid JSON array. No text before or after.
+
+If docs are complete, return exactly: []
+
+If undocumented features are found, return:
+[
+  {{
+    "feature": "string - name of the undocumented feature",
+    "source_files": ["string - key source files implementing this feature"],
+    "slug": "string - URL-friendly page slug",
+    "title": "string - page title",
+    "description": "string - what this page should cover",
+    "type": "string - one of: {_PAGE_TYPE_VALUES}",
+    "group": "string - which navigation group this page belongs in (use an existing group name if it fits)",
+    "priority": "string - HIGH or MEDIUM"
+  }}
+]"""
+
+
 def build_cross_links_prompt(manifest_path: str, pages_dir: str) -> str:
     return f"""You are a documentation cross-linking assistant. Read the page manifest at:
 {manifest_path}

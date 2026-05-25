@@ -52,12 +52,12 @@ async def client(tmp_path: Path):
 
 
 async def test_list_projects_empty(client: AsyncClient) -> None:
-    """GET /api/projects returns empty list with available_models and known_branches."""
+    """GET /api/projects returns empty list with known_branches."""
     response = await client.get("/api/status")
     assert response.status_code == 200
     data = response.json()
     assert data["projects"] == []
-    assert "available_models" in data
+    assert "available_models" not in data
     assert "known_branches" in data
 
 

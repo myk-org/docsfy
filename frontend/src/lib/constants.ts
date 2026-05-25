@@ -37,6 +37,7 @@ export const GENERATION_STAGES = [
   'incremental_planning',
   'generating_pages',
   'validating',
+  'completeness_check',
   'cross_linking',
   'rendering',
 ] as const

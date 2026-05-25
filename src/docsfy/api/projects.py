@@ -1115,6 +1115,41 @@ async def _generate_from_path(
     except Exception as exc:
         logger.warning(f"[{project_name}] Validation stage failed: {exc}")
 
+    # Completeness check — generate pages for any undocumented features
+    try:
+        from docsfy.postprocess import check_and_fill_completeness
+
+        await update_and_notify(
+            gen_key,
+            project_name,
+            ai_provider,
+            ai_model,
+            status="generating",
+            owner=owner,
+            branch=branch,
+            current_stage="completeness_check",
+            page_count=len(pages),
+            generation_id=generation_id,
+        )
+        pages, plan = await check_and_fill_completeness(
+            pages=pages,
+            repo_path=repo_dir,
+            plan=plan,
+            ai_provider=ai_provider,
+            ai_model=ai_model,
+            cache_dir=cache_dir,
+            project_name=project_name,
+            ai_cli_timeout=ai_cli_timeout,
+            graph_report_path=graph_report,
+            graph_report_available=graph_report is not None,
+            repo_type=detected_repo_type,
+            on_page_generated=_on_page_generated,
+            owner=owner,
+            branch=branch,
+        )
+    except Exception as exc:
+        logger.warning(f"[{project_name}] Completeness check failed: {exc}")
+
     try:
         await update_and_notify(
             gen_key,
@@ -1259,14 +1294,14 @@ async def _load_available_models() -> dict[str, list[dict[str, str]]]:
         all_models = await list_models()
         for model in all_models:
             provider = model.get("provider", "")
-            # Match sidecar provider names to VALID_PROVIDERS
-            matched_provider = False
+            matched_provider = ""
             for p in VALID_PROVIDERS:
                 if p in provider:
-                    result[p].append(model)
-                    matched_provider = True
+                    matched_provider = p
                     break
-            if not matched_provider:
+            if matched_provider:
+                result[matched_provider].append(model)
+            else:
                 logger.debug(
                     "Skipping model with unmatched provider %r: %s",
                     provider,
@@ -1296,12 +1331,10 @@ async def build_projects_payload(username: str, is_admin: bool) -> dict[str, Any
         projects = await list_projects(owner=username, accessible=accessible)
         known_branches = await get_known_branches(owner=username)
 
-    available_models = await _load_available_models()
     total_cost = await get_total_cost(owner=None if is_admin else username)
     return {
         "projects": projects,
         "known_branches": known_branches,
-        "available_models": available_models,
         "total_cost_usd": total_cost,
     }
 

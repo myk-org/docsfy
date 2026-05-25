@@ -4,7 +4,7 @@ version = "1.5.0"
 description = "AI-powered documentation generator - generates polished static HTML docs from GitHub repos"
 requires-python = ">=3.12"
 dependencies = [
-    "pi-sidecar-client>=1.0.4",
+    "pi-sidecar-client>=1.0.6",
     "fastapi",
     "uvicorn",
     "pydantic-settings",
