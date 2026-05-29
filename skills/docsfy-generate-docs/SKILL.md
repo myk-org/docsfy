@@ -58,9 +58,12 @@ If health check fails, inform the user that the docsfy server is not reachable a
 
 ## Workflow
 
-### Phase 1: Collect Parameters
+### Phase 1: Collect All Parameters
 
-**Always ask the user — NEVER assume or hardcode provider/model:**
+**All user input is collected in this phase before any execution begins.**
+**Always ask the user — NEVER assume or hardcode provider/model.**
+
+**MANDATORY: Use `AskUserQuestion` to collect ALL parameters. Never skip a question.**
 
 | Parameter | Required | How to get |
 |-----------|----------|------------|
@@ -70,8 +73,10 @@ If health check fails, inform the user that the docsfy server is not reachable a
 | Branch | No | Default: `main` |
 | Output directory | No | Default: `docs/` |
 | Force regeneration | No | Only offered when re-generating an existing project |
-
-**MANDATORY: Use `AskUserQuestion` to collect ALL parameters. Never skip a question.**
+| GitHub Pages preference | Conditional | GitHub repos only |
+| README simplification | Conditional | Only if GitHub Pages serves from `docs/` |
+| Commit/Push/PR preference | Yes | Always ask |
+| AGENTS.md guardrail | Conditional | Only if committing |
 
 #### Step 1: Fetch existing projects and available models
 
@@ -137,7 +142,7 @@ Note: not all providers may have entries in `available_models` (e.g., `gemini` a
   but still use `models` data for provider/model selection).
 - If both fail → hardcoded providers + free-form model + no smart defaults.
 
-#### Step 2: Ask for parameters
+#### Step 2: Ask for generation parameters
 
 Model is collected in Round 2 because it depends on the provider selected in Round 1.
 
@@ -173,9 +178,9 @@ mark it as "(Recommended)" in the AskUserQuestion options.
 If `available_models` does not contain the selected provider or the array is empty,
 fall back to free-form model input.
 
-### GitHub Pages Setup (GitHub repos only)
+#### Step 3: GitHub Pages preferences (GitHub repos only)
 
-If the repository URL does not contain `github.com`, skip the GitHub Pages setup entirely and treat GitHub Pages as not configured.
+If the repository URL does not contain `github.com`, skip this step entirely and treat GitHub Pages as not configured.
 
 If the repository is hosted on GitHub, check if GitHub Pages is configured to serve from `docs/` on the target branch:
 
@@ -184,32 +189,107 @@ gh api repos/<owner>/<repo>/pages --jq '.source' 2>/dev/null
 ```
 
 - If **not configured** or returns error: ask the user if they want to enable GitHub Pages to serve the generated docs.
-  - **Yes** → Configure GitHub Pages to serve from `docs/` on the target branch:
-
-    ```bash
-    gh api repos/<owner>/<repo>/pages -X POST -f "source[branch]=<branch>" -f "source[path]=/docs"
-    ```
-
-  - **No** → Skip and continue with generation.
+  - **Yes** → Store the user's choice. The actual `gh api` POST to configure Pages will be executed in Phase 6a.
+  - **No** → Skip and continue.
 - If **already configured** with `docs/` path: no action needed, continue.
 - If **configured with a different path**: inform the user and ask how to proceed.
 
 **Track whether GitHub Pages is confirmed to serve from `docs/` on the target branch**
-(either pre-existing or newly set up) — this is needed for Phase 6.
+(either pre-existing or the user chose to enable it) — this is needed for Phase 6 and Step 4a.
 If Pages is configured but serves from a different path and the user chose not to change it,
 treat it as not configured for Phase 6 purposes.
+
+#### Step 4: Post-generation preferences
+
+Collect preferences for actions that will be executed after docs are generated and downloaded.
+
+##### 4a. README simplification preference
+
+**Only ask if GitHub Pages will serve from `docs/` on the target branch** (either already configured or the user chose to enable it in Step 3). If GitHub Pages is not configured / not applicable, skip this question.
+
+**Before asking, check if the README is already simplified.**
+
+Read `README.md` in the repository root. Consider it "already simplified" if ALL of these are true:
+
+- It contains a link to the docs site URL (construct the URL using the logic from Phase 6b)
+- It is shorter than 80 lines
+- It does NOT contain detailed API documentation, configuration guides, or multi-section reference content
+  - Specifically: it does NOT have sections like `## API Reference`, `## Configuration`,
+    or `## Detailed Usage` with more than 3 subsections each
+
+If unsure whether the README is already simplified, ask the user rather than deciding autonomously.
+
+If already simplified: display "README already points to docs site — no changes needed." and skip.
+
+If NOT simplified (or no README exists), ask the user:
+
+> GitHub Pages is serving your docs. Would you like to simplify the project README to point to the docs site?
+
+- **Yes, simplify README** → Store choice. Execution happens in Phase 6c.
+- **No, but add a docs link** → Store choice. Execution happens in Phase 6c.
+- **No** → Skip entirely, make no changes to README.
+
+##### 4b. Commit/Push/PR preference
+
+Ask the user via `AskUserQuestion` if they want to commit, push, and create a PR for the docs changes:
+
+Options:
+
+- **Yes (Recommended)** — Commit all docs changes, push the branch, and create a PR
+- **Commit only** — Commit locally but do not push
+- **No** — Leave changes uncommitted
+
+Store the user's choice for Phase 7.
+
+##### 4c. AGENTS.md guardrail preference
+
+**Only ask if the user chose "Yes (Recommended)" or "Commit only" in Step 4b.** If the user chose "No", skip this question.
+
+Check if `AGENTS.md` (or `CLAUDE.md`) already contains a rule about not editing generated docs.
+If it does, note that the guardrail already exists and skip the question.
+
+If not already present, ask the user via `AskUserQuestion`:
+
+> "Would you like to add a rule to AGENTS.md that `<output_dir>/` should never be edited manually?"
+
+- **Yes** → Store choice. Execution happens in Phase 6d.
+- **No** → Skip.
+
+#### Step 5: Confirm and begin execution
+
+Display a summary of all collected parameters and preferences:
+
+```
+📋 Generation Plan Summary
+─────────────────────────
+ Repository:          <repo_url>
+ Branch:              <branch>
+ Provider / Model:    <provider> / <model>
+ Output directory:    <output_dir>
+ Force regeneration:  Yes / No
+ GitHub Pages:        Enable / Already configured / Not applicable
+ README:              Simplify / Add link / No changes
+ Commit/Push/PR:      Yes / Commit only / No
+ AGENTS.md guardrail: Yes / No / Already exists / N/A
+```
+
+Ask the user: **"Ready to proceed with generation?"** (Yes / No)
+
+- **Yes** → Proceed to Phase 2.
+- **No** → Allow the user to change any parameter, then re-display the summary.
+
+**This is the LAST user interaction before execution begins.** From Phase 2 onward, no questions are asked except for error handling (Phase 3 dirty tree, Phase 5 security findings) and the PR merge question in Phase 7 (which requires the PR to exist first).
 
 ### Phase 2: Generate Documentation
 
 Run the generation command using **`Bash(run_in_background=true)`** since it is a long-running blocking operation:
 
 ```bash
-docsfy generate <repo_url> --branch <branch> --provider <provider> --model <model> --watch [--force] [--repo-type <type>]
+docsfy generate <repo_url> --branch <branch> --provider <provider> --model <model> --watch [--force]
 ```
 
 - Always use `--watch` for real-time WebSocket progress
 - Add `--force` only if user requested force regeneration
-- Add `--repo-type <type>` if user specifies the repository type (app, tests, library, framework). If not specified, the AI auto-detects the type.
 - **Use `run_in_background=true`** on the Bash tool so the main conversation is not blocked.
   You will be notified when the command completes.
 
@@ -235,6 +315,7 @@ git status --porcelain
 ```
 
 If the working tree is dirty, inform the user and ask whether to stash changes, abort, or continue.
+**(EXCEPTION: This is reactive error handling, not planned data collection — the question stays here.)**
 
 Create the branch:
 
@@ -308,6 +389,8 @@ Run Grep searches across all files in `<output_dir>/` for these patterns:
   - **Ignore** → User confirms false positives, proceed to Phase 6.
   - **Abort** → Stop the workflow.
 
+**(EXCEPTION: Security findings are reactive error handling, not planned data collection — these questions stay here.)**
+
 **After choosing Fix or Abort**, ask the user if they want to open a GitHub issue on `https://github.com/myk-org/docsfy` to report the leak. docsfy generated this content — if it's leaking sensitive data, that's a bug in the generation pipeline that needs to be fixed at the source. Include the leaked patterns, file names, and matched content in the issue body.
 
 #### Secret Scanner Conflicts
@@ -322,11 +405,23 @@ If committing or pushing fails due to secret scanner errors, exclude `<output_di
 
 Ask the user before modifying any scanner configuration.
 
-### Phase 6: GitHub Pages Post-Setup (conditional)
+### Phase 6: Apply Collected Preferences
 
-**This phase runs ONLY if GitHub Pages is confirmed to serve from `docs/` on the target branch** (determined in Phase 1).
+This phase EXECUTES the preferences collected in Phase 1 without asking any questions.
 
-#### 6a. Display Docs Site Link
+#### 6a. Configure GitHub Pages (if user chose to enable in Phase 1 Step 3)
+
+Execute the API call to configure GitHub Pages:
+
+```bash
+gh api repos/<owner>/<repo>/pages -X POST -f "source[branch]=<branch>" -f "source[path]=/docs"
+```
+
+If the API call fails, inform the user of the error. Do not re-ask — just report the failure and continue.
+
+#### 6b. Display Docs Site Link (if GitHub Pages serves from `docs/`)
+
+**This step runs if GitHub Pages is confirmed to serve from `docs/` on the target branch** — either pre-existing or newly configured in Phase 6a.
 
 Show the user the live documentation URL.
 
@@ -338,67 +433,45 @@ Extract `<owner>` and `<repo>` from the repository URL, then construct the URL:
 
 Display the URL to the user.
 
-#### 6b. Offer README Simplification
+#### 6c. Simplify README (if user chose to simplify or add link in Phase 1 Step 4a)
 
-**Before asking, check if the README is already simplified.**
+Execute the README changes based on the user's earlier choice. No questions asked.
 
-Read `README.md` in the repository root. Consider it "already simplified" if ALL of these are true:
-
-- It contains a link to the docs site URL (from Phase 6a)
-- It is shorter than 80 lines
-- It does NOT contain detailed API documentation, configuration guides, or multi-section reference content
-  - Specifically: it does NOT have sections like `## API Reference`, `## Configuration`,
-    or `## Detailed Usage` with more than 3 subsections each
-
-If unsure whether the README is already simplified, ask the user rather than deciding autonomously.
-
-If already simplified: display "README already points to docs site — no changes needed." and skip.
-
-If NOT simplified (or no README exists), ask the user:
-
-> GitHub Pages is serving your docs. Would you like to simplify the project README to point to the docs site?
-
-- **Yes, simplify README** → Create a simplified version that keeps ONLY:
+- **If "Yes, simplify README"** → Create a simplified version that keeps ONLY:
   - Project title + one-line description
-  - Link to the docs site prominently (use the URL from Phase 6a)
+  - Link to the docs site prominently (use the URL from Phase 6b)
   - Quick start (e.g., docker run or install command, 5 lines max)
   - CLI install + 3-line usage example
   - "See the [full documentation](<docs_site_url>) for everything else"
   - License section
 
   Remove all other detailed content (API docs, configuration guides, detailed usage, etc.).
-- **No, but add a docs link** → Keep the existing README content unchanged, but add a prominent link to the docs site near the top (after the title/description). Use a format like:
+- **If "No, but add a docs link"** → Keep the existing README content unchanged, but add a prominent link to the docs site near the top (after the title/description). Use a format like:
   ```markdown
   📖 **[Full Documentation](<docs_site_url>)**
   ```
-- **No** → Skip entirely, make no changes to README.
+- **If "No" or not applicable** → Skip entirely, make no changes to README.
 
-### Phase 7: Commit, Push, and PR (optional)
+#### 6d. AGENTS.md guardrail (if user chose yes in Phase 1 Step 4c)
 
-Ask the user via `AskUserQuestion` if they want to commit, push, and create a PR for the docs changes:
+Append the guardrail rule to AGENTS.md:
 
-Options:
+```
+## Generated Documentation
 
-- **Yes (Recommended)** — Commit all docs changes, push the branch, and create a PR
-- **Commit only** — Commit locally but do not push
-- **No** — Leave changes uncommitted
+The `<output_dir>/` directory contains AI-generated documentation from docsfy.
+**NEVER edit these files manually.** To update documentation, regenerate using docsfy.
+```
 
-If **Yes**:
+If the user chose "No" or the guardrail already exists, skip this step.
 
-1. Stage all files in `<output_dir>/` and `README.md` (if simplified)
-1b. **Offer to add docs guardrail** (if not already present):
-       Check if `AGENTS.md` (or `CLAUDE.md`) contains a rule about not editing generated docs.
-       If not, ask the user via `AskUserQuestion`:
-       > "Would you like to add a rule to AGENTS.md that `<output_dir>/` should never be edited manually?"
-       - **Yes** → Append to AGENTS.md:
-         ```
-         ## Generated Documentation
+### Phase 7: Commit, Push, and PR
 
-         The `<output_dir>/` directory contains AI-generated documentation from docsfy.
-         **NEVER edit these files manually.** To update documentation, regenerate using docsfy.
-         ```
-         Stage `AGENTS.md` alongside the docs files.
-       - **No** → Skip.
+Execute based on the user's choice from Phase 1 Step 4b. No questions asked except the merge question noted below.
+
+If **Yes (Recommended)**:
+
+1. Stage all files in `<output_dir>/` and `README.md` (if simplified in Phase 6c) and `AGENTS.md` (if updated in Phase 6d)
 2. Commit with message: `docs: generate documentation with docsfy (<provider>/<model>)`
 3. Push the branch: `git push -u origin docs/docsfy-<project_name>`
 4. Create PR against the repository's default branch:
@@ -408,9 +481,11 @@ If **Yes**:
    - **Yes** → Merge with: `gh pr merge <PR_URL> --squash --delete-branch`
    - **No** → Skip, display: "PR is ready for review at <PR_URL>"
 
+   **(This is the only question asked during execution — it requires the PR to exist first.)**
+
 If **Commit only**:
 
-1. Stage and commit (same as above, steps 1-2)
+1. Stage and commit (same as above, steps 1-2, including `AGENTS.md` if updated)
 2. Display: "Changes committed locally. Push when ready with: `git push -u origin docs/docsfy-<project_name>`"
 
 If **No**:
@@ -433,7 +508,6 @@ Display:
 | Command | Purpose |
 |---------|---------|
 | `docsfy generate <url> --watch` | Generate docs with live progress |
-| `docsfy generate <url> --watch --repo-type tests` | Generate docs for a test suite repo |
 | `docsfy status <name>` | Check generation status |
 | `docsfy download <name> -o <dir>` | Download docs to directory |
 | `docsfy list` | List all projects |
@@ -456,6 +530,7 @@ Display:
 | Leaving nested download folder | Flatten after download — move files to output root |
 | Downloading before creating branch | Always create a docs branch before downloading |
 | Showing docs link without Pages serving docs/ | Only show docs URL if GitHub Pages serves from `docs/` on target branch |
+| Asking user questions during execution phases | ALL user input is collected in Phase 1 — execution phases (2-8) only ask for error handling (dirty tree, security findings) and the PR merge question |
 | Skipping security scan | Always scan docs for leaked private data before committing |
 | Not excluding docs/ from secret scanners | Generated docs contain placeholder tokens that trigger secret scanners — exclude the output dir from the scanner's configuration |
 | Editing generated docs manually | Generated docs must NEVER be edited — fix issues at the source (docsfy server/prompts), not in the output |
