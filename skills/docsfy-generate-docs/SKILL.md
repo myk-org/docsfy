@@ -77,6 +77,7 @@ If health check fails, inform the user that the docsfy server is not reachable a
 | README simplification | Conditional | Only if GitHub Pages serves from `docs/` |
 | Commit/Push/PR preference | Yes | Always ask |
 | AGENTS.md guardrail | Conditional | Only if committing |
+| Repository type | No | Optional — override auto-detection (app, tests, library, framework) |
 
 #### Step 1: Fetch existing projects and available models
 
@@ -158,6 +159,7 @@ Show the user what was used before and present smart defaults:
 - Output directory: default `docs/`
 - Force regeneration: **always offer `--force`** since this is a re-generation of an existing project.
   Show when it was last generated: "Last generated: {last_generated}"
+- Repository type: optional — offer choices: Auto-detect (default), App, Tests, Library, Framework
 
 **Round 2** — After provider is selected, present models from `available_models.<selected_provider>`.
 Use the `name` field for display and the `id` field for API calls.
@@ -170,6 +172,7 @@ fall back to free-form model input.
 
 **Round 1** — Ask for provider (from `providers` array), repository URL, branch,
 output directory. Do NOT offer `--force` (it does nothing for new generations).
+Optionally ask for repository type: Auto-detect (default), App, Tests, Library, Framework.
 
 **Round 2** — After provider is selected, present that provider's models from
 `available_models.<selected_provider>` as `AskUserQuestion` options (use `name` for display, `id` for value).
@@ -194,10 +197,15 @@ gh api repos/<owner>/<repo>/pages --jq '.source' 2>/dev/null
 - If **already configured** with `docs/` path: no action needed, continue.
 - If **configured with a different path**: inform the user and ask how to proceed.
 
-**Track whether GitHub Pages is confirmed to serve from `docs/` on the target branch**
-(either pre-existing or the user chose to enable it) — this is needed for Phase 6 and Step 4a.
-If Pages is configured but serves from a different path and the user chose not to change it,
-treat it as not configured for Phase 6 purposes.
+**Track GitHub Pages status separately:**
+- **Pre-existing and verified** (already serving from `docs/` on target branch) → confirmed = true
+- **User chose to enable** → confirmed = false (pending — will be verified after Phase 6a)
+- **Not configured / user declined** → confirmed = false
+- **Configured with different path, user chose not to change** → confirmed = false
+
+Only pre-existing verified configurations are "confirmed" at this stage. User intent to enable is stored but does NOT count as confirmed until Phase 6a succeeds and is re-verified.
+
+This distinction is needed for Step 4a (README simplification should only be asked if Pages is already confirmed or the user chose to enable) and Phase 6 (where confirmation is finalized).
 
 #### Step 4: Post-generation preferences
 
@@ -267,6 +275,7 @@ Display a summary of all collected parameters and preferences:
  Provider / Model:    <provider> / <model>
  Output directory:    <output_dir>
  Force regeneration:  Yes / No
+ Repository type:     Auto-detect / App / Tests / Library / Framework
  GitHub Pages:        Enable / Already configured / Not applicable
  README:              Simplify / Add link / No changes
  Commit/Push/PR:      Yes / Commit only / No
@@ -278,18 +287,19 @@ Ask the user: **"Ready to proceed with generation?"** (Yes / No)
 - **Yes** → Proceed to Phase 2.
 - **No** → Allow the user to change any parameter, then re-display the summary.
 
-**This is the LAST user interaction before execution begins.** From Phase 2 onward, no questions are asked except for error handling (Phase 3 dirty tree, Phase 5 security findings) and the PR merge question in Phase 7 (which requires the PR to exist first).
+**This is the LAST planned user interaction before execution begins.** From Phase 2 onward, only reactive error-handling questions may be asked: Phase 2 generation failure, Phase 3 dirty working tree, Phase 5 security scan findings, and the Phase 7 PR merge question (which requires the PR to exist first).
 
 ### Phase 2: Generate Documentation
 
 Run the generation command using **`Bash(run_in_background=true)`** since it is a long-running blocking operation:
 
 ```bash
-docsfy generate <repo_url> --branch <branch> --provider <provider> --model <model> --watch [--force]
+docsfy generate <repo_url> --branch <branch> --provider <provider> --model <model> --watch [--force] [--repo-type <type>]
 ```
 
 - Always use `--watch` for real-time WebSocket progress
 - Add `--force` only if user requested force regeneration
+- Add `--repo-type <type>` if user specified a repository type (app, tests, library, framework). If not specified (Auto-detect), omit the flag and let the AI auto-detect.
 - **Use `run_in_background=true`** on the Bash tool so the main conversation is not blocked.
   You will be notified when the command completes.
 
@@ -417,11 +427,20 @@ Execute the API call to configure GitHub Pages:
 gh api repos/<owner>/<repo>/pages -X POST -f "source[branch]=<branch>" -f "source[path]=/docs"
 ```
 
-If the API call fails, inform the user of the error. Do not re-ask — just report the failure and continue.
+After the POST, re-verify by running:
+
+```bash
+gh api repos/<owner>/<repo>/pages --jq '.source' 2>/dev/null
+```
+
+- If verification shows `docs/` on the target branch → set confirmed = true
+- If verification fails or shows a different path → set confirmed = false, inform the user that Pages setup failed
+
+If the initial POST fails, set confirmed = false and inform the user. Do not re-ask — just report the failure and continue.
 
 #### 6b. Display Docs Site Link (if GitHub Pages serves from `docs/`)
 
-**This step runs if GitHub Pages is confirmed to serve from `docs/` on the target branch** — either pre-existing or newly configured in Phase 6a.
+**This step runs ONLY if GitHub Pages is confirmed (verified) to serve from `docs/` on the target branch** — either pre-existing (verified in Phase 1 Step 3) or newly configured and verified in Phase 6a. If Phase 6a failed or was not verified, skip this step.
 
 Show the user the live documentation URL.
 
@@ -435,7 +454,7 @@ Display the URL to the user.
 
 #### 6c. Simplify README (if user chose to simplify or add link in Phase 1 Step 4a)
 
-Execute the README changes based on the user's earlier choice. No questions asked.
+Execute the README changes based on the user's earlier choice — but ONLY if GitHub Pages is confirmed (verified). If Pages setup failed in Phase 6a, skip README changes entirely and inform the user: "Skipping README changes — GitHub Pages is not confirmed to serve from docs/." No questions asked.
 
 - **If "Yes, simplify README"** → Create a simplified version that keeps ONLY:
   - Project title + one-line description
@@ -508,6 +527,7 @@ Display:
 | Command | Purpose |
 |---------|---------|
 | `docsfy generate <url> --watch` | Generate docs with live progress |
+| `docsfy generate <url> --watch --repo-type tests` | Generate docs for a test suite repo |
 | `docsfy status <name>` | Check generation status |
 | `docsfy download <name> -o <dir>` | Download docs to directory |
 | `docsfy list` | List all projects |
