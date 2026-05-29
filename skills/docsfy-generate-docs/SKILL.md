@@ -188,7 +188,7 @@ If the repository URL does not contain `github.com`, skip this step entirely and
 If the repository is hosted on GitHub, check if GitHub Pages is configured to serve from `docs/` on the target branch:
 
 ```bash
-gh api repos/<owner>/<repo>/pages --jq '.source' 2>/dev/null
+gh api repos/<owner>/<repo>/pages --jq '.source'
 ```
 
 - If **not configured** or returns error: ask the user if they want to enable GitHub Pages to serve the generated docs.
@@ -199,13 +199,16 @@ gh api repos/<owner>/<repo>/pages --jq '.source' 2>/dev/null
 
 **Track GitHub Pages status separately:**
 - **Pre-existing and verified** (already serving from `docs/` on target branch) → confirmed = true
-- **User chose to enable** → confirmed = false (pending — will be verified after Phase 6a)
+- **User chose to enable** (not configured → user wants to enable) → confirmed = false (pending — will be verified after Phase 6a)
+- **Configured with different path, user chose to change to `/docs`** → confirmed = false (pending — Phase 6a will reconfigure and re-verify)
 - **Not configured / user declined** → confirmed = false
 - **Configured with different path, user chose not to change** → confirmed = false
 
-Only pre-existing verified configurations are "confirmed" at this stage. User intent to enable is stored but does NOT count as confirmed until Phase 6a succeeds and is re-verified.
+Only pre-existing verified configurations are "confirmed" at this stage. User intent to enable or change is stored but does NOT count as confirmed until Phase 6a succeeds and is re-verified.
 
-This distinction is needed for Step 4a (README simplification should only be asked if Pages is already confirmed or the user chose to enable) and Phase 6 (where confirmation is finalized).
+Phase 6a runs for both "not configured + user chose to enable" and "configured differently + user chose to change to `/docs`".
+
+This distinction is needed for Step 4a (README simplification should only be asked if Pages is already confirmed or the user chose to enable/change) and Phase 6 (where confirmation is finalized).
 
 #### Step 4: Post-generation preferences
 
@@ -419,7 +422,7 @@ Ask the user before modifying any scanner configuration.
 
 This phase EXECUTES the preferences collected in Phase 1 without asking any questions.
 
-#### 6a. Configure GitHub Pages (if user chose to enable in Phase 1 Step 3)
+#### 6a. Configure GitHub Pages (if user chose to enable or change path in Phase 1 Step 3)
 
 Execute the API call to configure GitHub Pages:
 
@@ -430,11 +433,13 @@ gh api repos/<owner>/<repo>/pages -X POST -f "source[branch]=<branch>" -f "sourc
 After the POST, re-verify by running:
 
 ```bash
-gh api repos/<owner>/<repo>/pages --jq '.source' 2>/dev/null
+gh api repos/<owner>/<repo>/pages --jq '.source'
 ```
 
-- If verification shows `docs/` on the target branch → set confirmed = true
-- If verification fails or shows a different path → set confirmed = false, inform the user that Pages setup failed
+The `.source` response has the shape `{"branch": "main", "path": "/docs"}`. Check both fields explicitly:
+
+- If `.source.branch` equals `<branch>` AND `.source.path` equals `"/docs"` → set confirmed = true
+- Otherwise (wrong branch, wrong path, or API error) → set confirmed = false, inform the user that Pages setup failed and include the error details or mismatched values
 
 If the initial POST fails, set confirmed = false and inform the user. Do not re-ask — just report the failure and continue.
 
