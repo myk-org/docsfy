@@ -75,6 +75,8 @@
   --glow-blue: rgba(56, 139, 253, 0.15);
   --glow-purple: rgba(188, 140, 255, 0.12);
 
+  --ambient-grid-line: rgba(56, 139, 253, 0.4);
+
   --text-primary: #f0f6fc;
   --text-secondary: #9198a1;
   --text-tertiary: #656d76;
@@ -105,6 +107,8 @@
   --glow-orange: rgba(191, 90, 20, 0.08);
   --glow-blue: rgba(9, 105, 218, 0.10);
   --glow-purple: rgba(130, 80, 223, 0.08);
+
+  --ambient-grid-line: rgba(9, 105, 218, 0.4);
 
   --text-primary: #1f2328;
   --text-secondary: #656d76;

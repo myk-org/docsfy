@@ -46,7 +46,7 @@ export default function LoginPage() {
   return (
     <div className="relative flex min-h-screen items-center justify-center bg-surface-page px-4 overflow-hidden">
       {/* Ambient grid */}
-      <div className="pointer-events-none absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'linear-gradient(rgba(56,139,253,.4) 1px, transparent 1px), linear-gradient(90deg, rgba(56,139,253,.4) 1px, transparent 1px)', backgroundSize: '48px 48px' }} />
+      <div className="pointer-events-none absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'linear-gradient(var(--ambient-grid-line) 1px, transparent 1px), linear-gradient(90deg, var(--ambient-grid-line) 1px, transparent 1px)', backgroundSize: '48px 48px' }} />
       {/* Radial glow */}
       <div className="pointer-events-none absolute left-1/2 top-1/2 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-signal-blue/[0.04] blur-3xl" />
 
