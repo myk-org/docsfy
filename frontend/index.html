@@ -15,7 +15,6 @@
           if (stored === 'light' || stored === 'dark') theme = stored;
         } catch(e) { /* localStorage may be unavailable */ }
         document.documentElement.setAttribute('data-theme', theme);
-        document.documentElement.classList.toggle('dark', theme === 'dark');
       })();
     </script>
     <div id="root"></div>

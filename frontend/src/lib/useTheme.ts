@@ -21,7 +21,6 @@ export function useTheme() {
     const current = document.documentElement.getAttribute('data-theme') || 'dark'
     const next: Theme = current === 'dark' ? 'light' : 'dark'
     document.documentElement.setAttribute('data-theme', next)
-    document.documentElement.classList.toggle('dark', next === 'dark')
     try {
       localStorage.setItem('theme', next)
     } catch {

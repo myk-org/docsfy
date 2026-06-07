@@ -113,16 +113,16 @@ export default function Combobox({
           placeholder={placeholder}
           disabled={disabled}
           data-testid={testId}
-          className="w-full h-8 rounded-md border border-border bg-transparent pl-3 pr-8 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="w-full h-8 rounded-md border border-border-default bg-transparent pl-3 pr-8 text-sm text-text-primary placeholder:text-text-tertiary focus:outline-none focus:ring-1 focus:ring-border-accent disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         />
-        <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground pointer-events-none" />
+        <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 size-3.5 text-text-tertiary pointer-events-none" />
       </div>
       {isOpen && filtered.length > 0 && (
         <ul
           ref={listRef}
           id={listboxId}
           role="listbox"
-          className="absolute z-50 mt-1 w-full max-h-48 overflow-auto rounded-md border border-border bg-popover py-1 text-sm shadow-lg"
+          className="absolute z-50 mt-1 w-full max-h-48 overflow-auto rounded-md border border-border-default bg-surface-card py-1 text-sm shadow-lg"
         >
           {filtered.map((option, index) => (
             <li
@@ -133,8 +133,8 @@ export default function Combobox({
               className={cn(
                 'cursor-pointer px-3 py-1.5 transition-colors',
                 index === highlightedIndex
-                  ? 'bg-accent text-accent-foreground'
-                  : 'hover:bg-accent/50 text-foreground'
+                  ? 'bg-surface-elevated text-text-primary'
+                  : 'hover:bg-surface-hover/50 text-text-primary'
               )}
               onMouseDown={(e) => {
                 e.preventDefault()
@@ -145,7 +145,7 @@ export default function Combobox({
             >
               <span>{option.label}</span>
               {option.label !== option.value && (
-                <span className="ml-1.5 text-xs text-muted-foreground">{option.value}</span>
+                <span className="ml-1.5 text-xs text-text-tertiary">{option.value}</span>
               )}
             </li>
           ))}

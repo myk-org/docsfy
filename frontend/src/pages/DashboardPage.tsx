@@ -422,16 +422,16 @@ export default function DashboardPage() {
 
   if (!authChecked) {
     return (
-      <div className="flex items-center justify-center h-screen bg-background">
-        <div className="animate-pulse text-muted-foreground text-sm">Loading...</div>
+      <div className="flex items-center justify-center h-screen bg-surface-page">
+        <div className="animate-pulse text-text-secondary text-sm">Loading...</div>
       </div>
     )
   }
 
   if (authError) {
     return (
-      <div className="flex flex-col items-center justify-center h-screen bg-background gap-3">
-        <p className="text-sm text-destructive">{authError}</p>
+      <div className="flex flex-col items-center justify-center h-screen bg-surface-page gap-3">
+        <p className="text-sm text-signal-red">{authError}</p>
         <Button variant="outline" size="sm" onClick={() => window.location.reload()}>
           Retry
         </Button>
@@ -451,7 +451,7 @@ export default function DashboardPage() {
         <div className="p-3 pb-0">
           <Button
             variant="default"
-            className="w-full h-9 gap-2 bg-gradient-to-r from-indigo-600 to-violet-600 text-white hover:from-indigo-500 hover:to-violet-500 transition-all duration-200"
+            className="w-full h-9 gap-2 bg-signal-blue text-white hover:bg-signal-blue/90 transition-colors duration-150"
             onClick={() => setSelectedView({ type: 'generate' })}
             title="Generate documentation for a new repository"
           >
@@ -472,10 +472,10 @@ export default function DashboardPage() {
 
       {/* Projects section header */}
       <div className="flex items-center justify-between px-3 pt-4 pb-1">
-        <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+        <span className="text-[11px] font-semibold uppercase tracking-wider text-text-tertiary">
           Projects
         </span>
-        <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
+        <span className="flex items-center gap-1 text-[11px] text-text-secondary">
           <span title={`${repoCount} unique repositories`}>{repoCount}</span>
           {totalCostUsd > 0 && (
             <span title="Total cost across all generations">· ${totalCostUsd.toFixed(2)}</span>
@@ -510,7 +510,7 @@ export default function DashboardPage() {
       {isAdmin && (
         <>
           <div className="px-3 pt-3 pb-1">
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-text-tertiary">
               Admin
             </span>
           </div>
@@ -556,7 +556,7 @@ export default function DashboardPage() {
       <button
         type="button"
         onClick={toggleSidebar}
-        className="hidden sm:flex items-center justify-center h-8 border-t border-border text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+        className="hidden sm:flex items-center justify-center h-8 border-t border-border-default text-text-tertiary hover:text-text-primary hover:bg-surface-hover transition-colors"
         aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
       >
@@ -616,8 +616,8 @@ function SidebarItem({
       title={title}
       className={`flex items-center gap-2.5 w-full px-2 py-1.5 rounded-md text-sm transition-colors ${
         active
-          ? 'bg-accent text-accent-foreground'
-          : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+          ? 'bg-surface-elevated text-text-primary'
+          : 'text-text-secondary hover:text-text-primary hover:bg-surface-hover'
       }`}
     >
       {icon}
@@ -787,9 +787,9 @@ function MainPanel({
   if (selectedView.type === 'empty') {
     return (
       <div className="flex flex-col items-center justify-center h-full text-center p-8">
-        <FileText className="size-12 text-muted-foreground/40 mb-4" />
-        <h2 className="text-lg font-medium text-foreground mb-1">Welcome, {username}</h2>
-        <p className="text-sm text-muted-foreground max-w-md">
+        <FileText className="size-12 text-text-tertiary/40 mb-4" />
+        <h2 className="text-lg font-medium text-text-primary mb-1">Welcome, {username}</h2>
+        <p className="text-sm text-text-secondary max-w-md">
           Select a project from the sidebar to view its documentation, or create a new generation to get started.
         </p>
       </div>
@@ -819,8 +819,8 @@ function MainPanel({
     if (!project) {
       return (
         <div className="flex flex-col items-center justify-center h-full text-center p-8">
-          <Loader2 className="size-8 animate-spin text-muted-foreground mb-4" />
-          <p className="text-sm text-muted-foreground">
+          <Loader2 className="size-8 animate-spin text-text-secondary mb-4" />
+          <p className="text-sm text-text-secondary">
             Waiting for project data...
           </p>
         </div>

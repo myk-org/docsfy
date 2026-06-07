@@ -40,7 +40,7 @@ export default function ApiKeyDisplay({
   return (
     <div className="flex flex-col gap-4 rounded-lg border p-4">
       {/* Warning banner */}
-      <div className="flex items-center gap-2 rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-sm text-amber-700 dark:text-amber-400">
+      <div className="flex items-center gap-2 rounded-md border border-signal-orange/30 bg-signal-orange/10 px-3 py-2 text-sm text-signal-orange">
         <AlertTriangle className="size-4 shrink-0" />
         <span className="font-medium">
           Save this password &mdash; it won&apos;t be shown again!
@@ -50,15 +50,15 @@ export default function ApiKeyDisplay({
       {/* User info */}
       <div className="flex flex-col gap-2 text-sm">
         <div>
-          <span className="text-muted-foreground">Username: </span>
+          <span className="text-text-secondary">Username: </span>
           <span className="font-bold">{username}</span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-muted-foreground">Role: </span>
+          <span className="text-text-secondary">Role: </span>
           <RoleBadge role={role} />
         </div>
         <div>
-          <span className="text-muted-foreground">Password: </span>
+          <span className="text-text-secondary">Password: </span>
           <code className="font-mono break-all">{password}</code>
         </div>
       </div>
@@ -92,10 +92,10 @@ export default function ApiKeyDisplay({
 }
 
 const ROLE_STYLES: Record<string, string> = {
-  admin: 'bg-green-500/10 text-green-600 border-green-500/20',
-  user: 'bg-blue-500/10 text-blue-600 border-blue-500/20',
+  admin: 'bg-signal-green/10 text-signal-green border-signal-green/20',
+  user: 'bg-signal-blue/10 text-signal-blue border-signal-blue/20',
 }
-const DEFAULT_ROLE_STYLE = 'bg-gray-500/10 text-gray-600 border-gray-500/20'
+const DEFAULT_ROLE_STYLE = 'bg-surface-elevated text-text-tertiary border-border-default'
 
 function RoleBadge({ role }: { role: string }) {
   return (

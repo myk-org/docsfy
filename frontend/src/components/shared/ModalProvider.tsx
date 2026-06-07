@@ -244,7 +244,7 @@ export default function ModalProvider({ children }: { children: ReactNode }) {
                 }}
               />
               {state.hint && (
-                <p className="text-xs text-muted-foreground">{state.hint}</p>
+                <p className="text-xs text-text-secondary">{state.hint}</p>
               )}
             </div>
           )}

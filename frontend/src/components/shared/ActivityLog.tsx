@@ -9,16 +9,16 @@ interface ActivityLogProps {
 }
 
 const ENTRY_ICONS = {
-  done: <CheckCircle2 className="size-3.5 text-green-500 shrink-0" />,
-  active: <Loader2 className="size-3.5 text-blue-500 animate-spin shrink-0" />,
-  error: <XCircle className="size-3.5 text-red-500 shrink-0" />,
-  pending: <Circle className="size-3.5 text-muted-foreground opacity-50 shrink-0" />,
+  done: <CheckCircle2 className="size-3.5 text-signal-green shrink-0" />,
+  active: <Loader2 className="size-3.5 text-signal-blue animate-spin shrink-0" />,
+  error: <XCircle className="size-3.5 text-signal-red shrink-0" />,
+  pending: <Circle className="size-3.5 text-text-secondary opacity-50 shrink-0" />,
 } as const
 
 function StatusHeader({ status }: { status: ProjectStatus }) {
   if (status === 'generating') {
     return (
-      <div className="flex items-center gap-2 text-sm font-medium text-blue-500" title="Generation in progress">
+      <div className="flex items-center gap-2 text-sm font-medium text-signal-blue" title="Generation in progress">
         <Loader2 className="size-4 animate-spin" />
         Generating...
       </div>
@@ -26,17 +26,17 @@ function StatusHeader({ status }: { status: ProjectStatus }) {
   }
   if (status === 'ready') {
     return (
-      <div className="text-sm font-medium text-green-500" title="All pages generated successfully">Complete</div>
+      <div className="text-sm font-medium text-signal-green" title="All pages generated successfully">Complete</div>
     )
   }
   if (status === 'error') {
     return (
-      <div className="text-sm font-medium text-red-500" title="Generation encountered an error">Failed</div>
+      <div className="text-sm font-medium text-signal-red" title="Generation encountered an error">Failed</div>
     )
   }
   if (status === 'aborted') {
     return (
-      <div className="text-sm font-medium text-amber-500" title="Generation was stopped by user">Aborted</div>
+      <div className="text-sm font-medium text-signal-orange" title="Generation was stopped by user">Aborted</div>
     )
   }
   return null
@@ -69,8 +69,8 @@ export default function ActivityLog({ entries, status }: ActivityLogProps) {
 
   return (
     <div className="border rounded-lg">
-      <div className="flex items-center justify-between px-3 py-2 border-b bg-muted/30">
-        <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+      <div className="flex items-center justify-between px-3 py-2 border-b bg-surface-elevated/30">
+        <span className="text-xs font-semibold uppercase tracking-wider text-text-secondary">
           Activity Log
         </span>
         <StatusHeader status={status} />
