@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>docsfy</title>
-    <meta name="description" content="Turn any Git repo into a polished docs site you can generate, track, and share in minutes">
+    <meta name="description" content="Turn any Git repository into a polished documentation site in minutes">
     <link rel="stylesheet" href="assets/style.css">
     <script>try{var t=localStorage.getItem('theme');if(t==='dark')document.documentElement.setAttribute('data-theme','dark')}catch(e){}</script>
     <link rel="alternate" type="text/plain" title="LLM Documentation Index" href="llms.txt">
@@ -14,7 +14,7 @@
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <a href="index.html" class="sidebar-logo">docsfy</a>
-            <p class="sidebar-tagline">Turn any Git repo into a polished docs site you can generate, track, and share in minutes</p>
+            <p class="sidebar-tagline">Turn any Git repository into a polished documentation site in minutes</p>
         </div>
 
         <div class="sidebar-search">
@@ -29,16 +29,16 @@
                 <ul class="nav-group-pages">
                     
                     <li>
-                        <a href="generate-your-first-docs-site.html"
+                        <a href="quickstart.html"
                            class="nav-link">
-                            Generate Your First Docs Site
+                            Getting Started with docsfy
                         </a>
                     </li>
                     
                     <li>
-                        <a href="install-and-run-docsfy-without-docker.html"
+                        <a href="deployment.html"
                            class="nav-link">
-                            Install and Run docsfy Without Docker
+                            Deploying with Docker
                         </a>
                     </li>
                     
@@ -50,65 +50,72 @@
                 <ul class="nav-group-pages">
                     
                     <li>
-                        <a href="generate-documentation.html"
+                        <a href="generating-docs.html"
                            class="nav-link">
                             Generating Documentation
                         </a>
                     </li>
                     
                     <li>
-                        <a href="track-generation-progress.html"
+                        <a href="managing-projects.html"
                            class="nav-link">
-                            Tracking Generation Progress
+                            Managing Projects and Variants
                         </a>
                     </li>
                     
                     <li>
-                        <a href="view-and-download-docs.html"
+                        <a href="browsing-docs.html"
                            class="nav-link">
-                            Viewing and Downloading Docs
+                            Browsing Generated Documentation
                         </a>
                     </li>
                     
                     <li>
-                        <a href="configure-ai-providers-and-models.html"
+                        <a href="managing-users.html"
                            class="nav-link">
-                            Configuring AI Providers and Models
+                            Managing Users and Access Control
                         </a>
                     </li>
                     
                     <li>
-                        <a href="regenerate-after-code-changes.html"
+                        <a href="configuring-ai-providers.html"
                            class="nav-link">
-                            Regenerating After Code Changes
+                            Configuring AI Providers
                         </a>
                     </li>
                     
                     <li>
-                        <a href="regenerate-for-new-branches-and-models.html"
+                        <a href="incremental-updates.html"
                            class="nav-link">
-                            Regenerating for New Branches and Models
+                            Working with Incremental Updates
                         </a>
                     </li>
                     
                     <li>
-                        <a href="manage-docsfy-from-the-cli.html"
+                        <a href="using-the-cli.html"
                            class="nav-link">
-                            Managing docsfy from the CLI
+                            Using the CLI
                         </a>
                     </li>
                     
                     <li>
-                        <a href="manage-users-and-access.html"
+                        <a href="llms-txt-ai-readable-docs.html"
                            class="nav-link">
-                            Managing Users and Access
+                            AI-Readable Documentation with llms.txt
                         </a>
                     </li>
                     
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Recipes</h3>
+                <ul class="nav-group-pages">
+                    
                     <li>
-                        <a href="fix-setup-and-generation-problems.html"
+                        <a href="recipes-common-workflows.html"
                            class="nav-link">
-                            Fixing Setup and Generation Problems
+                            Common Workflow Recipes
                         </a>
                     </li>
                     
@@ -120,16 +127,16 @@
                 <ul class="nav-group-pages">
                     
                     <li>
-                        <a href="cli-command-reference.html"
+                        <a href="api-reference.html"
                            class="nav-link">
-                            CLI Command Reference
+                            REST API Reference
                         </a>
                     </li>
                     
                     <li>
-                        <a href="http-api-and-websocket-reference.html"
+                        <a href="cli-reference.html"
                            class="nav-link">
-                            HTTP API and WebSocket Reference
+                            CLI Command Reference
                         </a>
                     </li>
                     
@@ -185,7 +192,7 @@
             
             <section class="index-header">
                 <h1 class="index-title">docsfy</h1>
-                <p class="index-tagline">Turn any Git repo into a polished docs site you can generate, track, and share in minutes</p>
+                <p class="index-tagline">Turn any Git repository into a polished documentation site in minutes</p>
                 
                 
                   
@@ -196,8 +203,10 @@
                 
                   
                 
+                  
                 
-                <a href="generate-your-first-docs-site.html" class="index-cta">Get Started →</a>
+                
+                <a href="quickstart.html" class="index-cta">Get Started →</a>
                 
             </section>
 
@@ -208,22 +217,22 @@
                     <ul class="card-pages">
                         
                         <li>
-                            <a href="generate-your-first-docs-site.html">Generate Your First Docs Site</a>
+                            <a href="quickstart.html">Getting Started with docsfy</a>
                             
-                            <p class="card-page-desc">Get docsfy running with the fastest setup path, sign in as admin, and generate a searchable docs site for your first repository in one short flow.</p>
+                            <p class="card-page-desc">Install docsfy, configure your environment, and generate your first documentation site from a Git repository in under five minutes</p>
                             
                         </li>
                         
                         <li>
-                            <a href="install-and-run-docsfy-without-docker.html">Install and Run docsfy Without Docker</a>
+                            <a href="deployment.html">Deploying with Docker</a>
                             
-                            <p class="card-page-desc">Run docsfy locally with Python, Node, and the required AI CLIs when you want a non-container setup or a development-friendly workflow.</p>
+                            <p class="card-page-desc">Run docsfy as a production service using Docker Compose, configure environment variables, and set up persistent storage</p>
                             
                         </li>
                         
                     </ul>
                     
-                    <a href="generate-your-first-docs-site.html" class="card-link">Explore →</a>
+                    <a href="quickstart.html" class="card-link">Explore →</a>
                     
                 </div>
                 
@@ -232,71 +241,81 @@
                     <ul class="card-pages">
                         
                         <li>
-                            <a href="generate-documentation.html">Generating Documentation</a>
+                            <a href="generating-docs.html">Generating Documentation</a>
                             
-                            <p class="card-page-desc">Start a new run from the web app with the simplest valid inputs and launch documentation generation successfully.</p>
-                            
-                        </li>
-                        
-                        <li>
-                            <a href="track-generation-progress.html">Tracking Generation Progress</a>
-                            
-                            <p class="card-page-desc">Follow live stages, page counts, and activity logs so you can tell when a run is healthy, finished, or needs to be aborted.</p>
+                            <p class="card-page-desc">Submit a repository via the web dashboard or CLI, choose an AI provider and model, target a specific branch, and monitor generation progress in real time</p>
                             
                         </li>
                         
                         <li>
-                            <a href="view-and-download-docs.html">Viewing and Downloading Docs</a>
+                            <a href="managing-projects.html">Managing Projects and Variants</a>
                             
-                            <p class="card-page-desc">Open a finished docs site, use its search and navigation tools, and download a static copy for offline use or external hosting.</p>
-                            
-                        </li>
-                        
-                        <li>
-                            <a href="configure-ai-providers-and-models.html">Configuring AI Providers and Models</a>
-                            
-                            <p class="card-page-desc">Choose the right provider and model for each run, understand how server defaults and known models appear in the UI and CLI, and avoid mismatched settings.</p>
+                            <p class="card-page-desc">List, inspect, download, abort, and delete documentation projects and their branch/provider/model variants</p>
                             
                         </li>
                         
                         <li>
-                            <a href="regenerate-after-code-changes.html">Regenerating After Code Changes</a>
+                            <a href="browsing-docs.html">Browsing Generated Documentation</a>
                             
-                            <p class="card-page-desc">Refresh docs after a repository changes, understand when docsfy can reuse existing work, and force a clean rebuild when you need one.</p>
-                            
-                        </li>
-                        
-                        <li>
-                            <a href="regenerate-for-new-branches-and-models.html">Regenerating for New Branches and Models</a>
-                            
-                            <p class="card-page-desc">Create separate variants for other branches or models, understand how variant reuse works, and open or download the exact version you need.</p>
+                            <p class="card-page-desc">Navigate the generated documentation site, use the search feature, switch between variants, and share doc URLs with your team</p>
                             
                         </li>
                         
                         <li>
-                            <a href="manage-docsfy-from-the-cli.html">Managing docsfy from the CLI</a>
+                            <a href="managing-users.html">Managing Users and Access Control</a>
                             
-                            <p class="card-page-desc">Set up the CLI profile and use terminal commands to generate docs, watch live progress, inspect variants, download output, and handle routine workflows without the web app.</p>
-                            
-                        </li>
-                        
-                        <li>
-                            <a href="manage-users-and-access.html">Managing Users and Access</a>
-                            
-                            <p class="card-page-desc">Create users, assign admin, user, or viewer roles, rotate keys safely, and grant or revoke project access so teammates only see the docs they should.</p>
+                            <p class="card-page-desc">Create user accounts, assign roles (admin, user, viewer), grant and revoke project access, and rotate API keys</p>
                             
                         </li>
                         
                         <li>
-                            <a href="fix-setup-and-generation-problems.html">Fixing Setup and Generation Problems</a>
+                            <a href="configuring-ai-providers.html">Configuring AI Providers</a>
                             
-                            <p class="card-page-desc">Diagnose failed logins, missing AI CLI tools, invalid repo inputs, and stalled or failed generations so you can get runs back to ready state.</p>
+                            <p class="card-page-desc">Select between Claude, Gemini, and Cursor providers, choose models, set timeouts, and understand the Pi SDK sidecar that routes AI calls</p>
+                            
+                        </li>
+                        
+                        <li>
+                            <a href="incremental-updates.html">Working with Incremental Updates</a>
+                            
+                            <p class="card-page-desc">Understand how docsfy detects code changes, regenerates only affected pages, and keeps documentation in sync with your repository</p>
+                            
+                        </li>
+                        
+                        <li>
+                            <a href="using-the-cli.html">Using the CLI</a>
+                            
+                            <p class="card-page-desc">Set up CLI server profiles, authenticate, and run all docsfy operations from the terminal including generate, status, download, and admin commands</p>
+                            
+                        </li>
+                        
+                        <li>
+                            <a href="llms-txt-ai-readable-docs.html">AI-Readable Documentation with llms.txt</a>
+                            
+                            <p class="card-page-desc">Explains that every generated documentation site automatically includes llms.txt (a structured index of all pages) and llms-full.txt (the complete documentation content concatenated into a single file) following the llms.txt standard. Covers how to point AI tools, LLM agents, and chatbots at these files to consume your project&#39;s documentation, the format and structure of each file, and how to use them for RAG pipelines or AI-assisted development workflows.</p>
                             
                         </li>
                         
                     </ul>
                     
-                    <a href="generate-documentation.html" class="card-link">Explore →</a>
+                    <a href="generating-docs.html" class="card-link">Explore →</a>
+                    
+                </div>
+                
+                <div class="card">
+                    <h3 class="card-title">Recipes</h3>
+                    <ul class="card-pages">
+                        
+                        <li>
+                            <a href="recipes-common-workflows.html">Common Workflow Recipes</a>
+                            
+                            <p class="card-page-desc">Copy-paste patterns for multi-branch documentation, force-regenerating stale docs, downloading and hosting static sites, and automating doc generation in CI/CD</p>
+                            
+                        </li>
+                        
+                    </ul>
+                    
+                    <a href="recipes-common-workflows.html" class="card-link">Explore →</a>
                     
                 </div>
                 
@@ -305,29 +324,29 @@
                     <ul class="card-pages">
                         
                         <li>
-                            <a href="cli-command-reference.html">CLI Command Reference</a>
+                            <a href="api-reference.html">REST API Reference</a>
                             
-                            <p class="card-page-desc">Look up the exact syntax, flags, and output behavior for each docsfy command when you need a fast answer.</p>
+                            <p class="card-page-desc">Complete reference for all API endpoints including authentication, project management, generation, admin operations, and WebSocket real-time updates</p>
                             
                         </li>
                         
                         <li>
-                            <a href="http-api-and-websocket-reference.html">HTTP API and WebSocket Reference</a>
+                            <a href="cli-reference.html">CLI Command Reference</a>
                             
-                            <p class="card-page-desc">Find the exact endpoints, auth rules, request shapes, download routes, and real-time message formats you need for integrations or automation.</p>
+                            <p class="card-page-desc">Full reference for the docsfy CLI covering all commands, flags, options, and output formats for generate, list, status, delete, abort, download, and admin subcommands</p>
                             
                         </li>
                         
                         <li>
                             <a href="configuration-reference.html">Configuration Reference</a>
                             
-                            <p class="card-page-desc">Find the exact settings you need to configure admin access, AI defaults, data storage, cookies, ports, Docker Compose, CLI profiles, and local development behavior.</p>
+                            <p class="card-page-desc">All environment variables, server settings, CLI config file format, and Docker Compose options with their defaults and valid values</p>
                             
                         </li>
                         
                     </ul>
                     
-                    <a href="cli-command-reference.html" class="card-link">Explore →</a>
+                    <a href="api-reference.html" class="card-link">Explore →</a>
                     
                 </div>
                 
@@ -350,7 +369,7 @@
 
         <footer class="page-footer">
             
-            <span class="footer-version">Generated from version 1.3.0</span>
+            <span class="footer-version">Generated from version 1.7.1</span>
             <span class="footer-sep">&middot;</span>
             
             Generated with <a href="https://github.com/myk-org/docsfy" target="_blank" rel="noopener">docs<span class="brand-accent">fy</span></a>

@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Managing Users and Access Control - docsfy</title>
+    <meta name="description" content="Turn any Git repository into a polished documentation site in minutes">
+    <link rel="stylesheet" href="assets/style.css">
+    <script>try{var t=localStorage.getItem('theme');if(t==='dark')document.documentElement.setAttribute('data-theme','dark')}catch(e){}</script>
+    <link rel="alternate" type="text/plain" title="LLM Documentation Index" href="llms.txt">
+    <link rel="alternate" type="text/plain" title="LLM Full Documentation" href="llms-full.txt">
+</head>
+<body>
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <a href="index.html" class="sidebar-logo">docsfy</a>
+            <p class="sidebar-tagline">Turn any Git repository into a polished documentation site in minutes</p>
+        </div>
+
+        <div class="sidebar-search">
+            <input type="text" id="search-input" placeholder="Search... (⌘K)" autocomplete="off" readonly>
+            <div id="search-results" class="search-results"></div>
+        </div>
+
+        <nav class="sidebar-nav">
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Getting Started</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="quickstart.html"
+                           class="nav-link">
+                            Getting Started with docsfy
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="deployment.html"
+                           class="nav-link">
+                            Deploying with Docker
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">User Guides</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="generating-docs.html"
+                           class="nav-link">
+                            Generating Documentation
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="managing-projects.html"
+                           class="nav-link">
+                            Managing Projects and Variants
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="browsing-docs.html"
+                           class="nav-link">
+                            Browsing Generated Documentation
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="managing-users.html"
+                           class="nav-link active" aria-current="page">
+                            Managing Users and Access Control
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="configuring-ai-providers.html"
+                           class="nav-link">
+                            Configuring AI Providers
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="incremental-updates.html"
+                           class="nav-link">
+                            Working with Incremental Updates
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="using-the-cli.html"
+                           class="nav-link">
+                            Using the CLI
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="llms-txt-ai-readable-docs.html"
+                           class="nav-link">
+                            AI-Readable Documentation with llms.txt
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Recipes</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="recipes-common-workflows.html"
+                           class="nav-link">
+                            Common Workflow Recipes
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Reference</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="api-reference.html"
+                           class="nav-link">
+                            REST API Reference
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="cli-reference.html"
+                           class="nav-link">
+                            CLI Command Reference
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="configuration-reference.html"
+                           class="nav-link">
+                            Configuration Reference
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+        </nav>
+    </aside>
+
+    <div class="main-wrapper">
+        <header class="top-bar">
+            <div class="top-bar-left">
+                <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebar" aria-expanded="false">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                </button>
+                <a href="index.html" class="top-bar-title">docsfy</a>
+            </div>
+            <div class="top-bar-spacer"></div>
+            <div class="top-bar-right">
+                <button class="top-bar-search-btn" id="search-trigger" aria-label="Search">
+                    <kbd>&#8984;K</kbd> Search
+                </button>
+                <a href="https://github.com/myk-org/docsfy" target="_blank" rel="noopener" class="docsfy-badge" title="Generated with docsfy">
+                    ⚡ docs<span class="brand-accent">fy</span>
+                </a>
+                
+                <a href="https://github.com/myk-org/docsfy.git" target="_blank" rel="noopener noreferrer" class="top-bar-github" id="github-link" data-repo-url="https://github.com/myk-org/docsfy.git">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                    <span class="github-stars" id="github-stars" title="GitHub stars"></span>
+                </a>
+                
+                <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+                    <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                    </svg>
+                    <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <main class="content">
+            
+            <article class="article">
+                <div class="article-body">
+                    <!-- SECURITY: |safe is intentional. Content is AI-generated markdown
+                         converted to HTML server-side by the markdown library, not
+                         user-supplied input. XSS risk is minimal and accepted since
+                         the AI generates the content, not end users. -->
+                    <h1 id="managing-users-and-access-control">Managing Users and Access Control</h1>
+<p>Set up user accounts, control who can access your documentation projects, and keep credentials secure by managing roles, project-level permissions, and API key rotation.</p>
+<h2 id="prerequisites">Prerequisites</h2>
+<ul>
+<li>A running docsfy server (see <a href="quickstart.html">Getting Started with docsfy</a>)</li>
+<li>The <code>ADMIN_KEY</code> environment variable set on the server (at least 16 characters)</li>
+<li>Admin access — either via the <code>ADMIN_KEY</code> or a user account with the <code>admin</code> role</li>
+</ul>
+<h2 id="quick-example">Quick Example</h2>
+<p>Create a user with the CLI in one command:</p>
+<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>admin<span class="w"> </span>users<span class="w"> </span>create<span class="w"> </span>alice<span class="w"> </span>--role<span class="w"> </span>user
+</code></pre></div>
+
+<p>Output:</p>
+<div class="highlight"><pre><span></span><code>User created: alice
+Role: user
+API Key: docsfy_aBcDeFgHiJkLmNoPqRsTuVwXyZ...
+
+Save this API key -- it will not be shown again.
+</code></pre></div>
+
+<h2 id="understanding-roles">Understanding Roles</h2>
+<p>docsfy has three roles with different permission levels:</p>
+<table>
+<thead>
+<tr>
+<th>Role</th>
+<th style="text-align: center;">Generate docs</th>
+<th style="text-align: center;">View docs</th>
+<th style="text-align: center;">Manage users</th>
+<th style="text-align: center;">Manage access</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>admin</strong></td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+</tr>
+<tr>
+<td><strong>user</strong></td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+</tr>
+<tr>
+<td><strong>viewer</strong></td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>admin</strong> — Full access including creating/deleting users, granting project access, and rotating API keys.</li>
+<li><strong>user</strong> — Can generate, view, delete, and download documentation for their own projects. Cannot perform admin operations.</li>
+<li><strong>viewer</strong> — Read-only access. Can browse documentation shared with them but cannot generate or modify anything.</li>
+</ul>
+<h2 id="creating-users">Creating Users</h2>
+<h3 id="from-the-web-dashboard">From the Web Dashboard</h3>
+<ol>
+<li>Log in as an admin.</li>
+<li>Navigate to the <strong>Users</strong> tab in the admin panel.</li>
+<li>Enter a username, select a role from the dropdown, and click <strong>Create User</strong>.</li>
+<li>Copy the generated API key immediately — it is shown only once.</li>
+</ol>
+<h3 id="from-the-cli">From the CLI</h3>
+<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>admin<span class="w"> </span>users<span class="w"> </span>create<span class="w"> </span>bob<span class="w"> </span>--role<span class="w"> </span>viewer
+</code></pre></div>
+
+<p>The <code>--role</code> flag accepts <code>user</code>, <code>viewer</code>, or <code>admin</code>. If omitted, it defaults to <code>user</code>.</p>
+<blockquote>
+<p><strong>Warning:</strong> The API key is displayed only once at creation time. Store it securely — there is no way to retrieve it later. If lost, you must rotate the key.</p>
+</blockquote>
+<h3 id="username-rules">Username Rules</h3>
+<ul>
+<li>Must be 2–50 characters long</li>
+<li>Must start with a letter or number</li>
+<li>May contain letters, numbers, dots (<code>.</code>), hyphens (<code>-</code>), and underscores (<code>_</code>)</li>
+<li>The username <code>admin</code> is reserved and cannot be used</li>
+</ul>
+<h2 id="listing-users">Listing Users</h2>
+<h3 id="cli">CLI</h3>
+<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>admin<span class="w"> </span>users<span class="w"> </span>list
+</code></pre></div>
+
+<div class="highlight"><pre><span></span><code>USERNAME    ROLE     CREATED
+alice       user     2026-06-01 10:30:00
+bob         viewer   2026-06-02 14:15:00
+carol       admin    2026-06-03 09:00:00
+</code></pre></div>
+
+<p>Add <code>--json</code> for machine-readable output:</p>
+<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>admin<span class="w"> </span>users<span class="w"> </span>list<span class="w"> </span>--json
+</code></pre></div>
+
+<h3 id="web-dashboard">Web Dashboard</h3>
+<p>The <strong>Users</strong> tab shows all users in a table with their username, role, and creation date.</p>
+<h2 id="granting-project-access">Granting Project Access</h2>
+<p>By default, each user can only see projects they own. Admins can share a project with other users by granting access.</p>
+<h3 id="from-the-web-dashboard_1">From the Web Dashboard</h3>
+<ol>
+<li>Go to the <strong>Access</strong> tab in the admin panel.</li>
+<li>Fill in the <strong>Project Name</strong>, <strong>Username</strong>, and <strong>Owner</strong> fields.</li>
+<li>Click <strong>Grant Access</strong>.</li>
+</ol>
+<h3 id="from-the-cli_1">From the CLI</h3>
+<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>admin<span class="w"> </span>access<span class="w"> </span>grant<span class="w"> </span>my-repo<span class="w"> </span>--username<span class="w"> </span>bob<span class="w"> </span>--owner<span class="w"> </span>alice
+</code></pre></div>
+
+<p>This gives <code>bob</code> read access to all variants (branches, providers, models) of the project <code>my-repo</code> owned by <code>alice</code>.</p>
+<blockquote>
+<p><strong>Note:</strong> Both the user and the project must already exist. The grant command validates this and returns an error if either is not found.</p>
+</blockquote>
+<h2 id="revoking-project-access">Revoking Project Access</h2>
+<h3 id="from-the-web-dashboard_2">From the Web Dashboard</h3>
+<ol>
+<li>Go to the <strong>Access</strong> tab.</li>
+<li>Under <strong>Lookup Access</strong>, enter the project name and owner, then click <strong>List Access</strong>.</li>
+<li>Click <strong>Revoke</strong> next to the user you want to remove.</li>
+</ol>
+<h3 id="from-the-cli_2">From the CLI</h3>
+<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>admin<span class="w"> </span>access<span class="w"> </span>revoke<span class="w"> </span>my-repo<span class="w"> </span>--username<span class="w"> </span>bob<span class="w"> </span>--owner<span class="w"> </span>alice
+</code></pre></div>
+
+<h2 id="listing-project-access">Listing Project Access</h2>
+<p>See who has access to a specific project:</p>
+<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>admin<span class="w"> </span>access<span class="w"> </span>list<span class="w"> </span>my-repo<span class="w"> </span>--owner<span class="w"> </span>alice
+</code></pre></div>
+
+<div class="highlight"><pre><span></span><code>Project: my-repo
+Owner: alice
+Users with access: bob, carol
+</code></pre></div>
+
+<p>Add <code>--json</code> for machine-readable output.</p>
+<h2 id="rotating-api-keys">Rotating API Keys</h2>
+<p>If a key is compromised or a user loses their credentials, rotate their API key. This immediately invalidates the old key and all active sessions for that user.</p>
+<h3 id="admin-rotating-another-users-key">Admin Rotating Another User's Key</h3>
+<p><strong>CLI:</strong></p>
+<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>admin<span class="w"> </span>users<span class="w"> </span>rotate-key<span class="w"> </span>bob
+</code></pre></div>
+
+<div class="highlight"><pre><span></span><code>User: bob
+New API Key: docsfy_xYzAbCdEfGhIjKlMnOpQrStUvWxYz...
+
+Save this API key -- it will not be shown again.
+</code></pre></div>
+
+<p><strong>Web dashboard:</strong> Click <strong>Change Password</strong> next to the user in the <strong>Users</strong> tab. You can optionally provide a custom key or leave the field empty to auto-generate one.</p>
+<h3 id="users-rotating-their-own-key">Users Rotating Their Own Key</h3>
+<p>Non-admin users can rotate their own key through the API. This clears their current session — they must log in again with the new key.</p>
+<blockquote>
+<p><strong>Warning:</strong> The built-in <code>admin</code> account (authenticated via <code>ADMIN_KEY</code>) cannot rotate keys through the API. Change the <code>ADMIN_KEY</code> environment variable and restart the server instead.</p>
+</blockquote>
+<h3 id="custom-api-keys">Custom API Keys</h3>
+<p>You can supply a custom key instead of auto-generating one:</p>
+<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>admin<span class="w"> </span>users<span class="w"> </span>rotate-key<span class="w"> </span>bob<span class="w"> </span>--new-key<span class="w"> </span><span class="s2">&quot;my-custom-secure-key-here&quot;</span>
+</code></pre></div>
+
+<p>Custom keys must be at least 16 characters long.</p>
+<h2 id="deleting-users">Deleting Users</h2>
+<h3 id="from-the-cli_3">From the CLI</h3>
+<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>admin<span class="w"> </span>users<span class="w"> </span>delete<span class="w"> </span>carol
+</code></pre></div>
+
+<p>You will be prompted for confirmation. Add <code>--yes</code> to skip:</p>
+<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>admin<span class="w"> </span>users<span class="w"> </span>delete<span class="w"> </span>carol<span class="w"> </span>--yes
+</code></pre></div>
+
+<h3 id="from-the-web-dashboard_3">From the Web Dashboard</h3>
+<p>Click <strong>Delete</strong> next to the user in the <strong>Users</strong> tab and confirm the action.</p>
+<h3 id="what-happens-when-a-user-is-deleted">What Happens When a User Is Deleted</h3>
+<ul>
+<li>All active sessions for the user are invalidated immediately</li>
+<li>All projects owned by the user are deleted from the database</li>
+<li>All project files on disk belonging to the user are removed</li>
+<li>All access grants (both granted to and granted by the user) are cleaned up</li>
+<li>A user cannot be deleted while one of their projects has a generation in progress</li>
+</ul>
+<blockquote>
+<p><strong>Warning:</strong> User deletion is permanent and cannot be undone. All of their projects and generated documentation will be lost.</p>
+</blockquote>
+<h2 id="the-admin-account">The Admin Account</h2>
+<p>docsfy has a special built-in admin identity that authenticates with the <code>ADMIN_KEY</code> environment variable:</p>
+<ul>
+<li><strong>Username:</strong> <code>admin</code></li>
+<li><strong>Credentials:</strong> The value of the <code>ADMIN_KEY</code> environment variable</li>
+<li>This account always has full admin privileges</li>
+<li>It cannot be deleted or have its key rotated through the API — change the <code>ADMIN_KEY</code> env var and restart the server</li>
+</ul>
+<p>You can also create additional users with the <code>admin</code> role. These behave identically to the built-in admin for authorization purposes, but their keys are managed through the normal user management workflow.</p>
+<blockquote>
+<p><strong>Warning:</strong> Changing the <code>ADMIN_KEY</code> environment variable invalidates <strong>all</strong> existing user API key hashes (since <code>ADMIN_KEY</code> is used as the HMAC secret for key hashing). After rotating <code>ADMIN_KEY</code>, you must rotate every user's API key as well.</p>
+</blockquote>
+<h2 id="advanced-usage">Advanced Usage</h2>
+<h3 id="sessions-and-timeouts">Sessions and Timeouts</h3>
+<ul>
+<li>Browser sessions last 8 hours and are stored as HTTP-only cookies</li>
+<li>Rotating a user's API key invalidates all their active sessions</li>
+<li>Expired sessions are cleaned up automatically when the server starts</li>
+</ul>
+<h3 id="connecting-the-cli-to-a-server">Connecting the CLI to a Server</h3>
+<p>Before running admin commands, configure the CLI with a server profile:</p>
+<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>config<span class="w"> </span>init
+</code></pre></div>
+
+<p>You'll be prompted for a profile name, server URL, username, and password (API key). See <a href="using-the-cli.html">Using the CLI</a> for complete setup instructions.</p>
+<p>You can also pass credentials directly:</p>
+<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>--host<span class="w"> </span>myserver.example.com<span class="w"> </span>--username<span class="w"> </span>admin<span class="w"> </span>--password<span class="w"> </span><span class="nv">$ADMIN_KEY</span><span class="w"> </span>admin<span class="w"> </span>users<span class="w"> </span>list
+</code></pre></div>
+
+<h3 id="json-output">JSON Output</h3>
+<p>All CLI admin commands support <code>--json</code> for scripting:</p>
+<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>admin<span class="w"> </span>users<span class="w"> </span>create<span class="w"> </span>ci-bot<span class="w"> </span>--role<span class="w"> </span>user<span class="w"> </span>--json
+</code></pre></div>
+
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;username&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ci-bot&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;api_key&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;docsfy_aBcDeFgHiJkLmNoPqRsTuVwXyZ...&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;role&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;user&quot;</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<h3 id="access-control-model">Access Control Model</h3>
+<p>docsfy uses an ownership-based access model:</p>
+<ul>
+<li>Every project is owned by the user who generated it</li>
+<li>Owners always have full access to their own projects</li>
+<li>Admins can see and manage all projects regardless of ownership</li>
+<li>Access grants are scoped by <strong>project name + project owner</strong> — granting access gives the user visibility into all variants (branches, AI providers, models) of that project</li>
+<li>When all variants of a project are deleted, associated access grants are automatically cleaned up</li>
+</ul>
+<h2 id="troubleshooting">Troubleshooting</h2>
+<p><strong>"Username 'admin' is reserved"</strong> — You cannot create a user with the username <code>admin</code>. Choose a different name and assign the <code>admin</code> role instead.</p>
+<p><strong>"Cannot delete your own account"</strong> — An admin cannot delete the account they are currently logged in with. Have another admin delete it, or use a different admin account.</p>
+<p><strong>"Cannot delete user while generation is in progress"</strong> — Wait for any active documentation generation jobs owned by that user to complete, or abort them first. See <a href="managing-projects.html">Managing Projects and Variants</a> for how to abort a generation.</p>
+<p><strong>"ADMIN_KEY users cannot rotate keys"</strong> — If you are logged in using the <code>ADMIN_KEY</code> environment variable (as the built-in <code>admin</code> account), you cannot rotate your key through the API. Update the <code>ADMIN_KEY</code> environment variable on the server and restart it.</p>
+<p><strong>"API key must be at least 16 characters long"</strong> — Custom API keys provided via <code>--new-key</code> must be at least 16 characters. Use a longer key or omit the flag to auto-generate one.</p>
+<h2 id="related-pages">Related Pages</h2>
+<ul>
+<li><a href="quickstart.html">Getting Started with docsfy</a></li>
+<li><a href="using-the-cli.html">Using the CLI</a></li>
+<li><a href="cli-reference.html">CLI Command Reference</a></li>
+<li><a href="api-reference.html">REST API Reference</a></li>
+<li><a href="managing-projects.html">Managing Projects and Variants</a></li>
+</ul>
+                </div>
+            </article>
+            <nav class="page-nav">
+                
+                <a href="browsing-docs.html" class="page-nav-link page-nav-prev">
+                    <span class="page-nav-label">Previous</span>
+                    <span class="page-nav-title">Browsing Generated Documentation</span>
+                </a>
+                
+                
+                <a href="configuring-ai-providers.html" class="page-nav-link page-nav-next">
+                    <span class="page-nav-label">Next</span>
+                    <span class="page-nav-title">Configuring AI Providers</span>
+                </a>
+                
+            </nav>
+            
+            <aside class="toc-sidebar">
+                <div class="toc-container">
+                    <h3>On this page</h3>
+                    <div class="toc">
+<ul>
+<li><a href="#prerequisites">Prerequisites</a></li>
+<li><a href="#quick-example">Quick Example</a></li>
+<li><a href="#understanding-roles">Understanding Roles</a></li>
+<li><a href="#creating-users">Creating Users</a><ul>
+<li><a href="#from-the-web-dashboard">From the Web Dashboard</a></li>
+<li><a href="#from-the-cli">From the CLI</a></li>
+<li><a href="#username-rules">Username Rules</a></li>
+</ul>
+</li>
+<li><a href="#listing-users">Listing Users</a><ul>
+<li><a href="#cli">CLI</a></li>
+<li><a href="#web-dashboard">Web Dashboard</a></li>
+</ul>
+</li>
+<li><a href="#granting-project-access">Granting Project Access</a><ul>
+<li><a href="#from-the-web-dashboard_1">From the Web Dashboard</a></li>
+<li><a href="#from-the-cli_1">From the CLI</a></li>
+</ul>
+</li>
+<li><a href="#revoking-project-access">Revoking Project Access</a><ul>
+<li><a href="#from-the-web-dashboard_2">From the Web Dashboard</a></li>
+<li><a href="#from-the-cli_2">From the CLI</a></li>
+</ul>
+</li>
+<li><a href="#listing-project-access">Listing Project Access</a></li>
+<li><a href="#rotating-api-keys">Rotating API Keys</a><ul>
+<li><a href="#admin-rotating-another-users-key">Admin Rotating Another User's Key</a></li>
+<li><a href="#users-rotating-their-own-key">Users Rotating Their Own Key</a></li>
+<li><a href="#custom-api-keys">Custom API Keys</a></li>
+</ul>
+</li>
+<li><a href="#deleting-users">Deleting Users</a><ul>
+<li><a href="#from-the-cli_3">From the CLI</a></li>
+<li><a href="#from-the-web-dashboard_3">From the Web Dashboard</a></li>
+<li><a href="#what-happens-when-a-user-is-deleted">What Happens When a User Is Deleted</a></li>
+</ul>
+</li>
+<li><a href="#the-admin-account">The Admin Account</a></li>
+<li><a href="#advanced-usage">Advanced Usage</a><ul>
+<li><a href="#sessions-and-timeouts">Sessions and Timeouts</a></li>
+<li><a href="#connecting-the-cli-to-a-server">Connecting the CLI to a Server</a></li>
+<li><a href="#json-output">JSON Output</a></li>
+<li><a href="#access-control-model">Access Control Model</a></li>
+</ul>
+</li>
+<li><a href="#troubleshooting">Troubleshooting</a></li>
+<li><a href="#related-pages">Related Pages</a></li>
+</ul>
+</div>
+
+                </div>
+            </aside>
+            
+
+        </main>
+
+        <footer class="page-footer">
+            
+            <span class="footer-version">Generated from version 1.7.1</span>
+            <span class="footer-sep">&middot;</span>
+            
+            Generated with <a href="https://github.com/myk-org/docsfy" target="_blank" rel="noopener">docs<span class="brand-accent">fy</span></a>
+            <span class="footer-sep">&middot;</span>
+            <span class="footer-llm">LLM-friendly: <a href="llms.txt">llms.txt</a> &middot; <a href="llms-full.txt">llms-full.txt</a></span>
+        </footer>
+    </div>
+
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <script src="assets/theme.js"></script>
+    <script src="assets/search.js"></script>
+    <script src="assets/copy.js"></script>
+    <script src="assets/callouts.js"></script>
+    <script src="assets/scrollspy.js"></script>
+    <script src="assets/codelabels.js"></script>
+    <script src="assets/github.js"></script>
+    <script>
+(function() {
+    var toggle = document.getElementById('sidebar-toggle');
+    var sidebar = document.getElementById('sidebar');
+    var overlay = document.getElementById('sidebar-overlay');
+    if (toggle && sidebar) {
+        toggle.addEventListener('click', function() {
+            sidebar.classList.toggle('open');
+            if (overlay) overlay.classList.toggle('open');
+            var expanded = sidebar.classList.contains('open');
+            toggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+        });
+    }
+    if (overlay) {
+        overlay.addEventListener('click', function() {
+            sidebar.classList.remove('open');
+            overlay.classList.remove('open');
+            if (toggle) toggle.setAttribute('aria-expanded', 'false');
+        });
+    }
+})();
+</script>
+<script>
+(function() {
+    var sidebar = document.querySelector('.sidebar-nav') || document.querySelector('.sidebar');
+    if (!sidebar) return;
+
+    // Restore scroll position
+    var saved = sessionStorage.getItem('sidebar-scroll');
+    if (saved) sidebar.scrollTop = parseInt(saved, 10);
+
+    // Save scroll position before navigating
+    sidebar.addEventListener('scroll', function() {
+        sessionStorage.setItem('sidebar-scroll', sidebar.scrollTop.toString());
+    });
+
+    // Also scroll active link into view if no saved position
+    if (!saved) {
+        var active = sidebar.querySelector('.nav-link.active');
+        if (active) {
+            active.scrollIntoView({ block: 'center', behavior: 'instant' });
+        }
+    }
+})();
+</script>
+</body>
+</html>

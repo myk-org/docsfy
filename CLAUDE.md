@@ -104,3 +104,8 @@ When adding new code:
 - The AI CLI runs with `cwd` access to the repo — it can explore files itself
 - Prompts should be short instructions: what to do, where to find input, what format to return
 - This applies to ALL prompts: planning, page generation, validation, cross-linking, everything
+
+## Generated Documentation
+
+The `docs/` directory contains AI-generated documentation from docsfy.
+**NEVER edit these files manually.** To update documentation, regenerate using docsfy.
