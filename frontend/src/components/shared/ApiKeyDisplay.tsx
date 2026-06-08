@@ -1,8 +1,8 @@
 import { useState, useRef, useEffect } from 'react'
 import { AlertTriangle, Check, Copy } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { COPY_FEEDBACK_MS } from '@/lib/constants'
+import RoleBadge from '@/components/shared/RoleBadge'
 
 interface ApiKeyDisplayProps {
   username: string
@@ -88,19 +88,5 @@ export default function ApiKeyDisplay({
         </Button>
       </div>
     </div>
-  )
-}
-
-const ROLE_STYLES: Record<string, string> = {
-  admin: 'bg-signal-green/10 text-signal-green border-signal-green/20',
-  user: 'bg-signal-blue/10 text-signal-blue border-signal-blue/20',
-}
-const DEFAULT_ROLE_STYLE = 'bg-surface-elevated text-text-tertiary border-border-default'
-
-function RoleBadge({ role }: { role: string }) {
-  return (
-    <Badge className={ROLE_STYLES[role] || DEFAULT_ROLE_STYLE}>
-      {role}
-    </Badge>
   )
 }
