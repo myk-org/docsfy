@@ -109,7 +109,7 @@ export default function AccessPanel() {
 
   return (
     <div className="flex flex-col gap-6 p-6 max-w-3xl mx-auto w-full">
-      <h2 className="text-xl font-semibold text-foreground">Access Management</h2>
+      <h2 className="text-xl font-semibold text-text-primary">Access Management</h2>
 
       {/* Grant access form */}
       <form onSubmit={handleGrant} className="flex flex-col gap-3 rounded-lg border p-4">
@@ -207,7 +207,7 @@ export default function AccessPanel() {
         {accessList !== null && lookupContext && (
           <div className="mt-2">
             {accessList.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-4">
+              <p className="text-sm text-text-secondary text-center py-4">
                 No access entries found for this project.
               </p>
             ) : (

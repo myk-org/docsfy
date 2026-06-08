@@ -44,27 +44,32 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center bg-gradient-to-br from-background via-background to-muted/40 px-4">
+    <div className="relative flex min-h-screen items-center justify-center bg-surface-page px-4 overflow-hidden">
+      {/* Ambient grid */}
+      <div className="pointer-events-none absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'linear-gradient(var(--ambient-grid-line) 1px, transparent 1px), linear-gradient(90deg, var(--ambient-grid-line) 1px, transparent 1px)', backgroundSize: '48px 48px' }} />
+      {/* Radial glow */}
+      <div className="pointer-events-none absolute left-1/2 top-1/2 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-signal-blue/[0.04] blur-3xl" />
+
       {/* Theme toggle */}
       <Button
         variant="ghost"
         size="icon"
         onClick={toggleTheme}
-        className="absolute top-4 right-4 text-muted-foreground hover:text-foreground"
+        className="absolute top-4 right-4 text-text-tertiary hover:text-text-primary"
         aria-label="Toggle theme"
       >
         {theme === 'dark' ? <Sun className="size-5" /> : <Moon className="size-5" />}
       </Button>
 
-      <Card className="w-full max-w-[400px] border-0 shadow-xl shadow-black/5 dark:shadow-black/30">
+      <Card className="w-full max-w-[400px] relative z-10 border border-border-muted shadow-xl">
         <CardHeader className="items-center pb-2 pt-8">
           <h1 className="text-3xl font-light tracking-tight">
             docs
-            <span className="font-semibold bg-gradient-to-r from-indigo-500 to-violet-500 bg-clip-text text-transparent">
+            <span className="font-semibold text-signal-blue">
               fy
             </span>
           </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <p className="mt-1 text-sm text-text-tertiary">
             Sign in to your account
           </p>
         </CardHeader>
@@ -104,7 +109,7 @@ export default function LoginPage() {
             {error && (
               <div
                 role="alert"
-                className="animate-fade-in rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive"
+                className="animate-fade-in rounded-lg border border-signal-red/30 bg-signal-red/10 px-3 py-2 text-sm text-signal-red"
               >
                 {error}
               </div>
@@ -113,7 +118,7 @@ export default function LoginPage() {
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="mt-1 h-10 w-full bg-gradient-to-r from-indigo-600 to-violet-600 text-white hover:from-indigo-500 hover:to-violet-500 transition-all duration-200"
+              className="mt-1 h-10 w-full bg-signal-blue text-white hover:bg-signal-blue/90 transition-colors duration-150"
             >
               {isSubmitting ? (
                 <>
@@ -126,7 +131,7 @@ export default function LoginPage() {
             </Button>
           </form>
 
-          <p className="mt-6 text-center text-xs text-muted-foreground">
+          <p className="mt-6 text-center text-xs text-text-tertiary">
             Admin login: username <strong>admin</strong> with the admin password.
           </p>
         </CardContent>

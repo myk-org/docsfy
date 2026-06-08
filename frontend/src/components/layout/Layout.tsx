@@ -88,9 +88,9 @@ export default function Layout({
   }, [])
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden bg-background">
+    <div className="flex flex-col h-screen overflow-hidden bg-surface-page">
       {/* Header */}
-      <header className="sticky top-0 z-40 flex items-center justify-between h-12 px-4 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+      <header className="sticky top-0 z-40 flex items-center justify-between h-12 px-4 border-b border-border-default bg-surface-card/95 backdrop-blur">
         <div className="flex items-center gap-3">
           {/* Mobile hamburger */}
           <Button
@@ -98,7 +98,7 @@ export default function Layout({
             variant="ghost"
             size="icon-sm"
             onClick={() => setMobileOpen(true)}
-            className="sm:hidden text-muted-foreground hover:text-foreground"
+            className="sm:hidden text-text-tertiary hover:text-text-primary"
             aria-label="Open menu"
           >
             <Menu className="size-4" />
@@ -108,7 +108,7 @@ export default function Layout({
           <button type="button" onClick={() => navigate('/')} className="flex items-center gap-2 cursor-pointer">
             <h1 className="text-lg font-light tracking-tight">
               docs
-              <span className="font-semibold bg-gradient-to-r from-indigo-500 to-violet-500 bg-clip-text text-transparent">
+              <span className="font-semibold text-signal-blue">
                 fy
               </span>
             </h1>
@@ -119,7 +119,7 @@ export default function Layout({
             href={DOCSFY_DOCS_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="hidden sm:inline-flex items-center gap-1 rounded-md border border-border px-2 py-0.5 text-[11px] font-medium text-muted-foreground hover:text-foreground hover:border-foreground/20 transition-colors"
+            className="hidden sm:inline-flex items-center gap-1 rounded-md border border-border-default px-2 py-0.5 text-[11px] font-medium text-text-tertiary hover:text-text-primary hover:border-text-secondary/20 transition-colors"
           >
             Docs
             <ExternalLink className="size-2.5" />
@@ -131,7 +131,7 @@ export default function Layout({
             variant="ghost"
             size="icon-sm"
             onClick={toggleTheme}
-            className="text-muted-foreground hover:text-foreground"
+            className="text-text-tertiary hover:text-text-primary"
             aria-label="Toggle theme"
           >
             {theme === 'dark' ? <Sun className="size-4" /> : <Moon className="size-4" />}
@@ -143,12 +143,12 @@ export default function Layout({
       <div className="flex flex-1 min-h-0">
         {/* Desktop sidebar – collapsed icon strip */}
         {sidebarCollapsed && (
-          <div className="hidden sm:flex flex-col items-center border-r border-border bg-sidebar w-10 shrink-0">
+          <div className="hidden sm:flex flex-col items-center border-r border-border-default bg-surface-card w-10 shrink-0">
             <div className="flex-1" />
             <button
               type="button"
               onClick={onToggleSidebar}
-              className="flex items-center justify-center w-full h-8 border-t border-border text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+              className="flex items-center justify-center w-full h-8 border-t border-border-default text-text-tertiary hover:text-text-primary hover:bg-surface-hover transition-colors"
               aria-label="Expand sidebar"
             >
               <ChevronRight className="size-4" />
@@ -157,7 +157,7 @@ export default function Layout({
         )}
         {!sidebarCollapsed && (
           <div className="hidden sm:flex shrink-0 relative" style={{ width: sidebarWidth }}>
-            <aside className="flex flex-col border-r border-border bg-sidebar w-full">
+            <aside className="flex flex-col border-r border-border-default bg-surface-card w-full">
               {sidebar}
             </aside>
             {/* Drag handle — wide hit target (12px) with a thin 2px visual indicator */}
@@ -171,14 +171,14 @@ export default function Layout({
               <div
                 className={cn(
                   'w-0.5 h-full transition-colors',
-                  isDragging ? 'bg-primary/50' : 'bg-transparent group-hover/handle:bg-border'
+                  isDragging ? 'bg-signal-blue/50' : 'bg-transparent group-hover/handle:bg-border-default'
                 )}
               />
             </div>
           </div>
         )}
         {sidebarCollapsed && (
-          <aside className="hidden sm:flex flex-col border-r border-border bg-sidebar w-0 overflow-hidden">
+          <aside className="hidden sm:flex flex-col border-r border-border-default bg-surface-card w-0 overflow-hidden">
             {sidebar}
           </aside>
         )}
@@ -197,13 +197,13 @@ export default function Layout({
       </div>
 
       {/* Footer */}
-      <footer className="flex items-center justify-center h-8 border-t border-border bg-background text-xs text-muted-foreground shrink-0">
+      <footer className="flex items-center justify-center h-8 border-t border-border-default bg-surface-card text-xs text-text-tertiary shrink-0">
         Powered by{' '}
         <a
           href={DOCSFY_REPO_URL}
           target="_blank"
           rel="noopener noreferrer"
-          className="ml-1 hover:text-foreground transition-colors underline-offset-2 hover:underline"
+          className="ml-1 hover:text-text-primary transition-colors underline-offset-2 hover:underline"
         >
           docsfy
         </a>
@@ -265,12 +265,12 @@ function MobileDrawer({ onClose, children }: { onClose: () => void; children: Re
         role="dialog"
         aria-modal="true"
         aria-label="Navigation menu"
-        className="fixed inset-y-0 left-0 z-50 flex flex-col w-72 bg-sidebar border-r border-border shadow-xl sm:hidden animate-fade-in"
+        className="fixed inset-y-0 left-0 z-50 flex flex-col w-72 bg-surface-card border-r border-border-default shadow-xl sm:hidden animate-fade-in"
       >
-        <div className="flex items-center justify-between h-12 px-4 border-b border-border">
+        <div className="flex items-center justify-between h-12 px-4 border-b border-border-default">
           <h1 className="text-lg font-light tracking-tight">
             docs
-            <span className="font-semibold bg-gradient-to-r from-indigo-500 to-violet-500 bg-clip-text text-transparent">
+            <span className="font-semibold text-signal-blue">
               fy
             </span>
           </h1>
@@ -278,7 +278,7 @@ function MobileDrawer({ onClose, children }: { onClose: () => void; children: Re
             variant="ghost"
             size="icon-sm"
             onClick={onClose}
-            className="text-muted-foreground hover:text-foreground"
+            className="text-text-tertiary hover:text-text-primary"
             aria-label="Close menu"
           >
             <X className="size-4" />

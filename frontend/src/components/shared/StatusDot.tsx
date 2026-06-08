@@ -2,10 +2,10 @@ import { cn } from '@/lib/utils'
 import type { ProjectStatus } from '@/types'
 
 const STATUS_COLORS: Record<ProjectStatus, string> = {
-  ready: 'bg-green-500',
-  generating: 'bg-blue-500 animate-pulse-status',
-  error: 'bg-red-500',
-  aborted: 'bg-amber-500',
+  ready: 'bg-signal-green',
+  generating: 'bg-signal-blue animate-pulse-status',
+  error: 'bg-signal-red',
+  aborted: 'bg-signal-orange',
 }
 
 const STATUS_LABELS: Record<ProjectStatus, string> = {

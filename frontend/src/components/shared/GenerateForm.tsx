@@ -181,8 +181,8 @@ export default function GenerateForm({
     <div className="flex items-start justify-center h-full p-8">
       <form onSubmit={handleSubmit} className="w-full max-w-lg flex flex-col gap-5">
         <div>
-          <h2 className="text-lg font-semibold text-foreground">New Generation</h2>
-          <p className="text-sm text-muted-foreground mt-1">
+          <h2 className="text-lg font-semibold text-text-primary">New Generation</h2>
+          <p className="text-sm text-text-secondary mt-1">
             Generate documentation from a Git repository.
           </p>
         </div>
@@ -271,7 +271,7 @@ export default function GenerateForm({
             checked={force}
             onChange={(e) => handleForceChange(e.target.checked)}
             disabled={isSubmitting}
-            className="size-4 rounded border-border accent-primary cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+            className="size-4 rounded border-border-default accent-signal-blue cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
           />
           <Label htmlFor="force" className="cursor-pointer select-none">
             Force full regeneration

@@ -215,7 +215,7 @@ export default function ProjectTree({
 
   if (filtered.length === 0) {
     return (
-      <div className="px-3 py-6 text-center text-sm text-muted-foreground">
+      <div className="px-3 py-6 text-center text-sm text-text-secondary">
         {searchQuery ? 'No projects match your search.' : 'No projects yet.'}
       </div>
     )
@@ -230,7 +230,7 @@ export default function ProjectTree({
           onClick={expandAll}
           title="Expand all"
           aria-label="Expand all"
-          className="text-muted-foreground hover:text-foreground"
+          className="text-text-tertiary hover:text-text-primary"
         >
           <ChevronsDown className="size-3.5" />
         </Button>
@@ -240,7 +240,7 @@ export default function ProjectTree({
           onClick={collapseAll}
           title="Collapse all"
           aria-label="Collapse all"
-          className="text-muted-foreground hover:text-foreground"
+          className="text-text-tertiary hover:text-text-primary"
         >
           <ChevronsUp className="size-3.5" />
         </Button>
@@ -323,7 +323,7 @@ function RepoRow({
   canDelete: boolean
 }) {
   return (
-    <div data-testid="project-group" className="group px-2 py-1.5 cursor-pointer hover:bg-muted/50 rounded-md transition-colors">
+    <div data-testid="project-group" className="group px-2 py-1.5 cursor-pointer hover:bg-surface-hover rounded-md transition-colors">
       <div className="flex items-center gap-1.5">
         <button
           type="button"
@@ -332,7 +332,7 @@ function RepoRow({
         >
           <ChevronRight
             className={cn(
-              'size-3.5 shrink-0 text-muted-foreground transition-transform duration-200',
+              'size-3.5 shrink-0 text-text-tertiary transition-transform duration-200',
               isExpanded && 'rotate-90'
             )}
           />
@@ -345,7 +345,7 @@ function RepoRow({
               e.stopPropagation()
               onDeleteAll()
             }}
-            className="opacity-0 group-hover:opacity-100 shrink-0 p-1 rounded-sm text-muted-foreground hover:text-destructive transition-all"
+            className="opacity-0 group-hover:opacity-100 shrink-0 p-1 rounded-sm text-text-secondary hover:text-signal-red transition-all"
             aria-label={`Delete all variants of ${name}`}
             title="Delete all variants"
           >
@@ -353,15 +353,14 @@ function RepoRow({
           </button>
         )}
       </div>
-      {!isExpanded && (
-        <div className="pl-5 mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">
+        <div className="pl-5 mt-0.5 flex items-center gap-1 text-xs text-text-secondary">
           <span>{totalVariants} variant{totalVariants !== 1 ? 's' : ''}</span>
           {(counts.ready ?? 0) > 0 && (
             <>
               <span>·</span>
               <span className="flex items-center gap-1">
                 <StatusDot status="ready" showTitle={false} className="w-2 h-2" />
-                <span className="text-green-500">{counts.ready} ready</span>
+                <span className="text-signal-green">{counts.ready} ready</span>
               </span>
             </>
           )}
@@ -370,7 +369,7 @@ function RepoRow({
               <span>·</span>
               <span className="flex items-center gap-1">
                 <StatusDot status="generating" showTitle={false} className="w-2 h-2" />
-                <span className="text-blue-500">{counts.generating} generating</span>
+                <span className="text-signal-blue">{counts.generating} generating</span>
               </span>
             </>
           )}
@@ -379,7 +378,7 @@ function RepoRow({
               <span>·</span>
               <span className="flex items-center gap-1">
                 <StatusDot status="error" showTitle={false} className="w-2 h-2" />
-                <span className="text-red-500">{counts.error} failed</span>
+                <span className="text-signal-red">{counts.error} failed</span>
               </span>
             </>
           )}
@@ -388,12 +387,11 @@ function RepoRow({
               <span>·</span>
               <span className="flex items-center gap-1">
                 <StatusDot status="aborted" showTitle={false} className="w-2 h-2" />
-                <span className="text-amber-500">{counts.aborted} aborted</span>
+                <span className="text-signal-orange">{counts.aborted} aborted</span>
               </span>
             </>
           )}
         </div>
-      )}
     </div>
   )
 }
@@ -412,16 +410,16 @@ function BranchRow({
       type="button"
       onClick={onToggle}
       title={`Branch: ${branch}`}
-      className="flex items-center gap-1.5 w-full pl-6 pr-2 py-1.5 cursor-pointer hover:bg-muted/50 rounded-md transition-colors"
+      className="flex items-center gap-1.5 w-full pl-6 pr-2 py-1.5 cursor-pointer hover:bg-surface-hover rounded-md transition-colors"
     >
       <ChevronRight
         className={cn(
-          'size-3 shrink-0 text-muted-foreground transition-transform duration-200',
+          'size-3 shrink-0 text-text-tertiary transition-transform duration-200',
           isExpanded && 'rotate-90'
         )}
       />
-      <GitBranch className="size-3 shrink-0 text-muted-foreground" />
-      <span className="text-sm text-muted-foreground truncate">@{branch}</span>
+      <GitBranch className="size-3 shrink-0 text-text-tertiary" />
+      <span className="text-sm text-text-secondary truncate">@{branch}</span>
     </button>
   )
 }
@@ -450,10 +448,10 @@ function VariantRow({
       }}
       title={`${project.ai_provider}/${project.ai_model} — ${project.status}${project.page_count ? ` (${project.page_count} pages)` : ''}`}
       className={cn(
-        'flex items-center gap-2 w-full pl-11 pr-2 py-1.5 rounded-md transition-colors text-left cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+        'flex items-center gap-2 w-full pl-11 pr-2 py-1.5 rounded-md transition-colors text-left cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-accent',
         isSelected
-          ? 'bg-accent text-accent-foreground'
-          : 'hover:bg-muted/50 text-foreground'
+          ? 'bg-surface-elevated text-text-primary'
+          : 'hover:bg-surface-hover text-text-primary'
       )}
     >
       <StatusDot status={project.status} showTitle={false} />
@@ -463,7 +461,7 @@ function VariantRow({
       {project.generation_id && (
         <button
           type="button"
-          className="text-[10px] text-muted-foreground font-mono cursor-pointer hover:text-foreground shrink-0 flex items-center gap-0.5 bg-transparent border-none p-0"
+          className="text-[10px] text-text-secondary font-mono cursor-pointer hover:text-text-primary shrink-0 flex items-center gap-0.5 bg-transparent border-none p-0"
           title={`Click to copy: ${project.generation_id}`}
           aria-label="Copy generation ID"
           onClick={(e) => {

@@ -34,20 +34,20 @@ function formatDate(dateStr: string): string {
 function RoleBadge({ role }: { role: string }) {
   if (role === 'admin') {
     return (
-      <Badge className="bg-green-500/10 text-green-600 border-green-500/20">
+      <Badge className="bg-signal-green/10 text-signal-green border-signal-green/20">
         {role}
       </Badge>
     )
   }
   if (role === 'user') {
     return (
-      <Badge className="bg-blue-500/10 text-blue-600 border-blue-500/20">
+      <Badge className="bg-signal-blue/10 text-signal-blue border-signal-blue/20">
         {role}
       </Badge>
     )
   }
   return (
-    <Badge className="bg-gray-500/10 text-gray-600 border-gray-500/20">
+    <Badge className="bg-surface-elevated text-text-tertiary border-border-default">
       {role}
     </Badge>
   )
@@ -153,7 +153,7 @@ export default function UsersPanel() {
 
   return (
     <div className="flex flex-col gap-6 p-6 max-w-3xl mx-auto w-full">
-      <h2 className="text-xl font-semibold text-foreground">User Management</h2>
+      <h2 className="text-xl font-semibold text-text-primary">User Management</h2>
 
       {/* Create user form */}
       <form onSubmit={handleCreateUser} className="flex flex-col gap-3 rounded-lg border p-4">
@@ -221,17 +221,17 @@ export default function UsersPanel() {
       {/* Users table */}
       {loading ? (
         <div className="flex items-center justify-center py-8">
-          <Loader2 className="size-5 animate-spin text-muted-foreground" />
+          <Loader2 className="size-5 animate-spin text-text-secondary" />
         </div>
       ) : fetchError ? (
         <div className="flex flex-col items-center gap-2 py-8">
-          <p className="text-sm text-destructive">{fetchError}</p>
+          <p className="text-sm text-signal-red">{fetchError}</p>
           <Button variant="outline" size="sm" onClick={() => { setLoading(true); loadUsers() }}>
             Retry
           </Button>
         </div>
       ) : users.length === 0 ? (
-        <p className="text-sm text-muted-foreground text-center py-8">
+        <p className="text-sm text-text-secondary text-center py-8">
           No users created yet.
         </p>
       ) : (
@@ -251,7 +251,7 @@ export default function UsersPanel() {
                 <TableCell>
                   <RoleBadge role={user.role} />
                 </TableCell>
-                <TableCell className="text-muted-foreground">
+                <TableCell className="text-text-secondary">
                   {formatDate(user.created_at)}
                 </TableCell>
                 <TableCell className="text-right">

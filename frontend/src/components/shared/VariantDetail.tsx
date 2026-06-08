@@ -126,16 +126,16 @@ function StatusBadge({ status }: { status: Project['status'] }) {
     aborted: 'Documentation generation was aborted',
   }
   if (status === 'ready') {
-    return <Badge data-testid="status-text" className="bg-green-500/10 text-green-600 border-green-500/20" title={titles[status]}>Ready</Badge>
+    return <Badge data-testid="status-text" className="bg-signal-green/10 text-signal-green border-signal-green/20" title={titles[status]}>Ready</Badge>
   }
   if (status === 'generating') {
-    return <Badge data-testid="status-text" className="bg-blue-500/10 text-blue-600 border-blue-500/20 animate-pulse" title={titles[status]}>Generating</Badge>
+    return <Badge data-testid="status-text" className="bg-signal-blue/10 text-signal-blue border-signal-blue/20 animate-pulse" title={titles[status]}>Generating</Badge>
   }
   if (status === 'error') {
     return <Badge data-testid="status-text" variant="destructive" title={titles[status]}>Error</Badge>
   }
   if (status === 'aborted') {
-    return <Badge data-testid="status-text" className="bg-amber-500/10 text-amber-600 border-amber-500/20" title={titles[status]}>Aborted</Badge>
+    return <Badge data-testid="status-text" className="bg-signal-orange/10 text-signal-orange border-signal-orange/20" title={titles[status]}>Aborted</Badge>
   }
   return null
 }
@@ -148,46 +148,46 @@ function InfoGrid({ project, isAdmin }: { project: Project; isAdmin: boolean }) 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 text-sm">
       <div>
-        <span className="text-muted-foreground">Repository</span>
+        <span className="text-text-secondary">Repository</span>
         <div className="mt-0.5">
           <a
             href={repoHref(project.repo_url)}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-primary hover:underline break-all"
+            className="text-text-link hover:underline break-all"
           >
             {formatRepoUrl(project.repo_url)}
           </a>
         </div>
       </div>
       <div>
-        <span className="text-muted-foreground">AI Provider / Model</span>
+        <span className="text-text-secondary">AI Provider / Model</span>
         <div className="mt-0.5 font-medium">{project.ai_provider} / {project.ai_model}</div>
       </div>
       <div>
-        <span className="text-muted-foreground">Branch</span>
+        <span className="text-text-secondary">Branch</span>
         <div className="mt-0.5 font-medium">{project.branch}</div>
       </div>
       {project.repo_type && (
         <div>
-          <span className="text-muted-foreground">Repo Type</span>
+          <span className="text-text-secondary">Repo Type</span>
           <div className="mt-0.5 font-medium capitalize">{project.repo_type}</div>
         </div>
       )}
       <div>
-        <span className="text-muted-foreground" title="Number of documentation pages generated">Pages</span>
+        <span className="text-text-secondary" title="Number of documentation pages generated">Pages</span>
         <div className="mt-0.5 font-medium">{project.page_count}</div>
       </div>
       {shortSha && (
         <div>
-          <span className="text-muted-foreground">Commit</span>
+          <span className="text-text-secondary">Commit</span>
           <div className="mt-0.5">
             {shaLink ? (
               <a
                 href={shaLink}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="font-mono text-primary hover:underline"
+                className="font-mono text-text-link hover:underline"
                 title="Click to view commit on GitHub"
               >
                 {shortSha}
@@ -200,28 +200,28 @@ function InfoGrid({ project, isAdmin }: { project: Project; isAdmin: boolean }) 
       )}
       {isAdmin && (
         <div>
-          <span className="text-muted-foreground">Owner</span>
+          <span className="text-text-secondary">Owner</span>
           <div className="mt-0.5 font-medium">{project.owner}</div>
         </div>
       )}
       <div>
-        <span className="text-muted-foreground">Last Generated</span>
+        <span className="text-text-secondary">Last Generated</span>
         <div className="mt-0.5 font-medium">{formatDate(project.last_generated)}</div>
       </div>
       {project.total_cost_usd != null && (
         <div>
-          <span className="text-muted-foreground">Generation Cost</span>
+          <span className="text-text-secondary">Generation Cost</span>
           <div className="mt-0.5 font-medium">${project.total_cost_usd.toFixed(4)}</div>
         </div>
       )}
       {project.generation_id && (
         <div>
-          <span className="text-muted-foreground">Generation ID</span>
+          <span className="text-text-secondary">Generation ID</span>
           <div className="mt-0.5 flex items-center gap-1.5">
             <code className="text-sm font-mono font-medium break-all">{project.generation_id}</code>
             <button
               type="button"
-              className="shrink-0 p-0.5 rounded-sm text-muted-foreground hover:text-foreground transition-colors"
+              className="shrink-0 p-0.5 rounded-sm text-text-secondary hover:text-text-primary transition-colors"
               aria-label="Copy generation ID"
               onClick={() => {
                 navigator.clipboard
@@ -353,7 +353,7 @@ function RegenerateSection({
             type="checkbox"
             checked={force}
             onChange={(e) => setForce(e.target.checked)}
-            className="size-4 rounded border-border accent-primary cursor-pointer"
+            className="size-4 rounded border-border-default accent-signal-blue cursor-pointer"
           />
           <Label htmlFor="regen-force" className="cursor-pointer select-none">
             Force full regeneration
@@ -405,11 +405,11 @@ function ReadyView({
     <>
       {/* Success / up-to-date message */}
       {isUpToDate ? (
-        <div className="rounded-lg border border-blue-500/20 bg-blue-500/5 px-4 py-3 text-sm text-blue-600">
+        <div className="rounded-lg border border-signal-blue/20 bg-signal-blue/5 px-4 py-3 text-sm text-signal-blue">
           Documentation is already up to date.
         </div>
       ) : (
-        <div className="rounded-lg border border-green-500/20 bg-green-500/5 px-4 py-3 text-sm text-green-600">
+        <div className="rounded-lg border border-signal-green/20 bg-signal-green/5 px-4 py-3 text-sm text-signal-green">
           Documentation generated successfully!
         </div>
       )}
@@ -528,7 +528,7 @@ function GeneratingView({
           <Progress value={progressPercent}>
             <span className="text-sm font-medium">Progress</span>
           </Progress>
-          <span className="text-xs text-muted-foreground">
+          <span className="text-xs text-text-secondary">
             {project.page_count} of {totalPages} pages ({progressPercent}%)
           </span>
         </div>
@@ -593,8 +593,8 @@ function ErrorAbortedView({
         <div
           className={`flex items-start gap-3 rounded-lg px-4 py-3 text-sm ${
             isError
-              ? 'border-l-[3px] border-l-red-500 bg-red-500/5 text-red-600'
-              : 'border-l-[3px] border-l-amber-500 bg-amber-500/5 text-amber-600'
+              ? 'border-l-[3px] border-l-signal-red bg-signal-red/5 text-signal-red'
+              : 'border-l-[3px] border-l-signal-orange bg-signal-orange/5 text-signal-orange'
           }`}
         >
           {isError ? (
@@ -659,7 +659,7 @@ export default function VariantDetail({
     <div className="flex flex-col gap-5 p-6 max-w-3xl mx-auto w-full">
       {/* Header */}
       <div className="flex flex-wrap items-center gap-2">
-        <h2 className="text-xl font-semibold text-foreground">{project.name}</h2>
+        <h2 className="text-xl font-semibold text-text-primary">{project.name}</h2>
         <Badge variant="secondary">@{project.branch}</Badge>
         <StatusBadge status={project.status} />
       </div>

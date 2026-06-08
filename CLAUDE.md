@@ -36,6 +36,7 @@ When adding new code:
 | Code graph | `src/docsfy/code_graph.py` | `build_code_graph()` — Graphify knowledge graph for AI context |
 | Prompt constants | `src/docsfy/prompts.py` | `_MAX_DIFF_LENGTH`, `_GUIDE_WRITING_RULES`, `_REFERENCE_WRITING_RULES`, `_RECIPE_WRITING_RULES`, `_CONCEPT_WRITING_RULES`, `_INCREMENTAL_WRITING_RULES`, `_NAV_STRUCTURE_MAP`, `_REPO_TYPE_WRITING_RULES_MAP`, `truncate_diff_content()` |
 | Frontend constants | `frontend/src/lib/constants.ts` | API base URL, poll intervals, toast durations |
+| Frontend design tokens | `frontend/src/theme.css` | Command Deck color tokens, fonts, animations |
 | Frontend types | `frontend/src/types/index.ts` | `Project`, `User`, `Variant`, `AuthState` |
 | Frontend API client | `frontend/src/lib/api.ts` | `fetchProjects()`, `login()`, `generateDocs()` |
 | Frontend WebSocket | `frontend/src/lib/websocket.ts` | `useWebSocket()`, connection manager |
@@ -44,10 +45,12 @@ When adding new code:
 
 ### Rules for New CSS
 
-- App UI styles are managed by Tailwind CSS in the React frontend (`frontend/`)
-- The old `_app_styles.html` has been removed — do not recreate it
+- App UI uses the **Command Deck** design system defined in `frontend/src/theme.css`
+- All colors must use semantic tokens: `surface-*`, `text-*`, `signal-*`, `border-*`, `glow-*`
+- Typography: `font-display` (JetBrains Mono), `font-body` (IBM Plex Sans), `font-mono` (IBM Plex Mono)
+- Both dark and light themes are supported via CSS custom properties (`:root` / `[data-theme='light']`)
+- Never use hardcoded color values — always use design tokens from theme.css
 - Doc site templates (`_doc_base.html`, `index.html`, `page.html`) have their own self-contained CSS
-- Use Tailwind utility classes and shadcn/ui components for all new app UI
 
 ### Rules for New Constants
 
