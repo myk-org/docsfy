@@ -41,3 +41,13 @@ export const GENERATION_STAGES = [
   'cross_linking',
   'rendering',
 ] as const
+
+/** Shared badge style class strings for signal colors — single source of truth */
+export const BADGE_STYLES = {
+  green: 'bg-signal-green/10 text-signal-green border-signal-green/20',
+  blue: 'bg-signal-blue/10 text-signal-blue border-signal-blue/20',
+  red: 'bg-signal-red/10 text-signal-red border-signal-red/20',
+  orange: 'bg-signal-orange/10 text-signal-orange border-signal-orange/20',
+  purple: 'bg-signal-purple/10 text-signal-purple border-signal-purple/20',
+  muted: 'bg-surface-elevated text-text-tertiary border-border-default',
+} as const

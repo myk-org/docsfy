@@ -25,7 +25,7 @@ import Combobox from '@/components/shared/Combobox'
 import ActivityLog from '@/components/shared/ActivityLog'
 import { useModal } from '@/components/shared/ModalProvider'
 import { api } from '@/lib/api'
-import { TOAST_DEFAULT_MS, TOAST_ERROR_MS, VALID_PROVIDERS } from '@/lib/constants'
+import { TOAST_DEFAULT_MS, TOAST_ERROR_MS, VALID_PROVIDERS, BADGE_STYLES } from '@/lib/constants'
 import { ApiError } from '@/types'
 import type { Project, LogEntry, DocPlan, AvailableModels } from '@/types'
 
@@ -126,16 +126,16 @@ function StatusBadge({ status }: { status: Project['status'] }) {
     aborted: 'Documentation generation was aborted',
   }
   if (status === 'ready') {
-    return <Badge data-testid="status-text" className="bg-signal-green/10 text-signal-green border-signal-green/20" title={titles[status]}>Ready</Badge>
+    return <Badge data-testid="status-text" className={BADGE_STYLES.green} title={titles[status]}>Ready</Badge>
   }
   if (status === 'generating') {
-    return <Badge data-testid="status-text" className="bg-signal-blue/10 text-signal-blue border-signal-blue/20 animate-pulse" title={titles[status]}>Generating</Badge>
+    return <Badge data-testid="status-text" className={`${BADGE_STYLES.blue} animate-pulse`} title={titles[status]}>Generating</Badge>
   }
   if (status === 'error') {
     return <Badge data-testid="status-text" variant="destructive" title={titles[status]}>Error</Badge>
   }
   if (status === 'aborted') {
-    return <Badge data-testid="status-text" className="bg-signal-orange/10 text-signal-orange border-signal-orange/20" title={titles[status]}>Aborted</Badge>
+    return <Badge data-testid="status-text" className={BADGE_STYLES.orange} title={titles[status]}>Aborted</Badge>
   }
   return null
 }
