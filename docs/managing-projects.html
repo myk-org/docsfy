@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Managing Projects and Variants - docsfy</title>
+    <meta name="description" content="Turn any Git repository into a polished documentation site in minutes">
+    <link rel="stylesheet" href="assets/style.css">
+    <script>try{var t=localStorage.getItem('theme');if(t==='dark')document.documentElement.setAttribute('data-theme','dark')}catch(e){}</script>
+    <link rel="alternate" type="text/plain" title="LLM Documentation Index" href="llms.txt">
+    <link rel="alternate" type="text/plain" title="LLM Full Documentation" href="llms-full.txt">
+</head>
+<body>
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <a href="index.html" class="sidebar-logo">docsfy</a>
+            <p class="sidebar-tagline">Turn any Git repository into a polished documentation site in minutes</p>
+        </div>
+
+        <div class="sidebar-search">
+            <input type="text" id="search-input" placeholder="Search... (⌘K)" autocomplete="off" readonly>
+            <div id="search-results" class="search-results"></div>
+        </div>
+
+        <nav class="sidebar-nav">
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Getting Started</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="quickstart.html"
+                           class="nav-link">
+                            Getting Started with docsfy
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="deployment.html"
+                           class="nav-link">
+                            Deploying with Docker
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">User Guides</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="generating-docs.html"
+                           class="nav-link">
+                            Generating Documentation
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="managing-projects.html"
+                           class="nav-link active" aria-current="page">
+                            Managing Projects and Variants
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="browsing-docs.html"
+                           class="nav-link">
+                            Browsing Generated Documentation
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="managing-users.html"
+                           class="nav-link">
+                            Managing Users and Access Control
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="configuring-ai-providers.html"
+                           class="nav-link">
+                            Configuring AI Providers
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="incremental-updates.html"
+                           class="nav-link">
+                            Working with Incremental Updates
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="using-the-cli.html"
+                           class="nav-link">
+                            Using the CLI
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="llms-txt-ai-readable-docs.html"
+                           class="nav-link">
+                            AI-Readable Documentation with llms.txt
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Recipes</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="recipes-common-workflows.html"
+                           class="nav-link">
+                            Common Workflow Recipes
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Reference</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="api-reference.html"
+                           class="nav-link">
+                            REST API Reference
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="cli-reference.html"
+                           class="nav-link">
+                            CLI Command Reference
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="configuration-reference.html"
+                           class="nav-link">
+                            Configuration Reference
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+        </nav>
+    </aside>
+
+    <div class="main-wrapper">
+        <header class="top-bar">
+            <div class="top-bar-left">
+                <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebar" aria-expanded="false">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                </button>
+                <a href="index.html" class="top-bar-title">docsfy</a>
+            </div>
+            <div class="top-bar-spacer"></div>
+            <div class="top-bar-right">
+                <button class="top-bar-search-btn" id="search-trigger" aria-label="Search">
+                    <kbd>&#8984;K</kbd> Search
+                </button>
+                <a href="https://github.com/myk-org/docsfy" target="_blank" rel="noopener" class="docsfy-badge" title="Generated with docsfy">
+                    ⚡ docs<span class="brand-accent">fy</span>
+                </a>
+                
+                <a href="https://github.com/myk-org/docsfy.git" target="_blank" rel="noopener noreferrer" class="top-bar-github" id="github-link" data-repo-url="https://github.com/myk-org/docsfy.git">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                    <span class="github-stars" id="github-stars" title="GitHub stars"></span>
+                </a>
+                
+                <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+                    <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                    </svg>
+                    <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <main class="content">
+            
+            <article class="article">
+                <div class="article-body">
+                    <!-- SECURITY: |safe is intentional. Content is AI-generated markdown
+                         converted to HTML server-side by the markdown library, not
+                         user-supplied input. XSS risk is minimal and accepted since
+                         the AI generates the content, not end users. -->
+                    <h1 id="managing-projects-and-variants">Managing Projects and Variants</h1>
+<p>You want to view, inspect, download, stop, or clean up the documentation projects docsfy has generated — and manage the individual branch/provider/model <strong>variants</strong> within each project.</p>
+<h2 id="prerequisites">Prerequisites</h2>
+<ul>
+<li>A running docsfy server with at least one generated project</li>
+<li>The <code>docsfy</code> CLI installed and configured (see <a href="quickstart.html">Getting Started with docsfy</a>), <strong>or</strong> access to the web dashboard</li>
+<li>A user account with appropriate permissions (viewers can list and download; users and admins can delete and abort)</li>
+</ul>
+<h2 id="quick-example">Quick Example</h2>
+<p>List all your projects in one command:</p>
+<div class="highlight"><pre><span></span><code>docsfy list
+</code></pre></div>
+
+<div class="highlight"><pre><span></span><code>NAME              BRANCH  PROVIDER  MODEL                    STATUS  OWNER   PAGES  GEN ID
+for-testing-only  main    cursor    gpt-5.4-xhigh-fast      ready   alice   12     a1b2c3d4-...
+my-app            main    claude    claude-sonnet-4-0        ready   alice   8      e5f6a7b8-...
+my-app            dev     gemini    gemini-2.5-pro           error   alice   0      c9d0e1f2-...
+</code></pre></div>
+
+<h2 id="understanding-projects-and-variants">Understanding Projects and Variants</h2>
+<p>A <strong>project</strong> corresponds to a Git repository (e.g., <code>my-app</code>). Each project can have multiple <strong>variants</strong> — one for every combination of:</p>
+<ul>
+<li><strong>Branch</strong> (e.g., <code>main</code>, <code>dev</code>, <code>release-1.x</code>)</li>
+<li><strong>AI provider</strong> (e.g., <code>claude</code>, <code>gemini</code>, <code>cursor</code>)</li>
+<li><strong>AI model</strong> (e.g., <code>gpt-5.4-xhigh-fast</code>, <code>claude-sonnet-4-0</code>)</li>
+</ul>
+<p>Each variant is identified by a unique <strong>Generation ID</strong> (UUID), which you can use interchangeably with the project name in most CLI commands.</p>
+<h2 id="listing-projects">Listing Projects</h2>
+<h3 id="cli">CLI</h3>
+<div class="highlight"><pre><span></span><code>docsfy list
+</code></pre></div>
+
+<p>Filter by status or provider:</p>
+<div class="highlight"><pre><span></span><code>docsfy list --status ready
+docsfy list --provider claude
+</code></pre></div>
+
+<p>Get machine-readable output:</p>
+<div class="highlight"><pre><span></span><code>docsfy list --json
+</code></pre></div>
+
+<h3 id="web-dashboard">Web Dashboard</h3>
+<p>Log in to the dashboard. The project tree on the left groups variants by repository, then by branch. Click any variant to see its details in the right panel.</p>
+<h2 id="inspecting-a-project">Inspecting a Project</h2>
+<h3 id="cli_1">CLI</h3>
+<p>View all variants of a project:</p>
+<div class="highlight"><pre><span></span><code>docsfy status my-app
+</code></pre></div>
+
+<p>Inspect a specific variant by providing branch, provider, and model:</p>
+<div class="highlight"><pre><span></span><code>docsfy status my-app --branch main --provider cursor --model gpt-5.4-xhigh-fast
+</code></pre></div>
+
+<p>You can also look up a variant by its Generation ID:</p>
+<div class="highlight"><pre><span></span><code>docsfy status a1b2c3d4-5678-9abc-def0-123456789abc
+</code></pre></div>
+
+<p>The output shows key details about each variant:</p>
+<div class="highlight"><pre><span></span><code>Project: my-app
+Variants: 2
+
+  main/cursor/gpt-5.4-xhigh-fast
+    ID:      a1b2c3d4-5678-9abc-def0-123456789abc
+    Status:  ready
+    Owner:   alice
+    Pages:   12
+    Updated: 2026-06-07 14:30:00
+    Commit:  abc1234d
+
+  dev/gemini/gemini-2.5-pro
+    ID:      e5f6a7b8-9012-3456-7890-abcdef012345
+    Status:  error
+    Owner:   alice
+    Error:   AI provider timeout after 120s
+</code></pre></div>
+
+<p>Use <code>--json</code> for structured output suitable for scripts:</p>
+<div class="highlight"><pre><span></span><code>docsfy status my-app --json
+</code></pre></div>
+
+<h3 id="web-dashboard_1">Web Dashboard</h3>
+<p>Click any variant in the project tree. The detail panel shows status, page count, commit SHA, generation cost, repo type, and a link to the source repository.</p>
+<h2 id="downloading-documentation">Downloading Documentation</h2>
+<p>Download the generated static site as a <code>.tar.gz</code> archive.</p>
+<h3 id="cli_2">CLI</h3>
+<p>Download the latest ready variant:</p>
+<div class="highlight"><pre><span></span><code>docsfy download my-app
+</code></pre></div>
+
+<p>Download a specific variant:</p>
+<div class="highlight"><pre><span></span><code>docsfy download my-app --branch main --provider cursor --model gpt-5.4-xhigh-fast
+</code></pre></div>
+
+<p>Extract directly to a directory instead of saving the archive:</p>
+<div class="highlight"><pre><span></span><code>docsfy download my-app --output ./docs-site
+</code></pre></div>
+
+<p>Use <code>--flatten</code> to strip the top-level directory wrapper from the archive:</p>
+<div class="highlight"><pre><span></span><code>docsfy download my-app --output ./docs-site --flatten
+</code></pre></div>
+
+<p>You can also download by Generation ID:</p>
+<div class="highlight"><pre><span></span><code>docsfy download a1b2c3d4-5678-9abc-def0-123456789abc --output ./docs-site
+</code></pre></div>
+
+<h3 id="web-dashboard_2">Web Dashboard</h3>
+<p>On the variant detail panel for any <strong>Ready</strong> variant, click the <strong>Download</strong> button to save the <code>.tar.gz</code> archive through your browser.</p>
+<blockquote>
+<p><strong>Tip:</strong> For recipes on hosting downloaded sites with common static-file servers, see <a href="recipes-common-workflows.html">Common Workflow Recipes</a>.</p>
+</blockquote>
+<h2 id="aborting-a-generation">Aborting a Generation</h2>
+<p>Stop an in-progress generation when you realize you submitted the wrong branch or want to free up resources.</p>
+<h3 id="cli_3">CLI</h3>
+<p>Abort by project name (works when only one variant is actively generating):</p>
+<div class="highlight"><pre><span></span><code>docsfy abort my-app
+</code></pre></div>
+
+<p>Abort a specific variant:</p>
+<div class="highlight"><pre><span></span><code>docsfy abort my-app --branch dev --provider gemini --model gemini-2.5-pro
+</code></pre></div>
+
+<p>Abort by Generation ID:</p>
+<div class="highlight"><pre><span></span><code>docsfy abort a1b2c3d4-5678-9abc-def0-123456789abc
+</code></pre></div>
+
+<p>The variant status changes to <strong>aborted</strong> and the error message will read "Generation aborted by user."</p>
+<h3 id="web-dashboard_3">Web Dashboard</h3>
+<p>While a variant is generating, the detail panel shows an <strong>Abort Generation</strong> button. Click it and confirm the prompt. The progress bar stops and the status switches to <strong>Aborted</strong>.</p>
+<blockquote>
+<p><strong>Note:</strong> Aborted variants keep any partially generated pages in cache. Regenerating the same variant will attempt an incremental update from where it left off — use <strong>Force full regeneration</strong> to start clean.</p>
+</blockquote>
+<h2 id="deleting-projects-and-variants">Deleting Projects and Variants</h2>
+<h3 id="deleting-a-single-variant">Deleting a Single Variant</h3>
+<p>Remove one specific branch/provider/model combination and all its generated files.</p>
+<p><strong>CLI:</strong></p>
+<div class="highlight"><pre><span></span><code>docsfy delete my-app --branch main --provider cursor --model gpt-5.4-xhigh-fast
+</code></pre></div>
+
+<p>Add <code>--yes</code> to skip the confirmation prompt (useful in scripts):</p>
+<div class="highlight"><pre><span></span><code>docsfy delete my-app --branch main --provider cursor --model gpt-5.4-xhigh-fast --yes
+</code></pre></div>
+
+<p><strong>Web dashboard:</strong> Click the <strong>Delete</strong> button on the variant detail panel and confirm.</p>
+<h3 id="deleting-all-variants">Deleting All Variants</h3>
+<p>Remove every variant of a project in one operation.</p>
+<p><strong>CLI:</strong></p>
+<div class="highlight"><pre><span></span><code>docsfy delete my-app --all
+</code></pre></div>
+
+<p><strong>Web dashboard:</strong> Right-click (or use the menu on) a project in the tree and choose <strong>Delete All Variants</strong>.</p>
+<blockquote>
+<p><strong>Warning:</strong> Deletion is permanent. All generated pages, cached content, and metadata for the affected variant(s) are removed from the server.</p>
+</blockquote>
+<h3 id="deleting-by-generation-id">Deleting by Generation ID</h3>
+<p>You can pass a Generation ID instead of a project name. When combined with <code>--all</code>, it resolves the UUID to a project name first, then deletes all variants:</p>
+<div class="highlight"><pre><span></span><code>docsfy delete a1b2c3d4-5678-9abc-def0-123456789abc --all
+</code></pre></div>
+
+<p>Without <code>--all</code>, the UUID resolves to a specific variant's branch, provider, and model:</p>
+<div class="highlight"><pre><span></span><code>docsfy delete a1b2c3d4-5678-9abc-def0-123456789abc
+</code></pre></div>
+
+<h2 id="variant-statuses">Variant Statuses</h2>
+<p>Every variant has one of four statuses:</p>
+<table>
+<thead>
+<tr>
+<th>Status</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>ready</strong></td>
+<td>Documentation generated successfully and is viewable/downloadable</td>
+</tr>
+<tr>
+<td><strong>generating</strong></td>
+<td>Generation is in progress — pages are being planned and written</td>
+</tr>
+<tr>
+<td><strong>error</strong></td>
+<td>Generation failed (check the error message for details)</td>
+</tr>
+<tr>
+<td><strong>aborted</strong></td>
+<td>Generation was manually cancelled by a user</td>
+</tr>
+</tbody>
+</table>
+<h2 id="advanced-usage">Advanced Usage</h2>
+<h3 id="filtering-and-scripting-with-json-output">Filtering and Scripting with JSON Output</h3>
+<p>All listing and status commands support <code>--json</code> for programmatic use:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Get all ready projects as JSON</span>
+docsfy<span class="w"> </span>list<span class="w"> </span>--status<span class="w"> </span>ready<span class="w"> </span>--json
+
+<span class="c1"># Extract page counts with jq</span>
+docsfy<span class="w"> </span>list<span class="w"> </span>--json<span class="w"> </span><span class="p">|</span><span class="w"> </span>jq<span class="w"> </span><span class="s1">&#39;.[] | {name, branch, page_count}&#39;</span>
+
+<span class="c1"># Check if a specific variant is ready</span>
+docsfy<span class="w"> </span>status<span class="w"> </span>my-app<span class="w"> </span>--branch<span class="w"> </span>main<span class="w"> </span>--provider<span class="w"> </span>cursor<span class="w"> </span>--model<span class="w"> </span>gpt-5.4-xhigh-fast<span class="w"> </span>--json<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span><span class="p">|</span><span class="w"> </span>jq<span class="w"> </span>-r<span class="w"> </span><span class="s1">&#39;.status&#39;</span>
+</code></pre></div>
+
+<h3 id="admin-operations">Admin Operations</h3>
+<p>Admins see <strong>all</strong> projects across all users. When multiple users own variants of the same project name, use <code>--owner</code> to disambiguate:</p>
+<div class="highlight"><pre><span></span><code>docsfy status my-app --owner alice
+docsfy delete my-app --branch main --provider cursor --model gpt-5.4-xhigh-fast --owner alice
+docsfy abort my-app --owner bob
+</code></pre></div>
+
+<blockquote>
+<p><strong>Note:</strong> Admin deletion requires <code>--owner</code> (or <code>?owner=</code> in the API). This prevents accidental deletion of the wrong user's project.</p>
+</blockquote>
+<h3 id="active-generation-conflicts">Active Generation Conflicts</h3>
+<p>You cannot delete a variant while it is actively generating. Abort it first:</p>
+<div class="highlight"><pre><span></span><code>docsfy abort my-app --branch dev --provider gemini --model gemini-2.5-pro
+docsfy delete my-app --branch dev --provider gemini --model gemini-2.5-pro --yes
+</code></pre></div>
+
+<p>Similarly, you cannot start a new generation for a variant that is already generating — the server returns a <code>409 Conflict</code>.</p>
+<h3 id="viewing-documentation-without-downloading">Viewing Documentation Without Downloading</h3>
+<p>You can browse generated docs directly in your browser at:</p>
+<div class="highlight"><pre><span></span><code>https://&lt;your-server&gt;/docs/&lt;project&gt;/&lt;branch&gt;/&lt;provider&gt;/&lt;model&gt;/
+</code></pre></div>
+
+<p>Or let the server serve the latest ready variant automatically:</p>
+<div class="highlight"><pre><span></span><code>https://&lt;your-server&gt;/docs/&lt;project&gt;/
+</code></pre></div>
+
+<p>See <a href="browsing-docs.html">Browsing Generated Documentation</a> for details on search, variant switching, and sharing URLs.</p>
+<h3 id="regenerating-a-variant">Regenerating a Variant</h3>
+<p>From the web dashboard, every ready, errored, or aborted variant shows a <strong>Regenerate</strong> section where you can change the provider, model, or toggle <strong>Force full regeneration</strong> before starting a new run.</p>
+<p>From the CLI, use the <code>generate</code> command again with the same repo URL and variant parameters. See <a href="generating-docs.html">Generating Documentation</a> for full details.</p>
+<h2 id="troubleshooting">Troubleshooting</h2>
+<p><strong>"No active generation for '...'" when aborting</strong>
+The generation already finished (or failed) before your abort request arrived. Run <code>docsfy status &lt;project&gt;</code> to check the current state.</p>
+<p><strong>"Cannot delete '...' while generation is in progress"</strong>
+You must abort the active generation before deleting. Run <code>docsfy abort &lt;project&gt;</code> first.</p>
+<p><strong>"Multiple owners found for this variant, please specify owner"</strong>
+This happens when an admin queries a project name that exists under multiple owners. Add <code>--owner &lt;username&gt;</code> to resolve the ambiguity.</p>
+<p><strong>"Variant not ready" when downloading</strong>
+Only variants with status <strong>ready</strong> can be downloaded. Check <code>docsfy status &lt;project&gt;</code> and wait for generation to complete, or regenerate if the variant errored.</p>
+<h2 id="related-pages">Related Pages</h2>
+<ul>
+<li><a href="generating-docs.html">Generating Documentation</a></li>
+<li><a href="browsing-docs.html">Browsing Generated Documentation</a></li>
+<li><a href="using-the-cli.html">Using the CLI</a></li>
+<li><a href="cli-reference.html">CLI Command Reference</a></li>
+<li><a href="recipes-common-workflows.html">Common Workflow Recipes</a></li>
+</ul>
+                </div>
+            </article>
+            <nav class="page-nav">
+                
+                <a href="generating-docs.html" class="page-nav-link page-nav-prev">
+                    <span class="page-nav-label">Previous</span>
+                    <span class="page-nav-title">Generating Documentation</span>
+                </a>
+                
+                
+                <a href="browsing-docs.html" class="page-nav-link page-nav-next">
+                    <span class="page-nav-label">Next</span>
+                    <span class="page-nav-title">Browsing Generated Documentation</span>
+                </a>
+                
+            </nav>
+            
+            <aside class="toc-sidebar">
+                <div class="toc-container">
+                    <h3>On this page</h3>
+                    <div class="toc">
+<ul>
+<li><a href="#prerequisites">Prerequisites</a></li>
+<li><a href="#quick-example">Quick Example</a></li>
+<li><a href="#understanding-projects-and-variants">Understanding Projects and Variants</a></li>
+<li><a href="#listing-projects">Listing Projects</a><ul>
+<li><a href="#cli">CLI</a></li>
+<li><a href="#web-dashboard">Web Dashboard</a></li>
+</ul>
+</li>
+<li><a href="#inspecting-a-project">Inspecting a Project</a><ul>
+<li><a href="#cli_1">CLI</a></li>
+<li><a href="#web-dashboard_1">Web Dashboard</a></li>
+</ul>
+</li>
+<li><a href="#downloading-documentation">Downloading Documentation</a><ul>
+<li><a href="#cli_2">CLI</a></li>
+<li><a href="#web-dashboard_2">Web Dashboard</a></li>
+</ul>
+</li>
+<li><a href="#aborting-a-generation">Aborting a Generation</a><ul>
+<li><a href="#cli_3">CLI</a></li>
+<li><a href="#web-dashboard_3">Web Dashboard</a></li>
+</ul>
+</li>
+<li><a href="#deleting-projects-and-variants">Deleting Projects and Variants</a><ul>
+<li><a href="#deleting-a-single-variant">Deleting a Single Variant</a></li>
+<li><a href="#deleting-all-variants">Deleting All Variants</a></li>
+<li><a href="#deleting-by-generation-id">Deleting by Generation ID</a></li>
+</ul>
+</li>
+<li><a href="#variant-statuses">Variant Statuses</a></li>
+<li><a href="#advanced-usage">Advanced Usage</a><ul>
+<li><a href="#filtering-and-scripting-with-json-output">Filtering and Scripting with JSON Output</a></li>
+<li><a href="#admin-operations">Admin Operations</a></li>
+<li><a href="#active-generation-conflicts">Active Generation Conflicts</a></li>
+<li><a href="#viewing-documentation-without-downloading">Viewing Documentation Without Downloading</a></li>
+<li><a href="#regenerating-a-variant">Regenerating a Variant</a></li>
+</ul>
+</li>
+<li><a href="#troubleshooting">Troubleshooting</a></li>
+<li><a href="#related-pages">Related Pages</a></li>
+</ul>
+</div>
+
+                </div>
+            </aside>
+            
+
+        </main>
+
+        <footer class="page-footer">
+            
+            <span class="footer-version">Generated from version 1.7.1</span>
+            <span class="footer-sep">&middot;</span>
+            
+            Generated with <a href="https://github.com/myk-org/docsfy" target="_blank" rel="noopener">docs<span class="brand-accent">fy</span></a>
+            <span class="footer-sep">&middot;</span>
+            <span class="footer-llm">LLM-friendly: <a href="llms.txt">llms.txt</a> &middot; <a href="llms-full.txt">llms-full.txt</a></span>
+        </footer>
+    </div>
+
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <script src="assets/theme.js"></script>
+    <script src="assets/search.js"></script>
+    <script src="assets/copy.js"></script>
+    <script src="assets/callouts.js"></script>
+    <script src="assets/scrollspy.js"></script>
+    <script src="assets/codelabels.js"></script>
+    <script src="assets/github.js"></script>
+    <script>
+(function() {
+    var toggle = document.getElementById('sidebar-toggle');
+    var sidebar = document.getElementById('sidebar');
+    var overlay = document.getElementById('sidebar-overlay');
+    if (toggle && sidebar) {
+        toggle.addEventListener('click', function() {
+            sidebar.classList.toggle('open');
+            if (overlay) overlay.classList.toggle('open');
+            var expanded = sidebar.classList.contains('open');
+            toggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+        });
+    }
+    if (overlay) {
+        overlay.addEventListener('click', function() {
+            sidebar.classList.remove('open');
+            overlay.classList.remove('open');
+            if (toggle) toggle.setAttribute('aria-expanded', 'false');
+        });
+    }
+})();
+</script>
+<script>
+(function() {
+    var sidebar = document.querySelector('.sidebar-nav') || document.querySelector('.sidebar');
+    if (!sidebar) return;
+
+    // Restore scroll position
+    var saved = sessionStorage.getItem('sidebar-scroll');
+    if (saved) sidebar.scrollTop = parseInt(saved, 10);
+
+    // Save scroll position before navigating
+    sidebar.addEventListener('scroll', function() {
+        sessionStorage.setItem('sidebar-scroll', sidebar.scrollTop.toString());
+    });
+
+    // Also scroll active link into view if no saved position
+    if (!saved) {
+        var active = sidebar.querySelector('.nav-link.active');
+        if (active) {
+            active.scrollIntoView({ block: 'center', behavior: 'instant' });
+        }
+    }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Using the CLI - docsfy</title>
+    <meta name="description" content="Turn any Git repository into a polished documentation site in minutes">
+    <link rel="stylesheet" href="assets/style.css">
+    <script>try{var t=localStorage.getItem('theme');if(t==='dark')document.documentElement.setAttribute('data-theme','dark')}catch(e){}</script>
+    <link rel="alternate" type="text/plain" title="LLM Documentation Index" href="llms.txt">
+    <link rel="alternate" type="text/plain" title="LLM Full Documentation" href="llms-full.txt">
+</head>
+<body>
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <a href="index.html" class="sidebar-logo">docsfy</a>
+            <p class="sidebar-tagline">Turn any Git repository into a polished documentation site in minutes</p>
+        </div>
+
+        <div class="sidebar-search">
+            <input type="text" id="search-input" placeholder="Search... (⌘K)" autocomplete="off" readonly>
+            <div id="search-results" class="search-results"></div>
+        </div>
+
+        <nav class="sidebar-nav">
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Getting Started</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="quickstart.html"
+                           class="nav-link">
+                            Getting Started with docsfy
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="deployment.html"
+                           class="nav-link">
+                            Deploying with Docker
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">User Guides</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="generating-docs.html"
+                           class="nav-link">
+                            Generating Documentation
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="managing-projects.html"
+                           class="nav-link">
+                            Managing Projects and Variants
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="browsing-docs.html"
+                           class="nav-link">
+                            Browsing Generated Documentation
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="managing-users.html"
+                           class="nav-link">
+                            Managing Users and Access Control
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="configuring-ai-providers.html"
+                           class="nav-link">
+                            Configuring AI Providers
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="incremental-updates.html"
+                           class="nav-link">
+                            Working with Incremental Updates
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="using-the-cli.html"
+                           class="nav-link active" aria-current="page">
+                            Using the CLI
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="llms-txt-ai-readable-docs.html"
+                           class="nav-link">
+                            AI-Readable Documentation with llms.txt
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Recipes</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="recipes-common-workflows.html"
+                           class="nav-link">
+                            Common Workflow Recipes
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <h3 class="nav-group-title">Reference</h3>
+                <ul class="nav-group-pages">
+                    
+                    <li>
+                        <a href="api-reference.html"
+                           class="nav-link">
+                            REST API Reference
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="cli-reference.html"
+                           class="nav-link">
+                            CLI Command Reference
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="configuration-reference.html"
+                           class="nav-link">
+                            Configuration Reference
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            
+        </nav>
+    </aside>
+
+    <div class="main-wrapper">
+        <header class="top-bar">
+            <div class="top-bar-left">
+                <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebar" aria-expanded="false">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                </button>
+                <a href="index.html" class="top-bar-title">docsfy</a>
+            </div>
+            <div class="top-bar-spacer"></div>
+            <div class="top-bar-right">
+                <button class="top-bar-search-btn" id="search-trigger" aria-label="Search">
+                    <kbd>&#8984;K</kbd> Search
+                </button>
+                <a href="https://github.com/myk-org/docsfy" target="_blank" rel="noopener" class="docsfy-badge" title="Generated with docsfy">
+                    ⚡ docs<span class="brand-accent">fy</span>
+                </a>
+                
+                <a href="https://github.com/myk-org/docsfy.git" target="_blank" rel="noopener noreferrer" class="top-bar-github" id="github-link" data-repo-url="https://github.com/myk-org/docsfy.git">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                    <span class="github-stars" id="github-stars" title="GitHub stars"></span>
+                </a>
+                
+                <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+                    <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                    </svg>
+                    <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <main class="content">
+            
+            <article class="article">
+                <div class="article-body">
+                    <!-- SECURITY: |safe is intentional. Content is AI-generated markdown
+                         converted to HTML server-side by the markdown library, not
+                         user-supplied input. XSS risk is minimal and accepted since
+                         the AI generates the content, not end users. -->
+                    <h1 id="using-the-cli">Using the CLI</h1>
+<p>Manage your docsfy server entirely from the terminal — set up server profiles, generate documentation, monitor progress, download results, and administer users without ever opening a browser.</p>
+<h2 id="prerequisites">Prerequisites</h2>
+<ul>
+<li>docsfy installed (<code>pip install docsfy</code> or <code>uv pip install docsfy</code>)</li>
+<li>A running docsfy server you can reach over the network</li>
+<li>Your username and API key (get these from your server admin)</li>
+</ul>
+<h2 id="quick-example">Quick Example</h2>
+<p>Set up a server profile and generate docs in three commands:</p>
+<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>config<span class="w"> </span>init
+docsfy<span class="w"> </span>generate<span class="w"> </span>https://github.com/your-org/your-repo
+docsfy<span class="w"> </span>download<span class="w"> </span>your-repo<span class="w"> </span>-o<span class="w"> </span>./docs
+</code></pre></div>
+
+<h2 id="setting-up-server-profiles">Setting Up Server Profiles</h2>
+<p>Before using any command, configure a connection to your docsfy server. The interactive setup walks you through it:</p>
+<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>config<span class="w"> </span>init
+</code></pre></div>
+
+<p>You'll be prompted for:</p>
+<ul>
+<li><strong>Profile name</strong> — a short label like <code>dev</code> or <code>prod</code> (default: <code>dev</code>)</li>
+<li><strong>Server URL</strong> — full URL including scheme, e.g. <code>https://docsfy.example.com:8000</code></li>
+<li><strong>Username</strong> — your docsfy username</li>
+<li><strong>Password</strong> — your API key</li>
+</ul>
+<p>The first profile you create automatically becomes the default. Configuration is saved to <code>~/.config/docsfy/config.toml</code> with restricted file permissions (owner read/write only).</p>
+<h3 id="viewing-your-configuration">Viewing Your Configuration</h3>
+<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>config<span class="w"> </span>show
+</code></pre></div>
+
+<div class="highlight"><pre><span></span><code>Config file: /home/you/.config/docsfy/config.toml
+Default server: dev
+
+[dev] (default)
+  URL:      https://docsfy.example.com:8000
+  Username: alice
+  Password: dk***
+</code></pre></div>
+
+<p>Passwords are always masked in output.</p>
+<h3 id="updating-individual-settings">Updating Individual Settings</h3>
+<p>Change any config value without re-running the full setup:</p>
+<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>config<span class="w"> </span><span class="nb">set</span><span class="w"> </span>servers.dev.url<span class="w"> </span>https://new-server.example.com:8000
+docsfy<span class="w"> </span>config<span class="w"> </span><span class="nb">set</span><span class="w"> </span>servers.dev.username<span class="w"> </span>bob
+docsfy<span class="w"> </span>config<span class="w"> </span><span class="nb">set</span><span class="w"> </span>default.server<span class="w"> </span>prod
+</code></pre></div>
+
+<p>Keys must start with <code>default.</code> or <code>servers.</code>.</p>
+<h3 id="multiple-server-profiles">Multiple Server Profiles</h3>
+<p>Run <code>docsfy config init</code> again to create additional profiles. Switch between them per-command with <code>--server</code>:</p>
+<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>list<span class="w"> </span>--server<span class="w"> </span>prod
+docsfy<span class="w"> </span>generate<span class="w"> </span>https://github.com/org/repo<span class="w"> </span>--server<span class="w"> </span>staging
+</code></pre></div>
+
+<p>Or change your default:</p>
+<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>config<span class="w"> </span><span class="nb">set</span><span class="w"> </span>default.server<span class="w"> </span>prod
+</code></pre></div>
+
+<h2 id="generating-documentation">Generating Documentation</h2>
+<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>generate<span class="w"> </span>https://github.com/your-org/your-repo
+</code></pre></div>
+
+<p>This submits the repository to the server and starts AI-powered documentation generation. The output confirms the request:</p>
+<div class="highlight"><pre><span></span><code>Project: your-repo
+Branch: main
+Status: generating
+Generation ID: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+</code></pre></div>
+
+<p>The server uses its default AI provider and model. To choose a specific provider and model:</p>
+<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>generate<span class="w"> </span>https://github.com/your-org/your-repo<span class="w"> </span>--provider<span class="w"> </span>gemini<span class="w"> </span>--model<span class="w"> </span>gemini-2.5-flash
+</code></pre></div>
+
+<h3 id="targeting-a-branch">Targeting a Branch</h3>
+<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>generate<span class="w"> </span>https://github.com/your-org/your-repo<span class="w"> </span>--branch<span class="w"> </span>dev
+</code></pre></div>
+
+<blockquote>
+<p><strong>Note:</strong> Branch names cannot contain slashes. Use hyphens instead (e.g., <code>release-1.x</code> instead of <code>release/1.x</code>).</p>
+</blockquote>
+<h3 id="specifying-repository-type">Specifying Repository Type</h3>
+<p>docsfy auto-detects whether your repo is an app, library, framework, or test suite. Override the detection if needed:</p>
+<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>generate<span class="w"> </span>https://github.com/your-org/your-repo<span class="w"> </span>--repo-type<span class="w"> </span>library
+</code></pre></div>
+
+<p>Valid types: <code>app</code>, <code>library</code>, <code>framework</code>, <code>tests</code>.</p>
+<h3 id="forcing-full-regeneration">Forcing Full Regeneration</h3>
+<p>By default, docsfy performs incremental updates when docs already exist for a repo. Force a complete regeneration with:</p>
+<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>generate<span class="w"> </span>https://github.com/your-org/your-repo<span class="w"> </span>--force
+</code></pre></div>
+
+<p>See <a href="incremental-updates.html">Working with Incremental Updates</a> for details on how incremental generation works.</p>
+<h3 id="watching-progress-in-real-time">Watching Progress in Real Time</h3>
+<p>Add <code>--watch</code> to stream generation progress directly in your terminal via WebSocket:</p>
+<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>generate<span class="w"> </span>https://github.com/your-org/your-repo<span class="w"> </span>--watch
+</code></pre></div>
+
+<div class="highlight"><pre><span></span><code>Project: your-repo
+Branch: main
+Status: generating
+Generation ID: a1b2c3d4-...
+Watching generation progress...
+[generating] cloning repository
+[generating] planning documentation (12 pages)
+[generating] generating pages
+Generation complete! (12 pages)
+</code></pre></div>
+
+<p>The command exits automatically when generation finishes, errors out, or is aborted.</p>
+<h2 id="checking-project-status">Checking Project Status</h2>
+<h3 id="list-all-projects">List All Projects</h3>
+<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>list
+</code></pre></div>
+
+<div class="highlight"><pre><span></span><code>NAME          BRANCH  PROVIDER  MODEL              STATUS  OWNER  PAGES  GEN ID
+your-repo     main    cursor    gpt-5.4-xhigh-fast ready   alice  12     a1b2c3d4-...
+other-repo    dev     gemini    gemini-2.5-flash    ready   bob    8      e5f6a7b8-...
+</code></pre></div>
+
+<p>Filter by status or provider:</p>
+<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>list<span class="w"> </span>--status<span class="w"> </span>ready
+docsfy<span class="w"> </span>list<span class="w"> </span>--provider<span class="w"> </span>gemini
+</code></pre></div>
+
+<h3 id="inspect-a-specific-project">Inspect a Specific Project</h3>
+<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>status<span class="w"> </span>your-repo
+</code></pre></div>
+
+<div class="highlight"><pre><span></span><code>Project: your-repo
+Variants: 2
+
+  main/cursor/gpt-5.4-xhigh-fast
+    ID:      a1b2c3d4-e5f6-7890-abcd-ef1234567890
+    Status:  ready
+    Owner:   alice
+    Pages:   12
+    Updated: 2026-06-08T14:30:00
+    Commit:  abc12345
+
+  dev/gemini/gemini-2.5-flash
+    ID:      f9e8d7c6-b5a4-3210-fedc-ba9876543210
+    Status:  generating
+    Owner:   alice
+    Stage:   generating pages
+</code></pre></div>
+
+<p>Narrow to a specific variant with <code>--branch</code>, <code>--provider</code>, and <code>--model</code>:</p>
+<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>status<span class="w"> </span>your-repo<span class="w"> </span>--branch<span class="w"> </span>main<span class="w"> </span>--provider<span class="w"> </span>cursor<span class="w"> </span>--model<span class="w"> </span>gpt-5.4-xhigh-fast
+</code></pre></div>
+
+<h3 id="using-generation-ids">Using Generation IDs</h3>
+<p>Every command that accepts a project name also accepts a generation ID (UUID). This is useful for scripting when you've captured the ID from a <code>generate</code> command:</p>
+<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>status<span class="w"> </span>a1b2c3d4-e5f6-7890-abcd-ef1234567890
+docsfy<span class="w"> </span>download<span class="w"> </span>a1b2c3d4-e5f6-7890-abcd-ef1234567890<span class="w"> </span>-o<span class="w"> </span>./docs
+</code></pre></div>
+
+<p>The CLI automatically resolves the UUID to the corresponding project, branch, provider, and model.</p>
+<h2 id="downloading-documentation">Downloading Documentation</h2>
+<p>Download the generated documentation site as a tar.gz archive:</p>
+<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>download<span class="w"> </span>your-repo<span class="w"> </span>--branch<span class="w"> </span>main<span class="w"> </span>--provider<span class="w"> </span>cursor<span class="w"> </span>--model<span class="w"> </span>gpt-5.4-xhigh-fast
+</code></pre></div>
+
+<div class="highlight"><pre><span></span><code>Downloaded to /current/dir/your-repo-main-cursor-gpt-5.4-xhigh-fast-docs.tar.gz
+</code></pre></div>
+
+<h3 id="extracting-to-a-directory">Extracting to a Directory</h3>
+<p>Use <code>--output</code> to extract directly into a folder:</p>
+<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>download<span class="w"> </span>your-repo<span class="w"> </span>--branch<span class="w"> </span>main<span class="w"> </span>--provider<span class="w"> </span>cursor<span class="w"> </span>--model<span class="w"> </span>gpt-5.4-xhigh-fast<span class="w"> </span>-o<span class="w"> </span>./docs
+</code></pre></div>
+
+<div class="highlight"><pre><span></span><code>Extracted to ./docs
+</code></pre></div>
+
+<h3 id="flattening-the-directory-structure">Flattening the Directory Structure</h3>
+<p>Archives contain a nested folder. Use <code>--flatten</code> to move all files directly into the output directory:</p>
+<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>download<span class="w"> </span>your-repo<span class="w"> </span>-b<span class="w"> </span>main<span class="w"> </span>-p<span class="w"> </span>cursor<span class="w"> </span>-m<span class="w"> </span>gpt-5.4-xhigh-fast<span class="w"> </span>-o<span class="w"> </span>./docs<span class="w"> </span>--flatten
+</code></pre></div>
+
+<div class="highlight"><pre><span></span><code>Extracted and flattened to ./docs
+</code></pre></div>
+
+<blockquote>
+<p><strong>Note:</strong> <code>--flatten</code> requires <code>--output</code>.</p>
+</blockquote>
+<h2 id="aborting-a-generation">Aborting a Generation</h2>
+<p>Stop an in-progress generation:</p>
+<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>abort<span class="w"> </span>your-repo<span class="w"> </span>--branch<span class="w"> </span>main<span class="w"> </span>--provider<span class="w"> </span>cursor<span class="w"> </span>--model<span class="w"> </span>gpt-5.4-xhigh-fast
+</code></pre></div>
+
+<p>Or abort by project name (stops any active generation for that project):</p>
+<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>abort<span class="w"> </span>your-repo
+</code></pre></div>
+
+<h2 id="deleting-projects">Deleting Projects</h2>
+<h3 id="delete-a-specific-variant">Delete a Specific Variant</h3>
+<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>delete<span class="w"> </span>your-repo<span class="w"> </span>--branch<span class="w"> </span>main<span class="w"> </span>--provider<span class="w"> </span>cursor<span class="w"> </span>--model<span class="w"> </span>gpt-5.4-xhigh-fast
+</code></pre></div>
+
+<p>You'll be asked to confirm. Skip the prompt in scripts with <code>--yes</code>:</p>
+<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>delete<span class="w"> </span>your-repo<span class="w"> </span>-b<span class="w"> </span>main<span class="w"> </span>-p<span class="w"> </span>cursor<span class="w"> </span>-m<span class="w"> </span>gpt-5.4-xhigh-fast<span class="w"> </span>--yes
+</code></pre></div>
+
+<h3 id="delete-all-variants">Delete All Variants</h3>
+<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>delete<span class="w"> </span>your-repo<span class="w"> </span>--all
+</code></pre></div>
+
+<blockquote>
+<p><strong>Warning:</strong> <code>--all</code> deletes every variant across all branches, providers, and models for the named project.</p>
+</blockquote>
+<h2 id="checking-available-ai-models">Checking Available AI Models</h2>
+<p>See which AI providers and models are available on the server:</p>
+<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>models
+</code></pre></div>
+
+<div class="highlight"><pre><span></span><code>Provider: claude
+  claude-sonnet-4-20250514
+  claude-opus-4-20250514
+
+Provider: gemini
+  gemini-2.5-flash
+  gemini-2.5-pro
+
+Provider: cursor (default)
+  gpt-5.4-xhigh-fast  (default)
+  gpt-5.4-xhigh
+</code></pre></div>
+
+<p>Filter by provider:</p>
+<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>models<span class="w"> </span>--provider<span class="w"> </span>gemini
+</code></pre></div>
+
+<h2 id="checking-server-health">Checking Server Health</h2>
+<p>Verify connectivity to your docsfy server:</p>
+<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>health
+</code></pre></div>
+
+<div class="highlight"><pre><span></span><code>Server: https://docsfy.example.com:8000
+Status: ok
+</code></pre></div>
+
+<h2 id="admin-commands">Admin Commands</h2>
+<p>Admin commands require an account with the <code>admin</code> role. See <a href="managing-users.html">Managing Users and Access Control</a> for the full workflow.</p>
+<h3 id="managing-users">Managing Users</h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># List all users</span>
+docsfy<span class="w"> </span>admin<span class="w"> </span>users<span class="w"> </span>list
+
+<span class="c1"># Create a user (role: user, viewer, or admin)</span>
+docsfy<span class="w"> </span>admin<span class="w"> </span>users<span class="w"> </span>create<span class="w"> </span>alice<span class="w"> </span>--role<span class="w"> </span>user
+
+<span class="c1"># Rotate a user&#39;s API key</span>
+docsfy<span class="w"> </span>admin<span class="w"> </span>users<span class="w"> </span>rotate-key<span class="w"> </span>alice
+
+<span class="c1"># Delete a user</span>
+docsfy<span class="w"> </span>admin<span class="w"> </span>users<span class="w"> </span>delete<span class="w"> </span>alice<span class="w"> </span>--yes
+</code></pre></div>
+
+<p>When creating a user or rotating a key, the new API key is displayed once. Save it immediately — it cannot be retrieved later.</p>
+<h3 id="managing-project-access">Managing Project Access</h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># List who has access to a project</span>
+docsfy<span class="w"> </span>admin<span class="w"> </span>access<span class="w"> </span>list<span class="w"> </span>my-project<span class="w"> </span>--owner<span class="w"> </span>alice
+
+<span class="c1"># Grant access</span>
+docsfy<span class="w"> </span>admin<span class="w"> </span>access<span class="w"> </span>grant<span class="w"> </span>my-project<span class="w"> </span>--username<span class="w"> </span>bob<span class="w"> </span>--owner<span class="w"> </span>alice
+
+<span class="c1"># Revoke access</span>
+docsfy<span class="w"> </span>admin<span class="w"> </span>access<span class="w"> </span>revoke<span class="w"> </span>my-project<span class="w"> </span>--username<span class="w"> </span>bob<span class="w"> </span>--owner<span class="w"> </span>alice
+</code></pre></div>
+
+<h2 id="advanced-usage">Advanced Usage</h2>
+<h3 id="json-output">JSON Output</h3>
+<p>Most commands support <code>--json</code> for machine-readable output, useful in scripts and CI pipelines:</p>
+<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>list<span class="w"> </span>--json
+docsfy<span class="w"> </span>status<span class="w"> </span>your-repo<span class="w"> </span>--json
+docsfy<span class="w"> </span>models<span class="w"> </span>--json
+docsfy<span class="w"> </span>admin<span class="w"> </span>users<span class="w"> </span>list<span class="w"> </span>--json
+</code></pre></div>
+
+<h3 id="overriding-connection-settings-per-command">Overriding Connection Settings per Command</h3>
+<p>Override any profile setting for a single command without changing your config:</p>
+<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>list<span class="w"> </span>--host<span class="w"> </span>docsfy.staging.local<span class="w"> </span>--port<span class="w"> </span><span class="m">9000</span><span class="w"> </span>--username<span class="w"> </span>admin<span class="w"> </span>--password<span class="w"> </span>my-key
+</code></pre></div>
+
+<p>The priority order is:</p>
+<ol>
+<li>Explicit CLI flags (<code>--host</code>, <code>--port</code>, <code>--username</code>, <code>--password</code>)</li>
+<li>Named server profile (<code>--server prod</code>)</li>
+<li>Default profile from config</li>
+<li>Error if nothing is configured</li>
+</ol>
+<h3 id="cicd-integration">CI/CD Integration</h3>
+<p>In CI environments where interactive <code>config init</code> isn't practical, pass credentials directly:</p>
+<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>generate<span class="w"> </span>https://github.com/org/repo<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--host<span class="w"> </span>docsfy.internal.com<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--port<span class="w"> </span><span class="m">8000</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--username<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$DOCSFY_USER</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--password<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$DOCSFY_API_KEY</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--branch<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$CI_BRANCH</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--force<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--watch
+</code></pre></div>
+
+<p>Or create the config file programmatically before running commands. See <a href="recipes-common-workflows.html">Common Workflow Recipes</a> for complete CI/CD patterns.</p>
+<h3 id="admin-operations-on-other-users-projects">Admin Operations on Other Users' Projects</h3>
+<p>Admins can operate on any user's projects by specifying <code>--owner</code>:</p>
+<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>status<span class="w"> </span>some-project<span class="w"> </span>--owner<span class="w"> </span>alice
+docsfy<span class="w"> </span>delete<span class="w"> </span>some-project<span class="w"> </span>--all<span class="w"> </span>--owner<span class="w"> </span>alice<span class="w"> </span>--yes
+docsfy<span class="w"> </span>download<span class="w"> </span>some-project<span class="w"> </span>-b<span class="w"> </span>main<span class="w"> </span>-p<span class="w"> </span>cursor<span class="w"> </span>-m<span class="w"> </span>gpt-5.4-xhigh-fast<span class="w"> </span>--owner<span class="w"> </span>alice<span class="w"> </span>-o<span class="w"> </span>./docs
+</code></pre></div>
+
+<h2 id="troubleshooting">Troubleshooting</h2>
+<p><strong>"No server configured" error</strong>
+Run <code>docsfy config init</code> to create your first server profile, or pass <code>--host</code> and <code>--password</code> directly.</p>
+<p><strong>"Server profile 'X' not found"</strong>
+Check available profiles with <code>docsfy config show</code>. Profile names are case-sensitive.</p>
+<p><strong>"Error: Server redirected"</strong>
+Your server URL may be missing the correct scheme or port. Verify the URL in <code>docsfy config show</code> matches your server's actual address.</p>
+<p><strong>"Specify --branch, --provider, and --model together"</strong>
+When targeting a specific variant for status, download, delete, or abort, all three flags must be provided together. Use <code>docsfy status &lt;project&gt;</code> first to see available variants.</p>
+<p><strong>WebSocket timeout with --watch</strong>
+The <code>--watch</code> flag times out after 5 minutes of inactivity. For long-running generations, use <code>docsfy status &lt;project&gt;</code> to poll instead.</p>
+<p>For the full list of every flag and option, see <a href="cli-reference.html">CLI Command Reference</a>. For server-side configuration, see <a href="configuration-reference.html">Configuration Reference</a>.</p>
+<h2 id="related-pages">Related Pages</h2>
+<ul>
+<li><a href="cli-reference.html">CLI Command Reference</a></li>
+<li><a href="quickstart.html">Getting Started with docsfy</a></li>
+<li><a href="configuration-reference.html">Configuration Reference</a></li>
+<li><a href="recipes-common-workflows.html">Common Workflow Recipes</a></li>
+<li><a href="managing-projects.html">Managing Projects and Variants</a></li>
+</ul>
+                </div>
+            </article>
+            <nav class="page-nav">
+                
+                <a href="incremental-updates.html" class="page-nav-link page-nav-prev">
+                    <span class="page-nav-label">Previous</span>
+                    <span class="page-nav-title">Working with Incremental Updates</span>
+                </a>
+                
+                
+                <a href="llms-txt-ai-readable-docs.html" class="page-nav-link page-nav-next">
+                    <span class="page-nav-label">Next</span>
+                    <span class="page-nav-title">AI-Readable Documentation with llms.txt</span>
+                </a>
+                
+            </nav>
+            
+            <aside class="toc-sidebar">
+                <div class="toc-container">
+                    <h3>On this page</h3>
+                    <div class="toc">
+<ul>
+<li><a href="#prerequisites">Prerequisites</a></li>
+<li><a href="#quick-example">Quick Example</a></li>
+<li><a href="#setting-up-server-profiles">Setting Up Server Profiles</a><ul>
+<li><a href="#viewing-your-configuration">Viewing Your Configuration</a></li>
+<li><a href="#updating-individual-settings">Updating Individual Settings</a></li>
+<li><a href="#multiple-server-profiles">Multiple Server Profiles</a></li>
+</ul>
+</li>
+<li><a href="#generating-documentation">Generating Documentation</a><ul>
+<li><a href="#targeting-a-branch">Targeting a Branch</a></li>
+<li><a href="#specifying-repository-type">Specifying Repository Type</a></li>
+<li><a href="#forcing-full-regeneration">Forcing Full Regeneration</a></li>
+<li><a href="#watching-progress-in-real-time">Watching Progress in Real Time</a></li>
+</ul>
+</li>
+<li><a href="#checking-project-status">Checking Project Status</a><ul>
+<li><a href="#list-all-projects">List All Projects</a></li>
+<li><a href="#inspect-a-specific-project">Inspect a Specific Project</a></li>
+<li><a href="#using-generation-ids">Using Generation IDs</a></li>
+</ul>
+</li>
+<li><a href="#downloading-documentation">Downloading Documentation</a><ul>
+<li><a href="#extracting-to-a-directory">Extracting to a Directory</a></li>
+<li><a href="#flattening-the-directory-structure">Flattening the Directory Structure</a></li>
+</ul>
+</li>
+<li><a href="#aborting-a-generation">Aborting a Generation</a></li>
+<li><a href="#deleting-projects">Deleting Projects</a><ul>
+<li><a href="#delete-a-specific-variant">Delete a Specific Variant</a></li>
+<li><a href="#delete-all-variants">Delete All Variants</a></li>
+</ul>
+</li>
+<li><a href="#checking-available-ai-models">Checking Available AI Models</a></li>
+<li><a href="#checking-server-health">Checking Server Health</a></li>
+<li><a href="#admin-commands">Admin Commands</a><ul>
+<li><a href="#managing-users">Managing Users</a></li>
+<li><a href="#managing-project-access">Managing Project Access</a></li>
+</ul>
+</li>
+<li><a href="#advanced-usage">Advanced Usage</a><ul>
+<li><a href="#json-output">JSON Output</a></li>
+<li><a href="#overriding-connection-settings-per-command">Overriding Connection Settings per Command</a></li>
+<li><a href="#cicd-integration">CI/CD Integration</a></li>
+<li><a href="#admin-operations-on-other-users-projects">Admin Operations on Other Users' Projects</a></li>
+</ul>
+</li>
+<li><a href="#troubleshooting">Troubleshooting</a></li>
+<li><a href="#related-pages">Related Pages</a></li>
+</ul>
+</div>
+
+                </div>
+            </aside>
+            
+
+        </main>
+
+        <footer class="page-footer">
+            
+            <span class="footer-version">Generated from version 1.7.1</span>
+            <span class="footer-sep">&middot;</span>
+            
+            Generated with <a href="https://github.com/myk-org/docsfy" target="_blank" rel="noopener">docs<span class="brand-accent">fy</span></a>
+            <span class="footer-sep">&middot;</span>
+            <span class="footer-llm">LLM-friendly: <a href="llms.txt">llms.txt</a> &middot; <a href="llms-full.txt">llms-full.txt</a></span>
+        </footer>
+    </div>
+
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <script src="assets/theme.js"></script>
+    <script src="assets/search.js"></script>
+    <script src="assets/copy.js"></script>
+    <script src="assets/callouts.js"></script>
+    <script src="assets/scrollspy.js"></script>
+    <script src="assets/codelabels.js"></script>
+    <script src="assets/github.js"></script>
+    <script>
+(function() {
+    var toggle = document.getElementById('sidebar-toggle');
+    var sidebar = document.getElementById('sidebar');
+    var overlay = document.getElementById('sidebar-overlay');
+    if (toggle && sidebar) {
+        toggle.addEventListener('click', function() {
+            sidebar.classList.toggle('open');
+            if (overlay) overlay.classList.toggle('open');
+            var expanded = sidebar.classList.contains('open');
+            toggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+        });
+    }
+    if (overlay) {
+        overlay.addEventListener('click', function() {
+            sidebar.classList.remove('open');
+            overlay.classList.remove('open');
+            if (toggle) toggle.setAttribute('aria-expanded', 'false');
+        });
+    }
+})();
+</script>
+<script>
+(function() {
+    var sidebar = document.querySelector('.sidebar-nav') || document.querySelector('.sidebar');
+    if (!sidebar) return;
+
+    // Restore scroll position
+    var saved = sessionStorage.getItem('sidebar-scroll');
+    if (saved) sidebar.scrollTop = parseInt(saved, 10);
+
+    // Save scroll position before navigating
+    sidebar.addEventListener('scroll', function() {
+        sessionStorage.setItem('sidebar-scroll', sidebar.scrollTop.toString());
+    });
+
+    // Also scroll active link into view if no saved position
+    if (!saved) {
+        var active = sidebar.querySelector('.nav-link.active');
+        if (active) {
+            active.scrollIntoView({ block: 'center', behavior: 'instant' });
+        }
+    }
+})();
+</script>
+</body>
+</html>
