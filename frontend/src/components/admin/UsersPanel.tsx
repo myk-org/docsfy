@@ -4,7 +4,6 @@ import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Badge } from '@/components/ui/badge'
 import {
   Select,
   SelectContent,
@@ -26,31 +25,10 @@ import { api } from '@/lib/api'
 import { TOAST_DEFAULT_MS, TOAST_ERROR_MS } from '@/lib/constants'
 import { ApiError } from '@/types'
 import type { User, CreateUserResponse, RotateKeyResponse } from '@/types'
+import RoleBadge from '@/components/shared/RoleBadge'
 
 function formatDate(dateStr: string): string {
   return new Date(dateStr).toLocaleString()
-}
-
-function RoleBadge({ role }: { role: string }) {
-  if (role === 'admin') {
-    return (
-      <Badge className="bg-signal-green/10 text-signal-green border-signal-green/20">
-        {role}
-      </Badge>
-    )
-  }
-  if (role === 'user') {
-    return (
-      <Badge className="bg-signal-blue/10 text-signal-blue border-signal-blue/20">
-        {role}
-      </Badge>
-    )
-  }
-  return (
-    <Badge className="bg-surface-elevated text-text-tertiary border-border-default">
-      {role}
-    </Badge>
-  )
 }
 
 export default function UsersPanel() {
