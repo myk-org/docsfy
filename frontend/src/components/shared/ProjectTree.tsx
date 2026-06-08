@@ -353,7 +353,6 @@ function RepoRow({
           </button>
         )}
       </div>
-      {!isExpanded && (
         <div className="pl-5 mt-0.5 flex items-center gap-1 text-xs text-text-secondary">
           <span>{totalVariants} variant{totalVariants !== 1 ? 's' : ''}</span>
           {(counts.ready ?? 0) > 0 && (
@@ -393,7 +392,6 @@ function RepoRow({
             </>
           )}
         </div>
-      )}
     </div>
   )
 }
