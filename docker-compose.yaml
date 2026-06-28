@@ -20,13 +20,3 @@ services:
       # Uncomment for development
       # - DEV_MODE=true
     restart: unless-stopped
-    healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          "curl -f http://localhost:$${PORT:-8000}/health && curl -f http://localhost:$${SIDECAR_PORT:-9100}/health",
-        ]
-      interval: 30s
-      timeout: 10s
-      start_period: 30s
-      retries: 3

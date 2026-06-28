@@ -85,7 +85,8 @@ async def test_run_planner_bad_json(tmp_path: Path) -> None:
 
 
 async def test_call_ai_or_raise_passes_tools(tmp_path: Path) -> None:
-    from docsfy.generator import _call_ai_or_raise, _SIDECAR_TOOLS
+    from docsfy.generator import _call_ai_or_raise
+    from docsfy.prompts import SIDECAR_TOOLS
 
     with patch(
         "docsfy.generator.call_ai_once",
@@ -100,7 +101,7 @@ async def test_call_ai_or_raise_passes_tools(tmp_path: Path) -> None:
 
     mock_call.assert_called_once()
     call_kwargs = mock_call.call_args[1]
-    assert call_kwargs["tools"] == _SIDECAR_TOOLS
+    assert call_kwargs["tools"] == SIDECAR_TOOLS
     assert "bash" not in call_kwargs["tools"]
 
 
