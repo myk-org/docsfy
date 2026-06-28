@@ -21,6 +21,7 @@ from docsfy.json_parser import parse_json_array_response, parse_json_response
 from docsfy.models import PAGE_TYPES
 from docsfy.config import get_settings
 from docsfy.prompts import (
+    SIDECAR_TOOLS,
     build_completeness_prompt,
     build_cross_links_prompt,
     build_validation_prompt,
@@ -401,6 +402,7 @@ async def _validate_single_page(
         ai_model=ai_model,
         cwd=str(repo_path),
         ai_call_timeout=ai_cli_timeout,
+        tools=list(SIDECAR_TOOLS),
     )
     add_cost(result.usage.cost_usd if result.usage else None)
 
@@ -611,6 +613,7 @@ async def check_and_fill_completeness(
             ai_model=ai_model,
             cwd=str(repo_path),
             ai_call_timeout=ai_cli_timeout,
+            tools=list(SIDECAR_TOOLS),
         )
         add_cost(result.usage.cost_usd if result.usage else None)
 
@@ -821,6 +824,7 @@ async def add_cross_links(
                 ai_model=ai_model,
                 cwd=str(repo_path),
                 ai_call_timeout=ai_cli_timeout,
+                tools=list(SIDECAR_TOOLS),
             )
         except Exception as exc:
             logger.warning(

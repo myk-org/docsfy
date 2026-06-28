@@ -14,6 +14,7 @@ from typing import Any
 from simple_logger.logger import get_logger
 
 from docsfy.ai_client import AIResult, call_ai_once, run_parallel_with_limit
+from docsfy.prompts import SIDECAR_TOOLS
 
 logger = get_logger(name=__name__)
 
@@ -132,6 +133,7 @@ async def _extract_semantic_chunk(
         system_prompt=_EXTRACTION_SYSTEM,
         cwd=str(root),
         ai_call_timeout=ai_call_timeout,
+        tools=list(SIDECAR_TOOLS),
     )
 
     if not result.success:
@@ -327,6 +329,7 @@ async def _label_communities(
         ai_model=ai_model,
         cwd=str(repo_dir),
         ai_call_timeout=ai_call_timeout,
+        tools=list(SIDECAR_TOOLS),
     )
 
     if not result.success:
