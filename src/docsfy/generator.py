@@ -25,6 +25,7 @@ from docsfy.prompts import (
 )
 
 logger = get_logger(name=__name__)
+_SIDECAR_TOOLS = ["read", "ls", "find", "grep"]
 
 
 def is_unsafe_slug(slug: str) -> bool:
@@ -103,6 +104,7 @@ async def _call_ai_or_raise(
         ai_model=ai_model,
         cwd=str(repo_path),
         ai_call_timeout=ai_cli_timeout,
+        tools=_SIDECAR_TOOLS,
     )
     add_cost(result.usage.cost_usd if result.usage else None)
     if not result.success:
