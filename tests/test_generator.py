@@ -84,6 +84,27 @@ async def test_run_planner_bad_json(tmp_path: Path) -> None:
             )
 
 
+async def test_call_ai_or_raise_passes_tools(tmp_path: Path) -> None:
+    from docsfy.generator import _call_ai_or_raise
+    from docsfy.prompts import SIDECAR_TOOLS
+
+    with patch(
+        "docsfy.generator.call_ai_once",
+        return_value=AIResult(success=True, text="ok"),
+    ) as mock_call:
+        await _call_ai_or_raise(
+            prompt="test",
+            repo_path=tmp_path,
+            ai_provider="claude",
+            ai_model="opus",
+        )
+
+    mock_call.assert_called_once()
+    call_kwargs = mock_call.call_args[1]
+    assert call_kwargs["tools"] == list(SIDECAR_TOOLS)
+    assert "bash" not in call_kwargs["tools"]
+
+
 async def test_generate_page(tmp_path: Path) -> None:
     from docsfy.generator import generate_page
 

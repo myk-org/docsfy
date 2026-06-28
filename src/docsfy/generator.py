@@ -17,6 +17,7 @@ from pydantic import ValidationError
 
 from docsfy.models import DEFAULT_BRANCH, PAGE_TYPES, DocPlan
 from docsfy.prompts import (
+    SIDECAR_TOOLS,
     build_incremental_page_prompt,
     build_incremental_planner_prompt,
     build_page_prompt,
@@ -103,6 +104,7 @@ async def _call_ai_or_raise(
         ai_model=ai_model,
         cwd=str(repo_path),
         ai_call_timeout=ai_cli_timeout,
+        tools=list(SIDECAR_TOOLS),
     )
     add_cost(result.usage.cost_usd if result.usage else None)
     if not result.success:
