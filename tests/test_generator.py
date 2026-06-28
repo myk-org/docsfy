@@ -101,7 +101,7 @@ async def test_call_ai_or_raise_passes_tools(tmp_path: Path) -> None:
 
     mock_call.assert_called_once()
     call_kwargs = mock_call.call_args[1]
-    assert call_kwargs["tools"] == SIDECAR_TOOLS
+    assert call_kwargs["tools"] == list(SIDECAR_TOOLS)
     assert "bash" not in call_kwargs["tools"]
 
 

@@ -6,7 +6,7 @@ from docsfy.models import PAGE_TYPES, REPO_TYPES
 
 logger = get_logger(name=__name__)
 
-SIDECAR_TOOLS = ["read", "ls", "find", "grep"]
+SIDECAR_TOOLS: tuple[str, ...] = ("read", "ls", "find", "grep")
 
 _PAGE_TYPE_VALUES = ", ".join(PAGE_TYPES)
 _REPO_TYPE_VALUES = ", ".join(REPO_TYPES)

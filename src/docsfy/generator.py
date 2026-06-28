@@ -104,7 +104,7 @@ async def _call_ai_or_raise(
         ai_model=ai_model,
         cwd=str(repo_path),
         ai_call_timeout=ai_cli_timeout,
-        tools=SIDECAR_TOOLS,
+        tools=list(SIDECAR_TOOLS),
     )
     add_cost(result.usage.cost_usd if result.usage else None)
     if not result.success:
