@@ -72,7 +72,7 @@ If health check fails, inform the user that the docsfy server is not reachable a
 | AI Model | Yes | From `docsfy models --json` → `available_models.<provider>` array of `{id, name}` objects |
 | Branch | No | Default: `main` |
 | Output directory | No | Default: `docs/` |
-| Force regeneration | Conditional | **MANDATORY `ask_user`** when re-generating an existing project (Update vs Force) |
+| Force regeneration | Conditional | **MANDATORY `AskUserQuestion`** when re-generating an existing project (Update vs Force) |
 | GitHub Pages preference | Conditional | GitHub repos only |
 | README simplification | Conditional | Only if GitHub Pages serves from `docs/` |
 | Commit/Push/PR preference | Yes | Always ask |
@@ -166,9 +166,9 @@ Mark `default_model` as "(Recommended)" if it appears in the list and is differe
 If `available_models` does not contain the selected provider or the array is empty,
 fall back to free-form model input.
 
-**Round 3 — Force regeneration (MANDATORY `ask_user`):**
+**Round 3 — Force regeneration (MANDATORY `AskUserQuestion`):**
 
-Since a previous generation exists, you **MUST** ask the user via `ask_user` how to regenerate.
+Since a previous generation exists, you **MUST** ask the user via `AskUserQuestion` how to regenerate.
 Show when it was last generated: "Last generated: {last_generated}".
 
 Options:
@@ -568,6 +568,6 @@ Display:
 | Skipping security scan | Always scan docs for leaked private data before committing |
 | Not excluding docs/ from secret scanners | Generated docs contain placeholder tokens that trigger secret scanners — exclude the output dir from the scanner's configuration |
 | Editing generated docs manually | Generated docs must NEVER be edited — fix issues at the source (docsfy server/prompts), not in the output |
-| Skipping --force when re-running existing project | When a prior generation exists for this repo+branch, MUST use `ask_user` with Update vs Force options — never skip |
+| Skipping --force when re-running existing project | When a prior generation exists for this repo+branch, MUST use `AskUserQuestion` with Update vs Force options — never skip |
 | Offering --force for new projects | Only offer --force when a matching `docsfy list` entry exists for this repo+branch |
-| Burying force regeneration in other questions | Force regeneration MUST be its own separate `ask_user` call (Round 3), not combined with provider/model selection |
+| Burying force regeneration in other questions | Force regeneration MUST be its own separate `AskUserQuestion` call (Round 3), not combined with provider/model selection |
