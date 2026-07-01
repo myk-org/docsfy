@@ -72,7 +72,7 @@ If health check fails, inform the user that the docsfy server is not reachable a
 | AI Model | Yes | From `docsfy models --json` → `available_models.<provider>` array of `{id, name}` objects |
 | Branch | No | Default: `main` |
 | Output directory | No | Default: `docs/` |
-| Force regeneration | No | Only offered when re-generating an existing project |
+| Force regeneration | Conditional | **MANDATORY `ask_user`** when re-generating an existing project (Update vs Force) |
 | GitHub Pages preference | Conditional | GitHub repos only |
 | README simplification | Conditional | Only if GitHub Pages serves from `docs/` |
 | Commit/Push/PR preference | Yes | Always ask |
@@ -149,7 +149,7 @@ Model is collected in Round 2 because it depends on the provider selected in Rou
 
 **If a previous generation exists for this repo + branch:**
 
-Show the user what was used before and present smart defaults:
+Show the user what was used before and present smart defaults.
 
 **Round 1** — Present:
 
@@ -157,8 +157,6 @@ Show the user what was used before and present smart defaults:
 - Repository URL: pre-fill from current repo
 - Branch: pre-fill from current branch
 - Output directory: default `docs/`
-- Force regeneration: **always offer `--force`** since this is a re-generation of an existing project.
-  Show when it was last generated: "Last generated: {last_generated}"
 - Repository type: optional — offer choices: Auto-detect (default), App, Tests, Library, Framework
 
 **Round 2** — After provider is selected, present models from `available_models.<selected_provider>`.
@@ -167,6 +165,17 @@ If the user kept the same provider as before, show the previous `ai_model` as fi
 Mark `default_model` as "(Recommended)" if it appears in the list and is different from the previous model.
 If `available_models` does not contain the selected provider or the array is empty,
 fall back to free-form model input.
+
+**Round 3 — Force regeneration (MANDATORY `ask_user`):**
+
+Since a previous generation exists, you **MUST** ask the user via `ask_user` how to regenerate.
+Show when it was last generated: "Last generated: {last_generated}".
+
+Options:
+- **Update (incremental)** — Only regenerate pages affected by code changes since last generation
+- **Force regenerate** — Delete all existing docs and regenerate from scratch (`--force` flag)
+
+**DO NOT skip this question. DO NOT assume a default.** The user must explicitly choose.
 
 **If NO previous generation exists:**
 
@@ -277,7 +286,7 @@ Display a summary of all collected parameters and preferences:
  Branch:              <branch>
  Provider / Model:    <provider> / <model>
  Output directory:    <output_dir>
- Force regeneration:  Yes / No
+ Force regeneration:  Update (incremental) / Force regenerate / N/A (new project)
  Repository type:     Auto-detect / App / Tests / Library / Framework
  GitHub Pages:        Enable / Already configured / Not applicable
  README:              Simplify / Add link / No changes
@@ -559,5 +568,6 @@ Display:
 | Skipping security scan | Always scan docs for leaked private data before committing |
 | Not excluding docs/ from secret scanners | Generated docs contain placeholder tokens that trigger secret scanners — exclude the output dir from the scanner's configuration |
 | Editing generated docs manually | Generated docs must NEVER be edited — fix issues at the source (docsfy server/prompts), not in the output |
-| Skipping --force when re-running existing project | When a prior generation exists for this repo+branch, always offer --force |
+| Skipping --force when re-running existing project | When a prior generation exists for this repo+branch, MUST use `ask_user` with Update vs Force options — never skip |
 | Offering --force for new projects | Only offer --force when a matching `docsfy list` entry exists for this repo+branch |
+| Burying force regeneration in other questions | Force regeneration MUST be its own separate `ask_user` call (Round 3), not combined with provider/model selection |
