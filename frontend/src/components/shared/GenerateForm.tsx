@@ -69,7 +69,9 @@ export default function GenerateForm({
     if (defaultProvider && !provider) {
       setProvider(defaultProvider)
     }
-    if (defaultModel && !model) {
+    // Only set default model if provider matches (or is being set to) the default provider
+    // to avoid creating an incompatible provider/model pair
+    if (defaultModel && !model && (!provider || provider === defaultProvider)) {
       setModel(defaultModel)
     }
   }, [defaultProvider, defaultModel])
