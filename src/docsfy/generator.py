@@ -216,6 +216,8 @@ async def generate_full_page_content(
     graph_report_available: bool = False,
     image_catalog_path: str | None = None,
 ) -> str:
+    if image_catalog_path:
+        logger.debug("Page '%s': image catalog at %s", page_title, image_catalog_path)
     prompt = build_page_prompt(
         project_name=project_name,
         page_title=page_title,

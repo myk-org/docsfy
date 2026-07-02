@@ -560,16 +560,19 @@ for an architecture overview before diving into source files.\n"""
     if image_catalog_path:
         images_block = f"""
 
-IMAGES:
-An image catalog is available at: {image_catalog_path}
-Each line lists an available image: filename — description
-If any images are relevant to THIS page's topic, include them in your markdown using:
-![description](images/filename)
-Rules:
-- Only include images that genuinely enhance the content — do not force images where they don't fit
-- Place each image near the relevant text, not clustered at the top or bottom
+IMAGES (MANDATORY):
+BEFORE writing any content, read the image catalog file at: {image_catalog_path}
+Each line in that file lists: filename — description
+
+After reading the catalog, for EACH image whose description relates to THIS page's topic:
+- You MUST include it in your markdown output using: ![description](images/filename)
+- Place it near the relevant section, not at the top or bottom
 - Use the description from the catalog as the alt text
+
+Rules:
+- Do NOT skip relevant images — the repo maintainer placed them intentionally
 - Do NOT reference images that are not in the catalog
+- Do NOT invent image filenames — only use exact filenames from the catalog file
 """
 
     return f"""You are a technical documentation writer. Explore this repository to write
@@ -614,8 +617,8 @@ def build_incremental_page_prompt(
 IMAGE CATALOG:
 An image catalog is available at: {image_catalog_path}
 Each line lists: filename — description
-When writing "new_text", you may include relevant images using: ![description](images/filename)
-Only include images that genuinely enhance the updated content."""
+When writing "new_text", include relevant images using: ![description](images/filename)
+Include every image whose description matches the content being updated. Do NOT skip relevant images."""
 
     return f"""You are a technical documentation writer. The repository "{project_name}" has been updated.
 Your task is to update the existing "{page_title}" documentation page by editing ONLY the relevant sections.
