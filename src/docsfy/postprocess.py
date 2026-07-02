@@ -19,7 +19,6 @@ from docsfy.cost_tracker import add_cost
 from docsfy.generator import generate_full_page_content
 from docsfy.json_parser import parse_json_array_response, parse_json_response
 from docsfy.models import PAGE_TYPES
-from docsfy.config import get_settings
 from docsfy.prompts import (
     SIDECAR_TOOLS,
     build_completeness_prompt,
@@ -555,19 +554,10 @@ async def validate_pages(
             for slug, content in pages.items()
         ]
 
-        from docsfy.storage import get_setting
+        from docsfy.storage import get_max_concurrent_pages
 
-        try:
-            db_max = await get_setting("max_concurrent_pages")
-        except Exception:
-            db_max = None
-        max_concurrency = (
-            int(db_max)
-            if db_max and db_max.isdigit() and int(db_max) > 0
-            else get_settings().max_concurrent_pages
-        )
         results = await run_parallel_with_limit(
-            coroutines, max_concurrency=max_concurrency
+            coroutines, max_concurrency=await get_max_concurrent_pages()
         )
     finally:
         shutil.rmtree(job_dir, ignore_errors=True)

@@ -1028,6 +1028,21 @@ async def cleanup_expired_sessions() -> None:
         await db.commit()
 
 
+async def get_max_concurrent_pages() -> int:
+    """Return max_concurrent_pages from DB settings, falling back to config."""
+    from docsfy.config import get_settings
+
+    try:
+        db_val = await get_setting("max_concurrent_pages")
+        if db_val:
+            parsed = int(db_val.strip())
+            if parsed > 0:
+                return parsed
+    except (ValueError, TypeError, Exception):
+        pass
+    return get_settings().max_concurrent_pages
+
+
 async def get_all_settings() -> dict[str, str]:
     """Return all settings as a key → value dict."""
     logger.debug("Fetching all settings from DB")

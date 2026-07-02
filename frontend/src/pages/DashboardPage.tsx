@@ -152,7 +152,14 @@ export default function DashboardPage() {
       }
     }
     loadProjects()
-    loadModels()
+    getModels().then((data) => {
+      if (cancelled) return
+      setAvailableModels(data.available_models ?? {})
+      setDefaultProvider(data.default_provider ?? '')
+      setDefaultModel(data.default_model ?? '')
+      setDefaultVisionProvider(data.default_vision_provider ?? '')
+      setDefaultVisionModel(data.default_vision_model ?? '')
+    }).catch(() => { /* best-effort */ })
     return () => { cancelled = true }
   }, [authChecked])
 
