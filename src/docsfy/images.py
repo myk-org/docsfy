@@ -79,6 +79,7 @@ async def _describe_images_with_ai(
         f"Output format:\n[{example_output}]"
     )
 
+    logger.debug("Calling AI to describe %d images", len(image_files))
     try:
         result: AIResult = await call_ai_once(
             prompt,
@@ -127,7 +128,9 @@ async def build_image_catalog(
     Returns ``None`` when the directory does not exist or contains no images.
     """
     images_dir = repo_path / DOCSFY_IMAGES_DIR
+    logger.debug("Checking for docsfy-images/ at %s", images_dir)
     if not images_dir.is_dir():
+        logger.debug("No docsfy-images/ directory found at %s", images_dir)
         return None
 
     # Collect image files (case-insensitive extension check)
@@ -138,7 +141,10 @@ async def build_image_catalog(
     )
 
     if not image_files:
+        logger.debug("No image files found in %s", images_dir)
         return None
+
+    logger.info("Found %d image files in %s", len(image_files), images_dir)
 
     # Validate filenames
     safe_files: list[str] = []
@@ -191,12 +197,19 @@ async def build_image_catalog(
                 continue
             catalog.append(ImageEntry(filename=_fname, description=_desc))
 
+        logger.info("Using images.yaml manifest with %d entries", len(catalog))
         return catalog
 
     # No manifest — use AI descriptions
     effective_provider = vision_provider or ai_provider
     effective_model = vision_model or ai_model
 
+    logger.info(
+        "Describing %d images with AI vision (%s/%s)",
+        len(safe_files),
+        effective_provider,
+        effective_model,
+    )
     ai_descriptions = await _describe_images_with_ai(
         image_files=safe_files,
         repo_path=repo_path,
@@ -204,6 +217,7 @@ async def build_image_catalog(
         ai_model=effective_model,
         ai_cli_timeout=ai_cli_timeout,
     )
+    logger.debug("AI described %d/%d images", len(ai_descriptions), len(safe_files))
 
     catalog = []
     for fname in safe_files:
@@ -223,6 +237,9 @@ def write_image_catalog(catalog: list[ImageEntry], dest_dir: Path) -> Path:
     catalog_path = dest_dir / "image_catalog.txt"
     lines = [f"{entry.filename} — {entry.description}" for entry in catalog]
     catalog_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    logger.debug(
+        "Wrote image catalog with %d entries to %s", len(catalog), catalog_path
+    )
     return catalog_path
 
 
@@ -230,6 +247,7 @@ def copy_images_to_site(repo_path: Path, output_dir: Path) -> None:
     """Copy image files from ``docsfy-images/`` to the site output directory."""
     source_dir = repo_path / DOCSFY_IMAGES_DIR
     if not source_dir.is_dir():
+        logger.debug("No docsfy-images/ directory at %s, skipping copy", source_dir)
         return
 
     dest_dir = output_dir / "images"

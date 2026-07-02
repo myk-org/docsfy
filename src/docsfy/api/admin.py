@@ -223,6 +223,7 @@ _PROVIDER_SETTING_KEYS = {"default_ai_provider", "vision_provider"}
 async def get_settings_endpoint(request: Request) -> dict[str, Any]:
     """Return all settings from DB and environment overrides."""
     _require_admin(request)
+    logger.debug("Admin '%s' fetching settings", request.state.username)
     db_settings: dict[str, Any] = dict(await get_all_settings())
     # Convert numeric fields from string to int for the frontend
     for numeric_key in ("ai_cli_timeout", "max_concurrent_pages"):
@@ -250,6 +251,12 @@ async def update_settings_endpoint(request: Request) -> dict[str, str]:
             status_code=400, detail="Request body must be a JSON object"
         )
     settings = body.get("settings")
+    if isinstance(settings, dict):
+        logger.debug(
+            "Admin '%s' updating settings: %s",
+            request.state.username,
+            list(settings.keys()),
+        )
     if not isinstance(settings, dict):
         raise HTTPException(
             status_code=400, detail="'settings' must be a dict of key-value pairs"

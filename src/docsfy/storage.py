@@ -1008,6 +1008,7 @@ async def cleanup_expired_sessions() -> None:
 
 async def get_all_settings() -> dict[str, str]:
     """Return all settings as a key → value dict."""
+    logger.debug("Fetching all settings from DB")
     async with aiosqlite.connect(DB_PATH) as db:
         cursor = await db.execute("SELECT key, value FROM settings")
         return {row[0]: row[1] for row in await cursor.fetchall()}
@@ -1041,6 +1042,11 @@ async def seed_settings(
       (environment variables take priority on every startup).
     - Otherwise: only insert if no existing DB value (preserve manual changes).
     """
+    logger.info(
+        "Seeding settings: %d defaults, %d env overrides",
+        len(defaults),
+        len(env_overrides),
+    )
     async with aiosqlite.connect(DB_PATH) as db:
         for key, default_value in defaults.items():
             if key in env_overrides:
@@ -1054,3 +1060,4 @@ async def seed_settings(
                     (key, default_value),
                 )
         await db.commit()
+    logger.debug("Settings seeded successfully")

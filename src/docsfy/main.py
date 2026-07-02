@@ -68,6 +68,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     }
     env_overrides = settings.get_env_overrides()
     await seed_settings(settings_defaults, env_overrides)
+    logger.info("Settings seeded from config/environment")
 
     await cleanup_expired_sessions()
     yield
