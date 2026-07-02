@@ -1038,8 +1038,21 @@ async def get_max_concurrent_pages() -> int:
             parsed = int(db_val.strip())
             if parsed > 0:
                 return parsed
-    except (ValueError, TypeError, Exception):
-        pass
+            logger.warning(
+                "max_concurrent_pages DB value is not positive (%s), using config default",
+                db_val,
+            )
+    except (ValueError, TypeError) as exc:
+        logger.warning(
+            "Failed to parse max_concurrent_pages from DB (%r): %s, using config default",
+            db_val if "db_val" in dir() else None,
+            exc,
+        )
+    except Exception as exc:
+        logger.debug(
+            "Could not read max_concurrent_pages from DB: %s, using config default",
+            exc,
+        )
     return get_settings().max_concurrent_pages
 
 
