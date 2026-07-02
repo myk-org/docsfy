@@ -19,6 +19,7 @@ dependencies = [
     "httpx",
     "websockets",
     "graphifyy",
+    "pyyaml>=6.0.3",
 ]
 
 [project.urls]

@@ -10,6 +10,7 @@ import shutil
 from dataclasses import dataclass
 from pathlib import Path
 
+import yaml
 from simple_logger.logger import get_logger
 
 from docsfy.ai_client import AIResult, call_ai_once
@@ -163,8 +164,6 @@ async def build_image_catalog(
     # Check for YAML manifest
     manifest_path = images_dir / "images.yaml"
     if manifest_path.is_file():
-        import yaml
-
         try:
             raw = yaml.safe_load(manifest_path.read_text(encoding="utf-8"))
         except Exception:
