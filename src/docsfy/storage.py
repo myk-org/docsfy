@@ -705,9 +705,12 @@ def get_project_dir(
     if not ai_provider or not ai_model:
         msg = "ai_provider and ai_model are required for project directory paths"
         raise ValueError(msg)
+    from docsfy.models import encode_branch_for_path
+
     # Sanitize path segments to prevent traversal
+    safe_branch = encode_branch_for_path(branch)
     for segment_name, segment in [
-        ("branch", branch),
+        ("branch", safe_branch),
         ("ai_provider", ai_provider),
         ("ai_model", ai_model),
     ]:
@@ -724,7 +727,7 @@ def get_project_dir(
         PROJECTS_DIR
         / safe_owner
         / _validate_name(name)
-        / branch
+        / safe_branch
         / ai_provider
         / ai_model
     )

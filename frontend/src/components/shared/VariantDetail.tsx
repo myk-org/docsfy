@@ -25,6 +25,7 @@ import Combobox from '@/components/shared/Combobox'
 import ActivityLog from '@/components/shared/ActivityLog'
 import { useModal } from '@/components/shared/ModalProvider'
 import { api } from '@/lib/api'
+import { encodeBranch } from '@/lib/utils'
 import { TOAST_DEFAULT_MS, TOAST_ERROR_MS, VALID_PROVIDERS, BADGE_STYLES } from '@/lib/constants'
 import { ApiError } from '@/types'
 import type { Project, LogEntry, DocPlan, AvailableModels } from '@/types'
@@ -106,7 +107,7 @@ async function deleteVariant(
   setIsDeleting(true)
   try {
     await api.delete(
-      `/api/projects/${project.name}/${project.branch}/${project.ai_provider}/${project.ai_model}?owner=${encodeURIComponent(project.owner)}`
+      `/api/projects/${project.name}/${encodeBranch(project.branch)}/${project.ai_provider}/${project.ai_model}?owner=${encodeURIComponent(project.owner)}`
     )
     toast.success('Variant deleted', { duration: TOAST_DEFAULT_MS })
     onDelete?.()
@@ -398,8 +399,8 @@ function ReadyView({
     deleteVariant(project, modalConfirm, setIsDeleting, onDelete)
   }
 
-  const docsUrl = `/docs/${project.name}/${project.branch}/${project.ai_provider}/${project.ai_model}/?owner=${encodeURIComponent(project.owner)}`
-  const downloadUrl = `/api/projects/${project.name}/${project.branch}/${project.ai_provider}/${project.ai_model}/download?owner=${encodeURIComponent(project.owner)}`
+  const docsUrl = `/docs/${project.name}/${encodeBranch(project.branch)}/${project.ai_provider}/${project.ai_model}/?owner=${encodeURIComponent(project.owner)}`
+  const downloadUrl = `/api/projects/${project.name}/${encodeBranch(project.branch)}/${project.ai_provider}/${project.ai_model}/download?owner=${encodeURIComponent(project.owner)}`
 
   return (
     <>
@@ -506,7 +507,7 @@ function GeneratingView({
     setIsAborting(true)
     try {
       await api.post(
-        `/api/projects/${project.name}/${project.branch}/${project.ai_provider}/${project.ai_model}/abort?owner=${encodeURIComponent(project.owner)}`
+        `/api/projects/${project.name}/${encodeBranch(project.branch)}/${project.ai_provider}/${project.ai_model}/abort?owner=${encodeURIComponent(project.owner)}`
       )
       toast.success('Abort requested', { duration: TOAST_DEFAULT_MS })
     } catch (err) {

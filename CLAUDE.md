@@ -72,7 +72,7 @@ When adding new code:
 - `branch` is a field on `GenerateRequest` (default: `"main"`)
 - Branch is part of the DB primary key: `(name, branch, ai_provider, ai_model, owner)`
 - URL pattern: `/{name}/{branch}/{provider}/{model}`
-- Branch validation: `^[a-zA-Z0-9][a-zA-Z0-9._-]*$` — slashes are rejected because branch appears as a single FastAPI path segment and in JS split('/') parsing. Use hyphens instead (e.g., `release-1.x` instead of `release/1.x`).
+- Branch validation: `^[a-zA-Z0-9][a-zA-Z0-9._/-]*$` — slashes are allowed. Branches with slashes (e.g., `feat/issue-1`) are encoded as `feat~2Fissue-1` in URL path segments and disk paths via `encode_branch_for_path()` / `decode_branch_from_path()` in `models.py`. Frontend uses `encodeBranch()` from `lib/utils.ts`.
 - Disk path: `PROJECTS_DIR / owner / name / branch / provider / model`
 
 ## Default AI Provider/Model

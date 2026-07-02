@@ -47,13 +47,7 @@ class GenerateRequest(BaseModel):
     @field_validator("branch")
     @classmethod
     def validate_branch(cls, v: str) -> str:
-        if "/" in v:
-            msg = (
-                f"Invalid branch name: '{v}'. Branch names cannot contain slashes "
-                "— use hyphens instead (e.g., release-1.x)."
-            )
-            raise ValueError(msg)
-        if not re.match(r"^[a-zA-Z0-9][a-zA-Z0-9._-]*$", v):
+        if not v or not re.match(r"^[a-zA-Z0-9][a-zA-Z0-9._/-]*$", v):
             msg = f"Invalid branch name: '{v}'"
             raise ValueError(msg)
         if ".." in v:
@@ -142,6 +136,21 @@ class DocPlan(BaseModel):
         if v not in REPO_TYPES:
             return "app"
         return v
+
+
+def encode_branch_for_path(branch: str) -> str:
+    """Encode branch name for use in URL path segments and disk paths.
+
+    Replaces '/' with '~2F' so branches like 'feat/issue-1' become
+    'feat~2Fissue-1', safe for single URL path segments and directory names.
+    The '~' character itself is escaped as '~7E'.
+    """
+    return branch.replace("~", "~7E").replace("/", "~2F")
+
+
+def decode_branch_from_path(encoded: str) -> str:
+    """Decode a branch name encoded by encode_branch_for_path."""
+    return encoded.replace("~2F", "/").replace("~7E", "~")
 
 
 def is_uuid(value: str) -> bool:

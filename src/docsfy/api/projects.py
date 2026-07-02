@@ -35,6 +35,7 @@ from docsfy.models import (
     REPO_TYPES,
     VALID_PROVIDERS,
     GenerateRequest,
+    decode_branch_from_path,
     is_uuid,
 )
 from docsfy.postprocess import (
@@ -1661,6 +1662,7 @@ async def get_variant_details(
     model: str,
 ) -> dict[str, str | int | float | None]:
     name = _validate_project_name(name)
+    branch = decode_branch_from_path(branch)
     project = await _resolve_project(
         request,
         name,
@@ -1681,6 +1683,7 @@ async def delete_variant(
     model: str,
 ) -> dict[str, str]:
     _require_write_access(request)
+    branch = decode_branch_from_path(branch)
     logger.debug(
         f"Delete variant: name='{name}', branch='{branch}', provider='{provider}', model='{model}'"
     )
@@ -1867,6 +1870,7 @@ async def abort_variant(
     request: Request, name: str, branch: str, provider: str, model: str
 ) -> dict[str, str]:
     _require_write_access(request)
+    branch = decode_branch_from_path(branch)
     logger.debug(
         f"Abort variant: name='{name}', branch='{branch}', provider='{provider}', model='{model}'"
     )
@@ -1968,6 +1972,7 @@ async def download_variant(
     provider: str,
     model: str,
 ) -> StreamingResponse:
+    branch = decode_branch_from_path(branch)
     logger.debug(
         f"Download variant: name='{name}', branch='{branch}', provider='{provider}', model='{model}'"
     )

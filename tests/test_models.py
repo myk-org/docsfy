@@ -114,13 +114,18 @@ def test_generate_request_branch_validation_rejects_traversal() -> None:
         GenerateRequest(repo_url="https://github.com/org/repo.git", branch=".hidden")
 
 
-def test_generate_request_branch_rejects_slashes() -> None:
+def test_generate_request_branch_allows_slashes() -> None:
     from docsfy.models import GenerateRequest
 
-    with pytest.raises(ValueError, match="cannot contain slashes"):
-        GenerateRequest(
-            repo_url="https://github.com/org/repo.git", branch="release/v2.0"
-        )
+    req = GenerateRequest(
+        repo_url="https://github.com/org/repo.git", branch="release/v2.0"
+    )
+    assert req.branch == "release/v2.0"
+
+    req2 = GenerateRequest(
+        repo_url="https://github.com/org/repo.git", branch="feat/issue-103-test"
+    )
+    assert req2.branch == "feat/issue-103-test"
 
 
 def test_generate_request_branch_allows_dots_and_hyphens() -> None:

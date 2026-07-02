@@ -24,7 +24,7 @@ from docsfy.api.projects import (
     router as projects_router,
 )
 from docsfy.config import get_settings
-from docsfy.models import DEFAULT_BRANCH
+from docsfy.models import DEFAULT_BRANCH, decode_branch_from_path
 from docsfy.storage import (
     cleanup_expired_sessions,
     get_latest_variant,
@@ -229,6 +229,7 @@ async def serve_variant_docs(
         f"Serving variant doc: project='{project}', branch='{branch}', provider='{provider}', model='{model}', path='{path}'"
     )
     project = _validate_project_name(project)
+    branch = decode_branch_from_path(branch)
     proj = await _resolve_project(
         request,
         project,
