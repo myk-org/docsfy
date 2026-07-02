@@ -1045,7 +1045,7 @@ async def get_max_concurrent_pages() -> int:
     except (ValueError, TypeError) as exc:
         logger.warning(
             "Failed to parse max_concurrent_pages from DB (%r): %s, using config default",
-            db_val if "db_val" in dir() else None,
+            db_val,
             exc,
         )
     except Exception as exc:
