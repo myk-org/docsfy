@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/select'
 import Combobox from '@/components/shared/Combobox'
 import { api } from '@/lib/api'
-import { SK_REPO, SK_BRANCH, SK_FORCE, SK_REPO_TYPE, TOAST_DEFAULT_MS, TOAST_ERROR_MS, VALID_PROVIDERS, VALID_REPO_TYPES } from '@/lib/constants'
+import { SK_REPO, SK_BRANCH, SK_FORCE, SK_REPO_TYPE, TOAST_DEFAULT_MS, TOAST_ERROR_MS, VALID_PROVIDERS, VALID_REPO_TYPES, SELECT_CLEAR } from '@/lib/constants'
 import type { AvailableModels } from '@/types'
 import { ApiError } from '@/types'
 interface GenerateFormProps {
@@ -144,7 +144,7 @@ export default function GenerateForm({
 
   function handleVisionProviderChange(value: string | null) {
     if (value === null) return
-    const newValue = value === '__clear__' ? '' : value
+    const newValue = value === SELECT_CLEAR ? '' : value
     setVisionProvider(newValue)
     if (!newValue) {
       setVisionModel('')
@@ -319,7 +319,7 @@ export default function GenerateForm({
         {/* Vision Provider */}
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="vision-provider-select" title="AI provider for image description (uses generation provider if not set)">Vision Provider</Label>
-          <Select disabled={isSubmitting} value={visionProvider || '__clear__'} onValueChange={handleVisionProviderChange}>
+          <Select disabled={isSubmitting} value={visionProvider || SELECT_CLEAR} onValueChange={handleVisionProviderChange}>
             <SelectTrigger id="vision-provider-select" data-testid="vision-provider-select" className="w-full">
               <SelectValue placeholder="Same as generation provider" />
             </SelectTrigger>

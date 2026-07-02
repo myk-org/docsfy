@@ -1,5 +1,8 @@
 export const VALID_PROVIDERS = ['claude', 'gemini', 'cursor'] as const
 
+/** Sentinel value for Select components to represent "clear/empty" state. */
+export const SELECT_CLEAR = '__clear__'
+
 export const VALID_REPO_TYPES = ['app', 'tests', 'library', 'framework'] as const
 
 export const DOCSFY_DOCS_URL = 'https://myk-org.github.io/docsfy/'

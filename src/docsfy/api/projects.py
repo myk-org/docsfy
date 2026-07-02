@@ -1812,7 +1812,7 @@ async def abort_generation(request: Request, name: str) -> dict[str, str]:
     if len(parts) != 5:
         raise HTTPException(status_code=500, detail="Invalid generation key format")
     key_owner, _, key_branch, ai_provider, ai_model = parts
-    resolved_branch = key_branch
+    resolved_branch = decode_branch_from_path(key_branch)
 
     # Check ownership before allowing abort
     project = await get_project(

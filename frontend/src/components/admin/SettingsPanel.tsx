@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/select'
 import Combobox from '@/components/shared/Combobox'
 import { api } from '@/lib/api'
-import { VALID_PROVIDERS, TOAST_DEFAULT_MS, TOAST_ERROR_MS } from '@/lib/constants'
+import { VALID_PROVIDERS, TOAST_DEFAULT_MS, TOAST_ERROR_MS, SELECT_CLEAR } from '@/lib/constants'
 import { ApiError } from '@/types'
 import type { AvailableModels, AdminSettings, AdminSettingsResponse } from '@/types'
 
@@ -73,7 +73,7 @@ export default function SettingsPanel({ availableModels, onSettingsSaved }: Sett
 
   function handleProviderChange(value: string | null) {
     if (value === null) return
-    const v = value === '__clear__' ? '' : value
+    const v = value === SELECT_CLEAR ? '' : value
     setProvider(v)
     if (!v) {
       setModel('')
@@ -87,7 +87,7 @@ export default function SettingsPanel({ availableModels, onSettingsSaved }: Sett
 
   function handleVisionProviderChange(value: string | null) {
     if (value === null) return
-    const v = value === '__clear__' ? '' : value
+    const v = value === SELECT_CLEAR ? '' : value
     setVisionProvider(v)
     if (!v) {
       setVisionModel('')
@@ -178,7 +178,7 @@ export default function SettingsPanel({ availableModels, onSettingsSaved }: Sett
 
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="default-provider">Default AI Provider</Label>
-            <Select value={provider || '__clear__'} onValueChange={handleProviderChange} disabled={saving}>
+            <Select value={provider || SELECT_CLEAR} onValueChange={handleProviderChange} disabled={saving}>
               <SelectTrigger id="default-provider" className="w-full">
                 <SelectValue placeholder="No default" />
               </SelectTrigger>
@@ -215,7 +215,7 @@ export default function SettingsPanel({ availableModels, onSettingsSaved }: Sett
 
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="vision-provider">Vision AI Provider</Label>
-            <Select value={visionProvider || '__clear__'} onValueChange={handleVisionProviderChange} disabled={saving}>
+            <Select value={visionProvider || SELECT_CLEAR} onValueChange={handleVisionProviderChange} disabled={saving}>
               <SelectTrigger id="vision-provider" className="w-full">
                 <SelectValue placeholder="Same as generation provider" />
               </SelectTrigger>
