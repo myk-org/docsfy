@@ -349,6 +349,13 @@ async def init_db(data_dir: str = "") -> None:
             )
         """)
 
+        await db.execute("""
+            CREATE TABLE IF NOT EXISTS settings (
+                key TEXT PRIMARY KEY,
+                value TEXT NOT NULL DEFAULT ''
+            )
+        """)
+
         await db.commit()
 
 
@@ -993,4 +1000,54 @@ async def cleanup_expired_sessions() -> None:
     """
     async with aiosqlite.connect(DB_PATH) as db:
         await db.execute("DELETE FROM sessions WHERE expires_at <= datetime('now')")
+        await db.commit()
+
+
+async def get_all_settings() -> dict[str, str]:
+    """Return all settings as a key → value dict."""
+    async with aiosqlite.connect(DB_PATH) as db:
+        cursor = await db.execute("SELECT key, value FROM settings")
+        return {row[0]: row[1] for row in await cursor.fetchall()}
+
+
+async def get_setting(key: str) -> str | None:
+    """Return a single setting value by key, or None if not found."""
+    async with aiosqlite.connect(DB_PATH) as db:
+        cursor = await db.execute("SELECT value FROM settings WHERE key = ?", (key,))
+        row = await cursor.fetchone()
+        return row[0] if row else None
+
+
+async def update_setting(key: str, value: str) -> None:
+    """Upsert a single setting."""
+    async with aiosqlite.connect(DB_PATH) as db:
+        await db.execute(
+            "INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)",
+            (key, value),
+        )
+        await db.commit()
+
+
+async def seed_settings(
+    defaults: dict[str, str], env_overrides: dict[str, str]
+) -> None:
+    """Seed settings on server startup.
+
+    For each key in *defaults*:
+    - If the key is in *env_overrides*: always overwrite the DB value
+      (environment variables take priority on every startup).
+    - Otherwise: only insert if no existing DB value (preserve manual changes).
+    """
+    async with aiosqlite.connect(DB_PATH) as db:
+        for key, default_value in defaults.items():
+            if key in env_overrides:
+                await db.execute(
+                    "INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)",
+                    (key, default_value),
+                )
+            else:
+                await db.execute(
+                    "INSERT OR IGNORE INTO settings (key, value) VALUES (?, ?)",
+                    (key, default_value),
+                )
         await db.commit()

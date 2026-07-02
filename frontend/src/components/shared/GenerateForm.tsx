@@ -13,15 +13,14 @@ import {
 } from '@/components/ui/select'
 import Combobox from '@/components/shared/Combobox'
 import { api } from '@/lib/api'
-import { SK_REPO, SK_BRANCH, SK_FORCE, SK_REPO_TYPE, TOAST_DEFAULT_MS, TOAST_ERROR_MS, VALID_PROVIDERS, VALID_REPO_TYPES } from '@/lib/constants'
+import { SK_REPO, SK_BRANCH, SK_FORCE, SK_REPO_TYPE, SK_VISION_PROVIDER, SK_VISION_MODEL, TOAST_DEFAULT_MS, TOAST_ERROR_MS, VALID_PROVIDERS, VALID_REPO_TYPES } from '@/lib/constants'
 import type { AvailableModels } from '@/types'
 import { ApiError } from '@/types'
-const DEFAULT_PROVIDER = 'cursor'
-const DEFAULT_BRANCH = 'main'
-
 interface GenerateFormProps {
   availableModels: AvailableModels
   knownBranches: Record<string, string[]>
+  defaultProvider?: string
+  defaultModel?: string
   onGenerated?: (name: string, branch: string, provider: string, model: string) => void
 }
 
@@ -37,15 +36,19 @@ function extractRepoName(url: string): string {
 export default function GenerateForm({
   availableModels,
   knownBranches,
+  defaultProvider,
+  defaultModel,
   onGenerated,
 }: GenerateFormProps) {
   const [repoUrl, setRepoUrl] = useState('')
-  const [branch, setBranch] = useState(DEFAULT_BRANCH)
-  const [provider, setProvider] = useState<string>(DEFAULT_PROVIDER)
-  const [model, setModel] = useState('')
+  const [branch, setBranch] = useState('main')
+  const [provider, setProvider] = useState<string>(defaultProvider ?? '')
+  const [model, setModel] = useState(defaultModel ?? '')
   const [force, setForce] = useState(false)
   const [repoType, setRepoType] = useState<string>('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [visionProvider, setVisionProvider] = useState('')
+  const [visionModel, setVisionModel] = useState('')
 
   // Restore form state from sessionStorage on mount
   useEffect(() => {
@@ -59,6 +62,10 @@ export default function GenerateForm({
     if (savedBranch) setBranch(savedBranch)
     if (savedForce === 'true') setForce(true)
     if (savedRepoType && (VALID_REPO_TYPES as readonly string[]).includes(savedRepoType)) setRepoType(savedRepoType)
+    const savedVisionProvider = sessionStorage.getItem(SK_VISION_PROVIDER)
+    const savedVisionModel = sessionStorage.getItem(SK_VISION_MODEL)
+    if (savedVisionProvider) setVisionProvider(savedVisionProvider)
+    if (savedVisionModel) setVisionModel(savedVisionModel)
   }, [])
 
   function sanitizeRepoUrlForStorage(value: string): string {
@@ -81,12 +88,16 @@ export default function GenerateForm({
     sessionStorage.removeItem(SK_BRANCH)
     sessionStorage.removeItem(SK_FORCE)
     sessionStorage.removeItem(SK_REPO_TYPE)
+    sessionStorage.removeItem(SK_VISION_PROVIDER)
+    sessionStorage.removeItem(SK_VISION_MODEL)
     setRepoUrl('')
-    setBranch(DEFAULT_BRANCH)
-    setProvider(DEFAULT_PROVIDER)
-    setModel('')
+    setBranch('main')
+    setProvider(defaultProvider ?? '')
+    setModel(defaultModel ?? '')
     setForce(false)
     setRepoType('')
+    setVisionProvider('')
+    setVisionModel('')
   }
 
   function handleRepoChange(value: string) {
@@ -115,6 +126,36 @@ export default function GenerateForm({
   function handleForceChange(checked: boolean) {
     setForce(checked)
     saveToSession(SK_FORCE, String(checked))
+  }
+
+  function handleVisionProviderChange(value: string) {
+    const newValue = value === '__none__' ? '' : value
+    setVisionProvider(newValue)
+    if (newValue) {
+      saveToSession(SK_VISION_PROVIDER, newValue)
+    } else {
+      sessionStorage.removeItem(SK_VISION_PROVIDER)
+    }
+    // Clear vision model if not valid for new provider
+    if (newValue) {
+      const models = availableModels[newValue]
+      if (models && models.length > 0 && !models.some(m => m.id === visionModel)) {
+        setVisionModel('')
+        sessionStorage.removeItem(SK_VISION_MODEL)
+      }
+    } else {
+      setVisionModel('')
+      sessionStorage.removeItem(SK_VISION_MODEL)
+    }
+  }
+
+  function handleVisionModelChange(value: string) {
+    setVisionModel(value)
+    if (value) {
+      saveToSession(SK_VISION_MODEL, value)
+    } else {
+      sessionStorage.removeItem(SK_VISION_MODEL)
+    }
   }
 
   function handleRepoTypeChange(value: string | null) {
@@ -156,6 +197,12 @@ export default function GenerateForm({
       if (repoType) {
         payload.repo_type = repoType
       }
+      if (visionProvider) {
+        payload.vision_provider = visionProvider
+      }
+      if (visionModel) {
+        payload.vision_model = visionModel
+      }
       await api.post('/api/generate', payload)
 
       const projectName = extractRepoName(submittedRepoUrl)
@@ -176,6 +223,9 @@ export default function GenerateForm({
   const repoName = repoUrl.trim() ? extractRepoName(repoUrl) : ''
   const branchOptions = repoName && knownBranches[repoName] ? knownBranches[repoName] : []
   const modelOptions = (availableModels[provider] ?? []).map(m => ({ value: m.id, label: m.name || m.id }))
+  const visionModelOptions = visionProvider
+    ? (availableModels[visionProvider] ?? []).map(m => ({ value: m.id, label: m.name || m.id }))
+    : []
 
   return (
     <div className="flex items-start justify-center h-full p-8">
@@ -261,6 +311,39 @@ export default function GenerateForm({
             data-testid="model-input"
           />
         </div>
+
+        {/* Vision Provider */}
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="vision-provider-select" title="AI provider for image description (uses generation provider if not set)">Vision Provider</Label>
+          <Select disabled={isSubmitting} value={visionProvider || '__none__'} onValueChange={handleVisionProviderChange}>
+            <SelectTrigger id="vision-provider-select" data-testid="vision-provider-select" className="w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="__none__">Same as generation provider</SelectItem>
+              {VALID_PROVIDERS.map((p) => (
+                <SelectItem key={p} value={p}>
+                  {p}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Vision Model */}
+        {visionProvider && (
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="vision-model" title="AI model for image description (uses generation model if not set)">Vision Model</Label>
+            <Combobox
+              options={visionModelOptions}
+              value={visionModel}
+              onChange={handleVisionModelChange}
+              placeholder="Select or type model..."
+              disabled={isSubmitting}
+              data-testid="vision-model-input"
+            />
+          </div>
+        )}
 
         {/* Force */}
         <div className="flex items-center gap-2" title="Ignore cache and regenerate all pages from scratch">

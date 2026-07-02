@@ -153,3 +153,17 @@ export interface LogEntry {
   message: string
   timestamp: number
 }
+
+export interface AdminSettings {
+  default_ai_provider: string
+  default_ai_model: string
+  ai_cli_timeout: number
+  max_concurrent_pages: number
+  vision_provider: string
+  vision_model: string
+}
+
+export interface AdminSettingsResponse {
+  settings: AdminSettings
+  env_overrides: Record<string, string>
+}

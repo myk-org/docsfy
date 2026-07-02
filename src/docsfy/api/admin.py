@@ -7,9 +7,12 @@ from simple_logger.logger import get_logger
 from starlette.responses import JSONResponse
 
 from docsfy.api.websocket import notify_access_change
+from docsfy.config import get_settings
+from docsfy.models import VALID_PROVIDERS
 from docsfy.storage import (
     create_user,
     delete_user,
+    get_all_settings,
     get_project_access,
     get_user_by_username,
     grant_project_access,
@@ -17,6 +20,7 @@ from docsfy.storage import (
     list_variants,
     revoke_project_access,
     rotate_user_key,
+    update_setting,
 )
 
 logger = get_logger(name=__name__)
@@ -200,3 +204,75 @@ async def admin_rotate_key(request: Request, username: str) -> JSONResponse:
         content={"username": username, "new_api_key": new_key},
         headers={"Cache-Control": "no-store"},
     )
+
+
+_KNOWN_SETTING_KEYS = {
+    "default_ai_provider",
+    "default_ai_model",
+    "ai_cli_timeout",
+    "max_concurrent_pages",
+    "vision_provider",
+    "vision_model",
+}
+
+_INT_SETTING_KEYS = {"ai_cli_timeout", "max_concurrent_pages"}
+_PROVIDER_SETTING_KEYS = {"default_ai_provider", "vision_provider"}
+
+
+@router.get("/settings")
+async def get_settings_endpoint(request: Request) -> dict[str, Any]:
+    """Return all settings from DB and environment overrides."""
+    _require_admin(request)
+    db_settings = await get_all_settings()
+    env_overrides = get_settings().get_env_overrides()
+    return {"settings": db_settings, "env_overrides": env_overrides}
+
+
+@router.put("/settings")
+async def update_settings_endpoint(request: Request) -> dict[str, str]:
+    """Update one or more settings."""
+    _require_admin(request)
+    try:
+        body = await request.json()
+    except Exception as exc:
+        raise HTTPException(
+            status_code=400, detail="Malformed JSON in request body"
+        ) from exc
+    if not isinstance(body, dict):
+        raise HTTPException(
+            status_code=400, detail="Request body must be a JSON object"
+        )
+    settings = body.get("settings")
+    if not isinstance(settings, dict):
+        raise HTTPException(
+            status_code=400, detail="'settings' must be a dict of key-value pairs"
+        )
+    for key, value in settings.items():
+        if key not in _KNOWN_SETTING_KEYS:
+            raise HTTPException(status_code=400, detail=f"Unknown setting key: '{key}'")
+        value_str = str(value)
+        if key in _INT_SETTING_KEYS:
+            try:
+                int_val = int(value_str)
+            except (ValueError, TypeError) as exc:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Setting '{key}' must be a positive integer",
+                ) from exc
+            if int_val <= 0:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Setting '{key}' must be a positive integer",
+                )
+        if key in _PROVIDER_SETTING_KEYS and value_str:
+            if value_str not in VALID_PROVIDERS:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Invalid provider '{value_str}'. Must be one of: {', '.join(VALID_PROVIDERS)}",
+                )
+    for key, value in settings.items():
+        await update_setting(key, str(value))
+    logger.info(
+        f"[AUDIT] Admin '{request.state.username}' updated settings: {list(settings.keys())}"
+    )
+    return {"status": "ok"}

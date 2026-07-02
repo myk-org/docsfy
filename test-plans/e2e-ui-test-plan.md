@@ -166,6 +166,8 @@ Each linked sub-file contains only the detailed test bodies for its assigned sec
 | [e2e-13-post-generation-pipeline.md](e2e-13-post-generation-pipeline.md) | 27 | Post-Generation Pipeline (version footer, related pages, validation/cross-linking stages, performance) |
 | [e2e-14-models-command.md](e2e-14-models-command.md) | 28 | Models Command (CLI providers/models listing, JSON output, API endpoint, available_models) |
 | [e2e-15-repo-type.md](e2e-15-repo-type.md) | 30-32 | Repository type support (API, UI, CLI) |
+| [e2e-16-admin-settings.md](e2e-16-admin-settings.md) | 33 | Admin settings page (GET/PUT API, env override warnings, non-admin rejection, generate form defaults) |
+| [e2e-17-image-support.md](e2e-17-image-support.md) | 34 | Image support (docsfy-images/ discovery, manifest, AI vision, copy to site, vision provider/model in UI/CLI/API) |
 | [e2e-09-cleanup.md](e2e-09-cleanup.md) | 21 | Cleanup and Teardown |
 
 **`e2e-09-cleanup.md` must always be executed last, after all other test files.**
@@ -207,6 +209,8 @@ Each linked sub-file contains only the detailed test bodies for its assigned sec
 | 30 | Repo Type API Validation | 30.1-30.3 |
 | 31 | Repo Type UI Elements | 31.1-31.4 |
 | 32 | Repo Type CLI | 32.1-32.3 |
+| 33 | Admin Settings Page | 33.1-33.13 |
+| 34 | Image Support in Documentation | 34.1-34.9 |
 | 21 | Cleanup and Teardown | 21.1-21.5 |
 
 ---

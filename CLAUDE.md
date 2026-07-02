@@ -35,7 +35,8 @@ When adding new code:
 | Sidecar wrapper | `sidecar-helper/` | `startSidecar()` — Pi SDK HTTP sidecar for AI provider calls |
 | Code graph | `src/docsfy/code_graph.py` | `build_code_graph()` — Graphify knowledge graph for AI context |
 | Prompt constants | `src/docsfy/prompts.py` | `_MAX_DIFF_LENGTH`, `_GUIDE_WRITING_RULES`, `_REFERENCE_WRITING_RULES`, `_RECIPE_WRITING_RULES`, `_CONCEPT_WRITING_RULES`, `_INCREMENTAL_WRITING_RULES`, `_NAV_STRUCTURE_MAP`, `_REPO_TYPE_WRITING_RULES_MAP`, `truncate_diff_content()` |
-| Frontend constants | `frontend/src/lib/constants.ts` | API base URL, poll intervals, toast durations |
+| Image catalog | `src/docsfy/images.py` | `DOCSFY_IMAGES_DIR`, `IMAGE_EXTENSIONS`, `build_image_catalog()`, `copy_images_to_site()` |
+| Frontend constants | `frontend/src/lib/constants.ts` | API base URL, poll intervals, toast durations, SK_VISION_PROVIDER, SK_VISION_MODEL |
 | Frontend design tokens | `frontend/src/theme.css` | Command Deck color tokens, fonts, animations |
 | Frontend types | `frontend/src/types/index.ts` | `Project`, `User`, `Variant`, `AuthState` |
 | Frontend API client | `frontend/src/lib/api.ts` | `fetchProjects()`, `login()`, `generateDocs()` |
@@ -77,8 +78,12 @@ When adding new code:
 ## Default AI Provider/Model
 
 - Configured via environment variables (pydantic_settings loads environment variables which override config defaults)
-- Currently: `cursor` / `gpt-5.4-xhigh-fast`
-- The UI always uses server defaults for new repos — provider/model are NOT persisted in sessionStorage
+- Defaults are stored in the DB `settings` table, seeded from env vars on startup
+- When no default is configured (empty), users must select provider/model explicitly
+- Admin can change defaults via Settings page (Admin → Settings) or `PUT /api/admin/settings`
+- Env vars (`AI_PROVIDER`, `AI_MODEL`) override DB values on server restart
+- Vision AI provider/model (`VISION_PROVIDER`, `VISION_MODEL`) control image description — falls back to generation provider/model
+- The UI reads defaults from `GET /api/models` response (`default_provider`, `default_model`)
 - AI calls are routed through pi-sidecar-client to a local HTTP sidecar service (default port 9100 via `SIDECAR_PORT` env var)
 
 ## Testing

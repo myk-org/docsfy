@@ -556,6 +556,8 @@ async def _run_generation(
     branch: str = DEFAULT_BRANCH,
     generation_id: str | None = None,
     repo_type: str | None = None,
+    vision_provider: str | None = None,
+    vision_model: str | None = None,
 ) -> None:
     gen_key = f"{owner}/{project_name}/{branch}/{ai_provider}/{ai_model}"
     cost_acc = CostAccumulator()
@@ -606,6 +608,8 @@ async def _run_generation(
                 branch=branch,
                 generation_id=generation_id,
                 repo_type=repo_type,
+                vision_provider=vision_provider,
+                vision_model=vision_model,
             )
         else:
             # Remote repository - clone to temp dir
@@ -629,6 +633,8 @@ async def _run_generation(
                     branch=branch,
                     generation_id=generation_id,
                     repo_type=repo_type,
+                    vision_provider=vision_provider,
+                    vision_model=vision_model,
                 )
 
     except asyncio.CancelledError:
@@ -701,6 +707,8 @@ async def _generate_from_path(
     branch: str = DEFAULT_BRANCH,
     generation_id: str | None = None,
     repo_type: str | None = None,
+    vision_provider: str | None = None,
+    vision_model: str | None = None,
 ) -> None:
     cache_dir = get_project_cache_dir(
         project_name, ai_provider, ai_model, owner, branch=branch
@@ -995,6 +1003,43 @@ async def _generate_from_path(
     if graph_report:
         logger.info(f"[{project_name}] Code graph ready: {graph_report}")
 
+    # Build image catalog if docsfy-images/ exists
+    from docsfy.images import build_image_catalog, write_image_catalog
+
+    image_catalog_path: str | None = None
+    _image_catalog_dir: Path | None = None
+    try:
+        await update_and_notify(
+            gen_key,
+            project_name,
+            ai_provider,
+            ai_model,
+            status="generating",
+            owner=owner,
+            branch=branch,
+            current_stage="cataloging_images",
+            page_count=0,
+            generation_id=generation_id,
+        )
+        image_catalog = await build_image_catalog(
+            repo_path=repo_dir,
+            ai_provider=ai_provider,
+            ai_model=ai_model,
+            ai_cli_timeout=ai_cli_timeout,
+            vision_provider=vision_provider,
+            vision_model=vision_model,
+        )
+        if image_catalog:
+            _image_catalog_dir = Path(tempfile.mkdtemp(prefix="docsfy-image-catalog-"))
+            image_catalog_path = str(
+                write_image_catalog(image_catalog, _image_catalog_dir)
+            )
+            logger.info(
+                f"[{project_name}] Image catalog ready: {len(image_catalog)} images"
+            )
+    except Exception as exc:
+        logger.warning(f"[{project_name}] Image cataloging failed: {exc}")
+
     if plan is None:
         await update_and_notify(
             gen_key,
@@ -1086,7 +1131,12 @@ async def _generate_from_path(
         on_page_generated=_on_page_generated,
         repo_type=detected_repo_type,
         graph_report_available=graph_report is not None,
+        image_catalog_path=image_catalog_path,
     )
+
+    # Clean up image catalog temp directory
+    if _image_catalog_dir is not None:
+        shutil.rmtree(_image_catalog_dir, ignore_errors=True)
 
     # --- Post-generation pipeline ---
     try:
@@ -1222,7 +1272,7 @@ async def _generate_from_path(
         for slug, content in pages.items()
     }
 
-    render_site(plan=plan, pages=pages, output_dir=site_dir)
+    render_site(plan=plan, pages=pages, output_dir=site_dir, repo_path=repo_dir)
 
     project_dir = get_project_dir(
         project_name, ai_provider, ai_model, owner, branch=branch
@@ -1361,12 +1411,19 @@ async def get_models_endpoint() -> dict[str, Any]:
     Models are discovered via pi-sidecar-client.
     No authentication required -- this is a discovery endpoint.
     """
+    from docsfy.storage import get_all_settings
+
     settings = get_settings()
+    db_settings = await get_all_settings()
     available_models = await _load_available_models()
+    default_provider = (
+        db_settings.get("default_ai_provider", "") or settings.ai_provider
+    )
+    default_model = db_settings.get("default_ai_model", "") or settings.ai_model
     return {
         "providers": list(VALID_PROVIDERS),
-        "default_provider": settings.ai_provider,
-        "default_model": settings.ai_model,
+        "default_provider": default_provider,
+        "default_model": default_model,
         "available_models": available_models,
     }
 
@@ -1483,8 +1540,41 @@ async def generate(
         await _reject_private_url(gen_request.repo_url)
 
     settings = get_settings()
-    ai_provider = gen_request.ai_provider or settings.ai_provider
-    ai_model = gen_request.ai_model or settings.ai_model
+    from docsfy.storage import get_all_settings
+
+    db_settings = await get_all_settings()
+    ai_provider = (
+        gen_request.ai_provider
+        or db_settings.get("default_ai_provider", "")
+        or settings.ai_provider
+    )
+    ai_model = (
+        gen_request.ai_model
+        or db_settings.get("default_ai_model", "")
+        or settings.ai_model
+    )
+    if not ai_provider:
+        raise HTTPException(
+            status_code=400,
+            detail="No AI provider specified and no default configured. Set a default in Admin → Settings or pass ai_provider explicitly.",
+        )
+    if not ai_model:
+        raise HTTPException(
+            status_code=400,
+            detail="No AI model specified and no default configured. Set a default in Admin → Settings or pass ai_model explicitly.",
+        )
+    vision_provider = (
+        gen_request.vision_provider
+        or db_settings.get("vision_provider", "")
+        or settings.vision_provider
+        or None
+    )
+    vision_model = (
+        gen_request.vision_model
+        or db_settings.get("vision_model", "")
+        or settings.vision_model
+        or None
+    )
     project_name = gen_request.project_name
     owner = request.state.username
 
@@ -1527,12 +1617,15 @@ async def generate(
                     ai_provider=ai_provider,
                     ai_model=ai_model,
                     ai_cli_timeout=gen_request.ai_cli_timeout
+                    or int(db_settings.get("ai_cli_timeout", "0") or "0")
                     or settings.ai_cli_timeout,
                     force=gen_request.force,
                     owner=owner,
                     branch=branch,
                     generation_id=gen_id,
                     repo_type=repo_type,
+                    vision_provider=vision_provider,
+                    vision_model=vision_model,
                 )
             )
             _generating[gen_key] = task

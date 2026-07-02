@@ -10,6 +10,7 @@ import {
   ChevronRight,
   FileText,
   Loader2,
+  Settings,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -23,6 +24,7 @@ import VariantDetail from '@/components/shared/VariantDetail'
 import { useModal } from '@/components/shared/ModalProvider'
 import UsersPanel from '@/components/admin/UsersPanel'
 import AccessPanel from '@/components/admin/AccessPanel'
+import SettingsPanel from '@/components/admin/SettingsPanel'
 import { api } from '@/lib/api'
 import { wsManager } from '@/lib/websocket'
 import { TOAST_DEFAULT_MS, TOAST_ERROR_MS, WS_POLLING_FALLBACK_MS, SELECTED_VIEW_KEY, SIDEBAR_COLLAPSED_KEY, GENERATION_STAGES } from '@/lib/constants'
@@ -42,6 +44,7 @@ type SelectedView =
   | { type: 'variant'; name: string; branch: string; provider: string; model: string; owner: string }
   | { type: 'users' }
   | { type: 'access' }
+  | { type: 'settings' }
   | { type: 'empty' }
 
 export default function DashboardPage() {
@@ -61,6 +64,8 @@ export default function DashboardPage() {
   const [availableModels, setAvailableModels] = useState<AvailableModels>({})
   const [totalCostUsd, setTotalCostUsd] = useState<number>(0)
   const [knownBranches, setKnownBranches] = useState<Record<string, string[]>>({})
+  const [defaultProvider, setDefaultProvider] = useState('')
+  const [defaultModel, setDefaultModel] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedView, setSelectedView] = useState<SelectedView>(() => {
     try {
@@ -134,9 +139,11 @@ export default function DashboardPage() {
     }
     async function loadModels() {
       try {
-        const data = await api.get<{ available_models: AvailableModels }>('/api/models')
+        const data = await api.get<{ available_models: AvailableModels; default_provider: string; default_model: string }>('/api/models')
         if (cancelled) return
         setAvailableModels(data.available_models ?? {})
+        setDefaultProvider(data.default_provider ?? '')
+        setDefaultModel(data.default_model ?? '')
       } catch {
         /* best-effort — models dropdown will be empty */
       }
@@ -180,7 +187,7 @@ export default function DashboardPage() {
   // If a non-admin user has a stored 'users' or 'access' view, reset to empty.
   useEffect(() => {
     if (!authChecked) return
-    if (!isAdmin && (selectedView.type === 'users' || selectedView.type === 'access')) {
+    if (!isAdmin && (selectedView.type === 'users' || selectedView.type === 'access' || selectedView.type === 'settings')) {
       setSelectedView({ type: 'empty' })
       localStorage.removeItem(SELECTED_VIEW_KEY)
     }
@@ -529,6 +536,13 @@ export default function DashboardPage() {
               onClick={() => setSelectedView({ type: 'access' })}
               title="Manage project access permissions"
             />
+            <SidebarItem
+              icon={<Settings className="size-4" />}
+              label="Settings"
+              active={selectedView.type === 'settings'}
+              onClick={() => setSelectedView({ type: 'settings' })}
+              title="Server-wide default settings"
+            />
           </div>
           <Separator className="mx-3 mt-2" />
         </>
@@ -581,6 +595,8 @@ export default function DashboardPage() {
         projects={projects}
         availableModels={availableModels}
         knownBranches={knownBranches}
+        defaultProvider={defaultProvider}
+        defaultModel={defaultModel}
         isAdmin={isAdmin}
         role={role}
         onDelete={handleDeleteVariant}
@@ -767,6 +783,8 @@ function MainPanel({
   projects,
   availableModels,
   knownBranches,
+  defaultProvider,
+  defaultModel,
   isAdmin,
   role,
   onDelete,
@@ -778,6 +796,8 @@ function MainPanel({
   projects: Project[]
   availableModels: AvailableModels
   knownBranches: Record<string, string[]>
+  defaultProvider: string
+  defaultModel: string
   isAdmin: boolean
   role: string
   onDelete: (name: string, branch: string, provider: string, model: string, owner: string) => void
@@ -801,6 +821,8 @@ function MainPanel({
       <GenerateForm
         availableModels={availableModels}
         knownBranches={knownBranches}
+        defaultProvider={defaultProvider}
+        defaultModel={defaultModel}
         onGenerated={onGenerated}
       />
     )
@@ -851,6 +873,10 @@ function MainPanel({
 
   if (selectedView.type === 'access' && isAdmin) {
     return <AccessPanel />
+  }
+
+  if (selectedView.type === 'settings' && isAdmin) {
+    return <SettingsPanel availableModels={availableModels} />
   }
 
   return null

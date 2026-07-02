@@ -76,7 +76,11 @@ async def test_generate_endpoint_starts_generation(client: AsyncClient) -> None:
         mock_task.side_effect = lambda coro: coro.close()
         response = await client.post(
             "/api/generate",
-            json={"repo_url": "https://github.com/org/repo.git"},
+            json={
+                "repo_url": "https://github.com/org/repo.git",
+                "ai_provider": "cursor",
+                "ai_model": "test-model",
+            },
         )
     assert response.status_code == 202
     body = response.json()
@@ -94,7 +98,12 @@ async def test_generate_endpoint_with_force(client: AsyncClient) -> None:
         mock_task.side_effect = lambda coro: coro.close()
         response = await client.post(
             "/api/generate",
-            json={"repo_url": "https://github.com/org/repo.git", "force": True},
+            json={
+                "repo_url": "https://github.com/org/repo.git",
+                "force": True,
+                "ai_provider": "cursor",
+                "ai_model": "test-model",
+            },
         )
     assert response.status_code == 202
     body = response.json()
@@ -110,7 +119,11 @@ async def test_generate_endpoint_local_path(
         mock_task.side_effect = lambda coro: coro.close()
         response = await client.post(
             "/api/generate",
-            json={"repo_path": str(tmp_path / "myrepo")},
+            json={
+                "repo_path": str(tmp_path / "myrepo"),
+                "ai_provider": "cursor",
+                "ai_model": "test-model",
+            },
         )
     assert response.status_code == 202
     body = response.json()

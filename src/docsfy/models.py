@@ -35,6 +35,14 @@ class GenerateRequest(BaseModel):
     branch: str = Field(
         default=DEFAULT_BRANCH, description="Git branch to generate docs from"
     )
+    vision_provider: Literal["claude", "gemini", "cursor"] | None = Field(
+        default=None,
+        description="AI provider for image description (defaults to ai_provider)",
+    )
+    vision_model: str | None = Field(
+        default=None,
+        description="AI model for image description (defaults to ai_model)",
+    )
 
     @field_validator("branch")
     @classmethod

@@ -55,6 +55,20 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     _generating.clear()
     await init_db(data_dir=settings.data_dir)
 
+    # Seed settings table from environment/config defaults
+    from docsfy.storage import seed_settings
+
+    settings_defaults = {
+        "default_ai_provider": settings.ai_provider,
+        "default_ai_model": settings.ai_model,
+        "ai_cli_timeout": str(settings.ai_cli_timeout),
+        "max_concurrent_pages": str(settings.max_concurrent_pages),
+        "vision_provider": settings.vision_provider,
+        "vision_model": settings.vision_model,
+    }
+    env_overrides = settings.get_env_overrides()
+    await seed_settings(settings_defaults, env_overrides)
+
     await cleanup_expired_sessions()
     yield
 
