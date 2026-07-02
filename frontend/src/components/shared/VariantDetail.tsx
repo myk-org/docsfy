@@ -419,7 +419,7 @@ function RegenerateSection({
         <Button
           data-testid="data-regenerate-variant"
           onClick={handleRegenerate}
-          disabled={isStarting || !model || (!!visionProvider && !visionModel)}
+          disabled={isStarting || !model}
           className="w-full sm:w-auto"
           title="Re-generate documentation with these settings"
         >
