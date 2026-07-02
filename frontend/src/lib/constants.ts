@@ -20,8 +20,6 @@ export const SK_REPO = 'docsfy-repo'
 export const SK_BRANCH = 'docsfy-branch'
 export const SK_FORCE = 'docsfy-force'
 export const SK_REPO_TYPE = 'docsfy-repo-type'
-export const SK_VISION_PROVIDER = 'docsfy-vision-provider'
-export const SK_VISION_MODEL = 'docsfy-vision-model'
 
 export const TREE_EXPANDED_KEY = 'docsfy-tree-expanded'
 export const SELECTED_VIEW_KEY = 'docsfy-selected-view'

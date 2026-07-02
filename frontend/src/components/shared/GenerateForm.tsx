@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/select'
 import Combobox from '@/components/shared/Combobox'
 import { api } from '@/lib/api'
-import { SK_REPO, SK_BRANCH, SK_FORCE, SK_REPO_TYPE, SK_VISION_PROVIDER, SK_VISION_MODEL, TOAST_DEFAULT_MS, TOAST_ERROR_MS, VALID_PROVIDERS, VALID_REPO_TYPES } from '@/lib/constants'
+import { SK_REPO, SK_BRANCH, SK_FORCE, SK_REPO_TYPE, TOAST_DEFAULT_MS, TOAST_ERROR_MS, VALID_PROVIDERS, VALID_REPO_TYPES } from '@/lib/constants'
 import type { AvailableModels } from '@/types'
 import { ApiError } from '@/types'
 interface GenerateFormProps {
@@ -62,11 +62,17 @@ export default function GenerateForm({
     if (savedBranch) setBranch(savedBranch)
     if (savedForce === 'true') setForce(true)
     if (savedRepoType && (VALID_REPO_TYPES as readonly string[]).includes(savedRepoType)) setRepoType(savedRepoType)
-    const savedVisionProvider = sessionStorage.getItem(SK_VISION_PROVIDER)
-    const savedVisionModel = sessionStorage.getItem(SK_VISION_MODEL)
-    if (savedVisionProvider) setVisionProvider(savedVisionProvider)
-    if (savedVisionModel) setVisionModel(savedVisionModel)
   }, [])
+
+  // Sync server defaults into form when they arrive from /api/models
+  useEffect(() => {
+    if (defaultProvider && !provider) {
+      setProvider(defaultProvider)
+    }
+    if (defaultModel && !model) {
+      setModel(defaultModel)
+    }
+  }, [defaultProvider, defaultModel])
 
   function sanitizeRepoUrlForStorage(value: string): string {
     try {
@@ -88,8 +94,6 @@ export default function GenerateForm({
     sessionStorage.removeItem(SK_BRANCH)
     sessionStorage.removeItem(SK_FORCE)
     sessionStorage.removeItem(SK_REPO_TYPE)
-    sessionStorage.removeItem(SK_VISION_PROVIDER)
-    sessionStorage.removeItem(SK_VISION_MODEL)
     setRepoUrl('')
     setBranch('main')
     setProvider(defaultProvider ?? '')
@@ -132,31 +136,19 @@ export default function GenerateForm({
     if (!value) return
     const newValue = value === '__none__' ? '' : value
     setVisionProvider(newValue)
-    if (newValue) {
-      saveToSession(SK_VISION_PROVIDER, newValue)
-    } else {
-      sessionStorage.removeItem(SK_VISION_PROVIDER)
-    }
     // Clear vision model if not valid for new provider
     if (newValue) {
       const models = availableModels[newValue]
       if (models && models.length > 0 && !models.some(m => m.id === visionModel)) {
         setVisionModel('')
-        sessionStorage.removeItem(SK_VISION_MODEL)
       }
     } else {
       setVisionModel('')
-      sessionStorage.removeItem(SK_VISION_MODEL)
     }
   }
 
   function handleVisionModelChange(value: string) {
     setVisionModel(value)
-    if (value) {
-      saveToSession(SK_VISION_MODEL, value)
-    } else {
-      sessionStorage.removeItem(SK_VISION_MODEL)
-    }
   }
 
   function handleRepoTypeChange(value: string | null) {
@@ -189,8 +181,10 @@ export default function GenerateForm({
       const payload: Record<string, unknown> = {
         repo_url: submittedRepoUrl,
         branch: submittedBranch,
-        ai_provider: submittedProvider,
         force: submittedForce,
+      }
+      if (submittedProvider) {
+        payload.ai_provider = submittedProvider
       }
       if (submittedModel) {
         payload.ai_model = submittedModel
