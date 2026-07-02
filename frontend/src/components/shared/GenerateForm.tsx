@@ -150,7 +150,7 @@ export default function GenerateForm({
       setVisionModel('')
     } else {
       const models = availableModels[newValue]
-      if (models && models.length > 0 && !models.some(m => m.id === visionModel)) {
+      if (!models || !models.some(m => m.id === visionModel)) {
         setVisionModel('')
       }
     }
