@@ -32,7 +32,13 @@ async function request<T>(
 
   if (!response.ok) {
     const body = await response.json().catch(() => ({ detail: response.statusText }))
-    const detail = body.detail || response.statusText
+    // Pydantic 422 returns detail as array of objects — extract messages
+    let detail: string
+    if (Array.isArray(body.detail)) {
+      detail = body.detail.map((e: Record<string, unknown>) => String(e.msg || '')).join('; ') || response.statusText
+    } else {
+      detail = body.detail || response.statusText
+    }
     console.debug('[API] Error:', response.status, detail)
 
     // Treat JSON 401 the same as a redirect — trigger session-expiry flow,
