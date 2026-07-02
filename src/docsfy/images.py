@@ -16,7 +16,7 @@ from simple_logger.logger import get_logger
 from docsfy.ai_client import AIResult, call_ai_once
 from docsfy.cost_tracker import add_cost
 from docsfy.json_parser import parse_json_array_response
-from docsfy.prompts import SIDECAR_TOOLS
+from docsfy.prompts import SIDECAR_TOOLS, build_image_description_prompt
 
 logger = get_logger(name=__name__)
 
@@ -65,20 +65,7 @@ async def _describe_images_with_ai(
     Returns a mapping of ``filename → description``.  On any failure the
     caller receives an empty dict so it can fall back to humanised filenames.
     """
-    numbered = "\n".join(
-        f"{idx}. {DOCSFY_IMAGES_DIR}/{f}" for idx, f in enumerate(image_files, 1)
-    )
-
-    example_output = ", ".join(
-        f'{{"filename": "{f}", "description": "..."}}' for f in image_files
-    )
-
-    prompt = (
-        "Read each image listed below and provide a one-sentence description of what it shows.\n"
-        "Output ONLY a JSON array. No markdown fences, no explanation.\n\n"
-        f"Images:\n{numbered}\n\n"
-        f"Output format:\n[{example_output}]"
-    )
+    prompt = build_image_description_prompt(image_files, DOCSFY_IMAGES_DIR)
 
     logger.debug("Calling AI to describe %d images", len(image_files))
     try:

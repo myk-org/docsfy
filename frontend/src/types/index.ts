@@ -68,6 +68,10 @@ export interface User {
   created_at: string
 }
 
+export interface AccessEntry {
+  username: string
+}
+
 export interface AuthResponse {
   username: string
   role: string

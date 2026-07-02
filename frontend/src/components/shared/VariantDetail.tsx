@@ -24,7 +24,7 @@ import { Progress } from '@/components/ui/progress'
 import Combobox from '@/components/shared/Combobox'
 import ActivityLog from '@/components/shared/ActivityLog'
 import { useModal } from '@/components/shared/ModalProvider'
-import { api } from '@/lib/api'
+import { deleteVariant as deleteVariantApi, generateDocs, abortVariant } from '@/lib/api'
 import { encodeBranch } from '@/lib/utils'
 import { TOAST_DEFAULT_MS, TOAST_ERROR_MS, VALID_PROVIDERS, BADGE_STYLES, SELECT_CLEAR } from '@/lib/constants'
 import { ApiError } from '@/types'
@@ -90,7 +90,7 @@ function commitUrl(repoUrl: string, sha: string): string | null {
   return `${base}/commit/${sha}`
 }
 
-async function deleteVariant(
+async function handleDeleteVariant(
   project: Project,
   modalConfirm: (opts: { title: string; message: string; danger: boolean; confirmText: string }) => Promise<boolean>,
   setIsDeleting: (v: boolean) => void,
@@ -106,9 +106,7 @@ async function deleteVariant(
 
   setIsDeleting(true)
   try {
-    await api.delete(
-      `/api/projects/${project.name}/${encodeBranch(project.branch)}/${project.ai_provider}/${project.ai_model}?owner=${encodeURIComponent(project.owner)}`
-    )
+    await deleteVariantApi(project.name, project.branch, project.ai_provider, project.ai_model, project.owner)
     toast.success('Variant deleted', { duration: TOAST_DEFAULT_MS })
     onDelete?.()
   } catch (err) {
@@ -309,7 +307,7 @@ function RegenerateSection({
   async function handleRegenerate() {
     setIsStarting(true)
     try {
-      await api.post('/api/generate', {
+      await generateDocs({
         repo_url: project.repo_url,
         branch: project.branch,
         ai_provider: provider,
@@ -452,7 +450,7 @@ function ReadyView({
   const isUpToDate = project.current_stage === 'up_to_date'
 
   function handleDelete() {
-    deleteVariant(project, modalConfirm, setIsDeleting, onDelete)
+    handleDeleteVariant(project, modalConfirm, setIsDeleting, onDelete)
   }
 
   const docsUrl = `/docs/${project.name}/${encodeBranch(project.branch)}/${project.ai_provider}/${project.ai_model}/?owner=${encodeURIComponent(project.owner)}`
@@ -562,9 +560,7 @@ function GeneratingView({
 
     setIsAborting(true)
     try {
-      await api.post(
-        `/api/projects/${project.name}/${encodeBranch(project.branch)}/${project.ai_provider}/${project.ai_model}/abort?owner=${encodeURIComponent(project.owner)}`
-      )
+      await abortVariant(project.name, project.branch, project.ai_provider, project.ai_model, project.owner)
       toast.success('Abort requested', { duration: TOAST_DEFAULT_MS })
     } catch (err) {
       const detail = err instanceof ApiError ? err.detail : 'Failed to abort'
@@ -637,7 +633,7 @@ function ErrorAbortedView({
   const isError = project.status === 'error'
 
   function handleDelete() {
-    deleteVariant(project, modalConfirm, setIsDeleting, onDelete)
+    handleDeleteVariant(project, modalConfirm, setIsDeleting, onDelete)
   }
 
   return (

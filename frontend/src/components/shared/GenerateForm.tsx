@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import Combobox from '@/components/shared/Combobox'
-import { api } from '@/lib/api'
+import { generateDocs } from '@/lib/api'
 import { SK_REPO, SK_BRANCH, SK_FORCE, SK_REPO_TYPE, TOAST_DEFAULT_MS, TOAST_ERROR_MS, VALID_PROVIDERS, VALID_REPO_TYPES, SELECT_CLEAR } from '@/lib/constants'
 import type { AvailableModels } from '@/types'
 import { ApiError } from '@/types'
@@ -207,7 +207,7 @@ export default function GenerateForm({
       if (visionModel) {
         payload.vision_model = visionModel
       }
-      await api.post('/api/generate', payload)
+      await generateDocs(payload)
 
       const projectName = extractRepoName(submittedRepoUrl)
       toast.success(`Generation started for ${projectName}`, {

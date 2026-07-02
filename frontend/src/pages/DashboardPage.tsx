@@ -25,13 +25,12 @@ import { useModal } from '@/components/shared/ModalProvider'
 import UsersPanel from '@/components/admin/UsersPanel'
 import AccessPanel from '@/components/admin/AccessPanel'
 import SettingsPanel from '@/components/admin/SettingsPanel'
-import { api } from '@/lib/api'
+import { getModels, getMe, logout, rotateKey, getProjects, deleteAllVariants } from '@/lib/api'
+import type { ModelsResponse } from '@/lib/api'
 import { wsManager } from '@/lib/websocket'
 import { TOAST_DEFAULT_MS, TOAST_ERROR_MS, WS_POLLING_FALLBACK_MS, SELECTED_VIEW_KEY, SIDEBAR_COLLAPSED_KEY, GENERATION_STAGES } from '@/lib/constants'
 import type {
   Project,
-  AuthResponse,
-  ProjectsResponse,
   WebSocketMessage,
   LogEntry,
   DocPlan,
@@ -72,7 +71,7 @@ export default function DashboardPage() {
 
   const loadModels = useCallback(async () => {
     try {
-      const data = await api.get<{ available_models: AvailableModels; default_provider: string; default_model: string; default_vision_provider: string; default_vision_model: string }>('/api/models')
+      const data = await getModels()
       setAvailableModels(data.available_models ?? {})
       setDefaultProvider(data.default_provider ?? '')
       setDefaultModel(data.default_model ?? '')
@@ -112,7 +111,7 @@ export default function DashboardPage() {
     let cancelled = false
     async function checkAuth() {
       try {
-        const data = await api.get<AuthResponse>('/api/auth/me')
+        const data = await getMe()
         if (cancelled) return
         console.debug('[Dashboard] Auth check:', data.username, 'role:', data.role, 'admin:', data.is_admin)
         setUsername(data.username)
@@ -141,7 +140,7 @@ export default function DashboardPage() {
     let cancelled = false
     async function loadProjects() {
       try {
-        const data = await api.get<ProjectsResponse>('/api/projects')
+        const data = await getProjects()
         if (cancelled) return
         setProjects(data.projects)
         setTotalCostUsd(data.total_cost_usd ?? 0)
@@ -213,7 +212,7 @@ export default function DashboardPage() {
         )
         if (!exists) {
           // Variant not yet in local state — trigger a full refresh
-          api.get<ProjectsResponse>('/api/projects').then((data) => {
+          getProjects().then((data) => {
             setProjects(data.projects)
             setTotalCostUsd(data.total_cost_usd ?? 0)
             setKnownBranches(data.known_branches)
@@ -246,7 +245,7 @@ export default function DashboardPage() {
                  p.owner === message.owner
         )
         if (!exists) {
-          api.get<ProjectsResponse>('/api/projects').then((data) => {
+          getProjects().then((data) => {
             setProjects(data.projects)
             setTotalCostUsd(data.total_cost_usd ?? 0)
             setKnownBranches(data.known_branches)
@@ -318,7 +317,7 @@ export default function DashboardPage() {
       if (!found) {
         console.debug('[Dashboard] New variant not yet in state, fetching via HTTP')
         try {
-          const data = await api.get<ProjectsResponse>('/api/projects')
+          const data = await getProjects()
           setProjects(data.projects)
           setTotalCostUsd(data.total_cost_usd ?? 0)
           setKnownBranches(data.known_branches)
@@ -380,7 +379,7 @@ export default function DashboardPage() {
           .map((p) => p.owner)
       )]
       for (const owner of owners) {
-        await api.delete(`/api/projects/${name}?owner=${encodeURIComponent(owner)}`)
+        await deleteAllVariants(name, owner)
       }
       toast.success(`Deleted all variants of "${displayName}"`, { duration: TOAST_DEFAULT_MS })
       // Optimistic removal from local state
@@ -400,7 +399,7 @@ export default function DashboardPage() {
       navigator.sendBeacon('/api/auth/logout')
     } else {
       // Fallback for older browsers
-      api.post('/api/auth/logout').catch(() => {})
+      logout().catch(() => {})
     }
     window.location.href = '/login'
   }
@@ -417,8 +416,8 @@ export default function DashboardPage() {
     if (newPassword === null) return
 
     try {
-      const body = newPassword ? { new_key: newPassword } : {}
-      const data = await api.post<{ new_api_key: string }>('/api/auth/rotate-key', body)
+      const body = newPassword ? { new_key: newPassword } : undefined
+      const data = await rotateKey(body)
       await modalAlert({
         title: 'Password Changed',
         message: `Your new password is: ${data.new_api_key}\n\nSave it — you'll need it to log in again.`,

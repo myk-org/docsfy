@@ -548,9 +548,19 @@ async def generate_all_pages(
         ]
 
         from docsfy.config import get_settings
+        from docsfy.storage import get_setting
 
+        try:
+            db_max = await get_setting("max_concurrent_pages")
+        except Exception:
+            db_max = None
+        max_concurrency = (
+            int(db_max)
+            if db_max and db_max.isdigit() and int(db_max) > 0
+            else get_settings().max_concurrent_pages
+        )
         results = await run_parallel_with_limit(
-            coroutines, max_concurrency=get_settings().max_concurrent_pages
+            coroutines, max_concurrency=max_concurrency
         )
     finally:
         shutil.rmtree(pages_manifest_dir, ignore_errors=True)

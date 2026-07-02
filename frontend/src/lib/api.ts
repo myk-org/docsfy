@@ -1,5 +1,7 @@
 import { toast } from 'sonner'
 import { ApiError } from '@/types'
+import type { AuthResponse, ProjectsResponse, AvailableModels, AdminSettingsResponse, AdminSettings, User, CreateUserResponse, RotateKeyResponse, AccessEntry } from '@/types'
+import { encodeBranch } from '@/lib/utils'
 import { REDIRECT_DELAY_MS } from './constants'
 
 async function request<T>(
@@ -68,4 +70,100 @@ export const api = {
       ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
     }),
   delete: <T>(path: string) => request<T>(path, { method: 'DELETE' }),
+}
+
+// --- Centralized API endpoint functions ---
+
+// Auth
+export function login(username: string, apiKey: string) {
+  return api.post<AuthResponse>('/api/auth/login', { username, api_key: apiKey })
+}
+
+export function getMe() {
+  return api.get<AuthResponse>('/api/auth/me')
+}
+
+export function logout() {
+  return api.post('/api/auth/logout')
+}
+
+export function rotateKey(body?: { new_key?: string }) {
+  return api.post<{ new_api_key: string }>('/api/auth/rotate-key', body)
+}
+
+// Models
+export interface ModelsResponse {
+  providers: string[]
+  default_provider: string
+  default_model: string
+  default_vision_provider: string
+  default_vision_model: string
+  available_models: AvailableModels
+}
+
+export function getModels() {
+  return api.get<ModelsResponse>('/api/models')
+}
+
+// Projects
+export function getProjects() {
+  return api.get<ProjectsResponse>('/api/projects')
+}
+
+export function generateDocs(payload: Record<string, unknown>) {
+  return api.post('/api/generate', payload)
+}
+
+export function deleteAllVariants(name: string, owner: string) {
+  return api.delete(`/api/projects/${name}?owner=${encodeURIComponent(owner)}`)
+}
+
+export function deleteVariant(name: string, branch: string, provider: string, model: string, owner: string) {
+  return api.delete(`/api/projects/${name}/${encodeBranch(branch)}/${provider}/${model}?owner=${encodeURIComponent(owner)}`)
+}
+
+export function abortVariant(name: string, branch: string, provider: string, model: string, owner: string) {
+  return api.post(`/api/projects/${name}/${encodeBranch(branch)}/${provider}/${model}/abort?owner=${encodeURIComponent(owner)}`)
+}
+
+// Admin - Users
+export function getUsers() {
+  return api.get<{ users: User[] }>('/api/admin/users')
+}
+
+export function createUser(username: string, role: string) {
+  return api.post<CreateUserResponse>('/api/admin/users', { username, role })
+}
+
+export function deleteUser(username: string) {
+  return api.delete(`/api/admin/users/${encodeURIComponent(username)}`)
+}
+
+export function rotateUserKey(username: string, body?: { new_api_key?: string }) {
+  return api.post<RotateKeyResponse>(`/api/admin/users/${encodeURIComponent(username)}/rotate-key`, body)
+}
+
+// Admin - Access
+export function grantAccess(project: string, username: string, owner: string) {
+  return api.post(`/api/admin/projects/${encodeURIComponent(project)}/access`, {
+    username,
+    owner,
+  })
+}
+
+export function getAccess(project: string, owner: string) {
+  return api.get<AccessEntry[]>(`/api/admin/projects/${encodeURIComponent(project)}/access?owner=${encodeURIComponent(owner)}`)
+}
+
+export function revokeAccess(project: string, username: string, owner: string) {
+  return api.delete(`/api/admin/projects/${encodeURIComponent(project)}/access/${encodeURIComponent(username)}?owner=${encodeURIComponent(owner)}`)
+}
+
+// Admin - Settings
+export function getSettings() {
+  return api.get<AdminSettingsResponse>('/api/admin/settings')
+}
+
+export function updateSettings(settings: Partial<AdminSettings>) {
+  return api.put('/api/admin/settings', { settings })
 }

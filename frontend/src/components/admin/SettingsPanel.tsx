@@ -12,10 +12,10 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import Combobox from '@/components/shared/Combobox'
-import { api } from '@/lib/api'
+import { getSettings, updateSettings } from '@/lib/api'
 import { VALID_PROVIDERS, TOAST_DEFAULT_MS, TOAST_ERROR_MS, SELECT_CLEAR } from '@/lib/constants'
 import { ApiError } from '@/types'
-import type { AvailableModels, AdminSettings, AdminSettingsResponse } from '@/types'
+import type { AvailableModels, AdminSettings } from '@/types'
 
 interface SettingsPanelProps {
   availableModels: AvailableModels
@@ -53,7 +53,7 @@ export default function SettingsPanel({ availableModels, onSettingsSaved }: Sett
     setFetchError(null)
     setLoading(true)
     try {
-      const data = await api.get<AdminSettingsResponse>('/api/admin/settings')
+      const data = await getSettings()
       const s = data.settings
       setProvider(s.default_ai_provider || '')
       setModel(s.default_ai_model || '')
@@ -128,7 +128,7 @@ export default function SettingsPanel({ availableModels, onSettingsSaved }: Sett
 
     setSaving(true)
     try {
-      await api.put('/api/admin/settings', { settings: changed })
+      await updateSettings(changed)
       toast.success('Settings saved', { duration: TOAST_DEFAULT_MS })
       initialRef.current = { ...current }
       onSettingsSaved?.()

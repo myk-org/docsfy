@@ -5,10 +5,9 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
-import { api } from '@/lib/api'
+import { login } from '@/lib/api'
 import { useTheme } from '@/lib/useTheme'
 import { ApiError } from '@/types'
-import type { AuthResponse } from '@/types'
 
 export default function LoginPage() {
   const navigate = useNavigate()
@@ -26,10 +25,7 @@ export default function LoginPage() {
     setIsSubmitting(true)
 
     try {
-      await api.post<AuthResponse>('/api/auth/login', {
-        username,
-        api_key: password,
-      })
+      await login(username, password)
       navigate(intendedPath)
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) {

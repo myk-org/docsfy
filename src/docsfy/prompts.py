@@ -775,3 +775,19 @@ Every slug in the output must come from the manifest. Do not invent page slugs.
 Do not include a page's own slug in its related list.
 Do not repeat slugs within a related list.
 Return an entry for every manifest slug."""
+
+
+def build_image_description_prompt(image_files: list[str], images_dir: str) -> str:
+    """Build prompt for AI to describe images in one sentence each."""
+    numbered = "\n".join(
+        f"{idx}. {images_dir}/{f}" for idx, f in enumerate(image_files, 1)
+    )
+    example_output = ", ".join(
+        f'{{"filename": "{f}", "description": "..."}}' for f in image_files
+    )
+    return (
+        "Read each image listed below and provide a one-sentence description of what it shows.\n"
+        "Output ONLY a JSON array. No markdown fences, no explanation.\n\n"
+        f"Images:\n{numbered}\n\n"
+        f"Output format:\n[{example_output}]"
+    )
