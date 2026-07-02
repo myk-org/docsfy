@@ -73,11 +73,12 @@ export default function SettingsPanel({ availableModels, onSettingsSaved }: Sett
 
   function handleProviderChange(value: string | null) {
     if (value === null) return
-    setProvider(value)
-    if (!value) {
+    const v = value === '__clear__' ? '' : value
+    setProvider(v)
+    if (!v) {
       setModel('')
     } else {
-      const models = availableModels[value]
+      const models = availableModels[v]
       if (!models?.some(m => m.id === model)) {
         setModel('')
       }
@@ -86,11 +87,12 @@ export default function SettingsPanel({ availableModels, onSettingsSaved }: Sett
 
   function handleVisionProviderChange(value: string | null) {
     if (value === null) return
-    setVisionProvider(value)
-    if (!value) {
+    const v = value === '__clear__' ? '' : value
+    setVisionProvider(v)
+    if (!v) {
       setVisionModel('')
     } else {
-      const models = availableModels[value]
+      const models = availableModels[v]
       if (!models?.some(m => m.id === visionModel)) {
         setVisionModel('')
       }
@@ -176,11 +178,12 @@ export default function SettingsPanel({ availableModels, onSettingsSaved }: Sett
 
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="default-provider">Default AI Provider</Label>
-            <Select value={provider} onValueChange={handleProviderChange} disabled={saving}>
+            <Select value={provider || '__clear__'} onValueChange={handleProviderChange} disabled={saving}>
               <SelectTrigger id="default-provider" className="w-full">
                 <SelectValue placeholder="No default" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="__clear__">No default</SelectItem>
                 {VALID_PROVIDERS.map((p) => (
                   <SelectItem key={p} value={p}>{p}</SelectItem>
                 ))}
@@ -212,11 +215,12 @@ export default function SettingsPanel({ availableModels, onSettingsSaved }: Sett
 
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="vision-provider">Vision AI Provider</Label>
-            <Select value={visionProvider} onValueChange={handleVisionProviderChange} disabled={saving}>
+            <Select value={visionProvider || '__clear__'} onValueChange={handleVisionProviderChange} disabled={saving}>
               <SelectTrigger id="vision-provider" className="w-full">
                 <SelectValue placeholder="Same as generation provider" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="__clear__">Same as generation provider</SelectItem>
                 {VALID_PROVIDERS.map((p) => (
                   <SelectItem key={p} value={p}>{p}</SelectItem>
                 ))}

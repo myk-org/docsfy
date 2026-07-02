@@ -143,17 +143,16 @@ export default function GenerateForm({
   }
 
   function handleVisionProviderChange(value: string | null) {
-    if (!value) return
-    const newValue = value
+    if (value === null) return
+    const newValue = value === '__clear__' ? '' : value
     setVisionProvider(newValue)
-    // Clear vision model if not valid for new provider
-    if (newValue) {
+    if (!newValue) {
+      setVisionModel('')
+    } else {
       const models = availableModels[newValue]
       if (models && models.length > 0 && !models.some(m => m.id === visionModel)) {
         setVisionModel('')
       }
-    } else {
-      setVisionModel('')
     }
   }
 
@@ -320,11 +319,12 @@ export default function GenerateForm({
         {/* Vision Provider */}
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="vision-provider-select" title="AI provider for image description (uses generation provider if not set)">Vision Provider</Label>
-          <Select disabled={isSubmitting} value={visionProvider} onValueChange={handleVisionProviderChange}>
+          <Select disabled={isSubmitting} value={visionProvider || '__clear__'} onValueChange={handleVisionProviderChange}>
             <SelectTrigger id="vision-provider-select" data-testid="vision-provider-select" className="w-full">
               <SelectValue placeholder="Same as generation provider" />
             </SelectTrigger>
             <SelectContent>
+              <SelectItem value="__clear__">Same as generation provider</SelectItem>
               {VALID_PROVIDERS.map((p) => (
                 <SelectItem key={p} value={p}>
                   {p}

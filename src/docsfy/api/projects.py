@@ -36,6 +36,7 @@ from docsfy.models import (
     VALID_PROVIDERS,
     GenerateRequest,
     decode_branch_from_path,
+    encode_branch_for_path,
     is_uuid,
 )
 from docsfy.postprocess import (
@@ -499,9 +500,7 @@ async def _replace_variant(
 
     async with _gen_lock:
         # Check if source variant is actively generating
-        gen_key_prefix = (
-            f"{owner}/{project_name}/{branch}/{source_provider}/{source_model}"
-        )
+        gen_key_prefix = f"{owner}/{project_name}/{encode_branch_for_path(branch)}/{source_provider}/{source_model}"
         for key in _generating:
             if key == gen_key_prefix:
                 logger.warning(
@@ -560,7 +559,7 @@ async def _run_generation(
     vision_provider: str | None = None,
     vision_model: str | None = None,
 ) -> None:
-    gen_key = f"{owner}/{project_name}/{branch}/{ai_provider}/{ai_model}"
+    gen_key = f"{owner}/{project_name}/{encode_branch_for_path(branch)}/{ai_provider}/{ai_model}"
     cost_acc = CostAccumulator()
     cost_token = set_cost_accumulator(cost_acc)
     try:
@@ -726,7 +725,7 @@ async def _generate_from_path(
     copied_base_artifacts = False
     replaces_base_variant = False
 
-    gen_key = f"{owner}/{project_name}/{branch}/{ai_provider}/{ai_model}"
+    gen_key = f"{owner}/{project_name}/{encode_branch_for_path(branch)}/{ai_provider}/{ai_model}"
 
     async def _mark_up_to_date(base_project: dict[str, Any] | None = None) -> None:
         page_count = (
@@ -1600,7 +1599,7 @@ async def generate(
     # Fix 6: Use lock to prevent race condition between check and add
     branch = gen_request.branch
     repo_type = gen_request.repo_type
-    gen_key = f"{owner}/{project_name}/{branch}/{ai_provider}/{ai_model}"
+    gen_key = f"{owner}/{project_name}/{encode_branch_for_path(branch)}/{ai_provider}/{ai_model}"
     async with _gen_lock:
         if gen_key in _generating:
             raise HTTPException(
@@ -1847,7 +1846,7 @@ async def abort_generation(request: Request, name: str) -> dict[str, str]:
             status_code=500, detail=f"Failed to abort '{name}'"
         ) from exc
 
-    abort_gen_key = f"{key_owner}/{name}/{resolved_branch}/{ai_provider}/{ai_model}"
+    abort_gen_key = f"{key_owner}/{name}/{encode_branch_for_path(resolved_branch)}/{ai_provider}/{ai_model}"
     await update_and_notify(
         abort_gen_key,
         name,
@@ -1876,7 +1875,7 @@ async def abort_variant(
     )
     name = _validate_project_name(name)
     owner = request.state.username
-    gen_key = f"{owner}/{name}/{branch}/{provider}/{model}"
+    gen_key = f"{owner}/{name}/{encode_branch_for_path(branch)}/{provider}/{model}"
     task = _generating.get(gen_key)
     if not task:
         # Also check if an admin is aborting someone else's generation

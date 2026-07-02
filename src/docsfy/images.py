@@ -195,6 +195,12 @@ async def build_image_catalog(
                     _fname,
                 )
                 continue
+            if Path(_fname).suffix.lower() not in IMAGE_EXTENSIONS:
+                logger.warning(
+                    "Skipping manifest entry with unsupported extension: %s",
+                    _fname,
+                )
+                continue
             if not (images_dir / _fname).is_file():
                 logger.warning(
                     "Image referenced in manifest does not exist: %s", _fname
