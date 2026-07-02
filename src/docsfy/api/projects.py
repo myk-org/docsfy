@@ -1365,6 +1365,9 @@ async def _load_available_models() -> dict[str, list[dict[str, str]]]:
                 if p in provider:
                     matched_provider = p
                     break
+            # Sidecar returns "google" for gemini models
+            if not matched_provider and provider == "google":
+                matched_provider = "gemini"
             if matched_provider:
                 result[matched_provider].append(model)
             else:
