@@ -66,7 +66,22 @@ export default function DashboardPage() {
   const [knownBranches, setKnownBranches] = useState<Record<string, string[]>>({})
   const [defaultProvider, setDefaultProvider] = useState('')
   const [defaultModel, setDefaultModel] = useState('')
+  const [defaultVisionProvider, setDefaultVisionProvider] = useState('')
+  const [defaultVisionModel, setDefaultVisionModel] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
+
+  const loadModels = useCallback(async () => {
+    try {
+      const data = await api.get<{ available_models: AvailableModels; default_provider: string; default_model: string; default_vision_provider: string; default_vision_model: string }>('/api/models')
+      setAvailableModels(data.available_models ?? {})
+      setDefaultProvider(data.default_provider ?? '')
+      setDefaultModel(data.default_model ?? '')
+      setDefaultVisionProvider(data.default_vision_provider ?? '')
+      setDefaultVisionModel(data.default_vision_model ?? '')
+    } catch {
+      /* best-effort — models dropdown will be empty */
+    }
+  }, [])
   const [selectedView, setSelectedView] = useState<SelectedView>(() => {
     try {
       const stored = localStorage.getItem(SELECTED_VIEW_KEY)
@@ -135,17 +150,6 @@ export default function DashboardPage() {
         /* handled by api interceptor */
       } finally {
         if (!cancelled) setProjectsLoaded(true)
-      }
-    }
-    async function loadModels() {
-      try {
-        const data = await api.get<{ available_models: AvailableModels; default_provider: string; default_model: string }>('/api/models')
-        if (cancelled) return
-        setAvailableModels(data.available_models ?? {})
-        setDefaultProvider(data.default_provider ?? '')
-        setDefaultModel(data.default_model ?? '')
-      } catch {
-        /* best-effort — models dropdown will be empty */
       }
     }
     loadProjects()
@@ -597,6 +601,8 @@ export default function DashboardPage() {
         knownBranches={knownBranches}
         defaultProvider={defaultProvider}
         defaultModel={defaultModel}
+        defaultVisionProvider={defaultVisionProvider}
+        defaultVisionModel={defaultVisionModel}
         isAdmin={isAdmin}
         role={role}
         onDelete={handleDeleteVariant}
@@ -604,6 +610,7 @@ export default function DashboardPage() {
         onVariantRegenerate={(name, branch, provider, model, owner) => {
           setSelectedView({ type: 'variant', name, branch, provider, model, owner })
         }}
+        onSettingsSaved={loadModels}
       />
     </Layout>
   )
@@ -785,11 +792,14 @@ function MainPanel({
   knownBranches,
   defaultProvider,
   defaultModel,
+  defaultVisionProvider,
+  defaultVisionModel,
   isAdmin,
   role,
   onDelete,
   onGenerated,
   onVariantRegenerate,
+  onSettingsSaved,
 }: {
   selectedView: SelectedView
   username: string
@@ -798,11 +808,14 @@ function MainPanel({
   knownBranches: Record<string, string[]>
   defaultProvider: string
   defaultModel: string
+  defaultVisionProvider: string
+  defaultVisionModel: string
   isAdmin: boolean
   role: string
   onDelete: (name: string, branch: string, provider: string, model: string, owner: string) => void
   onGenerated: (name: string, branch: string, provider: string, model: string) => void
   onVariantRegenerate: (name: string, branch: string, provider: string, model: string, owner: string) => void
+  onSettingsSaved: () => void
 }) {
   if (selectedView.type === 'empty') {
     return (
@@ -823,6 +836,8 @@ function MainPanel({
         knownBranches={knownBranches}
         defaultProvider={defaultProvider}
         defaultModel={defaultModel}
+        defaultVisionProvider={defaultVisionProvider}
+        defaultVisionModel={defaultVisionModel}
         onGenerated={onGenerated}
       />
     )
@@ -876,7 +891,7 @@ function MainPanel({
   }
 
   if (selectedView.type === 'settings' && isAdmin) {
-    return <SettingsPanel availableModels={availableModels} />
+    return <SettingsPanel availableModels={availableModels} onSettingsSaved={onSettingsSaved} />
   }
 
   return null

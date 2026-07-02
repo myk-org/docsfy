@@ -1424,10 +1424,16 @@ async def get_models_endpoint() -> dict[str, Any]:
         db_settings.get("default_ai_provider", "") or settings.ai_provider
     )
     default_model = db_settings.get("default_ai_model", "") or settings.ai_model
+    default_vision_provider = (
+        db_settings.get("vision_provider", "") or settings.vision_provider
+    )
+    default_vision_model = db_settings.get("vision_model", "") or settings.vision_model
     return {
         "providers": list(VALID_PROVIDERS),
         "default_provider": default_provider,
         "default_model": default_model,
+        "default_vision_provider": default_vision_provider,
+        "default_vision_model": default_vision_model,
         "available_models": available_models,
     }
 

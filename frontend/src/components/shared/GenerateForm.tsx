@@ -21,6 +21,8 @@ interface GenerateFormProps {
   knownBranches: Record<string, string[]>
   defaultProvider?: string
   defaultModel?: string
+  defaultVisionProvider?: string
+  defaultVisionModel?: string
   onGenerated?: (name: string, branch: string, provider: string, model: string) => void
 }
 
@@ -38,6 +40,8 @@ export default function GenerateForm({
   knownBranches,
   defaultProvider,
   defaultModel,
+  defaultVisionProvider,
+  defaultVisionModel,
   onGenerated,
 }: GenerateFormProps) {
   const [repoUrl, setRepoUrl] = useState('')
@@ -69,12 +73,16 @@ export default function GenerateForm({
     if (defaultProvider && !provider) {
       setProvider(defaultProvider)
     }
-    // Only set default model if provider matches (or is being set to) the default provider
-    // to avoid creating an incompatible provider/model pair
     if (defaultModel && !model && (!provider || provider === defaultProvider)) {
       setModel(defaultModel)
     }
-  }, [defaultProvider, defaultModel])
+    if (defaultVisionProvider && !visionProvider) {
+      setVisionProvider(defaultVisionProvider)
+    }
+    if (defaultVisionModel && !visionModel && (!visionProvider || visionProvider === defaultVisionProvider)) {
+      setVisionModel(defaultVisionModel)
+    }
+  }, [defaultProvider, defaultModel, defaultVisionProvider, defaultVisionModel])
 
   function sanitizeRepoUrlForStorage(value: string): string {
     try {
@@ -102,8 +110,8 @@ export default function GenerateForm({
     setModel(defaultModel ?? '')
     setForce(false)
     setRepoType('')
-    setVisionProvider('')
-    setVisionModel('')
+    setVisionProvider(defaultVisionProvider ?? '')
+    setVisionModel(defaultVisionModel ?? '')
   }
 
   function handleRepoChange(value: string) {
@@ -136,7 +144,7 @@ export default function GenerateForm({
 
   function handleVisionProviderChange(value: string | null) {
     if (!value) return
-    const newValue = value === '__none__' ? '' : value
+    const newValue = value
     setVisionProvider(newValue)
     // Clear vision model if not valid for new provider
     if (newValue) {
@@ -312,12 +320,11 @@ export default function GenerateForm({
         {/* Vision Provider */}
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="vision-provider-select" title="AI provider for image description (uses generation provider if not set)">Vision Provider</Label>
-          <Select disabled={isSubmitting} value={visionProvider || '__none__'} onValueChange={handleVisionProviderChange}>
+          <Select disabled={isSubmitting} value={visionProvider} onValueChange={handleVisionProviderChange}>
             <SelectTrigger id="vision-provider-select" data-testid="vision-provider-select" className="w-full">
-              <SelectValue />
+              <SelectValue placeholder="Same as generation provider" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="__none__">Same as generation provider</SelectItem>
               {VALID_PROVIDERS.map((p) => (
                 <SelectItem key={p} value={p}>
                   {p}

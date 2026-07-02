@@ -19,9 +19,8 @@ import type { AvailableModels, AdminSettings, AdminSettingsResponse } from '@/ty
 
 interface SettingsPanelProps {
   availableModels: AvailableModels
+  onSettingsSaved?: () => void
 }
-
-const NONE_SENTINEL = '__none__'
 
 function EnvWarning({ envVarName }: { envVarName: string }) {
   return (
@@ -31,18 +30,18 @@ function EnvWarning({ envVarName }: { envVarName: string }) {
   )
 }
 
-export default function SettingsPanel({ availableModels }: SettingsPanelProps) {
+export default function SettingsPanel({ availableModels, onSettingsSaved }: SettingsPanelProps) {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [fetchError, setFetchError] = useState<string | null>(null)
   const [envOverrides, setEnvOverrides] = useState<Record<string, string>>({})
 
-  const [provider, setProvider] = useState(NONE_SENTINEL)
+  const [provider, setProvider] = useState('')
   const [model, setModel] = useState('')
-  const [visionProvider, setVisionProvider] = useState(NONE_SENTINEL)
+  const [visionProvider, setVisionProvider] = useState('')
   const [visionModel, setVisionModel] = useState('')
-  const [timeout, setTimeout_] = useState(10)
-  const [concurrentPages, setConcurrentPages] = useState(5)
+  const [timeout, setTimeout_] = useState(60)
+  const [concurrentPages, setConcurrentPages] = useState(10)
 
   const initialRef = useRef<AdminSettings | null>(null)
 
@@ -56,9 +55,9 @@ export default function SettingsPanel({ availableModels }: SettingsPanelProps) {
     try {
       const data = await api.get<AdminSettingsResponse>('/api/admin/settings')
       const s = data.settings
-      setProvider(s.default_ai_provider || NONE_SENTINEL)
+      setProvider(s.default_ai_provider || '')
       setModel(s.default_ai_model || '')
-      setVisionProvider(s.vision_provider || NONE_SENTINEL)
+      setVisionProvider(s.vision_provider || '')
       setVisionModel(s.vision_model || '')
       setTimeout_(s.ai_cli_timeout)
       setConcurrentPages(s.max_concurrent_pages)
@@ -73,9 +72,9 @@ export default function SettingsPanel({ availableModels }: SettingsPanelProps) {
   }
 
   function handleProviderChange(value: string | null) {
-    if (!value) return
+    if (value === null) return
     setProvider(value)
-    if (value === NONE_SENTINEL) {
+    if (!value) {
       setModel('')
     } else {
       const models = availableModels[value]
@@ -86,9 +85,9 @@ export default function SettingsPanel({ availableModels }: SettingsPanelProps) {
   }
 
   function handleVisionProviderChange(value: string | null) {
-    if (!value) return
+    if (value === null) return
     setVisionProvider(value)
-    if (value === NONE_SENTINEL) {
+    if (!value) {
       setVisionModel('')
     } else {
       const models = availableModels[value]
@@ -102,9 +101,9 @@ export default function SettingsPanel({ availableModels }: SettingsPanelProps) {
     e.preventDefault()
 
     const current: AdminSettings = {
-      default_ai_provider: provider === NONE_SENTINEL ? '' : provider,
+      default_ai_provider: provider,
       default_ai_model: model,
-      vision_provider: visionProvider === NONE_SENTINEL ? '' : visionProvider,
+      vision_provider: visionProvider,
       vision_model: visionModel,
       ai_cli_timeout: timeout,
       max_concurrent_pages: concurrentPages,
@@ -130,6 +129,7 @@ export default function SettingsPanel({ availableModels }: SettingsPanelProps) {
       await api.put('/api/admin/settings', { settings: changed })
       toast.success('Settings saved', { duration: TOAST_DEFAULT_MS })
       initialRef.current = { ...current }
+      onSettingsSaved?.()
     } catch (err) {
       const detail = err instanceof ApiError ? err.detail : 'Failed to save settings'
       toast.error(detail, { duration: TOAST_ERROR_MS })
@@ -138,11 +138,11 @@ export default function SettingsPanel({ availableModels }: SettingsPanelProps) {
     }
   }
 
-  const modelOptions = provider !== NONE_SENTINEL
+  const modelOptions = provider
     ? (availableModels[provider] ?? []).map(m => ({ value: m.id, label: m.name || m.id }))
     : []
 
-  const visionModelOptions = visionProvider !== NONE_SENTINEL
+  const visionModelOptions = visionProvider
     ? (availableModels[visionProvider] ?? []).map(m => ({ value: m.id, label: m.name || m.id }))
     : []
 
@@ -178,10 +178,9 @@ export default function SettingsPanel({ availableModels }: SettingsPanelProps) {
             <Label htmlFor="default-provider">Default AI Provider</Label>
             <Select value={provider} onValueChange={handleProviderChange} disabled={saving}>
               <SelectTrigger id="default-provider" className="w-full">
-                <SelectValue />
+                <SelectValue placeholder="No default" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value={NONE_SENTINEL}>None (user must select)</SelectItem>
                 {VALID_PROVIDERS.map((p) => (
                   <SelectItem key={p} value={p}>{p}</SelectItem>
                 ))}
@@ -198,8 +197,8 @@ export default function SettingsPanel({ availableModels }: SettingsPanelProps) {
               options={modelOptions}
               value={model}
               onChange={setModel}
-              placeholder="Select or type model..."
-              disabled={saving || provider === NONE_SENTINEL}
+              placeholder={provider ? 'Select or type model...' : 'Select a provider first'}
+              disabled={saving || !provider}
             />
             {envOverrides.default_ai_model && (
               <EnvWarning envVarName={envOverrides.default_ai_model} />
@@ -215,10 +214,9 @@ export default function SettingsPanel({ availableModels }: SettingsPanelProps) {
             <Label htmlFor="vision-provider">Vision AI Provider</Label>
             <Select value={visionProvider} onValueChange={handleVisionProviderChange} disabled={saving}>
               <SelectTrigger id="vision-provider" className="w-full">
-                <SelectValue />
+                <SelectValue placeholder="Same as generation provider" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value={NONE_SENTINEL}>Same as generation provider</SelectItem>
                 {VALID_PROVIDERS.map((p) => (
                   <SelectItem key={p} value={p}>{p}</SelectItem>
                 ))}
@@ -229,7 +227,7 @@ export default function SettingsPanel({ availableModels }: SettingsPanelProps) {
             )}
           </div>
 
-          {visionProvider !== NONE_SENTINEL && (
+          {visionProvider && (
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="vision-model">Vision AI Model</Label>
               <Combobox
