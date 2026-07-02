@@ -26,7 +26,7 @@ import UsersPanel from '@/components/admin/UsersPanel'
 import AccessPanel from '@/components/admin/AccessPanel'
 import SettingsPanel from '@/components/admin/SettingsPanel'
 import { getModels, getMe, logout, rotateKey, getProjects, deleteAllVariants } from '@/lib/api'
-import type { ModelsResponse } from '@/lib/api'
+
 import { wsManager } from '@/lib/websocket'
 import { TOAST_DEFAULT_MS, TOAST_ERROR_MS, WS_POLLING_FALLBACK_MS, SELECTED_VIEW_KEY, SIDEBAR_COLLAPSED_KEY, GENERATION_STAGES } from '@/lib/constants'
 import type {
