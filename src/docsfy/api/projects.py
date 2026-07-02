@@ -1114,29 +1114,30 @@ async def _generate_from_path(
             generation_id=generation_id,
         )
 
-    pages = await generate_all_pages(
-        repo_path=repo_dir,
-        plan=plan,
-        cache_dir=cache_dir,
-        ai_provider=ai_provider,
-        ai_model=ai_model,
-        ai_cli_timeout=ai_cli_timeout,
-        use_cache=use_cache,
-        project_name=project_name,
-        owner=owner,
-        changed_files=changed_files,
-        existing_pages=existing_pages if existing_pages else None,
-        diff_content=diff_content,
-        branch=branch,
-        on_page_generated=_on_page_generated,
-        repo_type=detected_repo_type,
-        graph_report_available=graph_report is not None,
-        image_catalog_path=image_catalog_path,
-    )
-
-    # Clean up image catalog temp directory
-    if _image_catalog_dir is not None:
-        shutil.rmtree(_image_catalog_dir, ignore_errors=True)
+    try:
+        pages = await generate_all_pages(
+            repo_path=repo_dir,
+            plan=plan,
+            cache_dir=cache_dir,
+            ai_provider=ai_provider,
+            ai_model=ai_model,
+            ai_cli_timeout=ai_cli_timeout,
+            use_cache=use_cache,
+            project_name=project_name,
+            owner=owner,
+            changed_files=changed_files,
+            existing_pages=existing_pages if existing_pages else None,
+            diff_content=diff_content,
+            branch=branch,
+            on_page_generated=_on_page_generated,
+            repo_type=detected_repo_type,
+            graph_report_available=graph_report is not None,
+            image_catalog_path=image_catalog_path,
+        )
+    finally:
+        # Clean up image catalog temp directory
+        if _image_catalog_dir is not None:
+            shutil.rmtree(_image_catalog_dir, ignore_errors=True)
 
     # --- Post-generation pipeline ---
     try:
