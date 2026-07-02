@@ -130,6 +130,8 @@ async def update_and_notify(
     generation_id: str | None = None,
     total_cost_usd: float | None = None,
     repo_type: str | None = None,
+    vision_provider: str | None = None,
+    vision_model: str | None = None,
 ) -> None:
     """Update project status in DB and send WebSocket notification."""
     ups_kwargs: dict[str, Any] = {
@@ -150,6 +152,10 @@ async def update_and_notify(
         ups_kwargs["total_cost_usd"] = total_cost_usd
     if repo_type is not None:
         ups_kwargs["repo_type"] = repo_type
+    if vision_provider is not None:
+        ups_kwargs["vision_provider"] = vision_provider
+    if vision_model is not None:
+        ups_kwargs["vision_model"] = vision_model
 
     # Always pass current_stage through so that None clears the stage in the DB.
     ups_kwargs["current_stage"] = current_stage
@@ -588,6 +594,8 @@ async def _run_generation(
             branch=branch,
             current_stage="cloning",
             generation_id=generation_id,
+            vision_provider=vision_provider or "",
+            vision_model=vision_model or "",
         )
 
         if repo_path:

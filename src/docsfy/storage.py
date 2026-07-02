@@ -79,6 +79,8 @@ async def init_db(data_dir: str = "") -> None:
                 plan_json TEXT,
                 repo_type TEXT,
                 total_cost_usd REAL,
+                vision_provider TEXT DEFAULT '',
+                vision_model TEXT DEFAULT '',
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 PRIMARY KEY (name, branch, ai_provider, ai_model, owner)
@@ -246,6 +248,18 @@ async def init_db(data_dir: str = "") -> None:
             if "duplicate column name" not in str(exc).lower():
                 logger.exception("Migration failed while adding repo_type column")
                 raise
+
+        # Migration: add vision_provider and vision_model columns
+        for col in ("vision_provider", "vision_model"):
+            try:
+                await db.execute(
+                    f"ALTER TABLE projects ADD COLUMN {col} TEXT DEFAULT ''"
+                )
+                await db.commit()
+            except sqlite3.OperationalError as exc:
+                if "duplicate column name" not in str(exc).lower():
+                    logger.exception("Migration failed while adding %s column", col)
+                    raise
 
         # Backfill generation_id for existing rows
         async with db.execute(
@@ -431,6 +445,8 @@ async def update_project_status(
     current_stage: str | None | object = _UNSET,
     total_cost_usd: float | None = None,
     repo_type: str | None = None,
+    vision_provider: str | None = None,
+    vision_model: str | None = None,
 ) -> None:
     if status not in VALID_STATUSES:
         msg = f"Invalid project status: '{status}'. Valid: {', '.join(sorted(VALID_STATUSES))}"
@@ -459,6 +475,12 @@ async def update_project_status(
         if repo_type is not None:
             fields.append("repo_type = ?")
             values.append(repo_type)
+        if vision_provider is not None:
+            fields.append("vision_provider = ?")
+            values.append(vision_provider)
+        if vision_model is not None:
+            fields.append("vision_model = ?")
+            values.append(vision_model)
         if status == "ready":
             fields.append("last_generated = CURRENT_TIMESTAMP")
         values.append(name)

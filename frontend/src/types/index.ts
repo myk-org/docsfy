@@ -25,6 +25,8 @@ export interface Project {
   plan_json: string | null
   repo_type: RepoType | null
   total_cost_usd: number | null
+  vision_provider: string | null
+  vision_model: string | null
   generation_id: string | null
   created_at: string
   updated_at: string

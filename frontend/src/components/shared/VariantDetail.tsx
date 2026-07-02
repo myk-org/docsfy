@@ -26,7 +26,7 @@ import ActivityLog from '@/components/shared/ActivityLog'
 import { useModal } from '@/components/shared/ModalProvider'
 import { api } from '@/lib/api'
 import { encodeBranch } from '@/lib/utils'
-import { TOAST_DEFAULT_MS, TOAST_ERROR_MS, VALID_PROVIDERS, BADGE_STYLES } from '@/lib/constants'
+import { TOAST_DEFAULT_MS, TOAST_ERROR_MS, VALID_PROVIDERS, BADGE_STYLES, SELECT_CLEAR } from '@/lib/constants'
 import { ApiError } from '@/types'
 import type { Project, LogEntry, DocPlan, AvailableModels } from '@/types'
 
@@ -165,6 +165,12 @@ function InfoGrid({ project, isAdmin }: { project: Project; isAdmin: boolean }) 
         <span className="text-text-secondary">AI Provider / Model</span>
         <div className="mt-0.5 font-medium">{project.ai_provider} / {project.ai_model}</div>
       </div>
+      {project.vision_provider && (
+        <div>
+          <span className="text-text-secondary">Vision AI</span>
+          <div className="mt-0.5 font-medium">{project.vision_provider}{project.vision_model ? ` / ${project.vision_model}` : ''}</div>
+        </div>
+      )}
       <div>
         <span className="text-text-secondary">Branch</span>
         <div className="mt-0.5 font-medium">{project.branch}</div>
@@ -254,6 +260,8 @@ function RegenerateSection({
 }) {
   const [provider, setProvider] = useState(project.ai_provider)
   const [model, setModel] = useState(project.ai_model)
+  const [visionProvider, setVisionProvider] = useState(project.vision_provider || '')
+  const [visionModel, setVisionModel] = useState(project.vision_model || '')
   const [force, setForce] = useState(defaultForce)
   const [isStarting, setIsStarting] = useState(false)
 
@@ -262,6 +270,8 @@ function RegenerateSection({
   useEffect(() => {
     setProvider(project.ai_provider)
     setModel(project.ai_model)
+    setVisionProvider(project.vision_provider || '')
+    setVisionModel(project.vision_model || '')
     setForce(defaultForce)
     setIsStarting(false)
   }, [variantKey]) // eslint-disable-line react-hooks/exhaustive-deps
@@ -306,6 +316,8 @@ function RegenerateSection({
         ai_model: model,
         force,
         ...(project.repo_type ? { repo_type: project.repo_type } : {}),
+        ...(visionProvider ? { vision_provider: visionProvider } : {}),
+        ...(visionModel ? { vision_model: visionModel } : {}),
       })
       toast.success(`Regeneration started for ${project.name}`, { duration: TOAST_DEFAULT_MS })
       onRegenerate?.(provider, model, force)
@@ -317,7 +329,24 @@ function RegenerateSection({
     }
   }
 
+  function handleVisionProviderChange(value: string | null) {
+    if (value === null) return
+    const v = value === SELECT_CLEAR ? '' : value
+    setVisionProvider(v)
+    if (!v) {
+      setVisionModel('')
+    } else {
+      const models = availableModels[v]
+      if (!models || !models.some(m => m.id === visionModel)) {
+        setVisionModel('')
+      }
+    }
+  }
+
   const modelOptions = (availableModels[provider] ?? []).map(m => ({ value: m.id, label: m.name || m.id }))
+  const visionModelOptions = visionProvider
+    ? (availableModels[visionProvider] ?? []).map(m => ({ value: m.id, label: m.name || m.id }))
+    : []
 
   return (
     <div className="border-t border-dashed pt-4 mt-4">
@@ -346,6 +375,33 @@ function RegenerateSection({
               placeholder="Select or type model..."
             />
           </div>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="flex flex-col gap-1.5">
+            <Label>Vision Provider</Label>
+            <Select value={visionProvider || SELECT_CLEAR} onValueChange={handleVisionProviderChange}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Same as generation provider" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={SELECT_CLEAR}>Same as generation provider</SelectItem>
+                {VALID_PROVIDERS.map((p) => (
+                  <SelectItem key={p} value={p}>{p}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          {visionProvider && (
+            <div className="flex flex-col gap-1.5">
+              <Label>Vision Model</Label>
+              <Combobox
+                options={visionModelOptions}
+                value={visionModel}
+                onChange={setVisionModel}
+                placeholder="Select or type model..."
+              />
+            </div>
+          )}
         </div>
         <div className="flex items-center gap-2" title="Ignore cache and regenerate all pages from scratch">
           <input
