@@ -152,7 +152,10 @@ async def build_image_catalog(
         if _is_safe_image_filename(fname):
             safe_files.append(fname)
         else:
-            logger.warning("Skipping unsafe image filename: %s", fname)
+            logger.warning(
+                "Skipping image with unsafe filename (contains '..' or '/' or starts with '.'): %s",
+                fname,
+            )
 
     if not safe_files:
         return None
@@ -188,7 +191,10 @@ async def build_image_catalog(
                 )
                 continue
             if not _is_safe_image_filename(_fname):
-                logger.warning("Skipping unsafe filename in images.yaml: %s", _fname)
+                logger.warning(
+                    "Skipping image in manifest with unsafe filename (contains '..' or '/' or starts with '.'): %s",
+                    _fname,
+                )
                 continue
             if not (images_dir / _fname).is_file():
                 logger.warning(
@@ -260,7 +266,10 @@ def copy_images_to_site(repo_path: Path, output_dir: Path) -> None:
         if f.suffix.lower() not in IMAGE_EXTENSIONS:
             continue
         if not _is_safe_image_filename(f.name):
-            logger.warning("Skipping unsafe image filename during copy: %s", f.name)
+            logger.warning(
+                "Skipping image with unsafe filename (contains '..' or '/' or starts with '.'): %s",
+                f.name,
+            )
             continue
         shutil.copy2(f, dest_dir / f.name)
         copied += 1
