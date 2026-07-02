@@ -5,7 +5,7 @@
 ## Prerequisites
 
 - Server running at `http://localhost:8800`
-- `ADMIN_KEY` read from `.dev/.env` at runtime (see [test plan index](e2e-ui-test-plan.md#variable-capture-rules))
+- `ADMIN_KEY` captured per [Variable Capture Rules](e2e-ui-test-plan.md#variable-capture-rules)
 - Test repo: `https://github.com/myk-org/for-testing-only`
 
 ---
