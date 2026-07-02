@@ -128,7 +128,8 @@ export default function GenerateForm({
     saveToSession(SK_FORCE, String(checked))
   }
 
-  function handleVisionProviderChange(value: string) {
+  function handleVisionProviderChange(value: string | null) {
+    if (!value) return
     const newValue = value === '__none__' ? '' : value
     setVisionProvider(newValue)
     if (newValue) {

@@ -72,7 +72,8 @@ export default function SettingsPanel({ availableModels }: SettingsPanelProps) {
     }
   }
 
-  function handleProviderChange(value: string) {
+  function handleProviderChange(value: string | null) {
+    if (!value) return
     setProvider(value)
     if (value === NONE_SENTINEL) {
       setModel('')
@@ -84,7 +85,8 @@ export default function SettingsPanel({ availableModels }: SettingsPanelProps) {
     }
   }
 
-  function handleVisionProviderChange(value: string) {
+  function handleVisionProviderChange(value: string | null) {
+    if (!value) return
     setVisionProvider(value)
     if (value === NONE_SENTINEL) {
       setVisionModel('')
