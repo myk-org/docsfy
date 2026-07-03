@@ -214,7 +214,10 @@ async def generate_full_page_content(
     other_pages_path: str | None = None,
     repo_type: str = "app",
     graph_report_available: bool = False,
+    image_catalog_path: str | None = None,
 ) -> str:
+    if image_catalog_path:
+        logger.debug("Page '%s': image catalog at %s", page_title, image_catalog_path)
     prompt = build_page_prompt(
         project_name=project_name,
         page_title=page_title,
@@ -224,6 +227,7 @@ async def generate_full_page_content(
         other_pages_path=other_pages_path,
         repo_type=repo_type,
         graph_report_available=graph_report_available,
+        image_catalog_path=image_catalog_path,
     )
     output = await _call_ai_or_raise(
         prompt=prompt,
@@ -248,6 +252,7 @@ async def _generate_incremental_page_content(
     ai_cli_timeout: int | None = None,
     page_type: str = "guide",
     repo_type: str = "app",
+    image_catalog_path: str | None = None,
 ) -> str:
     job_dir = Path(tempfile.mkdtemp(prefix="docsfy-incremental-page-"))
     try:
@@ -267,6 +272,7 @@ async def _generate_incremental_page_content(
             diff_path=str(diff_file),
             page_type=page_type,
             repo_type=repo_type,
+            image_catalog_path=image_catalog_path,
         )
         output = await _call_ai_or_raise(
             prompt=prompt,
@@ -350,6 +356,7 @@ async def generate_page(
     other_pages_path: str | None = None,
     repo_type: str = "app",
     graph_report_available: bool = False,
+    image_catalog_path: str | None = None,
 ) -> str:
     _label = project_name or repo_path.name
     prompt_project_name = project_name or repo_path.name
@@ -383,6 +390,7 @@ async def generate_page(
                     ai_cli_timeout=ai_cli_timeout,
                     page_type=page_type,
                     repo_type=repo_type,
+                    image_catalog_path=image_catalog_path,
                 )
             except (RuntimeError, ValueError) as exc:
                 logger.warning(
@@ -401,6 +409,7 @@ async def generate_page(
                     other_pages_path=other_pages_path,
                     repo_type=repo_type,
                     graph_report_available=graph_report_available,
+                    image_catalog_path=image_catalog_path,
                 )
         else:
             output = await generate_full_page_content(
@@ -415,6 +424,7 @@ async def generate_page(
                 other_pages_path=other_pages_path,
                 repo_type=repo_type,
                 graph_report_available=graph_report_available,
+                image_catalog_path=image_catalog_path,
             )
     except RuntimeError as exc:
         logger.warning(f"[{_label}] Failed to generate page '{slug}': {exc}")
@@ -466,6 +476,7 @@ async def generate_all_pages(
     on_page_generated: Callable[[int], Awaitable[None]] | None = None,
     repo_type: str = "app",
     graph_report_available: bool = False,
+    image_catalog_path: str | None = None,
 ) -> dict[str, str]:
     _label = project_name or repo_path.name
 
@@ -531,14 +542,15 @@ async def generate_all_pages(
                 other_pages_path=str(pages_manifest_path),
                 repo_type=repo_type,
                 graph_report_available=graph_report_available,
+                image_catalog_path=image_catalog_path,
             )
             for p in all_pages
         ]
 
-        from docsfy.config import get_settings
+        from docsfy.storage import get_max_concurrent_pages
 
         results = await run_parallel_with_limit(
-            coroutines, max_concurrency=get_settings().max_concurrent_pages
+            coroutines, max_concurrency=await get_max_concurrent_pages()
         )
     finally:
         shutil.rmtree(pages_manifest_dir, ignore_errors=True)

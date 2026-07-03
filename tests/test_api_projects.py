@@ -73,7 +73,11 @@ async def test_generate_starts(client: AsyncClient) -> None:
         mock_task.side_effect = lambda coro: coro.close()
         response = await client.post(
             "/api/generate",
-            json={"repo_url": "https://github.com/org/repo.git"},
+            json={
+                "repo_url": "https://github.com/org/repo.git",
+                "ai_provider": "cursor",
+                "ai_model": "test-model",
+            },
         )
     assert response.status_code == 202
     body = response.json()

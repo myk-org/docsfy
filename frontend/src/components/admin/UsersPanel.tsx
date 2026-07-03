@@ -21,7 +21,7 @@ import {
 } from '@/components/ui/table'
 import ApiKeyDisplay from '@/components/shared/ApiKeyDisplay'
 import { useModal } from '@/components/shared/ModalProvider'
-import { api } from '@/lib/api'
+import { getUsers, createUser, deleteUser, rotateUserKey } from '@/lib/api'
 import { TOAST_DEFAULT_MS, TOAST_ERROR_MS } from '@/lib/constants'
 import { ApiError } from '@/types'
 import type { User, CreateUserResponse, RotateKeyResponse } from '@/types'
@@ -46,7 +46,7 @@ export default function UsersPanel() {
   async function loadUsers() {
     setFetchError(null)
     try {
-      const data = await api.get<{ users: User[] }>('/api/admin/users')
+      const data = await getUsers()
       setUsers(data.users)
     } catch (err) {
       const detail = err instanceof ApiError ? err.detail : 'Failed to load users'
@@ -66,10 +66,7 @@ export default function UsersPanel() {
 
     setIsCreating(true)
     try {
-      const data = await api.post<CreateUserResponse>('/api/admin/users', {
-        username: newUsername.trim(),
-        role: newRole,
-      })
+      const data = await createUser(newUsername.trim(), newRole)
       setCreatedUser(data)
       setNewUsername('')
       setNewRole('user')
@@ -98,8 +95,8 @@ export default function UsersPanel() {
     }
 
     try {
-      const data = await api.post<RotateKeyResponse>(
-        `/api/admin/users/${encodeURIComponent(username)}/rotate-key`,
+      const data = await rotateUserKey(
+        username,
         Object.keys(body).length > 0 ? body : undefined,
       )
       setRotatedKey(data)
@@ -120,7 +117,7 @@ export default function UsersPanel() {
     if (!confirmed) return
 
     try {
-      await api.delete(`/api/admin/users/${encodeURIComponent(username)}`)
+      await deleteUser(username)
       toast.success(`User "${username}" deleted`, { duration: TOAST_DEFAULT_MS })
       await loadUsers()
     } catch (err) {

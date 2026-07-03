@@ -147,6 +147,16 @@ def generate(
         "-t",
         help="Repository type (app, tests, library, framework). Auto-detected if not specified.",
     ),
+    vision_provider: Optional[str] = typer.Option(  # noqa: M511
+        None,
+        "--vision-provider",
+        help="AI provider for image description (defaults to generation provider)",
+    ),
+    vision_model: Optional[str] = typer.Option(  # noqa: M511
+        None,
+        "--vision-model",
+        help="AI model for image description (defaults to generation model)",
+    ),
     force: bool = typer.Option(False, "--force", "-f", help="Force full regeneration"),  # noqa: M511
     watch: bool = typer.Option(  # noqa: M511
         False, "--watch", "-w", help="Watch generation progress via WebSocket"
@@ -177,6 +187,10 @@ def generate(
             payload["ai_model"] = model
         if repo_type:
             payload["repo_type"] = repo_type
+        if vision_provider:
+            payload["vision_provider"] = vision_provider
+        if vision_model:
+            payload["vision_model"] = vision_model
 
         response = client.post("/api/generate", json=payload)
         data = response.json()

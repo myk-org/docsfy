@@ -10,6 +10,7 @@ import {
   ChevronRight,
   FileText,
   Loader2,
+  Settings,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -23,13 +24,13 @@ import VariantDetail from '@/components/shared/VariantDetail'
 import { useModal } from '@/components/shared/ModalProvider'
 import UsersPanel from '@/components/admin/UsersPanel'
 import AccessPanel from '@/components/admin/AccessPanel'
-import { api } from '@/lib/api'
+import SettingsPanel from '@/components/admin/SettingsPanel'
+import { getModels, getMe, logout, rotateKey, getProjects, deleteAllVariants } from '@/lib/api'
+
 import { wsManager } from '@/lib/websocket'
 import { TOAST_DEFAULT_MS, TOAST_ERROR_MS, WS_POLLING_FALLBACK_MS, SELECTED_VIEW_KEY, SIDEBAR_COLLAPSED_KEY, GENERATION_STAGES } from '@/lib/constants'
 import type {
   Project,
-  AuthResponse,
-  ProjectsResponse,
   WebSocketMessage,
   LogEntry,
   DocPlan,
@@ -42,6 +43,7 @@ type SelectedView =
   | { type: 'variant'; name: string; branch: string; provider: string; model: string; owner: string }
   | { type: 'users' }
   | { type: 'access' }
+  | { type: 'settings' }
   | { type: 'empty' }
 
 export default function DashboardPage() {
@@ -61,7 +63,24 @@ export default function DashboardPage() {
   const [availableModels, setAvailableModels] = useState<AvailableModels>({})
   const [totalCostUsd, setTotalCostUsd] = useState<number>(0)
   const [knownBranches, setKnownBranches] = useState<Record<string, string[]>>({})
+  const [defaultProvider, setDefaultProvider] = useState('')
+  const [defaultModel, setDefaultModel] = useState('')
+  const [defaultVisionProvider, setDefaultVisionProvider] = useState('')
+  const [defaultVisionModel, setDefaultVisionModel] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
+
+  const loadModels = useCallback(async () => {
+    try {
+      const data = await getModels()
+      setAvailableModels(data.available_models ?? {})
+      setDefaultProvider(data.default_provider ?? '')
+      setDefaultModel(data.default_model ?? '')
+      setDefaultVisionProvider(data.default_vision_provider ?? '')
+      setDefaultVisionModel(data.default_vision_model ?? '')
+    } catch {
+      /* best-effort — models dropdown will be empty */
+    }
+  }, [])
   const [selectedView, setSelectedView] = useState<SelectedView>(() => {
     try {
       const stored = localStorage.getItem(SELECTED_VIEW_KEY)
@@ -92,7 +111,7 @@ export default function DashboardPage() {
     let cancelled = false
     async function checkAuth() {
       try {
-        const data = await api.get<AuthResponse>('/api/auth/me')
+        const data = await getMe()
         if (cancelled) return
         console.debug('[Dashboard] Auth check:', data.username, 'role:', data.role, 'admin:', data.is_admin)
         setUsername(data.username)
@@ -121,7 +140,7 @@ export default function DashboardPage() {
     let cancelled = false
     async function loadProjects() {
       try {
-        const data = await api.get<ProjectsResponse>('/api/projects')
+        const data = await getProjects()
         if (cancelled) return
         setProjects(data.projects)
         setTotalCostUsd(data.total_cost_usd ?? 0)
@@ -132,17 +151,15 @@ export default function DashboardPage() {
         if (!cancelled) setProjectsLoaded(true)
       }
     }
-    async function loadModels() {
-      try {
-        const data = await api.get<{ available_models: AvailableModels }>('/api/models')
-        if (cancelled) return
-        setAvailableModels(data.available_models ?? {})
-      } catch {
-        /* best-effort — models dropdown will be empty */
-      }
-    }
     loadProjects()
-    loadModels()
+    getModels().then((data) => {
+      if (cancelled) return
+      setAvailableModels(data.available_models ?? {})
+      setDefaultProvider(data.default_provider ?? '')
+      setDefaultModel(data.default_model ?? '')
+      setDefaultVisionProvider(data.default_vision_provider ?? '')
+      setDefaultVisionModel(data.default_vision_model ?? '')
+    }).catch(() => { /* best-effort */ })
     return () => { cancelled = true }
   }, [authChecked])
 
@@ -180,7 +197,7 @@ export default function DashboardPage() {
   // If a non-admin user has a stored 'users' or 'access' view, reset to empty.
   useEffect(() => {
     if (!authChecked) return
-    if (!isAdmin && (selectedView.type === 'users' || selectedView.type === 'access')) {
+    if (!isAdmin && (selectedView.type === 'users' || selectedView.type === 'access' || selectedView.type === 'settings')) {
       setSelectedView({ type: 'empty' })
       localStorage.removeItem(SELECTED_VIEW_KEY)
     }
@@ -202,7 +219,7 @@ export default function DashboardPage() {
         )
         if (!exists) {
           // Variant not yet in local state — trigger a full refresh
-          api.get<ProjectsResponse>('/api/projects').then((data) => {
+          getProjects().then((data) => {
             setProjects(data.projects)
             setTotalCostUsd(data.total_cost_usd ?? 0)
             setKnownBranches(data.known_branches)
@@ -235,7 +252,7 @@ export default function DashboardPage() {
                  p.owner === message.owner
         )
         if (!exists) {
-          api.get<ProjectsResponse>('/api/projects').then((data) => {
+          getProjects().then((data) => {
             setProjects(data.projects)
             setTotalCostUsd(data.total_cost_usd ?? 0)
             setKnownBranches(data.known_branches)
@@ -307,7 +324,7 @@ export default function DashboardPage() {
       if (!found) {
         console.debug('[Dashboard] New variant not yet in state, fetching via HTTP')
         try {
-          const data = await api.get<ProjectsResponse>('/api/projects')
+          const data = await getProjects()
           setProjects(data.projects)
           setTotalCostUsd(data.total_cost_usd ?? 0)
           setKnownBranches(data.known_branches)
@@ -369,7 +386,7 @@ export default function DashboardPage() {
           .map((p) => p.owner)
       )]
       for (const owner of owners) {
-        await api.delete(`/api/projects/${name}?owner=${encodeURIComponent(owner)}`)
+        await deleteAllVariants(name, owner)
       }
       toast.success(`Deleted all variants of "${displayName}"`, { duration: TOAST_DEFAULT_MS })
       // Optimistic removal from local state
@@ -389,7 +406,7 @@ export default function DashboardPage() {
       navigator.sendBeacon('/api/auth/logout')
     } else {
       // Fallback for older browsers
-      api.post('/api/auth/logout').catch(() => {})
+      logout().catch(() => {})
     }
     window.location.href = '/login'
   }
@@ -406,8 +423,8 @@ export default function DashboardPage() {
     if (newPassword === null) return
 
     try {
-      const body = newPassword ? { new_key: newPassword } : {}
-      const data = await api.post<{ new_api_key: string }>('/api/auth/rotate-key', body)
+      const body = newPassword ? { new_key: newPassword } : undefined
+      const data = await rotateKey(body)
       await modalAlert({
         title: 'Password Changed',
         message: `Your new password is: ${data.new_api_key}\n\nSave it — you'll need it to log in again.`,
@@ -529,6 +546,13 @@ export default function DashboardPage() {
               onClick={() => setSelectedView({ type: 'access' })}
               title="Manage project access permissions"
             />
+            <SidebarItem
+              icon={<Settings className="size-4" />}
+              label="Settings"
+              active={selectedView.type === 'settings'}
+              onClick={() => setSelectedView({ type: 'settings' })}
+              title="Server-wide default settings"
+            />
           </div>
           <Separator className="mx-3 mt-2" />
         </>
@@ -581,6 +605,10 @@ export default function DashboardPage() {
         projects={projects}
         availableModels={availableModels}
         knownBranches={knownBranches}
+        defaultProvider={defaultProvider}
+        defaultModel={defaultModel}
+        defaultVisionProvider={defaultVisionProvider}
+        defaultVisionModel={defaultVisionModel}
         isAdmin={isAdmin}
         role={role}
         onDelete={handleDeleteVariant}
@@ -588,6 +616,7 @@ export default function DashboardPage() {
         onVariantRegenerate={(name, branch, provider, model, owner) => {
           setSelectedView({ type: 'variant', name, branch, provider, model, owner })
         }}
+        onSettingsSaved={loadModels}
       />
     </Layout>
   )
@@ -767,22 +796,32 @@ function MainPanel({
   projects,
   availableModels,
   knownBranches,
+  defaultProvider,
+  defaultModel,
+  defaultVisionProvider,
+  defaultVisionModel,
   isAdmin,
   role,
   onDelete,
   onGenerated,
   onVariantRegenerate,
+  onSettingsSaved,
 }: {
   selectedView: SelectedView
   username: string
   projects: Project[]
   availableModels: AvailableModels
   knownBranches: Record<string, string[]>
+  defaultProvider: string
+  defaultModel: string
+  defaultVisionProvider: string
+  defaultVisionModel: string
   isAdmin: boolean
   role: string
   onDelete: (name: string, branch: string, provider: string, model: string, owner: string) => void
   onGenerated: (name: string, branch: string, provider: string, model: string) => void
   onVariantRegenerate: (name: string, branch: string, provider: string, model: string, owner: string) => void
+  onSettingsSaved: () => void
 }) {
   if (selectedView.type === 'empty') {
     return (
@@ -801,6 +840,10 @@ function MainPanel({
       <GenerateForm
         availableModels={availableModels}
         knownBranches={knownBranches}
+        defaultProvider={defaultProvider}
+        defaultModel={defaultModel}
+        defaultVisionProvider={defaultVisionProvider}
+        defaultVisionModel={defaultVisionModel}
         onGenerated={onGenerated}
       />
     )
@@ -851,6 +894,10 @@ function MainPanel({
 
   if (selectedView.type === 'access' && isAdmin) {
     return <AccessPanel />
+  }
+
+  if (selectedView.type === 'settings' && isAdmin) {
+    return <SettingsPanel availableModels={availableModels} onSettingsSaved={onSettingsSaved} />
   }
 
   return null

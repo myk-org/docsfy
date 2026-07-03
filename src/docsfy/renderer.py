@@ -479,7 +479,12 @@ def _build_llms_full_txt(
     return "\n".join(lines)
 
 
-def render_site(plan: dict[str, Any], pages: dict[str, str], output_dir: Path) -> None:
+def render_site(
+    plan: dict[str, Any],
+    pages: dict[str, str],
+    output_dir: Path,
+    repo_path: Path | None = None,
+) -> None:
     if output_dir.exists():
         shutil.rmtree(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -499,6 +504,12 @@ def render_site(plan: dict[str, Any], pages: dict[str, str], output_dir: Path) -
         for static_file in STATIC_DIR.iterdir():
             if static_file.is_file():
                 shutil.copy2(static_file, assets_dir / static_file.name)
+
+    # Copy docsfy-images to site output if available
+    if repo_path is not None:
+        from docsfy.images import copy_images_to_site
+
+        copy_images_to_site(repo_path, output_dir)
 
     # Filter out invalid slugs
     valid_pages: dict[str, str] = {}

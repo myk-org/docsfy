@@ -5,13 +5,10 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useModal } from '@/components/shared/ModalProvider'
-import { api } from '@/lib/api'
+import { grantAccess, getAccess, revokeAccess } from '@/lib/api'
 import { TOAST_DEFAULT_MS, TOAST_ERROR_MS } from '@/lib/constants'
 import { ApiError } from '@/types'
-
-interface AccessEntry {
-  username: string
-}
+import type { AccessEntry } from '@/types'
 
 export default function AccessPanel() {
   const { modalConfirm } = useModal()
@@ -35,10 +32,7 @@ export default function AccessPanel() {
 
     setIsGranting(true)
     try {
-      await api.post(`/api/admin/projects/${encodeURIComponent(grantProject.trim())}/access`, {
-        username: grantUsername.trim(),
-        owner: grantOwner.trim(),
-      })
+      await grantAccess(grantProject.trim(), grantUsername.trim(), grantOwner.trim())
       toast.success(
         `Access granted to "${grantUsername.trim()}" for "${grantProject.trim()}"`,
         { duration: TOAST_DEFAULT_MS },
@@ -63,9 +57,7 @@ export default function AccessPanel() {
   async function fetchAccessList(project: string, owner: string) {
     setIsLooking(true)
     try {
-      const data = await api.get<AccessEntry[]>(
-        `/api/admin/projects/${encodeURIComponent(project)}/access?owner=${encodeURIComponent(owner)}`,
-      )
+      const data = await getAccess(project, owner)
       setAccessList(data)
       setLookupContext({ project, owner })
     } catch (err) {
@@ -96,9 +88,7 @@ export default function AccessPanel() {
     if (!confirmed) return
 
     try {
-      await api.delete(
-        `/api/admin/projects/${encodeURIComponent(lookupContext.project)}/access/${encodeURIComponent(username)}?owner=${encodeURIComponent(lookupContext.owner)}`,
-      )
+      await revokeAccess(lookupContext.project, username, lookupContext.owner)
       toast.success(`Access revoked for "${username}"`, { duration: TOAST_DEFAULT_MS })
       await fetchAccessList(lookupContext.project, lookupContext.owner)
     } catch (err) {

@@ -79,6 +79,8 @@ async def init_db(data_dir: str = "") -> None:
                 plan_json TEXT,
                 repo_type TEXT,
                 total_cost_usd REAL,
+                vision_provider TEXT DEFAULT '',
+                vision_model TEXT DEFAULT '',
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 PRIMARY KEY (name, branch, ai_provider, ai_model, owner)
@@ -247,6 +249,18 @@ async def init_db(data_dir: str = "") -> None:
                 logger.exception("Migration failed while adding repo_type column")
                 raise
 
+        # Migration: add vision_provider and vision_model columns
+        for col in ("vision_provider", "vision_model"):
+            try:
+                await db.execute(
+                    f"ALTER TABLE projects ADD COLUMN {col} TEXT DEFAULT ''"
+                )
+                await db.commit()
+            except sqlite3.OperationalError as exc:
+                if "duplicate column name" not in str(exc).lower():
+                    logger.exception("Migration failed while adding %s column", col)
+                    raise
+
         # Backfill generation_id for existing rows
         async with db.execute(
             "SELECT name, branch, ai_provider, ai_model, owner FROM projects WHERE generation_id IS NULL"
@@ -349,6 +363,13 @@ async def init_db(data_dir: str = "") -> None:
             )
         """)
 
+        await db.execute("""
+            CREATE TABLE IF NOT EXISTS settings (
+                key TEXT PRIMARY KEY,
+                value TEXT NOT NULL DEFAULT ''
+            )
+        """)
+
         await db.commit()
 
 
@@ -424,6 +445,8 @@ async def update_project_status(
     current_stage: str | None | object = _UNSET,
     total_cost_usd: float | None = None,
     repo_type: str | None = None,
+    vision_provider: str | None = None,
+    vision_model: str | None = None,
 ) -> None:
     if status not in VALID_STATUSES:
         msg = f"Invalid project status: '{status}'. Valid: {', '.join(sorted(VALID_STATUSES))}"
@@ -452,6 +475,12 @@ async def update_project_status(
         if repo_type is not None:
             fields.append("repo_type = ?")
             values.append(repo_type)
+        if vision_provider is not None:
+            fields.append("vision_provider = ?")
+            values.append(vision_provider)
+        if vision_model is not None:
+            fields.append("vision_model = ?")
+            values.append(vision_model)
         if status == "ready":
             fields.append("last_generated = CURRENT_TIMESTAMP")
         values.append(name)
@@ -698,9 +727,12 @@ def get_project_dir(
     if not ai_provider or not ai_model:
         msg = "ai_provider and ai_model are required for project directory paths"
         raise ValueError(msg)
+    from docsfy.models import encode_branch_for_path
+
     # Sanitize path segments to prevent traversal
+    safe_branch = encode_branch_for_path(branch)
     for segment_name, segment in [
-        ("branch", branch),
+        ("branch", safe_branch),
         ("ai_provider", ai_provider),
         ("ai_model", ai_model),
     ]:
@@ -717,7 +749,7 @@ def get_project_dir(
         PROJECTS_DIR
         / safe_owner
         / _validate_name(name)
-        / branch
+        / safe_branch
         / ai_provider
         / ai_model
     )
@@ -994,3 +1026,88 @@ async def cleanup_expired_sessions() -> None:
     async with aiosqlite.connect(DB_PATH) as db:
         await db.execute("DELETE FROM sessions WHERE expires_at <= datetime('now')")
         await db.commit()
+
+
+async def get_max_concurrent_pages() -> int:
+    """Return max_concurrent_pages from DB settings, falling back to config."""
+    from docsfy.config import get_settings
+
+    try:
+        db_val = await get_setting("max_concurrent_pages")
+        if db_val:
+            parsed = int(db_val.strip())
+            if parsed > 0:
+                return parsed
+            logger.warning(
+                "max_concurrent_pages DB value is not positive (%s), using config default",
+                db_val,
+            )
+    except (ValueError, TypeError) as exc:
+        logger.warning(
+            "Failed to parse max_concurrent_pages from DB (%r): %s, using config default",
+            db_val,
+            exc,
+        )
+    except Exception as exc:
+        logger.debug(
+            "Could not read max_concurrent_pages from DB: %s, using config default",
+            exc,
+        )
+    return get_settings().max_concurrent_pages
+
+
+async def get_all_settings() -> dict[str, str]:
+    """Return all settings as a key → value dict."""
+    logger.debug("Fetching all settings from DB")
+    async with aiosqlite.connect(DB_PATH) as db:
+        cursor = await db.execute("SELECT key, value FROM settings")
+        return {row[0]: row[1] for row in await cursor.fetchall()}
+
+
+async def get_setting(key: str) -> str | None:
+    """Return a single setting value by key, or None if not found."""
+    async with aiosqlite.connect(DB_PATH) as db:
+        cursor = await db.execute("SELECT value FROM settings WHERE key = ?", (key,))
+        row = await cursor.fetchone()
+        return row[0] if row else None
+
+
+async def update_setting(key: str, value: str) -> None:
+    """Upsert a single setting."""
+    async with aiosqlite.connect(DB_PATH) as db:
+        await db.execute(
+            "INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)",
+            (key, value),
+        )
+        await db.commit()
+
+
+async def seed_settings(
+    defaults: dict[str, str], env_overrides: dict[str, str]
+) -> None:
+    """Seed settings on server startup.
+
+    For each key in *defaults*:
+    - If the key is in *env_overrides*: always overwrite the DB value
+      (environment variables take priority on every startup).
+    - Otherwise: only insert if no existing DB value (preserve manual changes).
+    """
+    logger.info(
+        "Seeding settings: %d defaults, %d env overrides",
+        len(defaults),
+        len(env_overrides),
+    )
+    async with aiosqlite.connect(DB_PATH) as db:
+        for key, default_value in defaults.items():
+            if key in env_overrides:
+                await db.execute(
+                    "INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)",
+                    (key, default_value),
+                )
+            else:
+                await db.execute(
+                    "INSERT OR IGNORE INTO settings (key, value) VALUES (?, ?)",
+                    (key, default_value),
+                )
+        await db.commit()
+    logger.debug("Settings seeded successfully")

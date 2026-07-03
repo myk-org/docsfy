@@ -1,0 +1,29 @@
+- file: login-page.png
+  description: "docsfy login page with username and password fields"
+
+- file: dashboard.png
+  description: "Dashboard showing the project sidebar with project count and total generation cost"
+
+- file: dashboard-expanded.png
+  description: "Dashboard with project tree expanded showing variants, branches, and generation status"
+
+- file: generate-form.png
+  description: "New generation form with repository URL, branch, provider, model, vision provider, and repository type fields"
+
+- file: generate-form-models.png
+  description: "Generate form with Gemini provider selected showing the available AI models dropdown"
+
+- file: variant-detail.png
+  description: "Variant detail panel showing generation status, page count, commit SHA, and documentation links"
+
+- file: admin-settings.png
+  description: "Admin settings page with generation defaults, vision AI configuration, and performance settings"
+
+- file: admin-users.png
+  description: "Admin user management panel with user list, roles, and create user form"
+
+- file: docs-site-index.png
+  description: "Generated documentation site homepage with navigation sidebar and getting started links"
+
+- file: docs-site-page.png
+  description: "Generated documentation page showing formatted content with code blocks and navigation"

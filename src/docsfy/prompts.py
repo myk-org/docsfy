@@ -524,6 +524,7 @@ def build_page_prompt(
     other_pages_path: str | None = None,
     repo_type: str = "app",
     graph_report_available: bool = False,
+    image_catalog_path: str | None = None,
 ) -> str:
     writing_rules = _get_repo_type_writing_rules(page_type, repo_type)
     exclusions_block = ""
@@ -555,6 +556,25 @@ Do NOT write plain text like "See Page Title" \u2014 always make it a clickable 
         graph_line = """\nA code knowledge graph is available at graphify-out/GRAPH_REPORT.md — read it first
 for an architecture overview before diving into source files.\n"""
 
+    images_block = ""
+    if image_catalog_path:
+        images_block = f"""
+
+IMAGES (MANDATORY):
+BEFORE writing any content, read the image catalog file at: {image_catalog_path}
+Each line in that file lists: filename — description
+
+After reading the catalog, for EACH image whose description relates to THIS page's topic:
+- You MUST include it in your markdown output using: ![description](images/filename)
+- Place it near the relevant section, not at the top or bottom
+- Use the description from the catalog as the alt text
+
+Rules:
+- Do NOT skip relevant images — the repo maintainer placed them intentionally
+- Do NOT reference images that are not in the catalog
+- Do NOT invent image filenames — only use exact filenames from the catalog file
+"""
+
     return f"""You are a technical documentation writer. Explore this repository to write
 the "{page_title}" page for the {project_name} documentation.
 
@@ -571,7 +591,7 @@ ANTI-REDUNDANCY: This page should OWN its topic exclusively. Do NOT duplicate co
 that belongs on other pages. Instead, link to them: "See [Page Title](page-slug.html)".
 
 This documentation will be read by {audience}. Separate llms.txt files
-are generated for AI consumption.{exclusions_block}{pages_block}
+are generated for AI consumption.{exclusions_block}{pages_block}{images_block}
 
 Start the page with exactly this first line:
 # {page_title}
@@ -588,7 +608,18 @@ def build_incremental_page_prompt(
     diff_path: str,
     page_type: str = "guide",
     repo_type: str = "app",
+    image_catalog_path: str | None = None,
 ) -> str:
+    image_catalog_block = ""
+    if image_catalog_path:
+        image_catalog_block = f"""
+
+IMAGE CATALOG:
+An image catalog is available at: {image_catalog_path}
+Each line lists: filename — description
+When writing "new_text", include relevant images using: ![description](images/filename)
+Include every image whose description matches the content being updated. Do NOT skip relevant images."""
+
     return f"""You are a technical documentation writer. The repository "{project_name}" has been updated.
 Your task is to update the existing "{page_title}" documentation page by editing ONLY the relevant sections.
 Do NOT rewrite the whole page. Do NOT return the whole page.
@@ -637,7 +668,7 @@ When writing "new_text", follow these content rules:
 {_get_incremental_repo_type_rules(page_type, repo_type)}
 {_CALLOUT_FORMATS}
 {_NO_HTML_DETAILS}
-{_NO_MERMAID_DIAGRAMS}"""
+{_NO_MERMAID_DIAGRAMS}{image_catalog_block}"""
 
 
 VALIDATION_SCHEMA = """[
@@ -744,3 +775,19 @@ Every slug in the output must come from the manifest. Do not invent page slugs.
 Do not include a page's own slug in its related list.
 Do not repeat slugs within a related list.
 Return an entry for every manifest slug."""
+
+
+def build_image_description_prompt(image_files: list[str], images_dir: str) -> str:
+    """Build prompt for AI to describe images in one sentence each."""
+    numbered = "\n".join(
+        f"{idx}. {images_dir}/{f}" for idx, f in enumerate(image_files, 1)
+    )
+    example_output = ", ".join(
+        f'{{"filename": "{f}", "description": "..."}}' for f in image_files
+    )
+    return (
+        "Read each image listed below and provide a one-sentence description of what it shows.\n"
+        "Output ONLY a JSON array. No markdown fences, no explanation.\n\n"
+        f"Images:\n{numbered}\n\n"
+        f"Output format:\n[{example_output}]"
+    )

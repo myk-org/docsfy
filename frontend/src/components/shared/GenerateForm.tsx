@@ -12,16 +12,17 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import Combobox from '@/components/shared/Combobox'
-import { api } from '@/lib/api'
-import { SK_REPO, SK_BRANCH, SK_FORCE, SK_REPO_TYPE, TOAST_DEFAULT_MS, TOAST_ERROR_MS, VALID_PROVIDERS, VALID_REPO_TYPES } from '@/lib/constants'
+import { generateDocs } from '@/lib/api'
+import { SK_REPO, SK_BRANCH, SK_FORCE, SK_REPO_TYPE, TOAST_DEFAULT_MS, TOAST_ERROR_MS, VALID_PROVIDERS, VALID_REPO_TYPES, SELECT_CLEAR } from '@/lib/constants'
 import type { AvailableModels } from '@/types'
 import { ApiError } from '@/types'
-const DEFAULT_PROVIDER = 'cursor'
-const DEFAULT_BRANCH = 'main'
-
 interface GenerateFormProps {
   availableModels: AvailableModels
   knownBranches: Record<string, string[]>
+  defaultProvider?: string
+  defaultModel?: string
+  defaultVisionProvider?: string
+  defaultVisionModel?: string
   onGenerated?: (name: string, branch: string, provider: string, model: string) => void
 }
 
@@ -37,15 +38,21 @@ function extractRepoName(url: string): string {
 export default function GenerateForm({
   availableModels,
   knownBranches,
+  defaultProvider,
+  defaultModel,
+  defaultVisionProvider,
+  defaultVisionModel,
   onGenerated,
 }: GenerateFormProps) {
   const [repoUrl, setRepoUrl] = useState('')
-  const [branch, setBranch] = useState(DEFAULT_BRANCH)
-  const [provider, setProvider] = useState<string>(DEFAULT_PROVIDER)
-  const [model, setModel] = useState('')
+  const [branch, setBranch] = useState('main')
+  const [provider, setProvider] = useState<string>(defaultProvider ?? '')
+  const [model, setModel] = useState(defaultModel ?? '')
   const [force, setForce] = useState(false)
   const [repoType, setRepoType] = useState<string>('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [visionProvider, setVisionProvider] = useState('')
+  const [visionModel, setVisionModel] = useState('')
 
   // Restore form state from sessionStorage on mount
   useEffect(() => {
@@ -60,6 +67,22 @@ export default function GenerateForm({
     if (savedForce === 'true') setForce(true)
     if (savedRepoType && (VALID_REPO_TYPES as readonly string[]).includes(savedRepoType)) setRepoType(savedRepoType)
   }, [])
+
+  // Sync server defaults into form when they arrive from /api/models
+  useEffect(() => {
+    if (defaultProvider && !provider) {
+      setProvider(defaultProvider)
+    }
+    if (defaultModel && !model && (!provider || provider === defaultProvider)) {
+      setModel(defaultModel)
+    }
+    if (defaultVisionProvider && !visionProvider) {
+      setVisionProvider(defaultVisionProvider)
+    }
+    if (defaultVisionModel && !visionModel && (!visionProvider || visionProvider === defaultVisionProvider)) {
+      setVisionModel(defaultVisionModel)
+    }
+  }, [defaultProvider, defaultModel, defaultVisionProvider, defaultVisionModel])
 
   function sanitizeRepoUrlForStorage(value: string): string {
     try {
@@ -82,11 +105,13 @@ export default function GenerateForm({
     sessionStorage.removeItem(SK_FORCE)
     sessionStorage.removeItem(SK_REPO_TYPE)
     setRepoUrl('')
-    setBranch(DEFAULT_BRANCH)
-    setProvider(DEFAULT_PROVIDER)
-    setModel('')
+    setBranch('main')
+    setProvider(defaultProvider ?? '')
+    setModel(defaultModel ?? '')
     setForce(false)
     setRepoType('')
+    setVisionProvider(defaultVisionProvider ?? '')
+    setVisionModel(defaultVisionModel ?? '')
   }
 
   function handleRepoChange(value: string) {
@@ -115,6 +140,24 @@ export default function GenerateForm({
   function handleForceChange(checked: boolean) {
     setForce(checked)
     saveToSession(SK_FORCE, String(checked))
+  }
+
+  function handleVisionProviderChange(value: string | null) {
+    if (value === null) return
+    const newValue = value === SELECT_CLEAR ? '' : value
+    setVisionProvider(newValue)
+    if (!newValue) {
+      setVisionModel('')
+    } else {
+      const models = availableModels[newValue]
+      if (!models || !models.some(m => m.id === visionModel)) {
+        setVisionModel('')
+      }
+    }
+  }
+
+  function handleVisionModelChange(value: string) {
+    setVisionModel(value)
   }
 
   function handleRepoTypeChange(value: string | null) {
@@ -147,8 +190,10 @@ export default function GenerateForm({
       const payload: Record<string, unknown> = {
         repo_url: submittedRepoUrl,
         branch: submittedBranch,
-        ai_provider: submittedProvider,
         force: submittedForce,
+      }
+      if (submittedProvider) {
+        payload.ai_provider = submittedProvider
       }
       if (submittedModel) {
         payload.ai_model = submittedModel
@@ -156,7 +201,13 @@ export default function GenerateForm({
       if (repoType) {
         payload.repo_type = repoType
       }
-      await api.post('/api/generate', payload)
+      if (visionProvider) {
+        payload.vision_provider = visionProvider
+      }
+      if (visionModel) {
+        payload.vision_model = visionModel
+      }
+      await generateDocs(payload)
 
       const projectName = extractRepoName(submittedRepoUrl)
       toast.success(`Generation started for ${projectName}`, {
@@ -176,6 +227,9 @@ export default function GenerateForm({
   const repoName = repoUrl.trim() ? extractRepoName(repoUrl) : ''
   const branchOptions = repoName && knownBranches[repoName] ? knownBranches[repoName] : []
   const modelOptions = (availableModels[provider] ?? []).map(m => ({ value: m.id, label: m.name || m.id }))
+  const visionModelOptions = visionProvider
+    ? (availableModels[visionProvider] ?? []).map(m => ({ value: m.id, label: m.name || m.id }))
+    : []
 
   return (
     <div className="flex items-start justify-center h-full p-8">
@@ -261,6 +315,39 @@ export default function GenerateForm({
             data-testid="model-input"
           />
         </div>
+
+        {/* Vision Provider */}
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="vision-provider-select" title="AI provider for image description (uses generation provider if not set)">Vision Provider</Label>
+          <Select disabled={isSubmitting} value={visionProvider || SELECT_CLEAR} onValueChange={handleVisionProviderChange}>
+            <SelectTrigger id="vision-provider-select" data-testid="vision-provider-select" className="w-full">
+              <SelectValue placeholder="Same as generation provider" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="__clear__">Same as generation provider</SelectItem>
+              {VALID_PROVIDERS.map((p) => (
+                <SelectItem key={p} value={p}>
+                  {p}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Vision Model */}
+        {visionProvider && (
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="vision-model" title="AI model for image description (uses generation model if not set)">Vision Model</Label>
+            <Combobox
+              options={visionModelOptions}
+              value={visionModel}
+              onChange={handleVisionModelChange}
+              placeholder="Select or type model..."
+              disabled={isSubmitting}
+              data-testid="vision-model-input"
+            />
+          </div>
+        )}
 
         {/* Force */}
         <div className="flex items-center gap-2" title="Ignore cache and regenerate all pages from scratch">

@@ -25,6 +25,8 @@ export interface Project {
   plan_json: string | null
   repo_type: RepoType | null
   total_cost_usd: number | null
+  vision_provider: string | null
+  vision_model: string | null
   generation_id: string | null
   created_at: string
   updated_at: string
@@ -64,6 +66,10 @@ export interface User {
   username: string
   role: UserRole
   created_at: string
+}
+
+export interface AccessEntry {
+  username: string
 }
 
 export interface AuthResponse {
@@ -152,4 +158,18 @@ export interface LogEntry {
   type: 'done' | 'active' | 'error' | 'pending'
   message: string
   timestamp: number
+}
+
+export interface AdminSettings {
+  default_ai_provider: string
+  default_ai_model: string
+  ai_cli_timeout: number
+  max_concurrent_pages: number
+  vision_provider: string
+  vision_model: string
+}
+
+export interface AdminSettingsResponse {
+  settings: AdminSettings
+  env_overrides: Record<string, string>
 }
