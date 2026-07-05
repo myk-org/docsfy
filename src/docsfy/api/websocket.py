@@ -9,6 +9,7 @@ from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from simple_logger.logger import get_logger
 
 from docsfy.config import get_settings
+from docsfy.models import FIELD_GENERATION_DURATION, FIELD_GENERATION_STARTED_AT
 from docsfy.storage import (
     get_session,
     get_user_by_key,
@@ -224,6 +225,7 @@ async def notify_progress(
     plan_json: str | None = None,
     error_message: str | None = None,
     generation_id: str | None = None,
+    generation_started_at: str | None = None,
 ) -> None:
     """Send a progress update for an in-progress generation."""
     # gen_key format: "owner/name/branch/provider/model"
@@ -254,6 +256,8 @@ async def notify_progress(
         message["plan_json"] = plan_json
     if error_message is not None:
         message["error_message"] = error_message
+    if generation_started_at is not None:
+        message[FIELD_GENERATION_STARTED_AT] = generation_started_at
 
     await _broadcast_to_relevant(message, owner, project_name)
 
@@ -266,6 +270,7 @@ async def notify_status_change(
     last_commit_sha: str | None = None,
     error_message: str | None = None,
     generation_id: str | None = None,
+    generation_duration: int | None = None,
 ) -> None:
     """Send a status change notification (for terminal states)."""
     parts = gen_key.split("/", 4)
@@ -293,6 +298,8 @@ async def notify_status_change(
         message["last_commit_sha"] = last_commit_sha
     if error_message is not None:
         message["error_message"] = error_message
+    if generation_duration is not None:
+        message[FIELD_GENERATION_DURATION] = generation_duration
 
     await _broadcast_to_relevant(message, owner, project_name)
 

@@ -7,6 +7,7 @@ import shutil
 import socket
 import tarfile
 import tempfile
+import time
 from collections.abc import AsyncIterator
 from datetime import UTC, datetime
 from pathlib import Path
@@ -32,6 +33,8 @@ from docsfy.generator import (
 )
 from docsfy.models import (
     DEFAULT_BRANCH,
+    FIELD_GENERATION_DURATION,
+    FIELD_GENERATION_STARTED_AT,
     REPO_TYPES,
     VALID_PROVIDERS,
     GenerateRequest,
@@ -132,6 +135,8 @@ async def update_and_notify(
     repo_type: str | None = None,
     vision_provider: str | None = None,
     vision_model: str | None = None,
+    generation_duration: int | None = None,
+    generation_started_at: str | None = None,
 ) -> None:
     """Update project status in DB and send WebSocket notification."""
     ups_kwargs: dict[str, Any] = {
@@ -156,6 +161,10 @@ async def update_and_notify(
         ups_kwargs["vision_provider"] = vision_provider
     if vision_model is not None:
         ups_kwargs["vision_model"] = vision_model
+    if generation_duration is not None:
+        ups_kwargs[FIELD_GENERATION_DURATION] = generation_duration
+    if generation_started_at is not None:
+        ups_kwargs[FIELD_GENERATION_STARTED_AT] = generation_started_at
 
     # Always pass current_stage through so that None clears the stage in the DB.
     ups_kwargs["current_stage"] = current_stage
@@ -175,6 +184,7 @@ async def update_and_notify(
             last_commit_sha=last_commit_sha,
             error_message=error_message,
             generation_id=generation_id,
+            generation_duration=generation_duration,
         )
         await notify_sync()
     else:
@@ -186,6 +196,7 @@ async def update_and_notify(
             plan_json=plan_json,
             error_message=error_message,
             generation_id=generation_id,
+            generation_started_at=generation_started_at,
         )
 
 
@@ -568,6 +579,8 @@ async def _run_generation(
     gen_key = f"{owner}/{project_name}/{encode_branch_for_path(branch)}/{ai_provider}/{ai_model}"
     cost_acc = CostAccumulator()
     cost_token = set_cost_accumulator(cost_acc)
+    generation_start = time.monotonic()
+    generation_started_at = datetime.now(UTC).isoformat()
     try:
         available, msg = await check_sidecar_available()
         if not available:
@@ -596,6 +609,7 @@ async def _run_generation(
             generation_id=generation_id,
             vision_provider=vision_provider or "",
             vision_model=vision_model or "",
+            generation_started_at=generation_started_at,
         )
 
         if repo_path:
@@ -618,6 +632,8 @@ async def _run_generation(
                 repo_type=repo_type,
                 vision_provider=vision_provider,
                 vision_model=vision_model,
+                generation_start=generation_start,
+                generation_started_at=generation_started_at,
             )
         else:
             # Remote repository - clone to temp dir
@@ -643,6 +659,8 @@ async def _run_generation(
                     repo_type=repo_type,
                     vision_provider=vision_provider,
                     vision_model=vision_model,
+                    generation_start=generation_start,
+                    generation_started_at=generation_started_at,
                 )
 
     except asyncio.CancelledError:
@@ -717,6 +735,8 @@ async def _generate_from_path(
     repo_type: str | None = None,
     vision_provider: str | None = None,
     vision_model: str | None = None,
+    generation_start: float | None = None,
+    generation_started_at: str | None = None,
 ) -> None:
     cache_dir = get_project_cache_dir(
         project_name, ai_provider, ai_model, owner, branch=branch
@@ -796,6 +816,7 @@ async def _generate_from_path(
             branch=branch,
             page_count=0,
             generation_id=generation_id,
+            generation_started_at=generation_started_at,
         )
     else:
         current_variant = await get_project(
@@ -929,6 +950,7 @@ async def _generate_from_path(
                         current_stage="incremental_planning",
                         page_count=0,
                         generation_id=generation_id,
+                        generation_started_at=generation_started_at,
                     )
                     pages_to_regen = await run_incremental_planner(
                         repo_dir,
@@ -1004,6 +1026,7 @@ async def _generate_from_path(
         current_stage="analyzing",
         page_count=0,
         generation_id=generation_id,
+        generation_started_at=generation_started_at,
     )
     graph_report = await build_code_graph(
         repo_dir, ai_provider, ai_model, ai_cli_timeout
@@ -1028,6 +1051,7 @@ async def _generate_from_path(
             current_stage="cataloging_images",
             page_count=0,
             generation_id=generation_id,
+            generation_started_at=generation_started_at,
         )
         image_catalog = await build_image_catalog(
             repo_path=repo_dir,
@@ -1060,6 +1084,7 @@ async def _generate_from_path(
             current_stage="planning",
             page_count=0,
             generation_id=generation_id,
+            generation_started_at=generation_started_at,
         )
 
         plan = await run_planner(
@@ -1111,15 +1136,19 @@ async def _generate_from_path(
         page_count=current_page_count,
         generation_id=generation_id,
         repo_type=detected_repo_type,
+        generation_started_at=generation_started_at,
     )
 
-    async def _on_page_generated(page_count: int) -> None:
+    async def _on_page_generated(
+        page_count: int, *, stage: str = "generating_pages"
+    ) -> None:
         await notify_progress(
             gen_key=gen_key,
             status="generating",
-            current_stage="generating_pages",
+            current_stage=stage,
             page_count=page_count,
             generation_id=generation_id,
+            generation_started_at=generation_started_at,
         )
 
     try:
@@ -1160,6 +1189,7 @@ async def _generate_from_path(
             current_stage="validating",
             page_count=len(pages),
             generation_id=generation_id,
+            generation_started_at=generation_started_at,
         )
         pages = await validate_pages(
             pages=pages,
@@ -1189,7 +1219,12 @@ async def _generate_from_path(
             current_stage="completeness_check",
             page_count=len(pages),
             generation_id=generation_id,
+            generation_started_at=generation_started_at,
         )
+
+        async def _on_completeness_page(page_count: int) -> None:
+            await _on_page_generated(page_count, stage="completeness_check")
+
         pages, plan = await check_and_fill_completeness(
             pages=pages,
             repo_path=repo_dir,
@@ -1202,7 +1237,7 @@ async def _generate_from_path(
             graph_report_path=graph_report,
             graph_report_available=graph_report is not None,
             repo_type=detected_repo_type,
-            on_page_generated=_on_page_generated,
+            on_page_generated=_on_completeness_page,
             owner=owner,
             branch=branch,
         )
@@ -1220,6 +1255,7 @@ async def _generate_from_path(
                 page_count=len(pages),
                 generation_id=generation_id,
                 plan_json=json.dumps(plan),
+                generation_started_at=generation_started_at,
             )
     except Exception as exc:
         logger.warning(f"[{project_name}] Completeness check failed: {exc}")
@@ -1236,6 +1272,7 @@ async def _generate_from_path(
             current_stage="cross_linking",
             page_count=len(pages),
             generation_id=generation_id,
+            generation_started_at=generation_started_at,
         )
         pages = fix_broken_internal_links(pages, plan, project_name=project_name)
         try:
@@ -1271,6 +1308,7 @@ async def _generate_from_path(
         current_stage="rendering",
         page_count=len(pages),
         generation_id=generation_id,
+        generation_started_at=generation_started_at,
     )
 
     site_dir = get_project_site_dir(
@@ -1302,6 +1340,9 @@ async def _generate_from_path(
         page_count=page_count,
         plan_json=json.dumps(plan),
         generation_id=generation_id,
+        generation_duration=int(time.monotonic() - generation_start)
+        if generation_start
+        else None,
     )
     logger.info(f"[{project_name}] Documentation ready ({page_count} pages)")
 

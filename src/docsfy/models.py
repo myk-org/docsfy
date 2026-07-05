@@ -11,6 +11,10 @@ from docsfy.repository import extract_repo_name
 
 VALID_PROVIDERS = ("claude", "gemini", "cursor")
 DEFAULT_BRANCH = "main"
+
+# DB/API field names for generation timing — shared across projects.py, websocket.py, storage.py
+FIELD_GENERATION_DURATION = "generation_duration"
+FIELD_GENERATION_STARTED_AT = "generation_started_at"
 DOCSFY_DOCS_URL = "https://myk-org.github.io/docsfy/"
 DOCSFY_REPO_URL = "https://github.com/myk-org/docsfy"
 

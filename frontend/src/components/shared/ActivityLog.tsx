@@ -1,11 +1,13 @@
 import { useRef, useEffect } from 'react'
 import { CheckCircle2, Loader2, XCircle, Circle } from 'lucide-react'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { STAGE_LABELS } from '@/lib/constants'
 import type { LogEntry, ProjectStatus } from '@/types'
 
 interface ActivityLogProps {
   entries: LogEntry[]
   status: ProjectStatus
+  currentStage?: string | null
 }
 
 const ENTRY_ICONS = {
@@ -15,12 +17,15 @@ const ENTRY_ICONS = {
   pending: <Circle className="size-3.5 text-text-secondary opacity-50 shrink-0" />,
 } as const
 
-function StatusHeader({ status }: { status: ProjectStatus }) {
+function StatusHeader({ status, currentStage }: { status: ProjectStatus; currentStage?: string | null }) {
   if (status === 'generating') {
+    const label = (currentStage && Object.hasOwn(STAGE_LABELS, currentStage)
+      ? STAGE_LABELS[currentStage as keyof typeof STAGE_LABELS]
+      : null) || 'Generating...'
     return (
       <div className="flex items-center gap-2 text-sm font-medium text-signal-blue" title="Generation in progress">
         <Loader2 className="size-4 animate-spin" />
-        Generating...
+        {label}
       </div>
     )
   }
@@ -42,7 +47,7 @@ function StatusHeader({ status }: { status: ProjectStatus }) {
   return null
 }
 
-export default function ActivityLog({ entries, status }: ActivityLogProps) {
+export default function ActivityLog({ entries, status, currentStage }: ActivityLogProps) {
   const bottomRef = useRef<HTMLDivElement>(null)
   const scrollAreaRef = useRef<HTMLDivElement>(null)
   const isAtBottomRef = useRef(true)
@@ -73,7 +78,7 @@ export default function ActivityLog({ entries, status }: ActivityLogProps) {
         <span className="text-xs font-semibold uppercase tracking-wider text-text-secondary">
           Activity Log
         </span>
-        <StatusHeader status={status} />
+        <StatusHeader status={status} currentStage={currentStage} />
       </div>
       <ScrollArea ref={scrollAreaRef} className="h-[300px]">
         <div className="p-3 flex flex-col gap-1.5">

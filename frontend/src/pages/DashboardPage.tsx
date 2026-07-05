@@ -240,6 +240,7 @@ export default function DashboardPage() {
                 plan_json: message.plan_json ?? p.plan_json,
                 error_message: message.error_message ?? p.error_message,
                 generation_id: message.generation_id ?? p.generation_id,
+                generation_started_at: message.generation_started_at ?? p.generation_started_at,
               }
             : p
         )
@@ -273,6 +274,8 @@ export default function DashboardPage() {
                 last_commit_sha: message.last_commit_sha ?? p.last_commit_sha,
                 error_message: message.error_message ?? p.error_message,
                 generation_id: message.generation_id ?? p.generation_id,
+                generation_duration: message.generation_duration ?? p.generation_duration,
+                generation_started_at: null,
               }
             : p
         )
@@ -739,6 +742,22 @@ function buildLogEntries(project: Project): LogEntry[] {
             timestamp: Date.now(),
           })
         }
+      }
+    }
+
+    // Gap pages generated during completeness check
+    if (currentIdx >= completenessIdx && project.page_count > totalPages) {
+      const gapCount = project.page_count - totalPages
+      for (let i = 0; i < gapCount; i++) {
+        const isLast = i === gapCount - 1
+        entries.push({
+          id: `gap-${i}`,
+          type: currentIdx === completenessIdx && isLast ? 'active' : 'done',
+          message: currentIdx === completenessIdx && isLast
+            ? `Generating gap page ${totalPages + i + 1}...`
+            : `Generated gap page ${totalPages + i + 1} (coverage gap)`,
+          timestamp: Date.now(),
+        })
       }
     }
   }
