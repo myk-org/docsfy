@@ -16,7 +16,11 @@ from typing import Any
 import aiosqlite
 from simple_logger.logger import get_logger
 
-from docsfy.models import DEFAULT_BRANCH
+from docsfy.models import (
+    DEFAULT_BRANCH,
+    FIELD_GENERATION_DURATION,
+    FIELD_GENERATION_STARTED_AT,
+)
 
 logger = get_logger(name=__name__)
 
@@ -265,8 +269,8 @@ async def init_db(data_dir: str = "") -> None:
 
         # Migration: add generation_duration and generation_started_at columns
         for col, col_type in (
-            ("generation_duration", "INTEGER"),
-            ("generation_started_at", "TEXT"),
+            (FIELD_GENERATION_DURATION, "INTEGER"),
+            (FIELD_GENERATION_STARTED_AT, "TEXT"),
         ):
             try:
                 await db.execute(f"ALTER TABLE projects ADD COLUMN {col} {col_type}")
@@ -499,15 +503,15 @@ async def update_project_status(
             fields.append("vision_model = ?")
             values.append(vision_model)
         if generation_duration is not None:
-            fields.append("generation_duration = ?")
+            fields.append(f"{FIELD_GENERATION_DURATION} = ?")
             values.append(generation_duration)
         if generation_started_at is not None:
-            fields.append("generation_started_at = ?")
+            fields.append(f"{FIELD_GENERATION_STARTED_AT} = ?")
             values.append(generation_started_at)
         if status in ("ready", "error", "aborted"):
-            fields.append("generation_started_at = NULL")
+            fields.append(f"{FIELD_GENERATION_STARTED_AT} = NULL")
         if status == "generating" and generation_duration is None:
-            fields.append("generation_duration = NULL")
+            fields.append(f"{FIELD_GENERATION_DURATION} = NULL")
         if status == "ready":
             fields.append("last_generated = CURRENT_TIMESTAMP")
         values.append(name)

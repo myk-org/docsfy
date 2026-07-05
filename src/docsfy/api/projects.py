@@ -33,6 +33,8 @@ from docsfy.generator import (
 )
 from docsfy.models import (
     DEFAULT_BRANCH,
+    FIELD_GENERATION_DURATION,
+    FIELD_GENERATION_STARTED_AT,
     REPO_TYPES,
     VALID_PROVIDERS,
     GenerateRequest,
@@ -160,9 +162,9 @@ async def update_and_notify(
     if vision_model is not None:
         ups_kwargs["vision_model"] = vision_model
     if generation_duration is not None:
-        ups_kwargs["generation_duration"] = generation_duration
+        ups_kwargs[FIELD_GENERATION_DURATION] = generation_duration
     if generation_started_at is not None:
-        ups_kwargs["generation_started_at"] = generation_started_at
+        ups_kwargs[FIELD_GENERATION_STARTED_AT] = generation_started_at
 
     # Always pass current_stage through so that None clears the stage in the DB.
     ups_kwargs["current_stage"] = current_stage

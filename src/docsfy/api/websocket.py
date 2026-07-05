@@ -9,6 +9,7 @@ from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from simple_logger.logger import get_logger
 
 from docsfy.config import get_settings
+from docsfy.models import FIELD_GENERATION_DURATION, FIELD_GENERATION_STARTED_AT
 from docsfy.storage import (
     get_session,
     get_user_by_key,
@@ -256,7 +257,7 @@ async def notify_progress(
     if error_message is not None:
         message["error_message"] = error_message
     if generation_started_at is not None:
-        message["generation_started_at"] = generation_started_at
+        message[FIELD_GENERATION_STARTED_AT] = generation_started_at
 
     await _broadcast_to_relevant(message, owner, project_name)
 
@@ -298,7 +299,7 @@ async def notify_status_change(
     if error_message is not None:
         message["error_message"] = error_message
     if generation_duration is not None:
-        message["generation_duration"] = generation_duration
+        message[FIELD_GENERATION_DURATION] = generation_duration
 
     await _broadcast_to_relevant(message, owner, project_name)
 
