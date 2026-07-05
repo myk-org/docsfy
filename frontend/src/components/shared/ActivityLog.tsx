@@ -19,7 +19,9 @@ const ENTRY_ICONS = {
 
 function StatusHeader({ status, currentStage }: { status: ProjectStatus; currentStage?: string | null }) {
   if (status === 'generating') {
-    const label = (currentStage && STAGE_LABELS[currentStage]) || 'Generating...'
+    const label = (currentStage && currentStage in STAGE_LABELS
+      ? STAGE_LABELS[currentStage as keyof typeof STAGE_LABELS]
+      : null) || 'Generating...'
     return (
       <div className="flex items-center gap-2 text-sm font-medium text-signal-blue" title="Generation in progress">
         <Loader2 className="size-4 animate-spin" />
