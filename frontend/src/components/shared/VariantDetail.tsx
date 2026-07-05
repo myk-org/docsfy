@@ -247,7 +247,7 @@ function InfoGrid({ project, isAdmin }: { project: Project; isAdmin: boolean }) 
           <div className="mt-0.5 font-medium">${project.total_cost_usd.toFixed(4)}</div>
         </div>
       )}
-      {project.generation_duration != null && (
+      {project.status === 'ready' && project.generation_duration != null && (
         <div>
           <span className="text-text-secondary">Generation Time</span>
           <div className="mt-0.5 font-medium">{formatDuration(project.generation_duration)}</div>

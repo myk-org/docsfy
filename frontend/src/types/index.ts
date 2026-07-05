@@ -125,6 +125,7 @@ export interface ProgressMessage {
   plan_json?: string | null
   error_message?: string | null
   generation_id?: string | null
+  generation_started_at?: string | null
 }
 
 export interface StatusChangeMessage {
@@ -140,6 +141,7 @@ export interface StatusChangeMessage {
   last_commit_sha?: string | null
   error_message?: string | null
   generation_id?: string | null
+  generation_duration?: number | null
 }
 
 export class ApiError extends Error {
