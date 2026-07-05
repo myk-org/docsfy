@@ -19,7 +19,7 @@ const ENTRY_ICONS = {
 
 function StatusHeader({ status, currentStage }: { status: ProjectStatus; currentStage?: string | null }) {
   if (status === 'generating') {
-    const label = (currentStage && currentStage in STAGE_LABELS
+    const label = (currentStage && Object.hasOwn(STAGE_LABELS, currentStage)
       ? STAGE_LABELS[currentStage as keyof typeof STAGE_LABELS]
       : null) || 'Generating...'
     return (
