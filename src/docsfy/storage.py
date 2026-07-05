@@ -510,7 +510,7 @@ async def update_project_status(
             values.append(generation_started_at)
         if status in ("ready", "error", "aborted"):
             fields.append(f"{FIELD_GENERATION_STARTED_AT} = NULL")
-        if status == "generating" and generation_duration is None:
+        if status in ("generating", "error", "aborted") and generation_duration is None:
             fields.append(f"{FIELD_GENERATION_DURATION} = NULL")
         if status == "ready":
             fields.append("last_generated = CURRENT_TIMESTAMP")
