@@ -28,6 +28,8 @@ export interface Project {
   vision_provider: string | null
   vision_model: string | null
   generation_id: string | null
+  generation_duration: number | null
+  generation_started_at: string | null
   created_at: string
   updated_at: string
 }

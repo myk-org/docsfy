@@ -8,7 +8,7 @@
 
 ## Test 27: Post-Generation Pipeline
 
-This test group verifies the features added by the post-generation pipeline: version detection in the footer, related-pages cross-links, and the validation and cross-linking stages that appear during generation.
+This test group verifies the features added by the post-generation pipeline: version detection in the footer, related-pages cross-links, the validation, completeness-check, and cross-linking stages that appear during generation, generation duration tracking and display, elapsed time indicator during active generation, and stage-specific status labels in the activity log header.
 
 **Precondition:** Log in as `testuser-e2e`. Ensure the `for-testing-only` repo is accessible.
 
@@ -200,6 +200,7 @@ agent-browser javascript "JSON.stringify(Array.from(window.__pipelineStages))"
 **Expected result:**
 - The returned array contains `"validating"` or a stage name containing `"validat"`
 - The returned array contains `"cross_linking"` or a stage name containing `"cross_link"` or `"crosslink"`
+- The returned array contains `"completeness_check"` or a stage name containing `"completeness"`
 - Both stages appear after the page-writing stages (they are post-processing)
 
 **Cleanup:**
@@ -267,9 +268,12 @@ agent-browser javascript "Array.from(document.querySelectorAll('[class*=\"activi
 
 **Expected result:**
 - The activity log list contains at least one entry with text matching `validat` (case-insensitive), such as "Validating pages", "Validation complete", or similar
+- The activity log list contains at least one entry with text matching `completeness` (case-insensitive), such as "Checking documentation completeness...", "Verified documentation completeness", or similar
 - The activity log list contains at least one entry with text matching `cross.link` (case-insensitive), such as "Cross-linking pages", "Cross-linking complete", or similar
-- Both entries appear after page-writing entries in the log order
+- All three entries appear after page-writing entries in the log order
 - These entries arrive via WebSocket without requiring a page refresh
+- The activity log status header shows stage-specific text (e.g., "Checking completeness...") instead of generic "Generating..." during the completeness_check stage
+- If the completeness check generated additional pages beyond the original plan, the activity log contains entries matching `gap page` (e.g., "Generated gap page 7 (coverage gap)"). These appear after the original page entries and before cross-linking
 
 ---
 
@@ -318,7 +322,121 @@ echo "Generation wall-clock time: ${ELAPSED}s"
 
 ---
 
-### 27.7 Cleanup
+### 27.7 Generation duration displayed for ready variants
+
+**Precondition:** A `ready` variant exists for `for-testing-only/main` (from test 27.1 or 27.6).
+
+**Commands:**
+
+```shell
+agent-browser navigate http://localhost:8800/
+agent-browser wait 2000
+```
+
+Click on the ready variant to open its detail view:
+
+```shell
+agent-browser click "[data-testid='variant-for-testing-only-main-gemini-gemini-2.5-flash']"
+agent-browser wait 1000
+agent-browser screenshot
+```
+
+**Check the info grid contains a "Generation Time" field:**
+
+```shell
+agent-browser javascript "Array.from(document.querySelectorAll('[class*=\"grid\"] > div')).map(div => div.textContent.trim()).join(' | ')"
+```
+
+**Expected result:**
+- The info grid contains a field labeled "Generation Time"
+- The value is a human-readable duration format (e.g., "2m 34s", "45s", "1h 5m")
+- The value is non-empty and non-zero
+
+---
+
+### 27.8 Generation duration tracked via API
+
+**Precondition:** A `ready` variant exists for `for-testing-only/main`.
+
+**Commands:**
+
+```shell
+curl -s -H "Cookie: $SESSION_COOKIE" http://localhost:8800/api/projects | python3 -c "import sys,json; data=json.load(sys.stdin); matches=[p for p in data['projects'] if p['name']=='for-testing-only' and p['branch']=='main' and p['ai_model']=='gemini-2.5-flash']; print('generation_duration:', matches[0].get('generation_duration')) if matches else print('NOT FOUND')"
+```
+
+**Expected result:**
+- The `generation_duration` field is present in the API response
+- The value is a positive integer representing seconds
+- The value is reasonable for the test repo (typically between 30 and 600 seconds)
+
+---
+
+### 27.9 Elapsed timer shown during active generation
+
+**Precondition:** Start a fresh force generation and immediately check the status page for elapsed time.
+
+**Commands:**
+
+```shell
+agent-browser javascript "fetch('/api/generate', {method:'POST', headers:{'Content-Type':'application/json'}, credentials:'same-origin', body:JSON.stringify({repo_url:'https://github.com/myk-org/for-testing-only', branch:'main', ai_provider:'gemini', ai_model:'gemini-2.5-flash', force:true})}).then(r => r.status)"
+agent-browser wait 5000
+agent-browser screenshot
+```
+
+**Check the generating view shows elapsed time:**
+
+```shell
+agent-browser javascript "document.body.innerText.includes('Elapsed')"
+```
+
+**Expected result:**
+- The page shows an "Elapsed: Xs" or "Elapsed: Xm Ys" indicator
+- The elapsed time updates every second (take two screenshots 3 seconds apart and compare the time values)
+- The elapsed time disappears once generation completes
+
+**Cleanup:**
+
+```shell
+agent-browser javascript "fetch('/api/projects/for-testing-only/main/gemini/gemini-2.5-flash/abort', {method:'POST', credentials:'same-origin'}).then(r => r.status)"
+agent-browser wait 3000
+```
+
+---
+
+### 27.10 Activity log status header shows stage-specific text
+
+**Precondition:** Start a fresh generation and observe the activity log header text.
+
+**Commands:**
+
+```shell
+agent-browser javascript "fetch('/api/generate', {method:'POST', headers:{'Content-Type':'application/json'}, credentials:'same-origin', body:JSON.stringify({repo_url:'https://github.com/myk-org/for-testing-only', branch:'main', ai_provider:'gemini', ai_model:'gemini-2.5-flash', force:true})}).then(r => r.status)"
+agent-browser wait 10000
+agent-browser screenshot
+```
+
+**Check the status header text is stage-specific:**
+
+```shell
+agent-browser javascript "document.querySelector('[class*=\"activity\"] [class*=\"header\"], [class*=\"log\"] [class*=\"header\"]')?.textContent"
+```
+
+**Expected result:**
+- During generation, the status header shows a stage-specific label such as:
+  - "Cloning...", "Analyzing...", "Planning...", "Generating pages...", "Validating...", "Checking completeness...", "Cross-linking...", "Rendering..."
+- The header does NOT show a generic "Generating..." when a specific stage is known
+- The label updates as the stage changes (observe multiple screenshots across different stages)
+
+**Cleanup:**
+
+```shell
+agent-browser javascript "fetch('/api/projects/for-testing-only/main/gemini/gemini-2.5-flash/abort', {method:'POST', credentials:'same-origin'}).then(r => r.status)"
+agent-browser wait 3000
+```
+
+---
+
+### 27.11 Cleanup
 
 Delete variants created during Test 27 that are not needed by later tests:
 

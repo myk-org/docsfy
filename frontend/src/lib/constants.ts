@@ -46,6 +46,20 @@ export const GENERATION_STAGES = [
   'rendering',
 ] as const
 
+/** Human-readable labels for each generation stage — single source of truth */
+export const STAGE_LABELS: Record<typeof GENERATION_STAGES[number], string> = {
+  cloning: 'Cloning...',
+  analyzing: 'Analyzing...',
+  cataloging_images: 'Cataloging images...',
+  planning: 'Planning...',
+  incremental_planning: 'Planning...',
+  generating_pages: 'Generating pages...',
+  validating: 'Validating...',
+  completeness_check: 'Checking completeness...',
+  cross_linking: 'Cross-linking...',
+  rendering: 'Rendering...',
+}
+
 /** Shared badge style class strings for signal colors — single source of truth */
 export const BADGE_STYLES = {
   green: 'bg-signal-green/10 text-signal-green border-signal-green/20',

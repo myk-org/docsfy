@@ -30,6 +30,34 @@ import { TOAST_DEFAULT_MS, TOAST_ERROR_MS, VALID_PROVIDERS, BADGE_STYLES, SELECT
 import { ApiError } from '@/types'
 import type { Project, LogEntry, DocPlan, AvailableModels } from '@/types'
 
+function formatDuration(seconds: number): string {
+  if (seconds < 60) return `${seconds}s`
+  const m = Math.floor(seconds / 60)
+  const s = seconds % 60
+  if (m < 60) return s > 0 ? `${m}m ${s}s` : `${m}m`
+  const h = Math.floor(m / 60)
+  const rm = m % 60
+  return rm > 0 ? `${h}h ${rm}m` : `${h}h`
+}
+
+function useElapsedTime(startedAt: string | null | undefined): string | null {
+  const [elapsed, setElapsed] = useState<string | null>(null)
+  useEffect(() => {
+    if (!startedAt) {
+      setElapsed(null)
+      return
+    }
+    function tick() {
+      const diff = Math.max(0, Math.floor((Date.now() - new Date(startedAt!).getTime()) / 1000))
+      setElapsed(formatDuration(diff))
+    }
+    tick()
+    const id = setInterval(tick, 1000)
+    return () => clearInterval(id)
+  }, [startedAt])
+  return elapsed
+}
+
 interface VariantDetailProps {
   project: Project
   logEntries: LogEntry[]
@@ -217,6 +245,12 @@ function InfoGrid({ project, isAdmin }: { project: Project; isAdmin: boolean }) 
         <div>
           <span className="text-text-secondary">Generation Cost</span>
           <div className="mt-0.5 font-medium">${project.total_cost_usd.toFixed(4)}</div>
+        </div>
+      )}
+      {project.generation_duration != null && (
+        <div>
+          <span className="text-text-secondary">Generation Time</span>
+          <div className="mt-0.5 font-medium">{formatDuration(project.generation_duration)}</div>
         </div>
       )}
       {project.generation_id && (
@@ -474,7 +508,7 @@ function ReadyView({
 
       {/* Activity log */}
       {logEntries.length > 0 && (
-        <ActivityLog entries={logEntries} status={project.status} />
+        <ActivityLog entries={logEntries} status={project.status} currentStage={project.current_stage} />
       )}
 
       {/* Actions */}
@@ -545,6 +579,7 @@ function GeneratingView({
 }) {
   const { modalConfirm } = useModal()
   const [isAborting, setIsAborting] = useState(false)
+  const elapsed = useElapsedTime(project.generation_started_at)
 
   const totalPages = getTotalPages(project.plan_json)
   const progressPercent = totalPages > 0 ? Math.round((project.page_count / totalPages) * 100) : 0
@@ -587,8 +622,15 @@ function GeneratingView({
         </div>
       )}
 
+      {/* Elapsed time */}
+      {elapsed && (
+        <div className="text-xs text-text-secondary">
+          Elapsed: {elapsed}
+        </div>
+      )}
+
       {/* Activity log */}
-      <ActivityLog entries={logEntries} status={project.status} />
+      <ActivityLog entries={logEntries} status={project.status} currentStage={project.current_stage} />
 
       {/* Abort button — hidden for viewers */}
       {role !== 'viewer' && (
@@ -661,7 +703,7 @@ function ErrorAbortedView({
 
       {/* Activity log */}
       {logEntries.length > 0 && (
-        <ActivityLog entries={logEntries} status={project.status} />
+        <ActivityLog entries={logEntries} status={project.status} currentStage={project.current_stage} />
       )}
 
       {/* Regenerate + Delete (hidden for viewers) */}

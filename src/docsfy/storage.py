@@ -81,6 +81,8 @@ async def init_db(data_dir: str = "") -> None:
                 total_cost_usd REAL,
                 vision_provider TEXT DEFAULT '',
                 vision_model TEXT DEFAULT '',
+                generation_duration INTEGER,
+                generation_started_at TEXT,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 PRIMARY KEY (name, branch, ai_provider, ai_model, owner)
@@ -255,6 +257,19 @@ async def init_db(data_dir: str = "") -> None:
                 await db.execute(
                     f"ALTER TABLE projects ADD COLUMN {col} TEXT DEFAULT ''"
                 )
+                await db.commit()
+            except sqlite3.OperationalError as exc:
+                if "duplicate column name" not in str(exc).lower():
+                    logger.exception("Migration failed while adding %s column", col)
+                    raise
+
+        # Migration: add generation_duration and generation_started_at columns
+        for col, col_type in (
+            ("generation_duration", "INTEGER"),
+            ("generation_started_at", "TEXT"),
+        ):
+            try:
+                await db.execute(f"ALTER TABLE projects ADD COLUMN {col} {col_type}")
                 await db.commit()
             except sqlite3.OperationalError as exc:
                 if "duplicate column name" not in str(exc).lower():
@@ -447,6 +462,8 @@ async def update_project_status(
     repo_type: str | None = None,
     vision_provider: str | None = None,
     vision_model: str | None = None,
+    generation_duration: int | None = None,
+    generation_started_at: str | None = None,
 ) -> None:
     if status not in VALID_STATUSES:
         msg = f"Invalid project status: '{status}'. Valid: {', '.join(sorted(VALID_STATUSES))}"
@@ -481,6 +498,14 @@ async def update_project_status(
         if vision_model is not None:
             fields.append("vision_model = ?")
             values.append(vision_model)
+        if generation_duration is not None:
+            fields.append("generation_duration = ?")
+            values.append(generation_duration)
+        if generation_started_at is not None:
+            fields.append("generation_started_at = ?")
+            values.append(generation_started_at)
+        if status in ("ready", "error", "aborted"):
+            fields.append("generation_started_at = NULL")
         if status == "ready":
             fields.append("last_generated = CURRENT_TIMESTAMP")
         values.append(name)
