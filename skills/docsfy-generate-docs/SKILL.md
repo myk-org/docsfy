@@ -303,19 +303,32 @@ Ask the user: **"Ready to proceed with generation?"** (Yes / No)
 
 ### Phase 2: Generate Documentation
 
-Run the generation command using **`Bash(run_in_background=true)`** since it is a long-running blocking operation:
+Run the generation command **without** `--watch` — it returns immediately:
 
 ```bash
-docsfy generate <repo_url> --branch <branch> --provider <provider> --model <model> --watch [--force] [--repo-type <type>]
+docsfy generate <repo_url> --branch <branch> --provider <provider> --model <model> [--force] [--repo-type <type>]
 ```
 
-- Always use `--watch` for real-time WebSocket progress
+- **Do NOT use `--watch`** — it blocks the chat session and prevents user interaction
 - Add `--force` only if user requested force regeneration
 - Add `--repo-type <type>` if user specified a repository type (app, tests, library, framework). If not specified (Auto-detect), omit the flag and let the AI auto-detect.
-- **Use `run_in_background=true`** on the Bash tool so the main conversation is not blocked.
-  You will be notified when the command completes.
 
-When the background command completes, check the output for status `ready`, `error`, or `aborted`.
+The command returns immediately with the project name, branch, status, and generation ID.
+Extract the project name from the `Project:` line in the output — use this value (not the repo URL) for all subsequent `docsfy status` and `docsfy download` commands.
+
+**Poll for completion** using `docsfy status`:
+
+```bash
+docsfy status <project_name> --branch <branch> --provider <provider> --model <model> --json
+```
+
+Check the `status` field in the JSON response:
+- `generating` → Still in progress. The `current_stage` field shows what's happening. Wait ~30 seconds and poll again.
+- `ready` → Generation complete. Proceed to Phase 3.
+- `error` → Generation failed. Show the `error_message` to the user and ask how to proceed.
+- `aborted` → Generation was aborted. Inform the user.
+
+**Poll interval:** Wait ~30 seconds between status checks. Show the user progress updates from `current_stage` when it changes.
 
 If generation fails, show the error and ask the user how to proceed.
 
@@ -328,7 +341,7 @@ After generation completes (status: `ready`), create a local branch to isolate d
 repository, inform them that the docs branch will be created in the current
 local repository and confirm before proceeding.
 
-**Extract `<project_name>`** from the repo URL: strip any trailing `/` and `.git` suffix, then take the last path segment (e.g., `docsfy` from `https://github.com/myk-org/docsfy.git`).
+Use the `<project_name>` extracted from the `docsfy generate` output in Phase 2.
 
 Before switching branches, check for uncommitted changes:
 
@@ -357,7 +370,7 @@ This ensures docs changes are on a separate branch, not directly on the current 
 docsfy download <project_name> --branch <branch> --provider <provider> --model <model> --output <output_dir> --flatten
 ```
 
-`<project_name>` is the same value extracted in Phase 3.
+`<project_name>` is the same value extracted from the `docsfy generate` output in Phase 2.
 
 The `--flatten` flag extracts docs directly into `<output_dir>/` instead of creating a nested subdirectory. It also handles model names with special characters (e.g., brackets) safely.
 
@@ -540,8 +553,8 @@ Display:
 
 | Command | Purpose |
 |---------|---------|
-| `docsfy generate <url> --watch` | Generate docs with live progress |
-| `docsfy generate <url> --watch --repo-type tests` | Generate docs for a test suite repo |
+| `docsfy generate <url>` | Start docs generation (returns immediately) |
+| `docsfy generate <url> --repo-type tests` | Generate docs for a test suite repo |
 | `docsfy status <name>` | Check generation status |
 | `docsfy download <name> -o <dir>` | Download docs to directory |
 | `docsfy list` | List all projects |
@@ -559,7 +572,7 @@ Display:
 | Hardcoding provider/model | Use `docsfy models --json` to get providers and models; free-form only on failure |
 | Skipping health check | Server must be reachable before generating |
 | Using local files instead of repo URL | docsfy works with Git repository URLs |
-| Forgetting `--watch` flag | Always use `--watch` for real-time progress |
+| Using `--watch` flag | Never use `--watch` — it blocks the chat. Poll with `docsfy status` instead |
 | Downloading before ready | Check status is `ready` before downloading |
 | Leaving nested download folder | Flatten after download — move files to output root |
 | Downloading before creating branch | Always create a docs branch before downloading |
