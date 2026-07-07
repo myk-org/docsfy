@@ -559,8 +559,8 @@ Display:
 |---------|---------|
 | `docsfy generate <url>` | Start docs generation (returns immediately) |
 | `docsfy generate <url> --repo-type tests` | Generate docs for a test suite repo |
-| `docsfy status <generation_id>` | Check generation status |
-| `docsfy download <generation_id> -o <dir>` | Download docs to directory |
+| `docsfy status <generation_id> --json` | Check generation status (JSON output) |
+| `docsfy download <generation_id> -o <dir> --flatten` | Download docs to directory |
 | `docsfy list` | List all projects |
 | `docsfy abort <generation_id>` | Abort active generation |
 | `docsfy health` | Check server connectivity |
