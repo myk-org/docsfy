@@ -72,6 +72,22 @@ export default function GenerateForm({
     if (savedRepoType && (VALID_REPO_TYPES as readonly string[]).includes(savedRepoType)) setRepoType(savedRepoType)
   }, [])
 
+  // Revalidate model selections when availableModels changes (e.g. after refresh)
+  useEffect(() => {
+    if (provider) {
+      const models = availableModels[provider]
+      if (models && model && !models.some(m => m.id === model)) {
+        setModel('')
+      }
+    }
+    if (visionProvider) {
+      const models = availableModels[visionProvider]
+      if (models && visionModel && !models.some(m => m.id === visionModel)) {
+        setVisionModel('')
+      }
+    }
+  }, [availableModels, provider, model, visionProvider, visionModel])
+
   // Sync server defaults into form when they arrive from /api/models
   useEffect(() => {
     if (defaultProvider && !provider) {

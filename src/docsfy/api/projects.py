@@ -1500,7 +1500,7 @@ async def refresh_models_endpoint(request: Request) -> dict[str, Any]:
     try:
         await refresh_models()
     except Exception as exc:
-        logger.warning("Failed to refresh models from sidecar: %s", exc)
+        logger.warning("Failed to refresh models from sidecar: %s", exc, exc_info=True)
         raise HTTPException(
             status_code=502, detail="Failed to refresh models from sidecar"
         )

@@ -1,6 +1,6 @@
 import { toast } from 'sonner'
 import { ApiError } from '@/types'
-import type { AuthResponse, ProjectsResponse, AvailableModels, AdminSettingsResponse, AdminSettings, User, CreateUserResponse, RotateKeyResponse, AccessEntry, ModelsResponse } from '@/types'
+import type { AuthResponse, ProjectsResponse, AdminSettingsResponse, AdminSettings, User, CreateUserResponse, RotateKeyResponse, AccessEntry, ModelsResponse } from '@/types'
 import { encodeBranch } from '@/lib/utils'
 import { REDIRECT_DELAY_MS } from './constants'
 
