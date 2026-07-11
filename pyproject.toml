@@ -1,6 +1,6 @@
 [project]
 name = "docsfy"
-version = "1.8.1"
+version = "1.8.2"
 description = "AI-powered documentation generator - generates polished static HTML docs from GitHub repos"
 requires-python = ">=3.12"
 dependencies = [
