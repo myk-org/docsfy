@@ -178,6 +178,13 @@ export default function GenerateForm({
     } else {
       setModel('')
     }
+    // When no vision provider is set, vision falls back to generation provider.
+    // Clear visionModel if it's invalid for the new generation provider.
+    if (!visionProvider && visionModel && models) {
+      if (!models.some(m => m.id === visionModel)) {
+        setVisionModel('')
+      }
+    }
   }
 
   function handleForceChange(checked: boolean) {
