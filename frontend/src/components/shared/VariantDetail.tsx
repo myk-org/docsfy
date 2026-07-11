@@ -411,7 +411,7 @@ function RegenerateSection({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div className="flex flex-col gap-1.5">
             <Label>Vision Provider</Label>
-            <Select value={visionProvider || SELECT_CLEAR} onValueChange={handleVisionProviderChange}>
+            <Select value={visionProvider || null} onValueChange={handleVisionProviderChange}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Same as generation provider" />
               </SelectTrigger>
@@ -581,8 +581,9 @@ function GeneratingView({
   const [isAborting, setIsAborting] = useState(false)
   const elapsed = useElapsedTime(project.generation_started_at)
 
-  const totalPages = getTotalPages(project.plan_json)
-  const progressPercent = totalPages > 0 ? Math.round((project.page_count / totalPages) * 100) : 0
+  const planPages = getTotalPages(project.plan_json)
+  const totalPages = Math.max(planPages, project.page_count)
+  const progressPercent = totalPages > 0 ? Math.min(100, Math.round((project.page_count / totalPages) * 100)) : 0
 
   async function handleAbort() {
     const confirmed = await modalConfirm({

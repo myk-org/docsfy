@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Loader2 } from 'lucide-react'
+import { Loader2, RefreshCw } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -14,6 +14,7 @@ import {
 import Combobox from '@/components/shared/Combobox'
 import { generateDocs } from '@/lib/api'
 import { SK_REPO, SK_BRANCH, SK_FORCE, SK_REPO_TYPE, TOAST_DEFAULT_MS, TOAST_ERROR_MS, VALID_PROVIDERS, VALID_REPO_TYPES, SELECT_CLEAR } from '@/lib/constants'
+import { cn } from '@/lib/utils'
 import type { AvailableModels } from '@/types'
 import { ApiError } from '@/types'
 interface GenerateFormProps {
@@ -24,6 +25,7 @@ interface GenerateFormProps {
   defaultVisionProvider?: string
   defaultVisionModel?: string
   onGenerated?: (name: string, branch: string, provider: string, model: string) => void
+  onRefreshModels?: () => Promise<void>
 }
 
 function extractRepoName(url: string): string {
@@ -43,6 +45,7 @@ export default function GenerateForm({
   defaultVisionProvider,
   defaultVisionModel,
   onGenerated,
+  onRefreshModels,
 }: GenerateFormProps) {
   const [repoUrl, setRepoUrl] = useState('')
   const [branch, setBranch] = useState('main')
@@ -53,6 +56,7 @@ export default function GenerateForm({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [visionProvider, setVisionProvider] = useState('')
   const [visionModel, setVisionModel] = useState('')
+  const [isRefreshing, setIsRefreshing] = useState(false)
 
   // Restore form state from sessionStorage on mount
   useEffect(() => {
@@ -288,7 +292,20 @@ export default function GenerateForm({
 
         {/* Provider */}
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="provider-select" title="AI service provider to use for generation">Provider</Label>
+          <div className="flex items-center justify-between">
+            <Label htmlFor="provider-select" title="AI service provider to use for generation">Provider</Label>
+            {onRefreshModels && (
+              <button
+                type="button"
+                onClick={async () => { setIsRefreshing(true); try { await onRefreshModels(); } finally { setIsRefreshing(false); } }}
+                className="text-text-secondary hover:text-text-primary transition-colors"
+                title="Refresh available models"
+                disabled={isRefreshing || isSubmitting}
+              >
+                <RefreshCw className={cn('size-3.5', isRefreshing && 'animate-spin')} />
+              </button>
+            )}
+          </div>
           <Select disabled={isSubmitting} value={provider} onValueChange={(v) => { if (v) handleProviderChange(v) }}>
             <SelectTrigger id="provider-select" data-testid="provider-select" className="w-full">
               <SelectValue />
@@ -319,12 +336,12 @@ export default function GenerateForm({
         {/* Vision Provider */}
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="vision-provider-select" title="AI provider for image description (uses generation provider if not set)">Vision Provider</Label>
-          <Select disabled={isSubmitting} value={visionProvider || SELECT_CLEAR} onValueChange={handleVisionProviderChange}>
+          <Select disabled={isSubmitting} value={visionProvider || null} onValueChange={handleVisionProviderChange}>
             <SelectTrigger id="vision-provider-select" data-testid="vision-provider-select" className="w-full">
               <SelectValue placeholder="Same as generation provider" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="__clear__">Same as generation provider</SelectItem>
+              <SelectItem value={SELECT_CLEAR}>Same as generation provider</SelectItem>
               {VALID_PROVIDERS.map((p) => (
                 <SelectItem key={p} value={p}>
                   {p}

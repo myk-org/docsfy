@@ -160,7 +160,52 @@ curl -s "$SERVER/api/models" | jq '{default_provider, default_model}'
 
 ---
 
-### 33.12 Generate fails without provider when no default configured
+### 33.12 Settings page shows placeholder when no default is selected
+
+Clear defaults via API:
+```bash
+curl -s -X PUT -H "Authorization: Bearer $ADMIN_KEY" \
+  -H "Content-Type: application/json" \
+  "$SERVER/api/admin/settings" \
+  -d '{"settings": {"default_ai_provider": "", "default_ai_model": "", "vision_provider": "", "vision_model": ""}}'
+```
+
+Navigate to the Settings page.
+
+**Expected result:**
+- Default AI Provider select shows placeholder text "No default" (not `__clear__` or empty)
+- Vision AI Provider select shows placeholder text "Same as generation provider" (not `__clear__` or empty)
+
+Navigate to the Generate form.
+
+**Expected result:**
+- Vision Provider select shows placeholder text "Same as generation provider" (not `__clear__` or empty)
+
+---
+
+### 33.13 Refresh models button visible for admin
+
+Navigate to the Generate form as admin.
+
+**Expected result:**
+- A small refresh icon (⟳) appears next to the "Provider" label
+- Clicking it triggers model re-discovery from AI providers
+- A success toast "Models refreshed" appears
+- The provider/model dropdowns are updated with fresh data
+
+---
+
+### 33.14 Refresh models button not visible for non-admin
+
+Log in as `$TEST_USER` via the UI. Navigate to the Generate form.
+
+**Expected result:**
+- No refresh icon appears next to the "Provider" label
+- Non-admin users cannot trigger model refresh
+
+---
+
+### 33.15 Generate fails without provider when no default configured
 
 Clear the default provider:
 ```bash
@@ -182,7 +227,7 @@ curl -s -X POST -H "Authorization: Bearer $ADMIN_KEY" \
 
 ---
 
-### 33.13 Cleanup
+### 33.16 Cleanup
 
 Restore defaults:
 ```bash

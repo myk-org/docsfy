@@ -179,6 +179,77 @@ print(f'Providers with models: {providers_with_models}')
 
 ---
 
-### 28.8 Cleanup
+### 28.8 Models refresh triggers re-discovery
+
+**Commands:**
+
+```shell
+docsfy models --refresh
+```
+
+**Expected result:**
+- The output begins with `Models refreshed from AI providers.`
+- Followed by the normal provider/model listing
+- Models are re-discovered from the sidecar (not served from cache)
+
+---
+
+### 28.9 Models refresh with JSON output
+
+**Commands:**
+
+```shell
+docsfy models --refresh --json
+```
+
+**Expected result:**
+- The output is valid JSON (no "Models refreshed" text since JSON mode)
+- Contains `providers`, `default_provider`, `default_model`, and `available_models`
+- Models are freshly discovered (same structure as 28.4)
+
+---
+
+### 28.10 API refresh endpoint requires admin auth
+
+**Commands:**
+
+```shell
+# Without auth
+curl -s -o /dev/null -w "%{http_code}" -X POST "$DOCSFY_SERVER/api/models/refresh"
+```
+
+**Expected result:**
+- HTTP status code is `401` (unauthorized)
+
+**With non-admin auth:**
+
+```shell
+curl -s -o /dev/null -w "%{http_code}" -X POST "$DOCSFY_SERVER/api/models/refresh" \
+  -H "Authorization: Bearer $TEST_USER_PASSWORD"
+```
+
+**Expected result:**
+- HTTP status code is `403` (forbidden, admin required)
+
+**With admin auth:**
+
+```shell
+curl -s -X POST "$DOCSFY_SERVER/api/models/refresh" \
+  -H "Authorization: Bearer $ADMIN_KEY" | python3 -c "
+import sys, json
+data = json.load(sys.stdin)
+assert 'providers' in data
+assert 'available_models' in data
+print('Refresh endpoint returned valid models response')
+"
+```
+
+**Expected result:**
+- HTTP status code is `200`
+- Response has same structure as `GET /api/models`
+
+---
+
+### 28.11 Cleanup
 
 **No cleanup needed.** Test 28.7 only queries available models and does not create any variant.

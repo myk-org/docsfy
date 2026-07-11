@@ -204,12 +204,12 @@ Each linked sub-file contains only the detailed test bodies for its assigned sec
 | 25 | Sidebar Collapse Toggle Position | 25.1-25.4 |
 | 26 | Dialog Theme Consistency | 26.1-26.2 |
 | 27 | Post-Generation Pipeline | 27.1-27.11 |
-| 28 | Models Command | 28.1-28.8 |
+| 28 | Models Command | 28.1-28.11 |
 | 29 | Cost Tracking | 29.1-29.6 |
 | 30 | Repo Type API Validation | 30.1-30.3 |
 | 31 | Repo Type UI Elements | 31.1-31.4 |
 | 32 | Repo Type CLI | 32.1-32.3 |
-| 33 | Admin Settings Page | 33.1-33.13 |
+| 33 | Admin Settings Page | 33.1-33.16 |
 | 34 | Image Support in Documentation | 34.1-34.9 |
 | 21 | Cleanup and Teardown | 21.1-21.5 |
 

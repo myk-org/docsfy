@@ -1,6 +1,6 @@
 import { toast } from 'sonner'
 import { ApiError } from '@/types'
-import type { AuthResponse, ProjectsResponse, AvailableModels, AdminSettingsResponse, AdminSettings, User, CreateUserResponse, RotateKeyResponse, AccessEntry } from '@/types'
+import type { AuthResponse, ProjectsResponse, AvailableModels, AdminSettingsResponse, AdminSettings, User, CreateUserResponse, RotateKeyResponse, AccessEntry, ModelsResponse } from '@/types'
 import { encodeBranch } from '@/lib/utils'
 import { REDIRECT_DELAY_MS } from './constants'
 
@@ -92,17 +92,12 @@ export function rotateKey(body?: { new_key?: string }) {
 }
 
 // Models
-export interface ModelsResponse {
-  providers: string[]
-  default_provider: string
-  default_model: string
-  default_vision_provider: string
-  default_vision_model: string
-  available_models: AvailableModels
-}
-
 export function getModels() {
   return api.get<ModelsResponse>('/api/models')
+}
+
+export function refreshModels() {
+  return api.post<ModelsResponse>('/api/models/refresh')
 }
 
 // Projects

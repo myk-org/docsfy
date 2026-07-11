@@ -158,6 +158,66 @@ async def test_get_models_no_auth_required() -> None:
             get_settings.cache_clear()
 
 
+async def test_refresh_models_requires_admin() -> None:
+    """POST /api/models/refresh requires admin authentication."""
+    import docsfy.storage as storage
+    from docsfy.config import get_settings
+
+    import tempfile
+
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp_path = Path(tmp)
+        orig_db = storage.DB_PATH
+        orig_data = storage.DATA_DIR
+        orig_projects = storage.PROJECTS_DIR
+
+        storage.DB_PATH = tmp_path / "test.db"
+        storage.DATA_DIR = tmp_path
+        storage.PROJECTS_DIR = tmp_path / "projects"
+
+        get_settings.cache_clear()
+
+        from docsfy.main import app
+
+        try:
+            with patch.dict(os.environ, {"ADMIN_KEY": TEST_ADMIN_KEY}):
+                get_settings.cache_clear()
+                await storage.init_db()
+                transport = ASGITransport(app=app)
+                # No auth header
+                async with AsyncClient(
+                    transport=transport, base_url="http://test"
+                ) as ac:
+                    response = await ac.post("/api/models/refresh")
+                    assert response.status_code == 401
+        finally:
+            storage.DB_PATH = orig_db
+            storage.DATA_DIR = orig_data
+            storage.PROJECTS_DIR = orig_projects
+            get_settings.cache_clear()
+
+
+async def test_refresh_models_as_admin(client: AsyncClient) -> None:
+    """POST /api/models/refresh returns valid models structure for admin."""
+    with patch("docsfy.api.projects.refresh_models") as mock_refresh:
+        mock_refresh.return_value = []
+        response = await client.post("/api/models/refresh")
+    assert response.status_code == 200
+    data = response.json()
+    assert "providers" in data
+    assert "available_models" in data
+    assert "default_provider" in data
+
+
+async def test_refresh_models_sidecar_failure(client: AsyncClient) -> None:
+    """POST /api/models/refresh returns 502 when sidecar fails."""
+    with patch("docsfy.api.projects.refresh_models") as mock_refresh:
+        mock_refresh.side_effect = ConnectionError("sidecar down")
+        response = await client.post("/api/models/refresh")
+    assert response.status_code == 502
+    assert "Failed to refresh models from sidecar" in response.json()["detail"]
+
+
 async def test_get_cost_returns_total(client: AsyncClient) -> None:
     """GET /api/cost returns total_cost_usd."""
     response = await client.get("/api/cost")

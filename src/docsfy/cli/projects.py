@@ -463,6 +463,10 @@ def models(
         Optional[str],
         typer.Option("--provider", "-P", help="Filter by provider"),
     ] = None,
+    refresh: Annotated[
+        bool,
+        typer.Option("--refresh", "-r", help="Refresh models from AI providers"),
+    ] = False,
     json_output: Annotated[
         bool,
         typer.Option("--json", "-j", help="Output as JSON"),
@@ -473,7 +477,12 @@ def models(
 
     client = get_client()
     try:
-        data = client.get_models()
+        if refresh:
+            data = client.refresh_models()
+            if not json_output:
+                typer.echo("Models refreshed from AI providers.\n")
+        else:
+            data = client.get_models()
     finally:
         client.close()
 

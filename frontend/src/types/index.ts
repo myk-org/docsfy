@@ -98,6 +98,15 @@ export interface RotateKeyResponse {
   new_api_key: string
 }
 
+export interface ModelsResponse {
+  providers: string[]
+  default_provider: string
+  default_model: string
+  default_vision_provider: string
+  default_vision_model: string
+  available_models: AvailableModels
+}
+
 /**
  * WebSocket messages use `provider`/`model` field names, while the Project
  * type uses `ai_provider`/`ai_model` to match the backend DB schema. This is
