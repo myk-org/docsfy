@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Loader2, RefreshCw } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -72,21 +72,36 @@ export default function GenerateForm({
     if (savedRepoType && (VALID_REPO_TYPES as readonly string[]).includes(savedRepoType)) setRepoType(savedRepoType)
   }, [])
 
-  // Revalidate model selections when availableModels changes (e.g. after refresh)
+  // Revalidate model selections when availableModels catalog changes (e.g. after refresh).
+  // Only depends on availableModels — reads provider/model via refs to avoid
+  // firing on every Combobox keystroke (free-text input).
+  const providerRef = useRef(provider)
+  const modelRef = useRef(model)
+  const visionProviderRef = useRef(visionProvider)
+  const visionModelRef = useRef(visionModel)
+  providerRef.current = provider
+  modelRef.current = model
+  visionProviderRef.current = visionProvider
+  visionModelRef.current = visionModel
+
   useEffect(() => {
-    if (provider) {
-      const models = availableModels[provider]
-      if (models && model && !models.some(m => m.id === model)) {
+    const curProvider = providerRef.current
+    const curModel = modelRef.current
+    if (curProvider) {
+      const models = availableModels[curProvider]
+      if (models && curModel && !models.some(m => m.id === curModel)) {
         setModel('')
       }
     }
-    if (visionProvider) {
-      const models = availableModels[visionProvider]
-      if (models && visionModel && !models.some(m => m.id === visionModel)) {
+    const curVisionProvider = visionProviderRef.current
+    const curVisionModel = visionModelRef.current
+    if (curVisionProvider) {
+      const models = availableModels[curVisionProvider]
+      if (models && curVisionModel && !models.some(m => m.id === curVisionModel)) {
         setVisionModel('')
       }
     }
-  }, [availableModels, provider, model, visionProvider, visionModel])
+  }, [availableModels])
 
   // Sync server defaults into form when they arrive from /api/models
   useEffect(() => {
