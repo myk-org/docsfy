@@ -47,6 +47,11 @@ class DocsfyClient:
         response = self.get("/api/models")
         return response.json()
 
+    def refresh_models(self) -> dict[str, Any]:
+        """Trigger model refresh and return updated models."""
+        response = self.post("/api/models/refresh")
+        return response.json()
+
     def download(self, path: str, output_path: Path) -> None:
         """Stream-download a file to the given path using atomic write."""
         import tempfile

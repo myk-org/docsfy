@@ -25,7 +25,7 @@ import { useModal } from '@/components/shared/ModalProvider'
 import UsersPanel from '@/components/admin/UsersPanel'
 import AccessPanel from '@/components/admin/AccessPanel'
 import SettingsPanel from '@/components/admin/SettingsPanel'
-import { getModels, getMe, logout, rotateKey, getProjects, deleteAllVariants } from '@/lib/api'
+import { getModels, refreshModels, getMe, logout, rotateKey, getProjects, deleteAllVariants } from '@/lib/api'
 
 import { wsManager } from '@/lib/websocket'
 import { TOAST_DEFAULT_MS, TOAST_ERROR_MS, WS_POLLING_FALLBACK_MS, SELECTED_VIEW_KEY, SIDEBAR_COLLAPSED_KEY, GENERATION_STAGES } from '@/lib/constants'
@@ -35,7 +35,7 @@ import type {
   LogEntry,
   DocPlan,
 } from '@/types'
-import type { AvailableModels } from '@/types'
+import type { AvailableModels, ModelsResponse } from '@/types'
 import { ApiError } from '@/types'
 
 type SelectedView =
@@ -69,18 +69,32 @@ export default function DashboardPage() {
   const [defaultVisionModel, setDefaultVisionModel] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
 
+  function applyModelsData(data: ModelsResponse) {
+    setAvailableModels(data.available_models ?? {})
+    setDefaultProvider(data.default_provider ?? '')
+    setDefaultModel(data.default_model ?? '')
+    setDefaultVisionProvider(data.default_vision_provider ?? '')
+    setDefaultVisionModel(data.default_vision_model ?? '')
+  }
+
   const loadModels = useCallback(async () => {
     try {
-      const data = await getModels()
-      setAvailableModels(data.available_models ?? {})
-      setDefaultProvider(data.default_provider ?? '')
-      setDefaultModel(data.default_model ?? '')
-      setDefaultVisionProvider(data.default_vision_provider ?? '')
-      setDefaultVisionModel(data.default_vision_model ?? '')
+      applyModelsData(await getModels())
     } catch {
       /* best-effort — models dropdown will be empty */
     }
   }, [])
+
+  const handleRefreshModels = useCallback(async () => {
+    try {
+      applyModelsData(await refreshModels())
+      toast.success('Models refreshed', { duration: TOAST_DEFAULT_MS })
+    } catch (err) {
+      const detail = err instanceof ApiError ? err.detail : 'Failed to refresh models'
+      toast.error(detail, { duration: TOAST_ERROR_MS })
+    }
+  }, [])
+
   const [selectedView, setSelectedView] = useState<SelectedView>(() => {
     try {
       const stored = localStorage.getItem(SELECTED_VIEW_KEY)
@@ -154,11 +168,7 @@ export default function DashboardPage() {
     loadProjects()
     getModels().then((data) => {
       if (cancelled) return
-      setAvailableModels(data.available_models ?? {})
-      setDefaultProvider(data.default_provider ?? '')
-      setDefaultModel(data.default_model ?? '')
-      setDefaultVisionProvider(data.default_vision_provider ?? '')
-      setDefaultVisionModel(data.default_vision_model ?? '')
+      applyModelsData(data)
     }).catch(() => { /* best-effort */ })
     return () => { cancelled = true }
   }, [authChecked])
@@ -620,6 +630,7 @@ export default function DashboardPage() {
           setSelectedView({ type: 'variant', name, branch, provider, model, owner })
         }}
         onSettingsSaved={loadModels}
+        onRefreshModels={handleRefreshModels}
       />
     </Layout>
   )
@@ -825,6 +836,7 @@ function MainPanel({
   onGenerated,
   onVariantRegenerate,
   onSettingsSaved,
+  onRefreshModels,
 }: {
   selectedView: SelectedView
   username: string
@@ -841,6 +853,7 @@ function MainPanel({
   onGenerated: (name: string, branch: string, provider: string, model: string) => void
   onVariantRegenerate: (name: string, branch: string, provider: string, model: string, owner: string) => void
   onSettingsSaved: () => void
+  onRefreshModels?: () => Promise<void>
 }) {
   if (selectedView.type === 'empty') {
     return (
@@ -864,6 +877,7 @@ function MainPanel({
         defaultVisionProvider={defaultVisionProvider}
         defaultVisionModel={defaultVisionModel}
         onGenerated={onGenerated}
+        onRefreshModels={isAdmin ? onRefreshModels : undefined}
       />
     )
   }

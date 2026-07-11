@@ -409,6 +409,38 @@ class TestModels:
         data = json.loads(result.output)
         assert data == api_data
 
+    def test_models_refresh_calls_refresh_method(self, mock_client: MagicMock) -> None:
+        mock_client.refresh_models.return_value = {
+            "providers": ["claude", "gemini", "cursor"],
+            "default_provider": "cursor",
+            "default_model": "gpt-5.4-xhigh-fast",
+            "available_models": {
+                "cursor": [{"id": "gpt-5.4-xhigh-fast", "name": "GPT 5.4"}],
+            },
+        }
+        result = runner.invoke(app, ["models", "--refresh"])
+        assert result.exit_code == 0
+        mock_client.refresh_models.assert_called_once()
+        mock_client.get_models.assert_not_called()
+        assert "Models refreshed from AI providers" in result.output
+
+    def test_models_refresh_json_no_confirmation(self, mock_client: MagicMock) -> None:
+        api_data = {
+            "providers": ["claude", "gemini", "cursor"],
+            "default_provider": "cursor",
+            "default_model": "gpt-5.4-xhigh-fast",
+            "available_models": {
+                "cursor": [{"id": "gpt-5.4-xhigh-fast", "name": "GPT 5.4"}],
+            },
+        }
+        mock_client.refresh_models.return_value = api_data
+        result = runner.invoke(app, ["models", "--refresh", "--json"])
+        assert result.exit_code == 0
+        mock_client.refresh_models.assert_called_once()
+        assert "Models refreshed" not in result.output
+        data = json.loads(result.output)
+        assert data == api_data
+
     def test_models_json_filtered_by_provider(self, mock_client: MagicMock) -> None:
         mock_client.get_models.return_value = {
             "providers": ["claude", "gemini", "cursor"],

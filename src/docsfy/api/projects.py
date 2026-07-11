@@ -18,7 +18,7 @@ from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import StreamingResponse
 from simple_logger.logger import get_logger
 
-from docsfy.ai_client import check_sidecar_available, list_models
+from docsfy.ai_client import check_sidecar_available, list_models, refresh_models
 from docsfy.cost_tracker import (
     CostAccumulator,
     set_cost_accumulator,
@@ -1485,6 +1485,28 @@ async def get_models_endpoint() -> dict[str, Any]:
         "default_vision_model": default_vision_model,
         "available_models": available_models,
     }
+
+
+@router.post("/models/refresh")
+async def refresh_models_endpoint(request: Request) -> dict[str, Any]:
+    """Trigger model re-discovery on the sidecar and return fresh models.
+
+    Requires admin authentication.
+    """
+    if not request.state.is_admin:
+        raise HTTPException(status_code=403, detail="Admin access required")
+
+    logger.info("Admin %s triggered model refresh", request.state.username)
+    try:
+        await refresh_models()
+    except Exception as exc:
+        logger.warning("Failed to refresh models from sidecar: %s", exc, exc_info=True)
+        raise HTTPException(
+            status_code=502, detail="Failed to refresh models from sidecar"
+        )
+
+    # Return fresh model list (same as GET /models)
+    return await get_models_endpoint()
 
 
 @router.get("/cost")

@@ -178,12 +178,12 @@ export default function SettingsPanel({ availableModels, onSettingsSaved }: Sett
 
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="default-provider">Default AI Provider</Label>
-            <Select value={provider || SELECT_CLEAR} onValueChange={handleProviderChange} disabled={saving}>
+            <Select value={provider || null} onValueChange={handleProviderChange} disabled={saving}>
               <SelectTrigger id="default-provider" className="w-full">
                 <SelectValue placeholder="No default" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="__clear__">No default</SelectItem>
+                <SelectItem value={SELECT_CLEAR}>No default</SelectItem>
                 {VALID_PROVIDERS.map((p) => (
                   <SelectItem key={p} value={p}>{p}</SelectItem>
                 ))}
@@ -215,12 +215,12 @@ export default function SettingsPanel({ availableModels, onSettingsSaved }: Sett
 
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="vision-provider">Vision AI Provider</Label>
-            <Select value={visionProvider || SELECT_CLEAR} onValueChange={handleVisionProviderChange} disabled={saving}>
+            <Select value={visionProvider || null} onValueChange={handleVisionProviderChange} disabled={saving}>
               <SelectTrigger id="vision-provider" className="w-full">
                 <SelectValue placeholder="Same as generation provider" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="__clear__">Same as generation provider</SelectItem>
+                <SelectItem value={SELECT_CLEAR}>Same as generation provider</SelectItem>
                 {VALID_PROVIDERS.map((p) => (
                   <SelectItem key={p} value={p}>{p}</SelectItem>
                 ))}
