@@ -100,6 +100,9 @@ export default function GenerateForm({
       if (models && curVisionModel && !models.some(m => m.id === curVisionModel)) {
         setVisionModel('')
       }
+    } else if (curVisionModel) {
+      // No vision provider selected — clear any stale vision model
+      setVisionModel('')
     }
   }, [availableModels])
 
