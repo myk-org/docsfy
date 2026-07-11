@@ -101,8 +101,13 @@ export default function GenerateForm({
         setVisionModel('')
       }
     } else if (curVisionModel) {
-      // No vision provider selected — clear any stale vision model
-      setVisionModel('')
+      // No vision provider — validate against generation provider (backend fallback)
+      if (curProvider) {
+        const models = availableModels[curProvider]
+        if (models && !models.some(m => m.id === curVisionModel)) {
+          setVisionModel('')
+        }
+      }
     }
   }, [availableModels])
 
