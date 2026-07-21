@@ -18,7 +18,16 @@ from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import StreamingResponse
 from simple_logger.logger import get_logger
 
-from docsfy.ai_client import check_sidecar_available, list_models, refresh_models
+from docsfy.ai_client import (
+    build_friendly_catalog,
+    check_sidecar_available,
+    cursor_status_for_client,
+    cursor_status_from_model_count,
+    get_sidecar_client,
+    normalize_provider,
+    probe_cursor_auth,
+    refresh_models,
+)
 from docsfy.cost_tracker import (
     CostAccumulator,
     set_cost_accumulator,
@@ -1403,28 +1412,15 @@ async def _resolve_latest_accessible_variant(
 
 
 async def _load_available_models() -> dict[str, list[dict[str, str]]]:
-    """Load available models for all providers in a single sidecar call."""
+    """Load available models for all providers in a single sidecar call.
+
+    Merges ACPX/API + CLI sources under friendly providers and tags each
+    entry with ``source`` (``acpx`` | ``cli`` | ``api``).
+    """
     result: dict[str, list[dict[str, str]]] = {p: [] for p in VALID_PROVIDERS}
     try:
-        all_models = await list_models()
-        for model in all_models:
-            provider = model.get("provider", "")
-            matched_provider = ""
-            for p in VALID_PROVIDERS:
-                if p in provider:
-                    matched_provider = p
-                    break
-            # Sidecar returns "google" for gemini models
-            if not matched_provider and provider == "google":
-                matched_provider = "gemini"
-            if matched_provider:
-                result[matched_provider].append(model)
-            else:
-                logger.debug(
-                    "Skipping model with unmatched provider %r: %s",
-                    provider,
-                    model.get("id", ""),
-                )
+        raw_catalog = await get_sidecar_client().get_models()
+        result = build_friendly_catalog(raw_catalog)
         total = sum(len(v) for v in result.values())
         logger.info(
             "Loaded %d models (%s)",
@@ -1457,26 +1453,43 @@ async def build_projects_payload(username: str, is_admin: bool) -> dict[str, Any
     }
 
 
-@router.get("/models")
-async def get_models_endpoint() -> dict[str, Any]:
-    """Return available AI providers, server defaults, and available models.
+async def _models_payload(
+    request: Request,
+    *,
+    cursor_status: dict[str, Any] | None = None,
+    available_models: dict[str, list[dict[str, str]]] | None = None,
+) -> dict[str, Any]:
+    """Build GET/POST ``/api/models`` response body.
 
-    Models are discovered via pi-sidecar-client.
-    No authentication required -- this is a discovery endpoint.
+    When ``cursor_status`` is provided (e.g. refresh with a forced probe), skip
+    the default probe so admins only pay for one ``agent status`` call.
     """
     from docsfy.storage import get_all_settings
 
     settings = get_settings()
     db_settings = await get_all_settings()
-    available_models = await _load_available_models()
-    default_provider = (
+    if available_models is None:
+        available_models = await _load_available_models()
+    default_provider = normalize_provider(
         db_settings.get("default_ai_provider", "") or settings.ai_provider
     )
     default_model = db_settings.get("default_ai_model", "") or settings.ai_model
-    default_vision_provider = (
+    default_vision_provider = normalize_provider(
         db_settings.get("vision_provider", "") or settings.vision_provider
     )
     default_vision_model = db_settings.get("vision_model", "") or settings.vision_model
+
+    if cursor_status is None:
+        cursor_count = len(available_models.get("cursor", []))
+        is_admin = bool(getattr(request.state, "is_admin", False))
+        if is_admin:
+            cursor_status = cursor_status_for_client(
+                await probe_cursor_auth(model_count=cursor_count),
+                is_admin=True,
+            )
+        else:
+            cursor_status = cursor_status_from_model_count(cursor_count)
+
     return {
         "providers": list(VALID_PROVIDERS),
         "default_provider": default_provider,
@@ -1484,7 +1497,20 @@ async def get_models_endpoint() -> dict[str, Any]:
         "default_vision_provider": default_vision_provider,
         "default_vision_model": default_vision_model,
         "available_models": available_models,
+        "provider_status": {"cursor": cursor_status},
     }
+
+
+@router.get("/models")
+async def get_models_endpoint(request: Request) -> dict[str, Any]:
+    """Return available AI providers, server defaults, and available models.
+
+    Models are discovered via pi-sidecar-client.
+    Includes ``provider_status.cursor`` when the Cursor catalog is empty or
+    auth is unhealthy (admin gets credential details; others get a coarse hint).
+    No authentication required -- this is a discovery endpoint.
+    """
+    return await _models_payload(request)
 
 
 @router.post("/models/refresh")
@@ -1505,8 +1531,16 @@ async def refresh_models_endpoint(request: Request) -> dict[str, Any]:
             status_code=502, detail="Failed to refresh models from sidecar"
         )
 
-    # Return fresh model list (same as GET /models)
-    return await get_models_endpoint()
+    # Single forced Cursor probe after catalog rebuild (avoid double probe).
+    available_models = await _load_available_models()
+    cursor_count = len(available_models.get("cursor", []))
+    cursor_status = cursor_status_for_client(
+        await probe_cursor_auth(force=True, model_count=cursor_count),
+        is_admin=True,
+    )
+    return await _models_payload(
+        request, cursor_status=cursor_status, available_models=available_models
+    )
 
 
 @router.get("/cost")
@@ -1624,7 +1658,7 @@ async def generate(
     from docsfy.storage import get_all_settings
 
     db_settings = await get_all_settings()
-    ai_provider = (
+    ai_provider = normalize_provider(
         gen_request.ai_provider
         or db_settings.get("default_ai_provider", "")
         or settings.ai_provider
@@ -1650,6 +1684,8 @@ async def generate(
         or settings.vision_provider
         or None
     )
+    if vision_provider:
+        vision_provider = normalize_provider(vision_provider)
     vision_model = (
         gen_request.vision_model
         or db_settings.get("vision_model", "")

@@ -12,13 +12,16 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import Combobox from '@/components/shared/Combobox'
+import CursorAuthBanner from '@/components/shared/CursorAuthBanner'
 import { getSettings, updateSettings } from '@/lib/api'
 import { VALID_PROVIDERS, TOAST_DEFAULT_MS, TOAST_ERROR_MS, SELECT_CLEAR } from '@/lib/constants'
+import { modelOptionsForProvider } from '@/lib/utils'
 import { ApiError } from '@/types'
-import type { AvailableModels, AdminSettings } from '@/types'
+import type { AvailableModels, AdminSettings, ProviderStatus } from '@/types'
 
 interface SettingsPanelProps {
   availableModels: AvailableModels
+  providerStatus?: Record<string, ProviderStatus>
   onSettingsSaved?: () => void
 }
 
@@ -30,7 +33,7 @@ function EnvWarning({ envVarName }: { envVarName: string }) {
   )
 }
 
-export default function SettingsPanel({ availableModels, onSettingsSaved }: SettingsPanelProps) {
+export default function SettingsPanel({ availableModels, providerStatus = {}, onSettingsSaved }: SettingsPanelProps) {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [fetchError, setFetchError] = useState<string | null>(null)
@@ -75,28 +78,14 @@ export default function SettingsPanel({ availableModels, onSettingsSaved }: Sett
     if (value === null) return
     const v = value === SELECT_CLEAR ? '' : value
     setProvider(v)
-    if (!v) {
-      setModel('')
-    } else {
-      const models = availableModels[v]
-      if (!models?.some(m => m.id === model)) {
-        setModel('')
-      }
-    }
+    setModel('')
   }
 
   function handleVisionProviderChange(value: string | null) {
     if (value === null) return
     const v = value === SELECT_CLEAR ? '' : value
     setVisionProvider(v)
-    if (!v) {
-      setVisionModel('')
-    } else {
-      const models = availableModels[v]
-      if (!models?.some(m => m.id === visionModel)) {
-        setVisionModel('')
-      }
-    }
+    setVisionModel('')
   }
 
   async function handleSave(e: React.FormEvent) {
@@ -126,6 +115,24 @@ export default function SettingsPanel({ availableModels, onSettingsSaved }: Sett
       return
     }
 
+    const nextProvider = changed.default_ai_provider ?? provider
+    const nextModel = changed.default_ai_model ?? model
+    if (nextProvider && !nextModel) {
+      toast.error('Select a default model when a default provider is set', {
+        duration: TOAST_ERROR_MS,
+      })
+      return
+    }
+
+    const nextVisionProvider = changed.vision_provider ?? visionProvider
+    const nextVisionModel = changed.vision_model ?? visionModel
+    if (nextVisionProvider && !nextVisionModel) {
+      toast.error('Select a vision model when a vision provider is set', {
+        duration: TOAST_ERROR_MS,
+      })
+      return
+    }
+
     setSaving(true)
     try {
       await updateSettings(changed)
@@ -140,13 +147,8 @@ export default function SettingsPanel({ availableModels, onSettingsSaved }: Sett
     }
   }
 
-  const modelOptions = provider
-    ? (availableModels[provider] ?? []).map(m => ({ value: m.id, label: m.name || m.id }))
-    : []
-
-  const visionModelOptions = visionProvider
-    ? (availableModels[visionProvider] ?? []).map(m => ({ value: m.id, label: m.name || m.id }))
-    : []
+  const modelOptions = modelOptionsForProvider(availableModels, provider)
+  const visionModelOptions = modelOptionsForProvider(availableModels, visionProvider)
 
   if (loading) {
     return (
@@ -193,6 +195,10 @@ export default function SettingsPanel({ availableModels, onSettingsSaved }: Sett
               <EnvWarning envVarName={envOverrides.default_ai_provider} />
             )}
           </div>
+
+          {provider === 'cursor' && providerStatus.cursor && !providerStatus.cursor.ok && (
+            <CursorAuthBanner status={providerStatus.cursor} />
+          )}
 
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="default-model">Default AI Model</Label>

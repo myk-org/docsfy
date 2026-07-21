@@ -92,7 +92,7 @@ app.include_router(ws_router)
 class AuthMiddleware(BaseHTTPMiddleware):
     """Authenticate every request via Bearer token or session cookie."""
 
-    # Paths that do not require authentication
+    # Paths that do not require authentication (optional auth still applied)
     _PUBLIC_PATHS = frozenset(
         {
             "/api/auth/login",
@@ -108,14 +108,92 @@ class AuthMiddleware(BaseHTTPMiddleware):
         }
     )
 
+    @staticmethod
+    def _set_anonymous_state(request: Request) -> None:
+        request.state.user = None
+        request.state.is_admin = False
+        request.state.role = "public"
+        request.state.username = ""
+
+    async def _authenticate(
+        self, request: Request
+    ) -> tuple[object | None, bool, str, str] | None:
+        """Return (user, is_admin, username, role) if credentials authenticate.
+
+        Returns None when no credentials are present or auth fails.
+        """
+        settings = get_settings()
+        user = None
+        is_admin = False
+        username = ""
+
+        auth_header = request.headers.get("authorization", "")
+        if auth_header.startswith("Bearer "):
+            logger.debug(
+                "Auth middleware: Bearer token auth for '%s'", request.url.path
+            )
+            token = auth_header[7:]
+            if token == settings.admin_key:
+                is_admin = True
+                username = "admin"
+            else:
+                user = await get_user_by_key(token)
+
+        if not user and not is_admin:
+            session_token = request.cookies.get("docsfy_session")
+            if session_token:
+                logger.debug(
+                    "Auth middleware: session cookie auth for '%s'", request.url.path
+                )
+                session = await get_session(session_token)
+                if session:
+                    is_admin = bool(session["is_admin"])
+                    username = str(session["username"])
+                    if username != "admin":
+                        user = await get_user_by_username(username)
+                        if not user:
+                            return None
+
+        if not user and not is_admin:
+            return None
+
+        if is_admin:
+            role = "admin"
+            if not username:
+                username = "admin"
+        else:
+            if user is None:
+                return None
+            role = str(user.get("role", "user"))
+            username = str(user["username"])
+            if role == "admin":
+                is_admin = True
+
+        return user, is_admin, username, role
+
     async def dispatch(
         self, request: Request, call_next: RequestResponseEndpoint
     ) -> Response:
         path = request.url.path
 
-        # Public paths -- no auth required
+        # Public paths — auth optional; always populate request.state defaults
         if path in self._PUBLIC_PATHS:
-            logger.debug(f"Auth middleware: public path '{path}', skipping auth")
+            self._set_anonymous_state(request)
+            auth = await self._authenticate(request)
+            if auth is not None:
+                user, is_admin, username, role = auth
+                request.state.user = user
+                request.state.is_admin = is_admin
+                request.state.role = role
+                request.state.username = username
+                logger.debug(
+                    "Auth middleware: optional auth '%s' role='%s' for public '%s'",
+                    username,
+                    role,
+                    path,
+                )
+            else:
+                logger.debug("Auth middleware: public path '%s', anonymous", path)
             return await call_next(request)
 
         # API and docs paths require authentication
@@ -128,47 +206,8 @@ class AuthMiddleware(BaseHTTPMiddleware):
             logger.debug(f"Auth middleware: SPA route '{path}', skipping auth")
             return await call_next(request)
 
-        settings = get_settings()
-        user = None
-        is_admin = False
-        username = ""
-
-        # 1. Check Authorization header (API clients)
-        auth_header = request.headers.get("authorization", "")
-        if auth_header.startswith("Bearer "):
-            logger.debug(f"Auth middleware: Bearer token auth for '{path}'")
-            token = auth_header[7:]
-            if token == settings.admin_key:
-                is_admin = True
-                username = "admin"
-            else:
-                user = await get_user_by_key(token)
-
-        # 2. Check session cookie (browser) -- opaque session token
-        if not user and not is_admin:
-            session_token = request.cookies.get("docsfy_session")
-            if session_token:
-                logger.debug(f"Auth middleware: session cookie auth for '{path}'")
-                session = await get_session(session_token)
-                if session:
-                    is_admin = bool(session["is_admin"])
-                    username = str(session["username"])
-                    # For DB users (not ADMIN_KEY admin), verify user still exists
-                    if username != "admin":
-                        user = await get_user_by_username(username)
-                        if not user:
-                            # User was deleted since session was created
-                            if path.startswith("/docs/"):
-                                accept = request.headers.get("accept", "")
-                                if "text/html" in accept:
-                                    return RedirectResponse(
-                                        url="/login", status_code=302
-                                    )
-                            return JSONResponse(
-                                status_code=401, content={"detail": "Unauthorized"}
-                            )
-
-        if not user and not is_admin:
+        auth = await self._authenticate(request)
+        if auth is None:
             # Not authenticated -- redirect browsers viewing /docs/* to login
             if path.startswith("/docs/"):
                 accept = request.headers.get("accept", "")
@@ -176,21 +215,10 @@ class AuthMiddleware(BaseHTTPMiddleware):
                     return RedirectResponse(url="/login", status_code=302)
             return JSONResponse(status_code=401, content={"detail": "Unauthorized"})
 
-        # Determine the role
-        if is_admin:
-            role = "admin"
-            if not username:
-                username = "admin"
-        else:
-            if user is None:
-                return JSONResponse(status_code=401, content={"detail": "Unauthorized"})
-            role = str(user.get("role", "user"))
-            username = str(user["username"])
-            # DB user with admin role gets admin privileges
-            if role == "admin":
-                is_admin = True
+        user, is_admin, username, role = auth
+        # Deleted-user session: _authenticate returns None; docs redirect handled above.
+        # Extra check for docs HTML when user was deleted mid-request is covered there.
 
-        # Store user info in request state
         request.state.user = user
         request.state.is_admin = is_admin
         request.state.role = role

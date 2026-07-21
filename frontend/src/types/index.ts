@@ -2,11 +2,25 @@ export type ProjectStatus = 'generating' | 'ready' | 'error' | 'aborted'
 export type UserRole = 'admin' | 'user' | 'viewer'
 export type AIProvider = 'claude' | 'gemini' | 'cursor'
 export type RepoType = 'app' | 'tests' | 'library' | 'framework'
-export type AvailableModels = Record<string, Array<{id: string; name: string}>>
+export type ModelSource = 'acpx' | 'cli' | 'api'
+export type AvailableModels = Record<
+  string,
+  Array<{ id: string; name: string; source?: ModelSource | string }>
+>
+
+export interface ProviderStatus {
+  ok: boolean
+  reason?: string | null
+  hint?: string | null
+  has_api_key?: boolean
+  model_count?: number
+}
 
 export interface ComboboxOption {
   value: string
   label: string
+  /** Optional source badge (acpx / cli / api) */
+  badge?: string
 }
 
 export interface Project {
@@ -105,6 +119,7 @@ export interface ModelsResponse {
   default_vision_provider: string
   default_vision_model: string
   available_models: AvailableModels
+  provider_status?: Record<string, ProviderStatus>
 }
 
 /**

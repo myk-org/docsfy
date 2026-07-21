@@ -12,13 +12,15 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import Combobox from '@/components/shared/Combobox'
+import CursorAuthBanner from '@/components/shared/CursorAuthBanner'
 import { generateDocs } from '@/lib/api'
 import { SK_REPO, SK_BRANCH, SK_FORCE, SK_REPO_TYPE, TOAST_DEFAULT_MS, TOAST_ERROR_MS, VALID_PROVIDERS, VALID_REPO_TYPES, SELECT_CLEAR } from '@/lib/constants'
-import { cn } from '@/lib/utils'
-import type { AvailableModels } from '@/types'
+import { cn, modelOptionsForProvider } from '@/lib/utils'
+import type { AvailableModels, ProviderStatus } from '@/types'
 import { ApiError } from '@/types'
 interface GenerateFormProps {
   availableModels: AvailableModels
+  providerStatus?: Record<string, ProviderStatus>
   knownBranches: Record<string, string[]>
   defaultProvider?: string
   defaultModel?: string
@@ -39,6 +41,7 @@ function extractRepoName(url: string): string {
 
 export default function GenerateForm({
   availableModels,
+  providerStatus = {},
   knownBranches,
   defaultProvider,
   defaultModel,
@@ -169,17 +172,10 @@ export default function GenerateForm({
 
   function handleProviderChange(value: string) {
     setProvider(value)
-    // Clear model if current selection is not valid for the new provider
-    const models = availableModels[value]
-    if (models && models.length > 0) {
-      if (!models.some(m => m.id === model)) {
-        setModel('')
-      }
-    } else {
-      setModel('')
-    }
+    setModel('')
     // When no vision provider is set, vision falls back to generation provider.
     // Clear visionModel if it's invalid for the new generation provider.
+    const models = availableModels[value]
     if (!visionProvider && visionModel && models) {
       if (!models.some(m => m.id === visionModel)) {
         setVisionModel('')
@@ -196,14 +192,7 @@ export default function GenerateForm({
     if (value === null) return
     const newValue = value === SELECT_CLEAR ? '' : value
     setVisionProvider(newValue)
-    if (!newValue) {
-      setVisionModel('')
-    } else {
-      const models = availableModels[newValue]
-      if (!models || !models.some(m => m.id === visionModel)) {
-        setVisionModel('')
-      }
-    }
+    setVisionModel('')
   }
 
   function handleVisionModelChange(value: string) {
@@ -232,6 +221,18 @@ export default function GenerateForm({
 
     if (!submittedRepoUrl) {
       toast.error('Please enter a repository URL', { duration: TOAST_ERROR_MS })
+      return
+    }
+    if (submittedProvider && !submittedModel.trim()) {
+      toast.error('Please select a model for the chosen provider', {
+        duration: TOAST_ERROR_MS,
+      })
+      return
+    }
+    if (visionProvider && !visionModel.trim()) {
+      toast.error('Please select a vision model for the chosen vision provider', {
+        duration: TOAST_ERROR_MS,
+      })
       return
     }
 
@@ -276,10 +277,8 @@ export default function GenerateForm({
 
   const repoName = repoUrl.trim() ? extractRepoName(repoUrl) : ''
   const branchOptions = repoName && knownBranches[repoName] ? knownBranches[repoName] : []
-  const modelOptions = (availableModels[provider] ?? []).map(m => ({ value: m.id, label: m.name || m.id }))
-  const visionModelOptions = visionProvider
-    ? (availableModels[visionProvider] ?? []).map(m => ({ value: m.id, label: m.name || m.id }))
-    : []
+  const modelOptions = modelOptionsForProvider(availableModels, provider)
+  const visionModelOptions = modelOptionsForProvider(availableModels, visionProvider)
 
   return (
     <div className="flex items-start justify-center h-full p-8">
@@ -366,6 +365,10 @@ export default function GenerateForm({
           </Select>
         </div>
 
+        {provider === 'cursor' && providerStatus.cursor && !providerStatus.cursor.ok && (
+          <CursorAuthBanner status={providerStatus.cursor} />
+        )}
+
         {/* Model */}
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="model" title="Specific AI model to use">Model</Label>
@@ -429,7 +432,17 @@ export default function GenerateForm({
         </div>
 
         {/* Submit */}
-        <Button type="submit" disabled={isSubmitting} className="w-full mt-2" data-testid="generate-btn" title="Start documentation generation">
+        <Button
+          type="submit"
+          disabled={
+            isSubmitting ||
+            (!!provider && !model.trim()) ||
+            (!!visionProvider && !visionModel.trim())
+          }
+          className="w-full mt-2"
+          data-testid="generate-btn"
+          title="Start documentation generation"
+        >
           {isSubmitting ? (
             <>
               <Loader2 className="size-4 animate-spin mr-2" />

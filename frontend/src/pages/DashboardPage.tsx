@@ -35,7 +35,7 @@ import type {
   LogEntry,
   DocPlan,
 } from '@/types'
-import type { AvailableModels, ModelsResponse } from '@/types'
+import type { AvailableModels, ModelsResponse, ProviderStatus } from '@/types'
 import { ApiError } from '@/types'
 
 type SelectedView =
@@ -61,6 +61,7 @@ export default function DashboardPage() {
   const [projects, setProjects] = useState<Project[]>([])
   const [projectsLoaded, setProjectsLoaded] = useState(false)
   const [availableModels, setAvailableModels] = useState<AvailableModels>({})
+  const [providerStatus, setProviderStatus] = useState<Record<string, ProviderStatus>>({})
   const [totalCostUsd, setTotalCostUsd] = useState<number>(0)
   const [knownBranches, setKnownBranches] = useState<Record<string, string[]>>({})
   const [defaultProvider, setDefaultProvider] = useState('')
@@ -75,6 +76,7 @@ export default function DashboardPage() {
     setDefaultModel(data.default_model ?? '')
     setDefaultVisionProvider(data.default_vision_provider ?? '')
     setDefaultVisionModel(data.default_vision_model ?? '')
+    setProviderStatus(data.provider_status ?? {})
   }
 
   const loadModels = useCallback(async () => {
@@ -617,6 +619,7 @@ export default function DashboardPage() {
         username={username}
         projects={projects}
         availableModels={availableModels}
+        providerStatus={providerStatus}
         knownBranches={knownBranches}
         defaultProvider={defaultProvider}
         defaultModel={defaultModel}
@@ -825,6 +828,7 @@ function MainPanel({
   username,
   projects,
   availableModels,
+  providerStatus,
   knownBranches,
   defaultProvider,
   defaultModel,
@@ -842,6 +846,7 @@ function MainPanel({
   username: string
   projects: Project[]
   availableModels: AvailableModels
+  providerStatus: Record<string, ProviderStatus>
   knownBranches: Record<string, string[]>
   defaultProvider: string
   defaultModel: string
@@ -871,6 +876,7 @@ function MainPanel({
     return (
       <GenerateForm
         availableModels={availableModels}
+        providerStatus={providerStatus}
         knownBranches={knownBranches}
         defaultProvider={defaultProvider}
         defaultModel={defaultModel}
@@ -910,6 +916,7 @@ function MainPanel({
         project={project}
         logEntries={logEntries}
         availableModels={availableModels}
+        providerStatus={providerStatus}
         isAdmin={isAdmin}
         role={role}
         onDelete={() => onDelete(project.name, project.branch, project.ai_provider, project.ai_model, project.owner)}
@@ -930,7 +937,7 @@ function MainPanel({
   }
 
   if (selectedView.type === 'settings' && isAdmin) {
-    return <SettingsPanel availableModels={availableModels} onSettingsSaved={onSettingsSaved} />
+    return <SettingsPanel availableModels={availableModels} providerStatus={providerStatus} onSettingsSaved={onSettingsSaved} />
   }
 
   return null

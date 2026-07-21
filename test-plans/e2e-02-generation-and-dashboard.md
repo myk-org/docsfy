@@ -54,18 +54,18 @@ agent-browser click "[data-testid='provider-select']"
 agent-browser wait 500
 agent-browser click "[data-value='gemini']"
 agent-browser wait 500
-agent-browser clear "[data-testid='model-input']"
+agent-browser javascript "document.querySelector('[data-testid=\"model-input\"]')?.value"
 agent-browser type "[data-testid='model-input']" "gemini-2.5-flash"
 agent-browser screenshot
 ```
 
-**Check:** The form fields are correctly populated.
+**Check:** The form fields are correctly populated. Switching provider clears the model (no auto-default); the test then selects a model explicitly. Generate stays disabled while provider is set and model is empty.
 
 **Expected result:**
 - Repository URL field contains `https://github.com/myk-org/for-testing-only`
 - Branch field shows `main`
 - Provider shows `gemini`
-- Model field shows `gemini-2.5-flash`
+- After provider switch, model field is empty and `[data-testid='generate-btn']` is disabled until a model is chosen; after typing, it shows `gemini-2.5-flash`
 - Force checkbox is unchecked
 
 ---

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
+from typing import Any
 from unittest.mock import patch
 
 import pytest
@@ -102,6 +103,9 @@ async def test_get_models_returns_valid_structure(client: AsyncClient) -> None:
     assert "available_models" in data
     assert isinstance(data["providers"], list)
     assert isinstance(data["available_models"], dict)
+    assert "provider_status" in data
+    assert "cursor" in data["provider_status"]
+    assert "ok" in data["provider_status"]["cursor"]
 
 
 async def test_get_models_includes_valid_providers(client: AsyncClient) -> None:
@@ -151,11 +155,41 @@ async def test_get_models_no_auth_required() -> None:
                     assert response.status_code == 200
                     data = response.json()
                     assert "providers" in data
+                    cursor = data["provider_status"]["cursor"]
+                    assert "has_api_key" not in cursor
         finally:
             storage.DB_PATH = orig_db
             storage.DATA_DIR = orig_data
             storage.PROJECTS_DIR = orig_projects
             get_settings.cache_clear()
+
+
+async def test_get_models_admin_gets_cursor_auth_details(
+    client: AsyncClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Authenticated admin GET /api/models includes probe fields like has_api_key."""
+
+    async def fake_probe(*, force: bool = False, model_count: int | None = None):
+        return {
+            "ok": False,
+            "reason": "auth_expired",
+            "hint": "login expired",
+            "has_api_key": False,
+            "model_count": model_count or 0,
+        }
+
+    async def empty_models():
+        return {"cursor": [], "claude": [], "gemini": []}
+
+    monkeypatch.setattr("docsfy.api.projects.probe_cursor_auth", fake_probe)
+    monkeypatch.setattr("docsfy.api.projects._load_available_models", empty_models)
+
+    response = await client.get("/api/models")
+    assert response.status_code == 200
+    cursor = response.json()["provider_status"]["cursor"]
+    assert cursor["ok"] is False
+    assert "has_api_key" in cursor
+    assert cursor["reason"] == "auth_expired"
 
 
 async def test_refresh_models_requires_admin() -> None:
@@ -207,6 +241,29 @@ async def test_refresh_models_as_admin(client: AsyncClient) -> None:
     assert "providers" in data
     assert "available_models" in data
     assert "default_provider" in data
+
+
+async def test_refresh_models_probes_cursor_once(client: AsyncClient) -> None:
+    """Refresh must force-probe Cursor once — not via GET then again."""
+    calls: list[dict[str, Any]] = []
+
+    async def fake_probe(**kwargs: Any) -> dict[str, Any]:
+        calls.append(kwargs)
+        return {"ok": False, "reason": "no_models", "hint": "x", "has_api_key": False}
+
+    with (
+        patch("docsfy.api.projects.refresh_models", return_value=[]),
+        patch("docsfy.api.projects.probe_cursor_auth", side_effect=fake_probe),
+        patch(
+            "docsfy.api.projects._load_available_models",
+            return_value={"claude": [], "gemini": [], "cursor": []},
+        ),
+    ):
+        response = await client.post("/api/models/refresh")
+    assert response.status_code == 200
+    assert len(calls) == 1
+    assert calls[0].get("force") is True
+    assert calls[0].get("model_count") == 0
 
 
 async def test_refresh_models_sidecar_failure(client: AsyncClient) -> None:

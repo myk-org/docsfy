@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import {
   ExternalLink,
   Download,
@@ -22,13 +22,14 @@ import {
 } from '@/components/ui/select'
 import { Progress } from '@/components/ui/progress'
 import Combobox from '@/components/shared/Combobox'
+import CursorAuthBanner from '@/components/shared/CursorAuthBanner'
 import ActivityLog from '@/components/shared/ActivityLog'
 import { useModal } from '@/components/shared/ModalProvider'
 import { deleteVariant as deleteVariantApi, generateDocs, abortVariant } from '@/lib/api'
-import { encodeBranch } from '@/lib/utils'
+import { encodeBranch, modelOptionsForProvider } from '@/lib/utils'
 import { TOAST_DEFAULT_MS, TOAST_ERROR_MS, VALID_PROVIDERS, BADGE_STYLES, SELECT_CLEAR } from '@/lib/constants'
 import { ApiError } from '@/types'
-import type { Project, LogEntry, DocPlan, AvailableModels } from '@/types'
+import type { Project, LogEntry, DocPlan, AvailableModels, ProviderStatus } from '@/types'
 
 function formatDuration(seconds: number): string {
   if (seconds < 60) return `${seconds}s`
@@ -62,6 +63,7 @@ interface VariantDetailProps {
   project: Project
   logEntries: LogEntry[]
   availableModels: AvailableModels
+  providerStatus?: Record<string, ProviderStatus>
   isAdmin: boolean
   role: string
   onDelete?: () => void
@@ -282,11 +284,13 @@ function InfoGrid({ project, isAdmin }: { project: Project; isAdmin: boolean }) 
 function RegenerateSection({
   project,
   availableModels,
+  providerStatus = {},
   defaultForce,
   onRegenerate,
 }: {
   project: Project
   availableModels: AvailableModels
+  providerStatus?: Record<string, ProviderStatus>
   defaultForce: boolean
   onRegenerate?: (provider: string, model: string, force: boolean) => void
 }) {
@@ -308,37 +312,24 @@ function RegenerateSection({
     setIsStarting(false)
   }, [variantKey]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const getDefaultModel = useCallback(
-    (prov: string): string => {
-      const models = availableModels[prov]
-      return models && models.length > 0 ? models[0].id : ''
-    },
-    [availableModels],
-  )
-
-  useEffect(() => {
-    setModel((prev) => {
-      const models = availableModels[provider]
-      if (models && models.length > 0) {
-        return prev || models[0].id
-      }
-      return prev
-    })
-  }, [provider, availableModels])
-
   function handleProviderChange(value: string) {
     setProvider(value)
-    const models = availableModels[value]
-    if (models && models.length > 0) {
-      if (!models.some(m => m.id === model)) {
-        setModel(models[0].id)
-      }
-    } else {
-      setModel(getDefaultModel(value))
-    }
+    setModel('')
   }
 
   async function handleRegenerate() {
+    if (!model.trim()) {
+      toast.error('Please select a model for the chosen provider', {
+        duration: TOAST_ERROR_MS,
+      })
+      return
+    }
+    if (visionProvider && !visionModel.trim()) {
+      toast.error('Please select a vision model for the chosen vision provider', {
+        duration: TOAST_ERROR_MS,
+      })
+      return
+    }
     setIsStarting(true)
     try {
       await generateDocs({
@@ -365,20 +356,11 @@ function RegenerateSection({
     if (value === null) return
     const v = value === SELECT_CLEAR ? '' : value
     setVisionProvider(v)
-    if (!v) {
-      setVisionModel('')
-    } else {
-      const models = availableModels[v]
-      if (!models || !models.some(m => m.id === visionModel)) {
-        setVisionModel('')
-      }
-    }
+    setVisionModel('')
   }
 
-  const modelOptions = (availableModels[provider] ?? []).map(m => ({ value: m.id, label: m.name || m.id }))
-  const visionModelOptions = visionProvider
-    ? (availableModels[visionProvider] ?? []).map(m => ({ value: m.id, label: m.name || m.id }))
-    : []
+  const modelOptions = modelOptionsForProvider(availableModels, provider)
+  const visionModelOptions = modelOptionsForProvider(availableModels, visionProvider)
 
   return (
     <div className="border-t border-dashed pt-4 mt-4">
@@ -408,6 +390,9 @@ function RegenerateSection({
             />
           </div>
         </div>
+        {provider === 'cursor' && providerStatus.cursor && !providerStatus.cursor.ok && (
+          <CursorAuthBanner status={providerStatus.cursor} />
+        )}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div className="flex flex-col gap-1.5">
             <Label>Vision Provider</Label>
@@ -451,7 +436,9 @@ function RegenerateSection({
         <Button
           data-testid="data-regenerate-variant"
           onClick={handleRegenerate}
-          disabled={isStarting || !model}
+          disabled={
+            isStarting || !model.trim() || (!!visionProvider && !visionModel.trim())
+          }
           className="w-full sm:w-auto"
           title="Re-generate documentation with these settings"
         >
@@ -473,6 +460,7 @@ function ReadyView({
   project,
   logEntries,
   availableModels,
+  providerStatus,
   isAdmin,
   role,
   onDelete,
@@ -558,6 +546,7 @@ function ReadyView({
         <RegenerateSection
           project={project}
           availableModels={availableModels}
+          providerStatus={providerStatus}
           defaultForce={false}
           onRegenerate={onRegenerate}
         />
@@ -665,6 +654,7 @@ function ErrorAbortedView({
   project,
   logEntries,
   availableModels,
+  providerStatus,
   isAdmin,
   role,
   onDelete,
@@ -713,6 +703,7 @@ function ErrorAbortedView({
           <RegenerateSection
             project={project}
             availableModels={availableModels}
+            providerStatus={providerStatus}
             defaultForce={true}
             onRegenerate={onRegenerate}
           />
@@ -746,6 +737,7 @@ export default function VariantDetail({
   project,
   logEntries,
   availableModels,
+  providerStatus,
   isAdmin,
   role,
   onDelete,
@@ -766,6 +758,7 @@ export default function VariantDetail({
           project={project}
           logEntries={logEntries}
           availableModels={availableModels}
+          providerStatus={providerStatus}
           isAdmin={isAdmin}
           role={role}
           onDelete={onDelete}
@@ -785,6 +778,7 @@ export default function VariantDetail({
           project={project}
           logEntries={logEntries}
           availableModels={availableModels}
+          providerStatus={providerStatus}
           isAdmin={isAdmin}
           role={role}
           onDelete={onDelete}

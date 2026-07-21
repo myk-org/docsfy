@@ -28,7 +28,8 @@ When adding new code:
 
 | Resource Type | Location | Examples |
 |---|---|---|
-| Python constants | `src/docsfy/models.py` | `VALID_PROVIDERS`, `DEFAULT_BRANCH`, `PAGE_TYPES`, `REPO_TYPES`, `DOCSFY_DOCS_URL`, `DOCSFY_REPO_URL` |
+| Python constants | `src/docsfy/models.py` | `VALID_PROVIDERS`, `DEFAULT_BRANCH`, `PAGE_TYPES`, `REPO_TYPES`, `DOCSFY_DOCS_URL`, `DOCSFY_REPO_URL`, `DEFAULT_SIDECAR_BY_PROVIDER`, `CLI_SIDECAR_BY_PROVIDER`, `SIDECAR_*` |
+
 | Data models | `src/docsfy/models.py` | `GenerateRequest`, `DocPlan`, `DocPage`, `NavGroup`, `RepoType` |
 | DB constants & validators | `src/docsfy/storage.py` | `VALID_STATUSES`, `VALID_ROLES`, `_validate_name()`, `_validate_owner()` |
 | Git timeouts | `src/docsfy/repository.py` | `_CLONE_TIMEOUT`, `_FETCH_TIMEOUT`, `_DIFF_TIMEOUT` |
@@ -85,6 +86,7 @@ When adding new code:
 - Vision AI provider/model (`VISION_PROVIDER`, `VISION_MODEL`) control image description — falls back to generation provider/model
 - The UI reads defaults from `GET /api/models` response (`default_provider`, `default_model`)
 - AI calls are routed through pi-sidecar-client to a local HTTP sidecar service (default port 9100 via `SIDECAR_PORT` env var)
+- Sidecar agent discovery (optional): `ACPX_AGENTS` / `CLI_AGENTS` (comma-separated). Models appear under friendly providers (`claude`/`gemini`/`cursor`) with `source` tags (`acpx`|`cli`|`api`). Unset = disabled. Entrypoint resolves `SIDECAR_ACPX_EXTENSION_PATH` and `SIDECAR_CLI_PROVIDER_EXTENSION_PATH`.
 
 ## Testing
 

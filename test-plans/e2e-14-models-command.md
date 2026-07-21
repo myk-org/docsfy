@@ -176,6 +176,45 @@ print(f'Providers with models: {providers_with_models}')
 - Each value is an array of objects with `id` and `name` fields (e.g., `[{"id": "gemini-2.5-flash", "name": "Gemini 2.5 Flash"}, ...]`)
 - At least one provider has discovered models
 - Models are discovered via pi-sidecar-client from the Pi SDK sidecar service, not from completed generations
+- When both ACPX and CLI agents are configured (`ACPX_AGENTS` / `CLI_AGENTS`), model entries may include a `source` field (`acpx`, `cli`, or `api`)
+
+---
+
+### 28.7b Model source badges in UI
+
+**Precondition:** Server running with at least one provider that has discovered models. Optional: `CLI_AGENTS` and/or `ACPX_AGENTS` set so both sources appear.
+
+**Steps:**
+
+1. Log in as admin and open the dashboard generate form (or Admin → Settings).
+2. Select a provider that has models (e.g. `cursor`).
+3. Open the model Combobox dropdown.
+
+**Expected result:**
+- Each model row shows the model id/name
+- When a model has a `source` from the API, an uppercase badge (`ACPX`, `CLI`, or `API`) appears on that row
+- Friendly provider list remains only `claude` / `gemini` / `cursor` (no `*-cli` providers)
+- Selecting a CLI-tagged model and generating docs routes through `cli-*` on the sidecar; ACPX-tagged models use `acpx-*`
+- Opening the Combobox with a selected model id shows the **full** list (not an empty or single-row list filtered by the full id)
+
+---
+
+### 28.7c Cursor auth banner when catalog empty
+
+**Precondition:** Server running; Cursor discovery returns **zero** models (e.g. Cursor not logged in / no `CURSOR_API_KEY`), or temporarily empty catalog.
+
+**Steps:**
+
+1. Log in as admin; open generate form (or Admin → Settings).
+2. Select provider `cursor`.
+3. Inspect `GET /api/models` → `provider_status.cursor` **with** admin session/Bearer (optional auth on the public path).
+
+**Expected result:**
+- Anonymous `GET /api/models` still works; `provider_status.cursor.ok` is coarse (`has_api_key` absent)
+- Admin-authenticated `GET /api/models` runs `probe_cursor_auth` and may include `has_api_key` / specific `reason`
+- When `ok` is `false`, UI shows `data-testid="cursor-auth-banner"` under the provider control
+- Banner **title** matches `reason` (`agent_missing` / `no_models` / `unavailable` / `auth_expired` / `api_key_not_applied`) — not always “browser login expired”
+- When Cursor has models (`ok: true`), banner is **not** shown
 
 ---
 
