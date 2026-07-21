@@ -172,17 +172,10 @@ export default function GenerateForm({
 
   function handleProviderChange(value: string) {
     setProvider(value)
-    // Clear model if current selection is not valid for the new provider
-    const models = availableModels[value]
-    if (models && models.length > 0) {
-      if (!models.some(m => m.id === model)) {
-        setModel('')
-      }
-    } else {
-      setModel('')
-    }
+    setModel('')
     // When no vision provider is set, vision falls back to generation provider.
     // Clear visionModel if it's invalid for the new generation provider.
+    const models = availableModels[value]
     if (!visionProvider && visionModel && models) {
       if (!models.some(m => m.id === visionModel)) {
         setVisionModel('')
@@ -199,14 +192,7 @@ export default function GenerateForm({
     if (value === null) return
     const newValue = value === SELECT_CLEAR ? '' : value
     setVisionProvider(newValue)
-    if (!newValue) {
-      setVisionModel('')
-    } else {
-      const models = availableModels[newValue]
-      if (!models || !models.some(m => m.id === visionModel)) {
-        setVisionModel('')
-      }
-    }
+    setVisionModel('')
   }
 
   function handleVisionModelChange(value: string) {

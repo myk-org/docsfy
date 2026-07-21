@@ -77,28 +77,14 @@ export default function SettingsPanel({ availableModels, providerStatus = {}, on
     if (value === null) return
     const v = value === SELECT_CLEAR ? '' : value
     setProvider(v)
-    if (!v) {
-      setModel('')
-    } else {
-      const models = availableModels[v]
-      if (!models?.some(m => m.id === model)) {
-        setModel('')
-      }
-    }
+    setModel('')
   }
 
   function handleVisionProviderChange(value: string | null) {
     if (value === null) return
     const v = value === SELECT_CLEAR ? '' : value
     setVisionProvider(v)
-    if (!v) {
-      setVisionModel('')
-    } else {
-      const models = availableModels[v]
-      if (!models?.some(m => m.id === visionModel)) {
-        setVisionModel('')
-      }
-    }
+    setVisionModel('')
   }
 
   async function handleSave(e: React.FormEvent) {

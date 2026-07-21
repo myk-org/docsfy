@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import {
   ExternalLink,
   Download,
@@ -312,34 +312,9 @@ function RegenerateSection({
     setIsStarting(false)
   }, [variantKey]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const getDefaultModel = useCallback(
-    (prov: string): string => {
-      const models = availableModels[prov]
-      return models && models.length > 0 ? models[0].id : ''
-    },
-    [availableModels],
-  )
-
-  useEffect(() => {
-    setModel((prev) => {
-      const models = availableModels[provider]
-      if (models && models.length > 0) {
-        return prev || models[0].id
-      }
-      return prev
-    })
-  }, [provider, availableModels])
-
   function handleProviderChange(value: string) {
     setProvider(value)
-    const models = availableModels[value]
-    if (models && models.length > 0) {
-      if (!models.some(m => m.id === model)) {
-        setModel(models[0].id)
-      }
-    } else {
-      setModel(getDefaultModel(value))
-    }
+    setModel('')
   }
 
   async function handleRegenerate() {
@@ -369,14 +344,7 @@ function RegenerateSection({
     if (value === null) return
     const v = value === SELECT_CLEAR ? '' : value
     setVisionProvider(v)
-    if (!v) {
-      setVisionModel('')
-    } else {
-      const models = availableModels[v]
-      if (!models || !models.some(m => m.id === visionModel)) {
-        setVisionModel('')
-      }
-    }
+    setVisionModel('')
   }
 
   const modelOptions = (availableModels[provider] ?? []).map(m => ({
