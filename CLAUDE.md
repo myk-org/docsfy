@@ -28,7 +28,8 @@ When adding new code:
 
 | Resource Type | Location | Examples |
 |---|---|---|
-| Python constants | `src/docsfy/models.py` | `VALID_PROVIDERS`, `DEFAULT_BRANCH`, `PAGE_TYPES`, `REPO_TYPES`, `DOCSFY_DOCS_URL`, `DOCSFY_REPO_URL` |
+| Python constants | `src/docsfy/models.py` | `VALID_PROVIDERS`, `DEFAULT_BRANCH`, `PAGE_TYPES`, `REPO_TYPES`, `DOCSFY_DOCS_URL`, `DOCSFY_REPO_URL`, `DEFAULT_SIDECAR_BY_PROVIDER`, `CLI_SIDECAR_BY_PROVIDER`, `SIDECAR_*` |
+
 | Data models | `src/docsfy/models.py` | `GenerateRequest`, `DocPlan`, `DocPage`, `NavGroup`, `RepoType` |
 | DB constants & validators | `src/docsfy/storage.py` | `VALID_STATUSES`, `VALID_ROLES`, `_validate_name()`, `_validate_owner()` |
 | Git timeouts | `src/docsfy/repository.py` | `_CLONE_TIMEOUT`, `_FETCH_TIMEOUT`, `_DIFF_TIMEOUT` |

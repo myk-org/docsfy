@@ -15,6 +15,13 @@ from docsfy.ai_client import (
     refresh_models,
     run_parallel_with_limit,
 )
+from docsfy.models import (
+    SIDECAR_ACPX_CURSOR,
+    SIDECAR_CLI_CURSOR,
+    SIDECAR_CLI_GEMINI,
+    SIDECAR_GOOGLE_GEMINI,
+    SIDECAR_VERTEX_CLAUDE,
+)
 
 
 def test_reexports_available() -> None:
@@ -38,7 +45,7 @@ def test_map_cursor_acpx_heuristic() -> None:
     provider, model = map_provider_model_for_sidecar(
         "cursor", "cursor:default[effort=high]"
     )
-    assert provider == "acpx-cursor"
+    assert provider == SIDECAR_ACPX_CURSOR
     assert model == "cursor:default[effort=high]"
 
 
@@ -46,7 +53,7 @@ def test_map_cursor_cache_miss_defaults_to_acpx() -> None:
     """Free-typed cursor:* must not assume CLI when catalog has no route."""
     ai_client._model_route_cache.clear()
     provider, model = map_provider_model_for_sidecar("cursor", "cursor:composer-2")
-    assert provider == "acpx-cursor"
+    assert provider == SIDECAR_ACPX_CURSOR
     assert model == "cursor:composer-2"
 
 
@@ -54,15 +61,15 @@ def test_legacy_cursor_cli_provider_with_cli_model() -> None:
     ai_client._model_route_cache.clear()
     # Without catalog cache, legacy alias still defaults to ACPX (safe fallback).
     provider, model = map_provider_model_for_sidecar("cursor-cli", "cursor:composer-2")
-    assert provider == "acpx-cursor"
+    assert provider == SIDECAR_ACPX_CURSOR
     assert model == "cursor:composer-2"
 
 
 def test_cache_overrides_heuristic() -> None:
     ai_client._model_route_cache.clear()
-    ai_client._model_route_cache[("cursor", "cursor:composer-2")] = "cli-cursor"
+    ai_client._model_route_cache[("cursor", "cursor:composer-2")] = SIDECAR_CLI_CURSOR
     provider, model = map_provider_model_for_sidecar("cursor", "cursor:composer-2")
-    assert provider == "cli-cursor"
+    assert provider == SIDECAR_CLI_CURSOR
     assert model == "cursor:composer-2"
 
 
@@ -72,17 +79,17 @@ def test_list_models_from_catalog_merges_and_tags_source() -> None:
         {
             "id": "cursor:default[]",
             "name": "Default",
-            "provider": "acpx-cursor",
+            "provider": SIDECAR_ACPX_CURSOR,
         },
         {
             "id": "cursor:composer-2",
             "name": "Composer",
-            "provider": "cli-cursor",
+            "provider": SIDECAR_CLI_CURSOR,
         },
         {
             "id": "claude-opus-4-6",
             "name": "Opus",
-            "provider": "google-vertex-claude",
+            "provider": SIDECAR_VERTEX_CLAUDE,
         },
     ]
     models = list_models_from_catalog("cursor", raw)
@@ -91,7 +98,10 @@ def test_list_models_from_catalog_merges_and_tags_source() -> None:
     assert by_id["cursor:default[]"]["source"] == "acpx"
     assert by_id["cursor:default[]"]["provider"] == "cursor"
     assert by_id["cursor:composer-2"]["source"] == "cli"
-    assert ai_client._model_route_cache[("cursor", "cursor:composer-2")] == "cli-cursor"
+    assert (
+        ai_client._model_route_cache[("cursor", "cursor:composer-2")]
+        == SIDECAR_CLI_CURSOR
+    )
 
 
 def test_list_models_route_cache_first_source_wins() -> None:
@@ -101,26 +111,28 @@ def test_list_models_route_cache_first_source_wins() -> None:
         {
             "id": "cursor:shared",
             "name": "Shared ACPX",
-            "provider": "acpx-cursor",
+            "provider": SIDECAR_ACPX_CURSOR,
         },
         {
             "id": "cursor:shared",
             "name": "Shared CLI",
-            "provider": "cli-cursor",
+            "provider": SIDECAR_CLI_CURSOR,
         },
     ]
     models = list_models_from_catalog("cursor", raw)
     assert len(models) == 1
     assert models[0]["source"] == "acpx"
-    assert ai_client._model_route_cache[("cursor", "cursor:shared")] == "acpx-cursor"
+    assert (
+        ai_client._model_route_cache[("cursor", "cursor:shared")] == SIDECAR_ACPX_CURSOR
+    )
 
 
 def test_build_friendly_catalog() -> None:
     ai_client._model_route_cache.clear()
     raw = [
-        {"id": "m1", "name": "M1", "provider": "google"},
-        {"id": "m2", "name": "M2", "provider": "cli-gemini"},
-        {"id": "c1", "name": "C1", "provider": "google-vertex-claude"},
+        {"id": "m1", "name": "M1", "provider": SIDECAR_GOOGLE_GEMINI},
+        {"id": "m2", "name": "M2", "provider": SIDECAR_CLI_GEMINI},
+        {"id": "c1", "name": "C1", "provider": SIDECAR_VERTEX_CLAUDE},
     ]
     catalog = build_friendly_catalog(raw)
     assert set(catalog.keys()) == {"claude", "gemini", "cursor"}
@@ -142,12 +154,12 @@ async def test_list_models_uses_catalog(
                 {
                     "id": "cursor:default[]",
                     "name": "Default",
-                    "provider": "acpx-cursor",
+                    "provider": SIDECAR_ACPX_CURSOR,
                 },
                 {
                     "id": "cursor:composer-2",
                     "name": "Composer",
-                    "provider": "cli-cursor",
+                    "provider": SIDECAR_CLI_CURSOR,
                 },
             ]
 
@@ -162,7 +174,7 @@ async def test_refresh_models_clears_stale_route_cache(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     ai_client._model_route_cache.clear()
-    ai_client._model_route_cache[("cursor", "cursor:stale")] = "cli-cursor"
+    ai_client._model_route_cache[("cursor", "cursor:stale")] = SIDECAR_CLI_CURSOR
 
     class FakeClient:
         async def refresh_models(self) -> list[dict]:
@@ -170,7 +182,7 @@ async def test_refresh_models_clears_stale_route_cache(
                 {
                     "id": "cursor:default[]",
                     "name": "Default",
-                    "provider": "acpx-cursor",
+                    "provider": SIDECAR_ACPX_CURSOR,
                 },
             ]
 
@@ -178,7 +190,10 @@ async def test_refresh_models_clears_stale_route_cache(
     raw = await refresh_models()
     assert len(raw) == 1
     assert ("cursor", "cursor:stale") not in ai_client._model_route_cache
-    assert ai_client._model_route_cache[("cursor", "cursor:default[]")] == "acpx-cursor"
+    assert (
+        ai_client._model_route_cache[("cursor", "cursor:default[]")]
+        == SIDECAR_ACPX_CURSOR
+    )
 
 
 def test_cursor_status_from_model_count_ok() -> None:

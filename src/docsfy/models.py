@@ -12,6 +12,28 @@ from docsfy.repository import extract_repo_name
 VALID_PROVIDERS = ("claude", "gemini", "cursor")
 DEFAULT_BRANCH = "main"
 
+# Sidecar provider IDs (pi-sidecar) — single source for routing/catalog
+SIDECAR_ACPX_CURSOR = "acpx-cursor"
+SIDECAR_CLI_CURSOR = "cli-cursor"
+SIDECAR_VERTEX_CLAUDE = "google-vertex-claude"
+SIDECAR_CLI_CLAUDE = "cli-claude"
+SIDECAR_GOOGLE_GEMINI = "google"
+SIDECAR_CLI_GEMINI = "cli-gemini"
+
+# Friendly provider → default (ACPX / Vertex / Google API) sidecar id
+DEFAULT_SIDECAR_BY_PROVIDER: dict[str, str] = {
+    "cursor": SIDECAR_ACPX_CURSOR,
+    "claude": SIDECAR_VERTEX_CLAUDE,
+    "gemini": SIDECAR_GOOGLE_GEMINI,
+}
+
+# Friendly provider → CLI sidecar id (when CLI_AGENTS enables the agent)
+CLI_SIDECAR_BY_PROVIDER: dict[str, str] = {
+    "cursor": SIDECAR_CLI_CURSOR,
+    "claude": SIDECAR_CLI_CLAUDE,
+    "gemini": SIDECAR_CLI_GEMINI,
+}
+
 # DB/API field names for generation timing — shared across projects.py, websocket.py, storage.py
 FIELD_GENERATION_DURATION = "generation_duration"
 FIELD_GENERATION_STARTED_AT = "generation_started_at"

@@ -16,7 +16,13 @@ from pi_sidecar_client import (
 )
 from simple_logger.logger import get_logger
 
-from docsfy.models import VALID_PROVIDERS
+from docsfy.models import (
+    CLI_SIDECAR_BY_PROVIDER,
+    DEFAULT_SIDECAR_BY_PROVIDER,
+    SIDECAR_ACPX_CURSOR,
+    SIDECAR_CLI_CURSOR,
+    VALID_PROVIDERS,
+)
 
 logger = get_logger(name=__name__)
 
@@ -27,19 +33,9 @@ _LEGACY_PROVIDER_ALIASES: dict[str, str] = {
     "gemini-cli": "gemini",
 }
 
-# Friendly → default sidecar (ACPX / Vertex / Google API)
-_DEFAULT_SIDECAR: dict[str, str] = {
-    "cursor": "acpx-cursor",
-    "claude": "google-vertex-claude",
-    "gemini": "google",
-}
-
-# Friendly → CLI sidecar (only populated when CLI_AGENTS enables the agent)
-_CLI_SIDECAR: dict[str, str] = {
-    "cursor": "cli-cursor",
-    "claude": "cli-claude",
-    "gemini": "cli-gemini",
-}
+# Re-export maps under the historical private names used in this module.
+_DEFAULT_SIDECAR = DEFAULT_SIDECAR_BY_PROVIDER
+_CLI_SIDECAR = CLI_SIDECAR_BY_PROVIDER
 
 # (friendly_provider, model_id) → sidecar provider id (filled by catalog build)
 _model_route_cache: dict[tuple[str, str], str] = {}
@@ -94,7 +90,7 @@ def _resolve_sidecar_for_model(friendly: str, model: str) -> str:
 def _map_model_for_sidecar(sidecar_provider: str, model: str) -> str:
     """Ensure cursor models keep the cursor: prefix expected by ACPX/CLI."""
     if (
-        sidecar_provider in ("acpx-cursor", "cli-cursor")
+        sidecar_provider in (SIDECAR_ACPX_CURSOR, SIDECAR_CLI_CURSOR)
         and model
         and not model.startswith("cursor:")
     ):
