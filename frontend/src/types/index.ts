@@ -8,6 +8,14 @@ export type AvailableModels = Record<
   Array<{ id: string; name: string; source?: ModelSource | string }>
 >
 
+export interface ProviderStatus {
+  ok: boolean
+  reason?: string | null
+  hint?: string | null
+  has_api_key?: boolean
+  model_count?: number
+}
+
 export interface ComboboxOption {
   value: string
   label: string
@@ -111,6 +119,7 @@ export interface ModelsResponse {
   default_vision_provider: string
   default_vision_model: string
   available_models: AvailableModels
+  provider_status?: Record<string, ProviderStatus>
 }
 
 /**

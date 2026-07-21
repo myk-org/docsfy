@@ -164,7 +164,7 @@ Each linked sub-file contains only the detailed test bodies for its assigned sec
 | [e2e-11-websocket.md](e2e-11-websocket.md) | 23 | WebSocket Connection, Auth, Real-time Updates |
 | [e2e-12-cli.md](e2e-12-cli.md) | 24 | CLI Commands (config, generate, list, status, admin) |
 | [e2e-13-post-generation-pipeline.md](e2e-13-post-generation-pipeline.md) | 27 | Post-Generation Pipeline (version footer, related pages, validation/cross-linking/completeness stages, performance, generation duration, elapsed timer, stage labels) |
-| [e2e-14-models-command.md](e2e-14-models-command.md) | 28 | Models Command (CLI providers/models listing, JSON output, API endpoint, available_models, source badges) |
+| [e2e-14-models-command.md](e2e-14-models-command.md) | 28 | Models Command (CLI providers/models listing, JSON output, API endpoint, available_models, source badges, Cursor auth banner) |
 | [e2e-15-repo-type.md](e2e-15-repo-type.md) | 30-32 | Repository type support (API, UI, CLI) |
 | [e2e-16-admin-settings.md](e2e-16-admin-settings.md) | 33 | Admin settings page (GET/PUT API, env override warnings, non-admin rejection, generate form defaults) |
 | [e2e-17-image-support.md](e2e-17-image-support.md) | 34 | Image support (docsfy-images/ discovery, manifest, AI vision, copy to site, vision provider/model in UI/CLI/API) |
@@ -204,7 +204,7 @@ Each linked sub-file contains only the detailed test bodies for its assigned sec
 | 25 | Sidebar Collapse Toggle Position | 25.1-25.4 |
 | 26 | Dialog Theme Consistency | 26.1-26.2 |
 | 27 | Post-Generation Pipeline | 27.1-27.11 |
-| 28 | Models Command | 28.1-28.11 (+ 28.7b source badges) |
+| 28 | Models Command | 28.1-28.11 (+ 28.7b source badges, 28.7c Cursor auth banner) |
 | 29 | Cost Tracking | 29.1-29.6 |
 | 30 | Repo Type API Validation | 30.1-30.3 |
 | 31 | Repo Type UI Elements | 31.1-31.4 |

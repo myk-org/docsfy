@@ -102,6 +102,9 @@ async def test_get_models_returns_valid_structure(client: AsyncClient) -> None:
     assert "available_models" in data
     assert isinstance(data["providers"], list)
     assert isinstance(data["available_models"], dict)
+    assert "provider_status" in data
+    assert "cursor" in data["provider_status"]
+    assert "ok" in data["provider_status"]["cursor"]
 
 
 async def test_get_models_includes_valid_providers(client: AsyncClient) -> None:

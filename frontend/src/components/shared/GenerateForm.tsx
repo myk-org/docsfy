@@ -12,13 +12,15 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import Combobox from '@/components/shared/Combobox'
+import CursorAuthBanner from '@/components/shared/CursorAuthBanner'
 import { generateDocs } from '@/lib/api'
 import { SK_REPO, SK_BRANCH, SK_FORCE, SK_REPO_TYPE, TOAST_DEFAULT_MS, TOAST_ERROR_MS, VALID_PROVIDERS, VALID_REPO_TYPES, SELECT_CLEAR } from '@/lib/constants'
 import { cn } from '@/lib/utils'
-import type { AvailableModels } from '@/types'
+import type { AvailableModels, ProviderStatus } from '@/types'
 import { ApiError } from '@/types'
 interface GenerateFormProps {
   availableModels: AvailableModels
+  providerStatus?: Record<string, ProviderStatus>
   knownBranches: Record<string, string[]>
   defaultProvider?: string
   defaultModel?: string
@@ -39,6 +41,7 @@ function extractRepoName(url: string): string {
 
 export default function GenerateForm({
   availableModels,
+  providerStatus = {},
   knownBranches,
   defaultProvider,
   defaultModel,
@@ -373,6 +376,10 @@ export default function GenerateForm({
             </SelectContent>
           </Select>
         </div>
+
+        {provider === 'cursor' && providerStatus.cursor && !providerStatus.cursor.ok && (
+          <CursorAuthBanner status={providerStatus.cursor} />
+        )}
 
         {/* Model */}
         <div className="flex flex-col gap-1.5">

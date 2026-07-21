@@ -12,13 +12,15 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import Combobox from '@/components/shared/Combobox'
+import CursorAuthBanner from '@/components/shared/CursorAuthBanner'
 import { getSettings, updateSettings } from '@/lib/api'
 import { VALID_PROVIDERS, TOAST_DEFAULT_MS, TOAST_ERROR_MS, SELECT_CLEAR } from '@/lib/constants'
 import { ApiError } from '@/types'
-import type { AvailableModels, AdminSettings } from '@/types'
+import type { AvailableModels, AdminSettings, ProviderStatus } from '@/types'
 
 interface SettingsPanelProps {
   availableModels: AvailableModels
+  providerStatus?: Record<string, ProviderStatus>
   onSettingsSaved?: () => void
 }
 
@@ -30,7 +32,7 @@ function EnvWarning({ envVarName }: { envVarName: string }) {
   )
 }
 
-export default function SettingsPanel({ availableModels, onSettingsSaved }: SettingsPanelProps) {
+export default function SettingsPanel({ availableModels, providerStatus = {}, onSettingsSaved }: SettingsPanelProps) {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [fetchError, setFetchError] = useState<string | null>(null)
@@ -201,6 +203,10 @@ export default function SettingsPanel({ availableModels, onSettingsSaved }: Sett
               <EnvWarning envVarName={envOverrides.default_ai_provider} />
             )}
           </div>
+
+          {provider === 'cursor' && providerStatus.cursor && !providerStatus.cursor.ok && (
+            <CursorAuthBanner status={providerStatus.cursor} />
+          )}
 
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="default-model">Default AI Model</Label>

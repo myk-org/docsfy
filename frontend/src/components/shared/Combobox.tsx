@@ -24,6 +24,9 @@ export default function Combobox({
 }: ComboboxProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [highlightedIndex, setHighlightedIndex] = useState(-1)
+  // Only filter after the user types; opening with a selected id must show the full list
+  // (filtering by e.g. cursor:default[] otherwise hides every row).
+  const [isFiltering, setIsFiltering] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const listRef = useRef<HTMLUListElement>(null)
@@ -34,14 +37,19 @@ export default function Combobox({
     typeof opt === 'string' ? { value: opt, label: opt } : opt
   )
 
-  const filtered = normalizedOptions.filter((opt) =>
-    opt.label.toLowerCase().includes(value.toLowerCase()) ||
-    opt.value.toLowerCase().includes(value.toLowerCase())
-  )
+  const filtered =
+    !isFiltering || !value
+      ? normalizedOptions
+      : normalizedOptions.filter(
+          (opt) =>
+            opt.label.toLowerCase().includes(value.toLowerCase()) ||
+            opt.value.toLowerCase().includes(value.toLowerCase()),
+        )
 
   const closeDropdown = useCallback(() => {
     setIsOpen(false)
     setHighlightedIndex(-1)
+    setIsFiltering(false)
   }, [])
 
   useEffect(() => {
@@ -101,11 +109,13 @@ export default function Combobox({
           aria-autocomplete="list"
           value={value}
           onChange={(e) => {
+            setIsFiltering(true)
             onChange(e.target.value)
             setIsOpen(true)
             setHighlightedIndex(0)
           }}
           onFocus={() => {
+            setIsFiltering(false)
             setIsOpen(true)
             setHighlightedIndex(-1)
           }}

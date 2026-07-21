@@ -22,13 +22,14 @@ import {
 } from '@/components/ui/select'
 import { Progress } from '@/components/ui/progress'
 import Combobox from '@/components/shared/Combobox'
+import CursorAuthBanner from '@/components/shared/CursorAuthBanner'
 import ActivityLog from '@/components/shared/ActivityLog'
 import { useModal } from '@/components/shared/ModalProvider'
 import { deleteVariant as deleteVariantApi, generateDocs, abortVariant } from '@/lib/api'
 import { encodeBranch } from '@/lib/utils'
 import { TOAST_DEFAULT_MS, TOAST_ERROR_MS, VALID_PROVIDERS, BADGE_STYLES, SELECT_CLEAR } from '@/lib/constants'
 import { ApiError } from '@/types'
-import type { Project, LogEntry, DocPlan, AvailableModels } from '@/types'
+import type { Project, LogEntry, DocPlan, AvailableModels, ProviderStatus } from '@/types'
 
 function formatDuration(seconds: number): string {
   if (seconds < 60) return `${seconds}s`
@@ -62,6 +63,7 @@ interface VariantDetailProps {
   project: Project
   logEntries: LogEntry[]
   availableModels: AvailableModels
+  providerStatus?: Record<string, ProviderStatus>
   isAdmin: boolean
   role: string
   onDelete?: () => void
@@ -282,11 +284,13 @@ function InfoGrid({ project, isAdmin }: { project: Project; isAdmin: boolean }) 
 function RegenerateSection({
   project,
   availableModels,
+  providerStatus = {},
   defaultForce,
   onRegenerate,
 }: {
   project: Project
   availableModels: AvailableModels
+  providerStatus?: Record<string, ProviderStatus>
   defaultForce: boolean
   onRegenerate?: (provider: string, model: string, force: boolean) => void
 }) {
@@ -416,6 +420,9 @@ function RegenerateSection({
             />
           </div>
         </div>
+        {provider === 'cursor' && providerStatus.cursor && !providerStatus.cursor.ok && (
+          <CursorAuthBanner status={providerStatus.cursor} />
+        )}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div className="flex flex-col gap-1.5">
             <Label>Vision Provider</Label>
@@ -481,6 +488,7 @@ function ReadyView({
   project,
   logEntries,
   availableModels,
+  providerStatus,
   isAdmin,
   role,
   onDelete,
@@ -566,6 +574,7 @@ function ReadyView({
         <RegenerateSection
           project={project}
           availableModels={availableModels}
+          providerStatus={providerStatus}
           defaultForce={false}
           onRegenerate={onRegenerate}
         />
@@ -673,6 +682,7 @@ function ErrorAbortedView({
   project,
   logEntries,
   availableModels,
+  providerStatus,
   isAdmin,
   role,
   onDelete,
@@ -721,6 +731,7 @@ function ErrorAbortedView({
           <RegenerateSection
             project={project}
             availableModels={availableModels}
+            providerStatus={providerStatus}
             defaultForce={true}
             onRegenerate={onRegenerate}
           />
@@ -754,6 +765,7 @@ export default function VariantDetail({
   project,
   logEntries,
   availableModels,
+  providerStatus,
   isAdmin,
   role,
   onDelete,
@@ -774,6 +786,7 @@ export default function VariantDetail({
           project={project}
           logEntries={logEntries}
           availableModels={availableModels}
+          providerStatus={providerStatus}
           isAdmin={isAdmin}
           role={role}
           onDelete={onDelete}
@@ -793,6 +806,7 @@ export default function VariantDetail({
           project={project}
           logEntries={logEntries}
           availableModels={availableModels}
+          providerStatus={providerStatus}
           isAdmin={isAdmin}
           role={role}
           onDelete={onDelete}

@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+import asyncio
+import os
+import time
 from typing import Any
 
 from pi_sidecar_client import AIResult
@@ -40,6 +43,21 @@ _CLI_SIDECAR: dict[str, str] = {
 
 # (friendly_provider, model_id) → sidecar provider id (filled by catalog build)
 _model_route_cache: dict[tuple[str, str], str] = {}
+
+# Cached cursor auth probe: (monotonic_ts, status_dict)
+_cursor_auth_cache: tuple[float, dict[str, Any]] | None = None
+_CURSOR_AUTH_CACHE_TTL_SEC = 60.0
+_CURSOR_BROWSER_LOGIN_EXPIRED_HINT = (
+    "Cursor browser login (`agent login`) expired or is missing. "
+    "Set CURSOR_API_KEY on the server (does not expire; always works when set), "
+    "or re-run `agent login` on the host and restart the sidecar. "
+    "Browser login cannot be auto-refreshed."
+)
+_CURSOR_KEY_SET_BUT_UNAVAILABLE_HINT = (
+    "CURSOR_API_KEY is set (that key does not expire) but Cursor models are "
+    "unavailable. Check the key is visible to the sidecar process, restart "
+    "the sidecar, and verify network to Cursor APIs."
+)
 
 
 def normalize_provider(provider: str) -> str:
@@ -169,7 +187,165 @@ async def refresh_models() -> list[dict[str, Any]]:
     raw = await client.refresh_models()
     # Rebuild cache from the refreshed catalog (keep old routes until success).
     build_friendly_catalog(raw)
+    clear_cursor_auth_cache()
     return raw
+
+
+def _parse_agent_status_text(text: str) -> str | None:
+    """Return auth reason from `agent status` output, or None if looks OK."""
+    lower = text.lower()
+    if any(
+        s in lower
+        for s in (
+            "authentication required",
+            "not authenticated",
+            "not logged in",
+            "please run 'agent login'",
+            'please run "agent login"',
+            "agent login' first",
+        )
+    ):
+        return "auth_expired"
+    if "logged in" in lower or "authenticated" in lower:
+        return None
+    return "unavailable"
+
+
+async def probe_cursor_auth(
+    *, force: bool = False, model_count: int | None = None
+) -> dict[str, Any]:
+    """Probe Cursor CLI/ACPX auth health for admin UI.
+
+    Browser ``agent login`` expires and cannot be auto-refreshed.
+    ``CURSOR_API_KEY`` does **not** expire — when set in the server/sidecar
+    env it keeps working.
+
+    Returns dict: ok, reason, hint, has_api_key, model_count.
+    """
+    global _cursor_auth_cache
+    now = time.monotonic()
+    if (
+        not force
+        and model_count is None
+        and _cursor_auth_cache is not None
+        and (now - _cursor_auth_cache[0]) < _CURSOR_AUTH_CACHE_TTL_SEC
+    ):
+        return dict(_cursor_auth_cache[1])
+
+    if (
+        not force
+        and model_count is not None
+        and _cursor_auth_cache is not None
+        and (now - _cursor_auth_cache[0]) < _CURSOR_AUTH_CACHE_TTL_SEC
+        and _cursor_auth_cache[1].get("model_count") == model_count
+    ):
+        return dict(_cursor_auth_cache[1])
+
+    has_api_key = bool(os.environ.get("CURSOR_API_KEY", "").strip())
+    if model_count is None:
+        models = await list_models("cursor")
+        model_count = len(models)
+    if model_count > 0:
+        status: dict[str, Any] = {
+            "ok": True,
+            "reason": None,
+            "hint": None,
+            "has_api_key": has_api_key,
+            "model_count": model_count,
+        }
+        _cursor_auth_cache = (now, status)
+        return dict(status)
+
+    reason = "no_models"
+    try:
+        proc = await asyncio.create_subprocess_exec(
+            "agent",
+            "status",
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+            env=os.environ.copy(),
+        )
+        try:
+            stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=20)
+        except TimeoutError:
+            proc.kill()
+            await proc.wait()
+            reason = "unavailable"
+            logger.warning("Cursor auth probe: agent status timed out")
+        else:
+            text_out = (stdout or b"").decode(errors="replace") + (
+                stderr or b""
+            ).decode(errors="replace")
+            parsed = _parse_agent_status_text(text_out)
+            if parsed:
+                reason = parsed
+            elif proc.returncode not in (0, None):
+                reason = "unavailable"
+            logger.info(
+                "Cursor auth probe: models=0 reason=%s returncode=%s has_api_key=%s",
+                reason,
+                proc.returncode,
+                has_api_key,
+            )
+    except FileNotFoundError:
+        reason = "agent_missing"
+        logger.warning("Cursor auth probe: agent binary not found on PATH")
+    except Exception:
+        reason = "unavailable"
+        logger.warning("Cursor auth probe failed", exc_info=True)
+
+    if reason == "no_models" and not has_api_key:
+        reason = "auth_expired"
+    if reason == "auth_expired" and has_api_key:
+        reason = "api_key_not_applied"
+
+    if has_api_key:
+        hint = _CURSOR_KEY_SET_BUT_UNAVAILABLE_HINT
+    else:
+        hint = _CURSOR_BROWSER_LOGIN_EXPIRED_HINT
+
+    status = {
+        "ok": False,
+        "reason": reason,
+        "hint": hint,
+        "has_api_key": has_api_key,
+        "model_count": model_count,
+    }
+    _cursor_auth_cache = (now, status)
+    return dict(status)
+
+
+def clear_cursor_auth_cache() -> None:
+    """Clear cached cursor auth probe (e.g. after model refresh)."""
+    global _cursor_auth_cache
+    _cursor_auth_cache = None
+
+
+def cursor_status_for_client(
+    status: dict[str, Any], *, is_admin: bool
+) -> dict[str, Any]:
+    """Return Cursor provider_status safe for the caller's role."""
+    out = dict(status)
+    if is_admin:
+        return out
+    out.pop("has_api_key", None)
+    if out.get("reason") in ("auth_expired", "api_key_not_applied"):
+        out["reason"] = "unavailable"
+    if not out.get("ok"):
+        out["hint"] = "Cursor is unavailable. Contact an administrator."
+    return out
+
+
+def cursor_status_from_model_count(model_count: int) -> dict[str, Any]:
+    """Coarse Cursor status for non-admins (no subprocess / credential probe)."""
+    if model_count > 0:
+        return {"ok": True, "reason": None, "hint": None, "model_count": model_count}
+    return {
+        "ok": False,
+        "reason": "unavailable",
+        "hint": "Cursor is unavailable. Contact an administrator.",
+        "model_count": model_count,
+    }
 
 
 async def _prewarm_model_routes(friendly: str, model: str = "") -> None:
@@ -215,11 +391,15 @@ __all__ = [
     "build_friendly_catalog",
     "call_ai_once",
     "check_sidecar_available",
+    "clear_cursor_auth_cache",
+    "cursor_status_for_client",
+    "cursor_status_from_model_count",
     "get_sidecar_client",
     "list_models",
     "list_models_from_catalog",
     "map_provider_model_for_sidecar",
     "normalize_provider",
+    "probe_cursor_auth",
     "refresh_models",
     "run_parallel_with_limit",
 ]

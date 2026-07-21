@@ -21,7 +21,10 @@ from simple_logger.logger import get_logger
 from docsfy.ai_client import (
     build_friendly_catalog,
     check_sidecar_available,
+    cursor_status_for_client,
+    cursor_status_from_model_count,
     get_sidecar_client,
+    probe_cursor_auth,
     refresh_models,
 )
 from docsfy.cost_tracker import (
@@ -1450,10 +1453,12 @@ async def build_projects_payload(username: str, is_admin: bool) -> dict[str, Any
 
 
 @router.get("/models")
-async def get_models_endpoint() -> dict[str, Any]:
+async def get_models_endpoint(request: Request) -> dict[str, Any]:
     """Return available AI providers, server defaults, and available models.
 
     Models are discovered via pi-sidecar-client.
+    Includes ``provider_status.cursor`` when the Cursor catalog is empty or
+    auth is unhealthy (admin gets credential details; others get a coarse hint).
     No authentication required -- this is a discovery endpoint.
     """
     from docsfy.storage import get_all_settings
@@ -1469,6 +1474,17 @@ async def get_models_endpoint() -> dict[str, Any]:
         db_settings.get("vision_provider", "") or settings.vision_provider
     )
     default_vision_model = db_settings.get("vision_model", "") or settings.vision_model
+
+    cursor_count = len(available_models.get("cursor", []))
+    is_admin = bool(getattr(request.state, "is_admin", False))
+    if is_admin:
+        cursor_status = cursor_status_for_client(
+            await probe_cursor_auth(model_count=cursor_count),
+            is_admin=True,
+        )
+    else:
+        cursor_status = cursor_status_from_model_count(cursor_count)
+
     return {
         "providers": list(VALID_PROVIDERS),
         "default_provider": default_provider,
@@ -1476,6 +1492,7 @@ async def get_models_endpoint() -> dict[str, Any]:
         "default_vision_provider": default_vision_provider,
         "default_vision_model": default_vision_model,
         "available_models": available_models,
+        "provider_status": {"cursor": cursor_status},
     }
 
 
@@ -1497,8 +1514,16 @@ async def refresh_models_endpoint(request: Request) -> dict[str, Any]:
             status_code=502, detail="Failed to refresh models from sidecar"
         )
 
-    # Return fresh model list (same as GET /models)
-    return await get_models_endpoint()
+    # Return fresh model list (same as GET /models) with forced auth probe
+    payload = await get_models_endpoint(request)
+    cursor_count = len((payload.get("available_models") or {}).get("cursor", []))
+    payload["provider_status"] = {
+        "cursor": cursor_status_for_client(
+            await probe_cursor_auth(force=True, model_count=cursor_count),
+            is_admin=True,
+        )
+    }
+    return payload
 
 
 @router.get("/cost")

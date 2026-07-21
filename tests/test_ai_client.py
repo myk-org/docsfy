@@ -153,3 +153,44 @@ async def test_list_models_uses_catalog(
     models = await list_models("cursor")
     assert len(models) == 2
     assert {m["source"] for m in models} == {"acpx", "cli"}
+
+
+def test_cursor_status_from_model_count_ok() -> None:
+    status = ai_client.cursor_status_from_model_count(5)
+    assert status["ok"] is True
+    assert status["model_count"] == 5
+
+
+def test_cursor_status_from_model_count_empty() -> None:
+    status = ai_client.cursor_status_from_model_count(0)
+    assert status["ok"] is False
+    assert status["reason"] == "unavailable"
+
+
+def test_cursor_status_for_client_redacts_for_non_admin() -> None:
+    raw = {
+        "ok": False,
+        "reason": "auth_expired",
+        "hint": "login expired",
+        "has_api_key": False,
+        "model_count": 0,
+    }
+    out = ai_client.cursor_status_for_client(raw, is_admin=False)
+    assert "has_api_key" not in out
+    assert out["reason"] == "unavailable"
+    assert "administrator" in (out["hint"] or "").lower()
+
+
+@pytest.mark.asyncio
+async def test_probe_cursor_auth_ok_when_models(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    ai_client.clear_cursor_auth_cache()
+
+    async def fake_list(provider: str = "") -> list[dict]:
+        return [{"id": "cursor:x", "name": "X", "provider": "cursor", "source": "cli"}]
+
+    monkeypatch.setattr(ai_client, "list_models", fake_list)
+    status = await ai_client.probe_cursor_auth()
+    assert status["ok"] is True
+    assert status["model_count"] == 1

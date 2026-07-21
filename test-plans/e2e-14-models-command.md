@@ -195,6 +195,25 @@ print(f'Providers with models: {providers_with_models}')
 - When a model has a `source` from the API, an uppercase badge (`ACPX`, `CLI`, or `API`) appears on that row
 - Friendly provider list remains only `claude` / `gemini` / `cursor` (no `*-cli` providers)
 - Selecting a CLI-tagged model and generating docs routes through `cli-*` on the sidecar; ACPX-tagged models use `acpx-*`
+- Opening the Combobox with a selected model id shows the **full** list (not an empty or single-row list filtered by the full id)
+
+---
+
+### 28.7c Cursor auth banner when catalog empty
+
+**Precondition:** Server running; Cursor discovery returns **zero** models (e.g. Cursor not logged in / no `CURSOR_API_KEY`), or temporarily empty catalog.
+
+**Steps:**
+
+1. Log in as admin; open generate form (or Admin → Settings).
+2. Select provider `cursor`.
+3. Inspect `GET /api/models` → `provider_status.cursor`.
+
+**Expected result:**
+- `provider_status.cursor.ok` is `false` with a `reason` / `hint`
+- Admin response may include `has_api_key`; non-admin sees redacted `reason: unavailable` and a contact-admin hint
+- UI shows `data-testid="cursor-auth-banner"` under the provider control
+- When Cursor has models (`ok: true`), banner is **not** shown
 
 ---
 
