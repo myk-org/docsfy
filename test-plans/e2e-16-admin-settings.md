@@ -183,6 +183,21 @@ Navigate to the Generate form.
 
 ---
 
+### 33.12b Provider without model cannot be saved
+
+**Steps:**
+
+1. Open Admin → Settings.
+2. Change Default AI Provider to another value (model field clears).
+3. Click Save without selecting a model.
+
+**Expected result:**
+- UI shows an error toast requiring a default model
+- Settings are not persisted
+- API `PUT /api/admin/settings` with `default_ai_provider` set and empty `default_ai_model` returns HTTP 400
+
+---
+
 ### 33.13 Refresh models button visible for admin
 
 Navigate to the Generate form as admin.

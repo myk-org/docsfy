@@ -54,6 +54,20 @@ _CURSOR_KEY_SET_BUT_UNAVAILABLE_HINT = (
     "unavailable. Check the key is visible to the sidecar process, restart "
     "the sidecar, and verify network to Cursor APIs."
 )
+_CURSOR_AGENT_MISSING_HINT = (
+    "Cursor `agent` binary was not found on PATH. Install Cursor CLI / agent "
+    "in the container image (or mount it) and ensure PATH includes it, then "
+    "restart the sidecar."
+)
+_CURSOR_NO_MODELS_HINT = (
+    "No Cursor models were discovered. Check ACPX_AGENTS / CLI_AGENTS, "
+    "sidecar extension paths (SIDECAR_ACPX_EXTENSION_PATH / "
+    "SIDECAR_CLI_PROVIDER_EXTENSION_PATH), then refresh models."
+)
+_CURSOR_UNAVAILABLE_HINT = (
+    "Cursor is unavailable. Check sidecar logs, network, and agent/CLI health, "
+    "then retry model refresh."
+)
 
 
 def normalize_provider(provider: str) -> str:
@@ -291,15 +305,22 @@ async def probe_cursor_auth(
         reason = "unavailable"
         logger.warning("Cursor auth probe failed", exc_info=True)
 
-    if reason == "no_models" and not has_api_key:
-        reason = "auth_expired"
+    # Only remap auth_expired when an API key is set but still unused.
     if reason == "auth_expired" and has_api_key:
         reason = "api_key_not_applied"
 
-    if has_api_key:
+    if reason == "agent_missing":
+        hint = _CURSOR_AGENT_MISSING_HINT
+    elif reason == "no_models":
+        hint = _CURSOR_NO_MODELS_HINT
+    elif reason == "api_key_not_applied":
+        hint = _CURSOR_KEY_SET_BUT_UNAVAILABLE_HINT
+    elif reason == "auth_expired":
+        hint = _CURSOR_BROWSER_LOGIN_EXPIRED_HINT
+    elif has_api_key:
         hint = _CURSOR_KEY_SET_BUT_UNAVAILABLE_HINT
     else:
-        hint = _CURSOR_BROWSER_LOGIN_EXPIRED_HINT
+        hint = _CURSOR_UNAVAILABLE_HINT
 
     status = {
         "ok": False,

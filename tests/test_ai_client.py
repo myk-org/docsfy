@@ -235,3 +235,52 @@ async def test_probe_cursor_auth_ok_when_models(
     status = await ai_client.probe_cursor_auth()
     assert status["ok"] is True
     assert status["model_count"] == 1
+
+
+@pytest.mark.asyncio
+async def test_probe_cursor_auth_agent_missing_hint(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    ai_client.clear_cursor_auth_cache()
+    monkeypatch.delenv("CURSOR_API_KEY", raising=False)
+
+    async def empty_list(provider: str = "") -> list[dict]:
+        return []
+
+    async def boom(*_a: object, **_k: object) -> None:
+        raise FileNotFoundError("agent")
+
+    monkeypatch.setattr(ai_client, "list_models", empty_list)
+    monkeypatch.setattr(ai_client.asyncio, "create_subprocess_exec", boom)
+    status = await ai_client.probe_cursor_auth(force=True, model_count=0)
+    assert status["ok"] is False
+    assert status["reason"] == "agent_missing"
+    assert "PATH" in (status["hint"] or "")
+
+
+@pytest.mark.asyncio
+async def test_probe_cursor_auth_no_models_keeps_reason(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    ai_client.clear_cursor_auth_cache()
+    monkeypatch.delenv("CURSOR_API_KEY", raising=False)
+
+    class FakeProc:
+        returncode = 0
+
+        async def communicate(self) -> tuple[bytes, bytes]:
+            return b"Logged in as user", b""
+
+    async def fake_exec(*_a: object, **_k: object) -> FakeProc:
+        return FakeProc()
+
+    monkeypatch.setattr(ai_client.asyncio, "create_subprocess_exec", fake_exec)
+    monkeypatch.setattr(
+        ai_client.asyncio, "wait_for", lambda awaitable, timeout: awaitable
+    )
+    status = await ai_client.probe_cursor_auth(force=True, model_count=0)
+    assert status["reason"] == "no_models"
+    assert (
+        "ACPX_AGENTS" in (status["hint"] or "")
+        or "discovered" in (status["hint"] or "").lower()
+    )

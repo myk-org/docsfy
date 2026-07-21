@@ -160,7 +160,7 @@ export default function Combobox({
                 )}
               </span>
               {option.badge && (
-                <span className="shrink-0 rounded border border-border-default px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-text-tertiary">
+                <span className="shrink-0 rounded border border-border-default px-1.5 py-0.5 text-micro uppercase tracking-wide text-text-tertiary">
                   {option.badge}
                 </span>
               )}

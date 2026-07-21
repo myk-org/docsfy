@@ -49,8 +49,8 @@ export default function CursorAuthBanner({ status, className }: CursorAuthBanner
         <p className="text-xs text-text-secondary break-words">{hint}</p>
         {!redacted && !keyConfigured && status.reason !== 'unavailable' && (
           <p className="text-xs text-text-tertiary">
-            <code className="text-[11px]">CURSOR_API_KEY</code> does not expire.
-            Prefer it over <code className="text-[11px]">agent login</code> on Dev/prod.
+            <code className="text-caption font-mono">CURSOR_API_KEY</code> does not expire.
+            Prefer it over <code className="text-caption font-mono">agent login</code> on Dev/prod.
           </p>
         )}
       </div>

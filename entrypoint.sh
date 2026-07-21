@@ -30,6 +30,11 @@ if [ -f /app/sidecar-helper/dist/server.js ]; then
             break
         fi
     done
+    if [ -n "${ACPX_AGENTS:-}" ] && [ -z "${SIDECAR_ACPX_EXTENSION_PATH:-}" ]; then
+        echo "[sidecar] WARNING: ACPX_AGENTS is set but ACPX extension was not found under:" >&2
+        echo "[sidecar]   /app/sidecar-helper/node_modules/pi-orchestrator-config/extensions/acpx-provider/index.ts" >&2
+        echo "[sidecar]   /app/sidecar-helper/node_modules/@myk-org/pi-sidecar/node_modules/pi-orchestrator-config/extensions/acpx-provider/index.ts" >&2
+    fi
     for _cli_candidate in \
         "/app/sidecar-helper/node_modules/pi-orchestrator-config/extensions/cli-provider/index.ts" \
         "/app/sidecar-helper/node_modules/@myk-org/pi-sidecar/node_modules/pi-orchestrator-config/extensions/cli-provider/index.ts"; do
@@ -38,6 +43,11 @@ if [ -f /app/sidecar-helper/dist/server.js ]; then
             break
         fi
     done
+    if [ -n "${CLI_AGENTS:-}" ] && [ -z "${SIDECAR_CLI_PROVIDER_EXTENSION_PATH:-}" ]; then
+        echo "[sidecar] WARNING: CLI_AGENTS is set but CLI extension was not found under:" >&2
+        echo "[sidecar]   /app/sidecar-helper/node_modules/pi-orchestrator-config/extensions/cli-provider/index.ts" >&2
+        echo "[sidecar]   /app/sidecar-helper/node_modules/@myk-org/pi-sidecar/node_modules/pi-orchestrator-config/extensions/cli-provider/index.ts" >&2
+    fi
     node /app/sidecar-helper/dist/server.js &
     SIDECAR_PID=$!
     echo "[sidecar] Started Pi SDK sidecar (PID $SIDECAR_PID) on port $SIDECAR_PORT"

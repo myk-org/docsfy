@@ -284,6 +284,24 @@ async def update_settings_endpoint(request: Request) -> dict[str, str]:
                     status_code=400,
                     detail=f"Invalid provider '{value_str}'. Must be one of: {', '.join(VALID_PROVIDERS)}",
                 )
+    # Prevent persisting a default/vision provider without a model.
+    merged = dict(await get_all_settings())
+    for key, value in settings.items():
+        merged[key] = str(value)
+    default_provider = (merged.get("default_ai_provider") or "").strip()
+    default_model = (merged.get("default_ai_model") or "").strip()
+    if default_provider and not default_model:
+        raise HTTPException(
+            status_code=400,
+            detail="default_ai_model is required when default_ai_provider is set",
+        )
+    vision_provider = (merged.get("vision_provider") or "").strip()
+    vision_model = (merged.get("vision_model") or "").strip()
+    if vision_provider and not vision_model:
+        raise HTTPException(
+            status_code=400,
+            detail="vision_model is required when vision_provider is set",
+        )
     for key, value in settings.items():
         await update_setting(key, str(value))
     logger.info(

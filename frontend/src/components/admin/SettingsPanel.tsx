@@ -115,6 +115,24 @@ export default function SettingsPanel({ availableModels, providerStatus = {}, on
       return
     }
 
+    const nextProvider = changed.default_ai_provider ?? provider
+    const nextModel = changed.default_ai_model ?? model
+    if (nextProvider && !nextModel) {
+      toast.error('Select a default model when a default provider is set', {
+        duration: TOAST_ERROR_MS,
+      })
+      return
+    }
+
+    const nextVisionProvider = changed.vision_provider ?? visionProvider
+    const nextVisionModel = changed.vision_model ?? visionModel
+    if (nextVisionProvider && !nextVisionModel) {
+      toast.error('Select a vision model when a vision provider is set', {
+        duration: TOAST_ERROR_MS,
+      })
+      return
+    }
+
     setSaving(true)
     try {
       await updateSettings(changed)
