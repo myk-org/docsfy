@@ -73,6 +73,15 @@ def test_cache_overrides_heuristic() -> None:
     assert model == "cursor:composer-2"
 
 
+def test_map_cursor_prefixless_uses_cache() -> None:
+    """Free-typed cursor ids without cursor: still hit the catalog route cache."""
+    ai_client._model_route_cache.clear()
+    ai_client._model_route_cache[("cursor", "cursor:composer-2")] = SIDECAR_CLI_CURSOR
+    provider, model = map_provider_model_for_sidecar("cursor", "composer-2")
+    assert provider == SIDECAR_CLI_CURSOR
+    assert model == "cursor:composer-2"
+
+
 def test_list_models_from_catalog_merges_and_tags_source() -> None:
     ai_client._model_route_cache.clear()
     raw = [

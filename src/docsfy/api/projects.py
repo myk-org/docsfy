@@ -1453,20 +1453,23 @@ async def build_projects_payload(username: str, is_admin: bool) -> dict[str, Any
     }
 
 
-@router.get("/models")
-async def get_models_endpoint(request: Request) -> dict[str, Any]:
-    """Return available AI providers, server defaults, and available models.
+async def _models_payload(
+    request: Request,
+    *,
+    cursor_status: dict[str, Any] | None = None,
+    available_models: dict[str, list[dict[str, str]]] | None = None,
+) -> dict[str, Any]:
+    """Build GET/POST ``/api/models`` response body.
 
-    Models are discovered via pi-sidecar-client.
-    Includes ``provider_status.cursor`` when the Cursor catalog is empty or
-    auth is unhealthy (admin gets credential details; others get a coarse hint).
-    No authentication required -- this is a discovery endpoint.
+    When ``cursor_status`` is provided (e.g. refresh with a forced probe), skip
+    the default probe so admins only pay for one ``agent status`` call.
     """
     from docsfy.storage import get_all_settings
 
     settings = get_settings()
     db_settings = await get_all_settings()
-    available_models = await _load_available_models()
+    if available_models is None:
+        available_models = await _load_available_models()
     default_provider = normalize_provider(
         db_settings.get("default_ai_provider", "") or settings.ai_provider
     )
@@ -1476,15 +1479,16 @@ async def get_models_endpoint(request: Request) -> dict[str, Any]:
     )
     default_vision_model = db_settings.get("vision_model", "") or settings.vision_model
 
-    cursor_count = len(available_models.get("cursor", []))
-    is_admin = bool(getattr(request.state, "is_admin", False))
-    if is_admin:
-        cursor_status = cursor_status_for_client(
-            await probe_cursor_auth(model_count=cursor_count),
-            is_admin=True,
-        )
-    else:
-        cursor_status = cursor_status_from_model_count(cursor_count)
+    if cursor_status is None:
+        cursor_count = len(available_models.get("cursor", []))
+        is_admin = bool(getattr(request.state, "is_admin", False))
+        if is_admin:
+            cursor_status = cursor_status_for_client(
+                await probe_cursor_auth(model_count=cursor_count),
+                is_admin=True,
+            )
+        else:
+            cursor_status = cursor_status_from_model_count(cursor_count)
 
     return {
         "providers": list(VALID_PROVIDERS),
@@ -1495,6 +1499,18 @@ async def get_models_endpoint(request: Request) -> dict[str, Any]:
         "available_models": available_models,
         "provider_status": {"cursor": cursor_status},
     }
+
+
+@router.get("/models")
+async def get_models_endpoint(request: Request) -> dict[str, Any]:
+    """Return available AI providers, server defaults, and available models.
+
+    Models are discovered via pi-sidecar-client.
+    Includes ``provider_status.cursor`` when the Cursor catalog is empty or
+    auth is unhealthy (admin gets credential details; others get a coarse hint).
+    No authentication required -- this is a discovery endpoint.
+    """
+    return await _models_payload(request)
 
 
 @router.post("/models/refresh")
@@ -1515,16 +1531,16 @@ async def refresh_models_endpoint(request: Request) -> dict[str, Any]:
             status_code=502, detail="Failed to refresh models from sidecar"
         )
 
-    # Return fresh model list (same as GET /models) with forced auth probe
-    payload = await get_models_endpoint(request)
-    cursor_count = len((payload.get("available_models") or {}).get("cursor", []))
-    payload["provider_status"] = {
-        "cursor": cursor_status_for_client(
-            await probe_cursor_auth(force=True, model_count=cursor_count),
-            is_admin=True,
-        )
-    }
-    return payload
+    # Single forced Cursor probe after catalog rebuild (avoid double probe).
+    available_models = await _load_available_models()
+    cursor_count = len(available_models.get("cursor", []))
+    cursor_status = cursor_status_for_client(
+        await probe_cursor_auth(force=True, model_count=cursor_count),
+        is_admin=True,
+    )
+    return await _models_payload(
+        request, cursor_status=cursor_status, available_models=available_models
+    )
 
 
 @router.get("/cost")

@@ -223,6 +223,18 @@ export default function GenerateForm({
       toast.error('Please enter a repository URL', { duration: TOAST_ERROR_MS })
       return
     }
+    if (submittedProvider && !submittedModel.trim()) {
+      toast.error('Please select a model for the chosen provider', {
+        duration: TOAST_ERROR_MS,
+      })
+      return
+    }
+    if (visionProvider && !visionModel.trim()) {
+      toast.error('Please select a vision model for the chosen vision provider', {
+        duration: TOAST_ERROR_MS,
+      })
+      return
+    }
 
     setIsSubmitting(true)
     try {
@@ -420,7 +432,17 @@ export default function GenerateForm({
         </div>
 
         {/* Submit */}
-        <Button type="submit" disabled={isSubmitting} className="w-full mt-2" data-testid="generate-btn" title="Start documentation generation">
+        <Button
+          type="submit"
+          disabled={
+            isSubmitting ||
+            (!!provider && !model.trim()) ||
+            (!!visionProvider && !visionModel.trim())
+          }
+          className="w-full mt-2"
+          data-testid="generate-btn"
+          title="Start documentation generation"
+        >
           {isSubmitting ? (
             <>
               <Loader2 className="size-4 animate-spin mr-2" />

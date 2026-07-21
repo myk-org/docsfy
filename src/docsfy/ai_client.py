@@ -116,12 +116,23 @@ def _map_model_for_sidecar(sidecar_provider: str, model: str) -> str:
     return model
 
 
+def _canonical_model_for_routing(friendly: str, model: str) -> str:
+    """Normalize free-typed cursor ids before route-cache lookup.
+
+    Catalog keys use ``cursor:<id>``; Combobox free-text may omit the prefix.
+    """
+    if friendly == "cursor" and model and not model.startswith("cursor:"):
+        return f"cursor:{model}"
+    return model
+
+
 def map_provider_model_for_sidecar(provider: str, model: str) -> tuple[str, str]:
     """Map friendly provider/model to sidecar ids for session create / AI calls."""
     friendly = normalize_provider(provider)
     model = (model or "").strip()
-    sidecar_provider = _resolve_sidecar_for_model(friendly, model)
-    return sidecar_provider, _map_model_for_sidecar(sidecar_provider, model)
+    route_model = _canonical_model_for_routing(friendly, model)
+    sidecar_provider = _resolve_sidecar_for_model(friendly, route_model)
+    return sidecar_provider, _map_model_for_sidecar(sidecar_provider, route_model)
 
 
 def list_models_from_catalog(

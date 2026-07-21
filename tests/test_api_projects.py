@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
+from typing import Any
 from unittest.mock import patch
 
 import pytest
@@ -240,6 +241,29 @@ async def test_refresh_models_as_admin(client: AsyncClient) -> None:
     assert "providers" in data
     assert "available_models" in data
     assert "default_provider" in data
+
+
+async def test_refresh_models_probes_cursor_once(client: AsyncClient) -> None:
+    """Refresh must force-probe Cursor once — not via GET then again."""
+    calls: list[dict[str, Any]] = []
+
+    async def fake_probe(**kwargs: Any) -> dict[str, Any]:
+        calls.append(kwargs)
+        return {"ok": False, "reason": "no_models", "hint": "x", "has_api_key": False}
+
+    with (
+        patch("docsfy.api.projects.refresh_models", return_value=[]),
+        patch("docsfy.api.projects.probe_cursor_auth", side_effect=fake_probe),
+        patch(
+            "docsfy.api.projects._load_available_models",
+            return_value={"claude": [], "gemini": [], "cursor": []},
+        ),
+    ):
+        response = await client.post("/api/models/refresh")
+    assert response.status_code == 200
+    assert len(calls) == 1
+    assert calls[0].get("force") is True
+    assert calls[0].get("model_count") == 0
 
 
 async def test_refresh_models_sidecar_failure(client: AsyncClient) -> None:

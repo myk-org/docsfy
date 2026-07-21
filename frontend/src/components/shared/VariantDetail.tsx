@@ -318,6 +318,18 @@ function RegenerateSection({
   }
 
   async function handleRegenerate() {
+    if (!model.trim()) {
+      toast.error('Please select a model for the chosen provider', {
+        duration: TOAST_ERROR_MS,
+      })
+      return
+    }
+    if (visionProvider && !visionModel.trim()) {
+      toast.error('Please select a vision model for the chosen vision provider', {
+        duration: TOAST_ERROR_MS,
+      })
+      return
+    }
     setIsStarting(true)
     try {
       await generateDocs({
@@ -424,7 +436,9 @@ function RegenerateSection({
         <Button
           data-testid="data-regenerate-variant"
           onClick={handleRegenerate}
-          disabled={isStarting || !model}
+          disabled={
+            isStarting || !model.trim() || (!!visionProvider && !visionModel.trim())
+          }
           className="w-full sm:w-auto"
           title="Re-generate documentation with these settings"
         >
