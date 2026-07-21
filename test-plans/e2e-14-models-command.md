@@ -213,6 +213,7 @@ print(f'Providers with models: {providers_with_models}')
 - Anonymous `GET /api/models` still works; `provider_status.cursor.ok` is coarse (`has_api_key` absent)
 - Admin-authenticated `GET /api/models` runs `probe_cursor_auth` and may include `has_api_key` / specific `reason`
 - When `ok` is `false`, UI shows `data-testid="cursor-auth-banner"` under the provider control
+- Banner **title** matches `reason` (`agent_missing` / `no_models` / `unavailable` / `auth_expired` / `api_key_not_applied`) — not always “browser login expired”
 - When Cursor has models (`ok: true`), banner is **not** shown
 
 ---
