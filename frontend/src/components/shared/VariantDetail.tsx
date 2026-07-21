@@ -375,9 +375,17 @@ function RegenerateSection({
     }
   }
 
-  const modelOptions = (availableModels[provider] ?? []).map(m => ({ value: m.id, label: m.name || m.id }))
+  const modelOptions = (availableModels[provider] ?? []).map(m => ({
+    value: m.id,
+    label: m.name || m.id,
+    badge: m.source,
+  }))
   const visionModelOptions = visionProvider
-    ? (availableModels[visionProvider] ?? []).map(m => ({ value: m.id, label: m.name || m.id }))
+    ? (availableModels[visionProvider] ?? []).map(m => ({
+        value: m.id,
+        label: m.name || m.id,
+        badge: m.source,
+      }))
     : []
 
   return (

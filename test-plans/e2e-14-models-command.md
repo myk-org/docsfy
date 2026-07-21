@@ -176,6 +176,25 @@ print(f'Providers with models: {providers_with_models}')
 - Each value is an array of objects with `id` and `name` fields (e.g., `[{"id": "gemini-2.5-flash", "name": "Gemini 2.5 Flash"}, ...]`)
 - At least one provider has discovered models
 - Models are discovered via pi-sidecar-client from the Pi SDK sidecar service, not from completed generations
+- When both ACPX and CLI agents are configured (`ACPX_AGENTS` / `CLI_AGENTS`), model entries may include a `source` field (`acpx`, `cli`, or `api`)
+
+---
+
+### 28.7b Model source badges in UI
+
+**Precondition:** Server running with at least one provider that has discovered models. Optional: `CLI_AGENTS` and/or `ACPX_AGENTS` set so both sources appear.
+
+**Steps:**
+
+1. Log in as admin and open the dashboard generate form (or Admin → Settings).
+2. Select a provider that has models (e.g. `cursor`).
+3. Open the model Combobox dropdown.
+
+**Expected result:**
+- Each model row shows the model id/name
+- When a model has a `source` from the API, an uppercase badge (`ACPX`, `CLI`, or `API`) appears on that row
+- Friendly provider list remains only `claude` / `gemini` / `cursor` (no `*-cli` providers)
+- Selecting a CLI-tagged model and generating docs routes through `cli-*` on the sidecar; ACPX-tagged models use `acpx-*`
 
 ---
 

@@ -141,11 +141,19 @@ export default function SettingsPanel({ availableModels, onSettingsSaved }: Sett
   }
 
   const modelOptions = provider
-    ? (availableModels[provider] ?? []).map(m => ({ value: m.id, label: m.name || m.id }))
+    ? (availableModels[provider] ?? []).map(m => ({
+        value: m.id,
+        label: m.name || m.id,
+        badge: m.source,
+      }))
     : []
 
   const visionModelOptions = visionProvider
-    ? (availableModels[visionProvider] ?? []).map(m => ({ value: m.id, label: m.name || m.id }))
+    ? (availableModels[visionProvider] ?? []).map(m => ({
+        value: m.id,
+        label: m.name || m.id,
+        badge: m.source,
+      }))
     : []
 
   if (loading) {

@@ -126,12 +126,12 @@ export default function Combobox({
         >
           {filtered.map((option, index) => (
             <li
-              key={option.value}
+              key={`${option.value}:${option.badge ?? ''}`}
               id={`combobox-option-${instanceId}-${index}`}
               role="option"
               aria-selected={index === highlightedIndex}
               className={cn(
-                'cursor-pointer px-3 py-1.5 transition-colors',
+                'cursor-pointer px-3 py-1.5 transition-colors flex items-center justify-between gap-3',
                 index === highlightedIndex
                   ? 'bg-surface-elevated text-text-primary'
                   : 'hover:bg-surface-hover/50 text-text-primary'
@@ -143,9 +143,16 @@ export default function Combobox({
               }}
               onMouseEnter={() => setHighlightedIndex(index)}
             >
-              <span>{option.label}</span>
-              {option.label !== option.value && (
-                <span className="ml-1.5 text-xs text-text-tertiary">{option.value}</span>
+              <span className="min-w-0 truncate">
+                <span>{option.label}</span>
+                {option.label !== option.value && (
+                  <span className="ml-1.5 text-xs text-text-tertiary">{option.value}</span>
+                )}
+              </span>
+              {option.badge && (
+                <span className="shrink-0 rounded border border-border-default px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-text-tertiary">
+                  {option.badge}
+                </span>
               )}
             </li>
           ))}

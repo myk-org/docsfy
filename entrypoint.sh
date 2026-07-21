@@ -21,12 +21,20 @@ if [ "${DEV_MODE:-}" = "true" ] && [ -f /app/sidecar-helper/src/server.ts ]; the
 fi
 if [ -f /app/sidecar-helper/dist/server.js ]; then
     export SIDECAR_PORT="${SIDECAR_PORT:-9100}"
-    # Resolve ACPX extension path (location varies with npm hoisting)
+    # Resolve ACPX / CLI extension paths (location varies with npm hoisting)
     for _acpx_candidate in \
         "/app/sidecar-helper/node_modules/pi-orchestrator-config/extensions/acpx-provider/index.ts" \
         "/app/sidecar-helper/node_modules/@myk-org/pi-sidecar/node_modules/pi-orchestrator-config/extensions/acpx-provider/index.ts"; do
         if [ -f "$_acpx_candidate" ]; then
             export SIDECAR_ACPX_EXTENSION_PATH="$_acpx_candidate"
+            break
+        fi
+    done
+    for _cli_candidate in \
+        "/app/sidecar-helper/node_modules/pi-orchestrator-config/extensions/cli-provider/index.ts" \
+        "/app/sidecar-helper/node_modules/@myk-org/pi-sidecar/node_modules/pi-orchestrator-config/extensions/cli-provider/index.ts"; do
+        if [ -f "$_cli_candidate" ]; then
+            export SIDECAR_CLI_PROVIDER_EXTENSION_PATH="$_cli_candidate"
             break
         fi
     done

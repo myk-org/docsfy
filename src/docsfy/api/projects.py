@@ -18,7 +18,12 @@ from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import StreamingResponse
 from simple_logger.logger import get_logger
 
-from docsfy.ai_client import check_sidecar_available, list_models, refresh_models
+from docsfy.ai_client import (
+    build_friendly_catalog,
+    check_sidecar_available,
+    get_sidecar_client,
+    refresh_models,
+)
 from docsfy.cost_tracker import (
     CostAccumulator,
     set_cost_accumulator,
@@ -1403,28 +1408,15 @@ async def _resolve_latest_accessible_variant(
 
 
 async def _load_available_models() -> dict[str, list[dict[str, str]]]:
-    """Load available models for all providers in a single sidecar call."""
+    """Load available models for all providers in a single sidecar call.
+
+    Merges ACPX/API + CLI sources under friendly providers and tags each
+    entry with ``source`` (``acpx`` | ``cli`` | ``api``).
+    """
     result: dict[str, list[dict[str, str]]] = {p: [] for p in VALID_PROVIDERS}
     try:
-        all_models = await list_models()
-        for model in all_models:
-            provider = model.get("provider", "")
-            matched_provider = ""
-            for p in VALID_PROVIDERS:
-                if p in provider:
-                    matched_provider = p
-                    break
-            # Sidecar returns "google" for gemini models
-            if not matched_provider and provider == "google":
-                matched_provider = "gemini"
-            if matched_provider:
-                result[matched_provider].append(model)
-            else:
-                logger.debug(
-                    "Skipping model with unmatched provider %r: %s",
-                    provider,
-                    model.get("id", ""),
-                )
+        raw_catalog = await get_sidecar_client().get_models()
+        result = build_friendly_catalog(raw_catalog)
         total = sum(len(v) for v in result.values())
         logger.info(
             "Loaded %d models (%s)",
