@@ -223,6 +223,31 @@ def test_cursor_status_for_client_redacts_for_non_admin() -> None:
 
 
 @pytest.mark.asyncio
+async def test_prewarm_skips_repeat_catalog_fetch_for_unknown_model(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    ai_client._model_route_cache.clear()
+    ai_client._warmed_providers.clear()
+    calls = {"n": 0}
+
+    async def fake_list(provider: str = "") -> list[dict]:
+        calls["n"] += 1
+        return []
+
+    monkeypatch.setattr(ai_client, "list_models", fake_list)
+    await ai_client._prewarm_model_routes("cursor", "cursor:free-typed")
+    await ai_client._prewarm_model_routes("cursor", "cursor:free-typed")
+    await ai_client._prewarm_model_routes("cursor", "cursor:another-unknown")
+    assert calls["n"] == 1
+    assert "cursor" in ai_client._warmed_providers
+
+
+def test_normalize_provider_empty() -> None:
+    assert normalize_provider("") == ""
+    assert normalize_provider("cursor-cli") == "cursor"
+
+
+@pytest.mark.asyncio
 async def test_probe_cursor_auth_ok_when_models(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

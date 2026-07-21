@@ -24,6 +24,7 @@ from docsfy.ai_client import (
     cursor_status_for_client,
     cursor_status_from_model_count,
     get_sidecar_client,
+    normalize_provider,
     probe_cursor_auth,
     refresh_models,
 )
@@ -1466,11 +1467,11 @@ async def get_models_endpoint(request: Request) -> dict[str, Any]:
     settings = get_settings()
     db_settings = await get_all_settings()
     available_models = await _load_available_models()
-    default_provider = (
+    default_provider = normalize_provider(
         db_settings.get("default_ai_provider", "") or settings.ai_provider
     )
     default_model = db_settings.get("default_ai_model", "") or settings.ai_model
-    default_vision_provider = (
+    default_vision_provider = normalize_provider(
         db_settings.get("vision_provider", "") or settings.vision_provider
     )
     default_vision_model = db_settings.get("vision_model", "") or settings.vision_model
@@ -1641,7 +1642,7 @@ async def generate(
     from docsfy.storage import get_all_settings
 
     db_settings = await get_all_settings()
-    ai_provider = (
+    ai_provider = normalize_provider(
         gen_request.ai_provider
         or db_settings.get("default_ai_provider", "")
         or settings.ai_provider
@@ -1667,6 +1668,8 @@ async def generate(
         or settings.vision_provider
         or None
     )
+    if vision_provider:
+        vision_provider = normalize_provider(vision_provider)
     vision_model = (
         gen_request.vision_model
         or db_settings.get("vision_model", "")

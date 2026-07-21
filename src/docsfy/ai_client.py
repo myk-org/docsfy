@@ -43,6 +43,10 @@ _model_route_cache: dict[tuple[str, str], str] = {}
 # Cached cursor auth probe: (monotonic_ts, status_dict)
 _cursor_auth_cache: tuple[float, dict[str, Any]] | None = None
 _CURSOR_AUTH_CACHE_TTL_SEC = 60.0
+_CURSOR_AGENT_STATUS_TIMEOUT_SEC = 20.0
+# Providers whose catalog has been fetched at least once this process lifetime
+# (cleared on refresh_models). Prevents repeated get_models for unknown model ids.
+_warmed_providers: set[str] = set()
 _CURSOR_BROWSER_LOGIN_EXPIRED_HINT = (
     "Cursor browser login (`agent login`) expired or is missing. "
     "Set CURSOR_API_KEY on the server (does not expire; always works when set), "
@@ -197,6 +201,7 @@ async def refresh_models() -> list[dict[str, Any]]:
     raw = await client.refresh_models()
     # Drop stale routes, then rebuild from the refreshed catalog.
     _model_route_cache.clear()
+    _warmed_providers.clear()
     build_friendly_catalog(raw)
     clear_cursor_auth_cache()
     return raw
@@ -277,7 +282,9 @@ async def probe_cursor_auth(
             env=os.environ.copy(),
         )
         try:
-            stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=20)
+            stdout, stderr = await asyncio.wait_for(
+                proc.communicate(), timeout=_CURSOR_AGENT_STATUS_TIMEOUT_SEC
+            )
         except TimeoutError:
             proc.kill()
             await proc.wait()
@@ -369,19 +376,29 @@ def cursor_status_from_model_count(model_count: int) -> dict[str, Any]:
 async def _prewarm_model_routes(friendly: str, model: str = "") -> None:
     """Best-effort catalog fetch to populate ``_model_route_cache``.
 
-    When ``model`` is set, skip only if that exact ``(friendly, model)`` route
-    is already cached. Failures are non-fatal: heuristic defaults still apply.
+    After a successful catalog fetch for ``friendly``, further calls skip
+    re-fetching even for unknown/free-typed model ids (heuristic routes apply).
+    Failures are non-fatal.
     """
     if not friendly:
         return
     model = (model or "").strip()
-    if model:
-        if (friendly, model) in _model_route_cache:
-            return
-    elif any(fp == friendly for fp, _ in _model_route_cache):
+    if friendly in _warmed_providers:
+        return
+    if model and (friendly, model) in _model_route_cache:
+        return
+    if not model and any(fp == friendly for fp, _ in _model_route_cache):
+        _warmed_providers.add(friendly)
         return
     try:
         await list_models(friendly)
+        _warmed_providers.add(friendly)
+        # Cache a heuristic route for unknown free-typed models so routing is
+        # stable without further catalog hits.
+        if model and (friendly, model) not in _model_route_cache:
+            _model_route_cache[(friendly, model)] = _resolve_sidecar_for_model(
+                friendly, model
+            )
     except Exception:
         logger.debug(
             "Model catalog prewarm failed for provider=%s; using heuristic routes",

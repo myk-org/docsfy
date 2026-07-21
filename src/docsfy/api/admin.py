@@ -6,6 +6,7 @@ from fastapi import APIRouter, HTTPException, Request
 from simple_logger.logger import get_logger
 from starlette.responses import JSONResponse
 
+from docsfy.ai_client import normalize_provider
 from docsfy.api.websocket import notify_access_change
 from docsfy.config import get_settings
 from docsfy.models import VALID_PROVIDERS
@@ -279,7 +280,9 @@ async def update_settings_endpoint(request: Request) -> dict[str, str]:
                     detail=f"Setting '{key}' must be a positive integer",
                 )
         if key in _PROVIDER_SETTING_KEYS and value_str:
-            if value_str not in VALID_PROVIDERS:
+            value_str = normalize_provider(value_str)
+            settings[key] = value_str
+            if value_str and value_str not in VALID_PROVIDERS:
                 raise HTTPException(
                     status_code=400,
                     detail=f"Invalid provider '{value_str}'. Must be one of: {', '.join(VALID_PROVIDERS)}",
