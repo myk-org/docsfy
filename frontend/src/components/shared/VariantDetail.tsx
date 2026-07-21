@@ -26,7 +26,7 @@ import CursorAuthBanner from '@/components/shared/CursorAuthBanner'
 import ActivityLog from '@/components/shared/ActivityLog'
 import { useModal } from '@/components/shared/ModalProvider'
 import { deleteVariant as deleteVariantApi, generateDocs, abortVariant } from '@/lib/api'
-import { encodeBranch } from '@/lib/utils'
+import { encodeBranch, modelOptionsForProvider } from '@/lib/utils'
 import { TOAST_DEFAULT_MS, TOAST_ERROR_MS, VALID_PROVIDERS, BADGE_STYLES, SELECT_CLEAR } from '@/lib/constants'
 import { ApiError } from '@/types'
 import type { Project, LogEntry, DocPlan, AvailableModels, ProviderStatus } from '@/types'
@@ -347,18 +347,8 @@ function RegenerateSection({
     setVisionModel('')
   }
 
-  const modelOptions = (availableModels[provider] ?? []).map(m => ({
-    value: m.id,
-    label: m.name || m.id,
-    badge: m.source,
-  }))
-  const visionModelOptions = visionProvider
-    ? (availableModels[visionProvider] ?? []).map(m => ({
-        value: m.id,
-        label: m.name || m.id,
-        badge: m.source,
-      }))
-    : []
+  const modelOptions = modelOptionsForProvider(availableModels, provider)
+  const visionModelOptions = modelOptionsForProvider(availableModels, visionProvider)
 
   return (
     <div className="border-t border-dashed pt-4 mt-4">

@@ -75,17 +75,17 @@ def _source_for_sidecar(sidecar_provider: str) -> str:
 
 
 def _resolve_sidecar_for_model(friendly: str, model: str) -> str:
-    """Pick ACPX/API vs CLI sidecar for a friendly provider + model id."""
+    """Pick ACPX/API vs CLI sidecar for a friendly provider + model id.
+
+    Catalog-driven routes win. On cache miss, default to ACPX/API — never
+    assume CLI is available (free-typed / stale model ids).
+    """
     cached = _model_route_cache.get((friendly, model))
     if cached:
         return cached
 
-    # Cursor id shapes: ACPX uses bracket params; CLI uses plain cursor:… ids.
-    if friendly == "cursor":
-        if "[" in model:
-            return _DEFAULT_SIDECAR["cursor"]
-        if model.startswith("cursor:"):
-            return _CLI_SIDECAR["cursor"]
+    # Bracketed cursor ids are ACPX-shaped; otherwise prefer default ACPX/API.
+    if friendly == "cursor" and "[" in model:
         return _DEFAULT_SIDECAR["cursor"]
 
     return _DEFAULT_SIDECAR.get(friendly, friendly)
@@ -185,7 +185,8 @@ async def refresh_models() -> list[dict[str, Any]]:
     """Trigger model re-discovery on the sidecar and rebuild the route cache."""
     client = get_sidecar_client()
     raw = await client.refresh_models()
-    # Rebuild cache from the refreshed catalog (keep old routes until success).
+    # Drop stale routes, then rebuild from the refreshed catalog.
+    _model_route_cache.clear()
     build_friendly_catalog(raw)
     clear_cursor_auth_cache()
     return raw

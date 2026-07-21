@@ -207,12 +207,12 @@ print(f'Providers with models: {providers_with_models}')
 
 1. Log in as admin; open generate form (or Admin → Settings).
 2. Select provider `cursor`.
-3. Inspect `GET /api/models` → `provider_status.cursor`.
+3. Inspect `GET /api/models` → `provider_status.cursor` **with** admin session/Bearer (optional auth on the public path).
 
 **Expected result:**
-- `provider_status.cursor.ok` is `false` with a `reason` / `hint`
-- Admin response may include `has_api_key`; non-admin sees redacted `reason: unavailable` and a contact-admin hint
-- UI shows `data-testid="cursor-auth-banner"` under the provider control
+- Anonymous `GET /api/models` still works; `provider_status.cursor.ok` is coarse (`has_api_key` absent)
+- Admin-authenticated `GET /api/models` runs `probe_cursor_auth` and may include `has_api_key` / specific `reason`
+- When `ok` is `false`, UI shows `data-testid="cursor-auth-banner"` under the provider control
 - When Cursor has models (`ok: true`), banner is **not** shown
 
 ---

@@ -42,17 +42,19 @@ def test_map_cursor_acpx_heuristic() -> None:
     assert model == "cursor:default[effort=high]"
 
 
-def test_map_cursor_cli_heuristic() -> None:
+def test_map_cursor_cache_miss_defaults_to_acpx() -> None:
+    """Free-typed cursor:* must not assume CLI when catalog has no route."""
     ai_client._model_route_cache.clear()
     provider, model = map_provider_model_for_sidecar("cursor", "cursor:composer-2")
-    assert provider == "cli-cursor"
+    assert provider == "acpx-cursor"
     assert model == "cursor:composer-2"
 
 
 def test_legacy_cursor_cli_provider_with_cli_model() -> None:
     ai_client._model_route_cache.clear()
+    # Without catalog cache, legacy alias still defaults to ACPX (safe fallback).
     provider, model = map_provider_model_for_sidecar("cursor-cli", "cursor:composer-2")
-    assert provider == "cli-cursor"
+    assert provider == "acpx-cursor"
     assert model == "cursor:composer-2"
 
 
@@ -153,6 +155,30 @@ async def test_list_models_uses_catalog(
     models = await list_models("cursor")
     assert len(models) == 2
     assert {m["source"] for m in models} == {"acpx", "cli"}
+
+
+@pytest.mark.asyncio
+async def test_refresh_models_clears_stale_route_cache(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    ai_client._model_route_cache.clear()
+    ai_client._model_route_cache[("cursor", "cursor:stale")] = "cli-cursor"
+
+    class FakeClient:
+        async def refresh_models(self) -> list[dict]:
+            return [
+                {
+                    "id": "cursor:default[]",
+                    "name": "Default",
+                    "provider": "acpx-cursor",
+                },
+            ]
+
+    monkeypatch.setattr(ai_client, "get_sidecar_client", lambda: FakeClient())
+    raw = await refresh_models()
+    assert len(raw) == 1
+    assert ("cursor", "cursor:stale") not in ai_client._model_route_cache
+    assert ai_client._model_route_cache[("cursor", "cursor:default[]")] == "acpx-cursor"
 
 
 def test_cursor_status_from_model_count_ok() -> None:

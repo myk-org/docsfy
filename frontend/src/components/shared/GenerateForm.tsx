@@ -15,7 +15,7 @@ import Combobox from '@/components/shared/Combobox'
 import CursorAuthBanner from '@/components/shared/CursorAuthBanner'
 import { generateDocs } from '@/lib/api'
 import { SK_REPO, SK_BRANCH, SK_FORCE, SK_REPO_TYPE, TOAST_DEFAULT_MS, TOAST_ERROR_MS, VALID_PROVIDERS, VALID_REPO_TYPES, SELECT_CLEAR } from '@/lib/constants'
-import { cn } from '@/lib/utils'
+import { cn, modelOptionsForProvider } from '@/lib/utils'
 import type { AvailableModels, ProviderStatus } from '@/types'
 import { ApiError } from '@/types'
 interface GenerateFormProps {
@@ -265,18 +265,8 @@ export default function GenerateForm({
 
   const repoName = repoUrl.trim() ? extractRepoName(repoUrl) : ''
   const branchOptions = repoName && knownBranches[repoName] ? knownBranches[repoName] : []
-  const modelOptions = (availableModels[provider] ?? []).map(m => ({
-    value: m.id,
-    label: m.name || m.id,
-    badge: m.source,
-  }))
-  const visionModelOptions = visionProvider
-    ? (availableModels[visionProvider] ?? []).map(m => ({
-        value: m.id,
-        label: m.name || m.id,
-        badge: m.source,
-      }))
-    : []
+  const modelOptions = modelOptionsForProvider(availableModels, provider)
+  const visionModelOptions = modelOptionsForProvider(availableModels, visionProvider)
 
   return (
     <div className="flex items-start justify-center h-full p-8">

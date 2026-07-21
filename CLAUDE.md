@@ -86,7 +86,6 @@ When adding new code:
 - The UI reads defaults from `GET /api/models` response (`default_provider`, `default_model`)
 - AI calls are routed through pi-sidecar-client to a local HTTP sidecar service (default port 9100 via `SIDECAR_PORT` env var)
 - Sidecar agent discovery (optional): `ACPX_AGENTS` / `CLI_AGENTS` (comma-separated). Models appear under friendly providers (`claude`/`gemini`/`cursor`) with `source` tags (`acpx`|`cli`|`api`). Unset = disabled. Entrypoint resolves `SIDECAR_ACPX_EXTENSION_PATH` and `SIDECAR_CLI_PROVIDER_EXTENSION_PATH`.
-- Sidecar agent discovery (optional): `ACPX_AGENTS` / `CLI_AGENTS` (comma-separated). Models appear under friendly providers (`claude`/`gemini`/`cursor`) with `source` tags (`acpx`|`cli`|`api`). Unset = disabled. Entrypoint resolves `SIDECAR_ACPX_EXTENSION_PATH` and `SIDECAR_CLI_PROVIDER_EXTENSION_PATH`.
 
 ## Testing
 

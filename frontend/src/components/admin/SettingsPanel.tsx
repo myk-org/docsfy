@@ -15,6 +15,7 @@ import Combobox from '@/components/shared/Combobox'
 import CursorAuthBanner from '@/components/shared/CursorAuthBanner'
 import { getSettings, updateSettings } from '@/lib/api'
 import { VALID_PROVIDERS, TOAST_DEFAULT_MS, TOAST_ERROR_MS, SELECT_CLEAR } from '@/lib/constants'
+import { modelOptionsForProvider } from '@/lib/utils'
 import { ApiError } from '@/types'
 import type { AvailableModels, AdminSettings, ProviderStatus } from '@/types'
 
@@ -128,21 +129,8 @@ export default function SettingsPanel({ availableModels, providerStatus = {}, on
     }
   }
 
-  const modelOptions = provider
-    ? (availableModels[provider] ?? []).map(m => ({
-        value: m.id,
-        label: m.name || m.id,
-        badge: m.source,
-      }))
-    : []
-
-  const visionModelOptions = visionProvider
-    ? (availableModels[visionProvider] ?? []).map(m => ({
-        value: m.id,
-        label: m.name || m.id,
-        badge: m.source,
-      }))
-    : []
+  const modelOptions = modelOptionsForProvider(availableModels, provider)
+  const visionModelOptions = modelOptionsForProvider(availableModels, visionProvider)
 
   if (loading) {
     return (
