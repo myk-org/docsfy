@@ -162,7 +162,7 @@ Each linked sub-file contains only the detailed test bodies for its assigned sec
 | [e2e-08-cross-model-updates.md](e2e-08-cross-model-updates.md) | 20 | Cross-Model Incremental Updates |
 | [e2e-10-branch-support.md](e2e-10-branch-support.md) | 22 | Branch Support (including regenerate with different branch) |
 | [e2e-11-websocket.md](e2e-11-websocket.md) | 23 | WebSocket Connection, Auth, Real-time Updates |
-| [e2e-12-cli.md](e2e-12-cli.md) | 24 | CLI Commands (config, generate, list, status, admin) |
+| [e2e-12-cli.md](e2e-12-cli.md) | 24 | CLI Commands (config, generate, list, status, admin, download) |
 | [e2e-13-post-generation-pipeline.md](e2e-13-post-generation-pipeline.md) | 27 | Post-Generation Pipeline (version footer, related pages, validation/cross-linking/completeness stages, performance, generation duration, elapsed timer, stage labels) |
 | [e2e-14-models-command.md](e2e-14-models-command.md) | 28 | Models Command (CLI providers/models listing, JSON output, API endpoint, available_models, source badges, Cursor auth banner) |
 | [e2e-15-repo-type.md](e2e-15-repo-type.md) | 30-32 | Repository type support (API, UI, CLI) |
@@ -200,7 +200,7 @@ Each linked sub-file contains only the detailed test bodies for its assigned sec
 | 20 | Cross-Model Incremental Updates | 20.1-20.5 |
 | 22 | Branch Support | 22.1-22.11 |
 | 23 | WebSocket | 23.1-23.8 |
-| 24 | CLI Commands | 24.1-24.10 |
+| 24 | CLI Commands | 24.1-24.12 |
 | 25 | Sidebar Collapse Toggle Position | 25.1-25.4 |
 | 26 | Dialog Theme Consistency | 26.1-26.2 |
 | 27 | Post-Generation Pipeline | 27.1-27.11 |

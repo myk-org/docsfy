@@ -11,7 +11,219 @@ import httpx
 import typer
 
 from docsfy.cli.formatting import print_table
-from docsfy.models import is_uuid
+from docsfy.models import encode_branch_for_path, is_uuid
+
+# Exact paths that must never be cleared (descendants of these are allowed).
+_UNSAFE_CLEAR_EXACT: frozenset[Path] = frozenset(
+    {
+        Path("/"),
+        Path("/home"),
+        Path("/Users"),  # macOS home root (descendants allowed)
+        Path("/opt"),
+        Path("/tmp"),
+        Path("/var/tmp"),
+    }
+)
+
+# Refuse these trees and all descendants (see /var/tmp exception below).
+_UNSAFE_CLEAR_PREFIXES: frozenset[Path] = frozenset(
+    {
+        Path("/etc"),
+        Path("/usr"),
+        Path("/boot"),
+        Path("/root"),
+        Path("/dev"),
+        Path("/proc"),
+        Path("/sys"),
+        Path("/run"),
+        Path("/var"),
+        Path("/System"),  # macOS system tree
+        Path("/Library"),  # macOS system library tree
+    }
+)
+
+_VAR_TMP = Path("/var/tmp")
+
+
+def _path_is_or_under(path: Path, root: Path) -> bool:
+    """Return True if *path* is *root* or a descendant of *root*."""
+    return path == root or root in path.parents
+
+
+def _refuse_unsafe_clear_target(directory: Path) -> None:
+    """Raise Exit(1) if *directory* must not have its contents replaced.
+
+    Refuses filesystem / common system roots (exact), sensitive system trees
+    and their descendants (``/etc``, ``/usr``, ``/var``, … — except
+    ``/var/tmp/...`` descendants), the user's home directory, the current
+    working directory, ancestors of cwd, and symlink paths (including
+    dangling symlinks).
+    """
+    expanded = directory.expanduser()
+    if expanded.is_symlink():
+        typer.echo(f"Refusing to clear symlink path: {expanded}", err=True)
+        raise typer.Exit(code=1)
+
+    resolved = expanded.resolve()
+    cwd_resolved = Path.cwd().resolve()
+    unsafe_exact = {p.resolve() for p in _UNSAFE_CLEAR_EXACT}
+    unsafe_exact.add(Path.home().resolve())
+    unsafe_exact.add(cwd_resolved)
+    # Refuse ancestors of cwd (e.g. ``-o ..``) so parent trees are never wiped.
+    unsafe_exact.update(cwd_resolved.parents)
+    if resolved in unsafe_exact:
+        typer.echo(f"Refusing to clear dangerous path: {resolved}", err=True)
+        raise typer.Exit(code=1)
+
+    var_resolved = Path("/var").resolve()
+    var_tmp_resolved = _VAR_TMP.resolve()
+    for prefix in _UNSAFE_CLEAR_PREFIXES:
+        root = prefix.resolve()
+        if not _path_is_or_under(resolved, root):
+            continue
+        # Allow descendants of /var/tmp (exact /var/tmp is refused above).
+        if (
+            root == var_resolved
+            and _path_is_or_under(resolved, var_tmp_resolved)
+            and resolved != var_tmp_resolved
+        ):
+            continue
+        typer.echo(f"Refusing to clear dangerous path: {resolved}", err=True)
+        raise typer.Exit(code=1)
+
+
+def _move_directory_entries(src: Path, dest: Path) -> None:
+    """Move all entries from *src* into *dest* (dest must exist).
+
+    If a same-named entry already exists under *dest*, remove it first so the
+    move replaces rather than nesting (``dest/name/name``).
+
+    Rejects *src* that is a symlink or not a real directory (lstat semantics)
+    so a TOCTOU swap to a symlink cannot redirect the move.
+    """
+    # lstat: is_symlink() / is_dir(follow_symlinks=False) must not follow links.
+    if src.is_symlink() or not src.is_dir(follow_symlinks=False):
+        raise OSError(f"Refusing to move from non-directory or symlink path: {src}")
+    for item in list(src.iterdir()):
+        dest_path = dest / item.name
+        if dest_path.exists() or dest_path.is_symlink():
+            if dest_path.is_dir() and not dest_path.is_symlink():
+                shutil.rmtree(dest_path)
+            else:
+                dest_path.unlink()
+        shutil.move(str(item), str(dest_path))
+
+
+def _clear_directory_entries(directory: Path) -> None:
+    """Remove all entries under *directory*, keeping the directory itself.
+
+    Symlink directory entries are unlinked (not followed). Caller must have
+    already validated *directory* via ``_refuse_unsafe_clear_target``.
+    """
+    # Re-check immediately before iterating (TOCTOU: path may have become a symlink).
+    if directory.is_symlink() or not directory.is_dir(follow_symlinks=False):
+        return
+    for item in directory.iterdir():
+        if item.is_dir() and not item.is_symlink():
+            shutil.rmtree(item)
+        else:
+            item.unlink()
+
+
+def _warn_unrecovered_aside(aside: Path) -> None:
+    """Remove empty *aside* or warn if files remain."""
+    try:
+        aside.rmdir()
+    except OSError:
+        typer.echo(
+            f"Warning: left unrecovered aside directory at {aside}",
+            err=True,
+        )
+
+
+def _partial_recover_aside(output_dir: Path, aside: Path) -> None:
+    """Move aside entries back only where the destination is missing."""
+    if not aside.exists():
+        return
+    for item in list(aside.iterdir()):
+        dest = output_dir / item.name
+        if not dest.exists() and not dest.is_symlink():
+            shutil.move(str(item), str(dest))
+    _warn_unrecovered_aside(aside)
+
+
+def _restore_aside_to_output(output_dir: Path, aside: Path) -> None:
+    """Clear *output_dir* and move all aside entries back."""
+    _clear_directory_entries(output_dir)
+    _move_directory_entries(aside, output_dir)
+    _warn_unrecovered_aside(aside)
+
+
+def _replace_directory_contents(output_dir: Path, source_dir: Path) -> None:
+    """Replace contents of *output_dir* with contents of *source_dir*.
+
+    Moves existing output aside first, installs the new tree, then deletes the
+    aside on success. On install failure or interrupt, restores the aside so
+    existing output is left intact. Download/extract failures never call this
+    and leave output untouched.
+
+    Unsafe-path checks (``typer.Exit``) run before the aside window so they are
+    not treated as install failures.
+    """
+    _refuse_unsafe_clear_target(output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+    # Re-check after mkdir in case a symlink appeared at the path.
+    _refuse_unsafe_clear_target(output_dir)
+
+    aside = Path(tempfile.mkdtemp(prefix=".docsfy-aside-", dir=str(output_dir.parent)))
+    moved_aside = False
+    try:
+        # Re-check immediately before moving output aside (TOCTOU).
+        _refuse_unsafe_clear_target(output_dir)
+        _move_directory_entries(output_dir, aside)
+        moved_aside = True
+        _move_directory_entries(source_dir, output_dir)
+    except BaseException:
+        if moved_aside:
+            try:
+                _restore_aside_to_output(output_dir, aside)
+            except BaseException:
+                _partial_recover_aside(output_dir, aside)
+                raise
+        else:
+            _partial_recover_aside(output_dir, aside)
+        raise
+    else:
+        try:
+            shutil.rmtree(aside)
+        except OSError:
+            _warn_unrecovered_aside(aside)
+
+
+def _flatten_extracted_tree(
+    root: Path,
+    expected_name: str,
+) -> bool:
+    """Flatten a single nested docs directory into *root*.
+
+    Returns True if a nested directory was found and flattened.
+    """
+    expected_dir = root / expected_name
+    nested_dir: Path | None = None
+    if expected_dir.is_dir():
+        nested_dir = expected_dir
+    else:
+        subdirs = [
+            d for d in root.iterdir() if d.is_dir() and not d.name.startswith(".")
+        ]
+        if len(subdirs) == 1:
+            nested_dir = subdirs[0]
+    if nested_dir is None:
+        return False
+
+    _move_directory_entries(nested_dir, root)
+    nested_dir.rmdir()
+    return True
 
 
 def _resolve_generation_id(
@@ -356,7 +568,10 @@ def download(
         None,
         "--output",
         "-o",
-        help="Output directory to extract to (default: save tar.gz to current dir)",
+        help=(
+            "Output directory to extract to (replaces existing contents after a "
+            "successful download and extract; default: save tar.gz to current dir)"
+        ),
     ),
     flatten: bool = typer.Option(  # noqa: M511
         False, "--flatten", help="Flatten extracted directory structure into output dir"
@@ -391,65 +606,55 @@ def download(
         owner_qs = f"?owner={owner}" if owner else ""
 
         if branch and provider and model:
+            # Path segment must use encoded branch (matches server URL + tar arcname).
+            safe_branch = encode_branch_for_path(branch)
+            nested_archive_dir = f"{name}-{safe_branch}-{provider}-{model}"
             url_path = (
-                f"/api/projects/{name}/{branch}/{provider}/{model}/download{owner_qs}"
+                f"/api/projects/{name}/{safe_branch}/{provider}/{model}/download"
+                f"{owner_qs}"
             )
-            archive_name = f"{name}-{branch}-{provider}-{model}-docs.tar.gz"
+            archive_name = f"{nested_archive_dir}-docs.tar.gz"
         else:
+            nested_archive_dir = name
             url_path = f"/api/projects/{name}/download{owner_qs}"
             archive_name = f"{name}-docs.tar.gz"
 
         if output:
-            # Download to a temp file and extract
+            output_dir = Path(output).expanduser()
+            # Fail fast before download so dangerous targets never touch the network.
+            _refuse_unsafe_clear_target(output_dir)
+
+            # Download + extract into a staging tree first. Existing output is only
+            # replaced after staging succeeds; install failures restore prior contents.
             with tempfile.NamedTemporaryFile(suffix=".tar.gz", delete=False) as tmp:
                 tmp_path = Path(tmp.name)
+            extract_dir: Path | None = None
 
             try:
                 client.download(url_path, tmp_path)
-                output_dir = Path(output)
-                output_dir.mkdir(parents=True, exist_ok=True)
+                extract_dir = Path(tempfile.mkdtemp(prefix="docsfy-download-"))
                 with tarfile.open(tmp_path, "r:gz") as tar:
-                    tar.extractall(path=output_dir, filter="data")
+                    tar.extractall(path=extract_dir, filter="data")
+
+                flattened = False
                 if flatten:
-                    # Look for the expected nested directory from the archive
-                    expected_name = (
-                        f"{name}-{branch}-{provider}-{model}"
-                        if branch and provider and model
-                        else name
+                    # Tar top-level dir uses encode_branch_for_path (server arcname).
+                    flattened = _flatten_extracted_tree(extract_dir, nested_archive_dir)
+
+                _replace_directory_contents(output_dir, extract_dir)
+                if flatten and flattened:
+                    typer.echo(f"Extracted and flattened to {output_dir}")
+                elif flatten:
+                    typer.echo(
+                        f"Extracted to {output_dir} "
+                        "(flatten skipped: no matching subdirectory found)"
                     )
-                    expected_dir = output_dir / expected_name
-                    nested_dir: Path | None = None
-                    if expected_dir.is_dir():
-                        nested_dir = expected_dir
-                    else:
-                        # Fall back to single top-level directory
-                        subdirs = [
-                            d
-                            for d in output_dir.iterdir()
-                            if d.is_dir() and not d.name.startswith(".")
-                        ]
-                        if len(subdirs) == 1:
-                            nested_dir = subdirs[0]
-                    if nested_dir is not None:
-                        # Move all contents up to the output directory
-                        for item in list(nested_dir.iterdir()):
-                            dest_path = output_dir / item.name
-                            if dest_path.exists():
-                                if dest_path.is_dir():
-                                    shutil.rmtree(dest_path)
-                                else:
-                                    dest_path.unlink()
-                            item.rename(dest_path)
-                        nested_dir.rmdir()
-                        typer.echo(f"Extracted and flattened to {output_dir}")
-                    else:
-                        typer.echo(
-                            f"Extracted to {output_dir} (flatten skipped: no matching subdirectory found)"
-                        )
                 else:
                     typer.echo(f"Extracted to {output_dir}")
             finally:
                 tmp_path.unlink(missing_ok=True)
+                if extract_dir is not None:
+                    shutil.rmtree(extract_dir, ignore_errors=True)
         else:
             dest = Path.cwd() / archive_name
             client.download(url_path, dest)

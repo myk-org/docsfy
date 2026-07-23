@@ -378,6 +378,8 @@ Use the `<generation_id>` from Phase 2 for an unambiguous download. The `<projec
 
 The `--flatten` flag extracts docs directly into `<output_dir>/` instead of creating a nested subdirectory. It also handles model names with special characters (e.g., brackets) safely.
 
+Current CLI `--output` replaces the destination directory contents after a successful download and extract (orphans from a prior extract are removed automatically). Manual orphan cleanup is only needed for older CLIs without that behavior.
+
 If `--flatten` is not available (older CLI version), fall back to manual extraction:
 
 ```bash
