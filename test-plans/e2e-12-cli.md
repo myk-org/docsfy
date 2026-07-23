@@ -214,7 +214,48 @@ docsfy status for-testing-only
 
 ---
 
-### 24.11 Cleanup
+### 24.11 Download --output --flatten clears stale files
+
+**Precondition:** A `ready` generation for `for-testing-only` / `main` / `gemini` / `gemini-2.5-flash` must exist (from 24.4–24.5). After 24.10 the variant may be `aborted`; if so, regenerate and wait until `ready` before downloading:
+
+```shell
+docsfy generate https://github.com/myk-org/for-testing-only --provider gemini --model gemini-2.5-flash --force
+for i in $(seq 1 60); do
+  STATUS=$(curl -s "$DOCSFY_SERVER/api/projects" -H "Authorization: Bearer $DOCSFY_API_KEY" | python3 -c "import sys,json; data=json.load(sys.stdin); matches=[p for p in data['projects'] if p['name']=='for-testing-only' and p['branch']=='main' and p['ai_model']=='gemini-2.5-flash']; print(matches[0].get('status','') if matches else 'not_found')")
+  echo "Poll $i: status=$STATUS"
+  if [ "$STATUS" = "ready" ] || [ "$STATUS" = "error" ]; then break; fi
+  sleep 2
+done
+```
+
+**Create a temp output dir with an orphan file from a prior extract:**
+```shell
+rm -rf /tmp/docsfy-e2e-docs
+mkdir -p /tmp/docsfy-e2e-docs
+echo "stale" > /tmp/docsfy-e2e-docs/orphan-stale.md
+```
+
+**Download and flatten into that directory:**
+```shell
+docsfy download for-testing-only --branch main --provider gemini --model gemini-2.5-flash --output /tmp/docsfy-e2e-docs --flatten
+```
+
+**Expected result:**
+- The CLI reports extract/flatten success (e.g. "Extracted and flattened to …")
+- `/tmp/docsfy-e2e-docs/orphan-stale.md` is gone (output cleared after successful download+extract)
+- Expected docs files are present at the output root (e.g. `index.html`)
+- No nested archive folder remains (e.g. `for-testing-only-main-gemini-gemini-2.5-flash` is not left under the output dir)
+
+**Verify:**
+```shell
+test ! -f /tmp/docsfy-e2e-docs/orphan-stale.md && echo "orphan cleared"
+test -f /tmp/docsfy-e2e-docs/index.html && echo "index.html present"
+ls /tmp/docsfy-e2e-docs
+```
+
+---
+
+### 24.12 Cleanup
 
 **Delete any remaining CLI-created variants (both main and dev branches):**
 ```shell
@@ -222,6 +263,7 @@ docsfy delete for-testing-only --branch main --provider gemini --model gemini-2.
 docsfy delete for-testing-only --branch main --provider gemini --model gemini-2.0-flash --yes 2>/dev/null || true
 docsfy delete for-testing-only --branch dev --provider gemini --model gemini-2.5-flash --yes 2>/dev/null || true
 docsfy delete for-testing-only --branch dev --provider gemini --model gemini-2.0-flash --yes 2>/dev/null || true
+rm -rf /tmp/docsfy-e2e-docs
 ```
 
-**Expected result:** Variants are deleted or already gone.
+**Expected result:** Variants are deleted or already gone. Temp download dir is removed.

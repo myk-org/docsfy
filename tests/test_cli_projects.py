@@ -464,6 +464,40 @@ class TestModels:
         assert "cursor" not in data["available_models"]
 
 
+def _write_nested_docs_tarball(
+    output_path: Path,
+    *,
+    nested_name: str = "my-repo-main-cursor-gpt-5",
+) -> None:
+    """Write a minimal nested docs tar.gz to *output_path*."""
+    import io
+    import tarfile as tf
+
+    buf = io.BytesIO()
+    with tf.open(fileobj=buf, mode="w:gz") as tar:
+        for filename, content in (
+            ("index.html", b"<html>test</html>"),
+            ("page.html", b"<html>page</html>"),
+        ):
+            info = tf.TarInfo(name=f"{nested_name}/{filename}")
+            info.size = len(content)
+            tar.addfile(info, io.BytesIO(content))
+    buf.seek(0)
+    output_path.write_bytes(buf.read())
+
+
+_DOWNLOAD_VARIANT_ARGS = [
+    "download",
+    "my-repo",
+    "-b",
+    "main",
+    "-p",
+    "cursor",
+    "-m",
+    "gpt-5",
+]
+
+
 class TestDownload:
     def test_download_to_file(self, mock_client: MagicMock, tmp_path: Path) -> None:
         # Mock the download method to write fake data
@@ -480,16 +514,7 @@ class TestDownload:
 
             result = runner.invoke(
                 app,
-                [
-                    "download",
-                    "my-repo",
-                    "-b",
-                    "main",
-                    "-p",
-                    "cursor",
-                    "-m",
-                    "gpt-5",
-                ],
+                [*_DOWNLOAD_VARIANT_ARGS],
             )
         assert result.exit_code == 0
 
@@ -499,17 +524,7 @@ class TestDownload:
         """--flatten without --output should fail."""
         result = runner.invoke(
             app,
-            [
-                "download",
-                "my-repo",
-                "-b",
-                "main",
-                "-p",
-                "cursor",
-                "-m",
-                "gpt-5",
-                "--flatten",
-            ],
+            [*_DOWNLOAD_VARIANT_ARGS, "--flatten"],
         )
         assert result.exit_code == 1
         assert "--flatten requires --output" in result.output
@@ -517,41 +532,14 @@ class TestDownload:
     def test_download_flatten(self, mock_client: MagicMock, tmp_path: Path) -> None:
         """--flatten should move files from nested dir to output root."""
         output_dir = tmp_path / "docs"
-
-        def fake_download(url_path: str, output_path: Path) -> None:
-            # Create a real tar.gz with a nested directory
-            import io
-            import tarfile as tf
-
-            buf = io.BytesIO()
-            with tf.open(fileobj=buf, mode="w:gz") as tar:
-                # Add a nested directory with files
-                info = tf.TarInfo(name="my-repo-main-cursor-gpt-5/index.html")
-                content = b"<html>test</html>"
-                info.size = len(content)
-                tar.addfile(info, io.BytesIO(content))
-
-                info2 = tf.TarInfo(name="my-repo-main-cursor-gpt-5/page.html")
-                content2 = b"<html>page</html>"
-                info2.size = len(content2)
-                tar.addfile(info2, io.BytesIO(content2))
-
-            buf.seek(0)
-            output_path.write_bytes(buf.read())
-
-        mock_client.download.side_effect = fake_download
+        mock_client.download.side_effect = lambda url_path, output_path: (
+            _write_nested_docs_tarball(output_path)
+        )
 
         result = runner.invoke(
             app,
             [
-                "download",
-                "my-repo",
-                "-b",
-                "main",
-                "-p",
-                "cursor",
-                "-m",
-                "gpt-5",
+                *_DOWNLOAD_VARIANT_ARGS,
                 "--output",
                 str(output_dir),
                 "--flatten",
@@ -564,3 +552,390 @@ class TestDownload:
         assert (output_dir / "page.html").exists()
         # Nested directory should be gone
         assert not (output_dir / "my-repo-main-cursor-gpt-5").exists()
+
+    def test_download_flatten_clears_stale_files(
+        self, mock_client: MagicMock, tmp_path: Path
+    ) -> None:
+        """--output --flatten should remove orphan files left from a prior extract."""
+        output_dir = tmp_path / "docs"
+        output_dir.mkdir()
+        orphan_md = output_dir / "old-recipe.md"
+        orphan_html = output_dir / "orphan.html"
+        orphan_md.write_text("stale recipe")
+        orphan_html.write_text("<html>orphan</html>")
+
+        mock_client.download.side_effect = lambda url_path, output_path: (
+            _write_nested_docs_tarball(output_path)
+        )
+
+        result = runner.invoke(
+            app,
+            [
+                *_DOWNLOAD_VARIANT_ARGS,
+                "--output",
+                str(output_dir),
+                "--flatten",
+            ],
+        )
+        assert result.exit_code == 0
+        assert "flattened" in result.output.lower()
+        assert (output_dir / "index.html").exists()
+        assert (output_dir / "page.html").exists()
+        assert not orphan_md.exists()
+        assert not orphan_html.exists()
+        assert not (output_dir / "my-repo-main-cursor-gpt-5").exists()
+
+    def test_download_output_clears_stale_files_without_flatten(
+        self, mock_client: MagicMock, tmp_path: Path
+    ) -> None:
+        """--output without --flatten should still remove orphan files."""
+        output_dir = tmp_path / "docs"
+        output_dir.mkdir()
+        orphan = output_dir / "orphan-stale.md"
+        orphan.write_text("stale")
+
+        mock_client.download.side_effect = lambda url_path, output_path: (
+            _write_nested_docs_tarball(output_path)
+        )
+
+        result = runner.invoke(
+            app,
+            [
+                *_DOWNLOAD_VARIANT_ARGS,
+                "--output",
+                str(output_dir),
+            ],
+        )
+        assert result.exit_code == 0
+        assert "Extracted to" in result.output
+        assert not orphan.exists()
+        assert (output_dir / "my-repo-main-cursor-gpt-5" / "index.html").exists()
+
+    def test_download_failure_leaves_orphans(
+        self, mock_client: MagicMock, tmp_path: Path
+    ) -> None:
+        """Download errors must not clear existing output contents."""
+        output_dir = tmp_path / "docs"
+        output_dir.mkdir()
+        orphan = output_dir / "orphan-stale.md"
+        orphan.write_text("keep me")
+
+        mock_client.download.side_effect = RuntimeError("network fail")
+
+        result = runner.invoke(
+            app,
+            [
+                *_DOWNLOAD_VARIANT_ARGS,
+                "--output",
+                str(output_dir),
+                "--flatten",
+            ],
+        )
+        assert result.exit_code != 0
+        assert orphan.exists()
+        assert orphan.read_text() == "keep me"
+        mock_client.download.assert_called_once()
+
+    def test_download_refuses_root(
+        self, mock_client: MagicMock, tmp_path: Path
+    ) -> None:
+        result = runner.invoke(
+            app,
+            [*_DOWNLOAD_VARIANT_ARGS, "--output", "/"],
+        )
+        assert result.exit_code == 1
+        assert "Refusing to clear dangerous path" in result.output
+        mock_client.download.assert_not_called()
+
+    def test_download_refuses_home(
+        self, mock_client: MagicMock, tmp_path: Path
+    ) -> None:
+        result = runner.invoke(
+            app,
+            [*_DOWNLOAD_VARIANT_ARGS, "--output", str(Path.home())],
+        )
+        assert result.exit_code == 1
+        assert "Refusing to clear dangerous path" in result.output
+        mock_client.download.assert_not_called()
+
+    @pytest.mark.parametrize(
+        "unsafe_path",
+        ["/dev", "/proc", "/sys", "/run", "/var/tmp"],
+        ids=["dev", "proc", "sys", "run", "var_tmp"],
+    )
+    def test_download_refuses_system_roots(
+        self, mock_client: MagicMock, unsafe_path: str
+    ) -> None:
+        result = runner.invoke(
+            app,
+            [*_DOWNLOAD_VARIANT_ARGS, "--output", unsafe_path],
+        )
+        assert result.exit_code == 1
+        assert "Refusing to clear dangerous path" in result.output
+        mock_client.download.assert_not_called()
+
+    def test_download_refuses_cwd_ancestor(
+        self, mock_client: MagicMock, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        nested = tmp_path / "workdir"
+        nested.mkdir()
+        monkeypatch.chdir(nested)
+        keep = tmp_path / "keep.txt"
+        keep.write_text("do not wipe")
+
+        result = runner.invoke(
+            app,
+            [*_DOWNLOAD_VARIANT_ARGS, "--output", ".."],
+        )
+        assert result.exit_code == 1
+        assert "Refusing to clear dangerous path" in result.output
+        assert keep.exists()
+        mock_client.download.assert_not_called()
+
+    def test_download_refuses_cwd(
+        self, mock_client: MagicMock, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        monkeypatch.chdir(tmp_path)
+        orphan = tmp_path / "orphan.txt"
+        orphan.write_text("keep")
+
+        result = runner.invoke(
+            app,
+            [*_DOWNLOAD_VARIANT_ARGS, "--output", "."],
+        )
+        assert result.exit_code == 1
+        assert "Refusing to clear dangerous path" in result.output
+        assert orphan.exists()
+        mock_client.download.assert_not_called()
+
+    def test_download_refuses_symlink(
+        self, mock_client: MagicMock, tmp_path: Path
+    ) -> None:
+        sensitive = tmp_path / "sensitive"
+        sensitive.mkdir()
+        keep = sensitive / "keep.txt"
+        keep.write_text("do not wipe")
+        link = tmp_path / "out-link"
+        link.symlink_to(sensitive)
+
+        result = runner.invoke(
+            app,
+            [*_DOWNLOAD_VARIANT_ARGS, "--output", str(link)],
+        )
+        assert result.exit_code == 1
+        assert "Refusing to clear symlink path" in result.output
+        assert keep.exists()
+        mock_client.download.assert_not_called()
+
+    def test_download_refuses_dangling_symlink(
+        self, mock_client: MagicMock, tmp_path: Path
+    ) -> None:
+        link = tmp_path / "dangling-out"
+        link.symlink_to(tmp_path / "missing-target")
+
+        result = runner.invoke(
+            app,
+            [*_DOWNLOAD_VARIANT_ARGS, "--output", str(link)],
+        )
+        assert result.exit_code == 1
+        assert "Refusing to clear symlink path" in result.output
+        mock_client.download.assert_not_called()
+
+    def test_download_refuses_etc_nginx(self, mock_client: MagicMock) -> None:
+        """Descendants of sensitive trees (e.g. /etc) must be refused."""
+        result = runner.invoke(
+            app,
+            [*_DOWNLOAD_VARIANT_ARGS, "--output", "/etc/nginx"],
+        )
+        assert result.exit_code == 1
+        assert "Refusing to clear dangerous path" in result.output
+        mock_client.download.assert_not_called()
+
+    def test_download_refuses_path_resolving_under_etc(
+        self, mock_client: MagicMock, tmp_path: Path
+    ) -> None:
+        """A non-symlink path whose resolve() lands under /etc must be refused."""
+        etc_link = tmp_path / "etc-link"
+        etc_link.symlink_to("/etc")
+        # Path itself is not a symlink; a parent symlink makes resolve() → /etc/nginx.
+        target = etc_link / "nginx"
+
+        result = runner.invoke(
+            app,
+            [*_DOWNLOAD_VARIANT_ARGS, "--output", str(target)],
+        )
+        assert result.exit_code == 1
+        assert "Refusing to clear dangerous path" in result.output
+        mock_client.download.assert_not_called()
+
+    def test_download_refuses_var_log(self, mock_client: MagicMock) -> None:
+        result = runner.invoke(
+            app,
+            [*_DOWNLOAD_VARIANT_ARGS, "--output", "/var/log"],
+        )
+        assert result.exit_code == 1
+        assert "Refusing to clear dangerous path" in result.output
+        mock_client.download.assert_not_called()
+
+    def test_refuse_allows_tmp_and_var_tmp_descendants(self, tmp_path: Path) -> None:
+        """/tmp/... and /var/tmp/... descendants are allowed; exact roots are not."""
+        import typer
+
+        from docsfy.cli.projects import _refuse_unsafe_clear_target
+
+        home_sub = Path.home() / ".docsfy-test-clear-ok"
+        # Exact roots still refused.
+        for exact in ("/tmp", "/var/tmp"):
+            with pytest.raises(typer.Exit):
+                _refuse_unsafe_clear_target(Path(exact))
+
+        # Descendants / home subdir are allowed (no Exit).
+        _refuse_unsafe_clear_target(tmp_path / "out")
+        # Only assert allow for paths we can create under the sandbox when
+        # /tmp or /var/tmp may be unusable; exercise the allow branch via
+        # resolved paths that are under those trees when they exist.
+        for allowed in (
+            Path("/tmp") / "docsfy-clear-ok",
+            Path("/var/tmp") / "docsfy-clear-ok",
+        ):
+            if allowed.parent.is_dir():
+                _refuse_unsafe_clear_target(allowed)
+        _refuse_unsafe_clear_target(home_sub)
+
+    def test_move_directory_entries_replaces_same_named(self, tmp_path: Path) -> None:
+        """Restore/install must replace same-named dirs, not nest into them."""
+        from docsfy.cli.projects import _move_directory_entries
+
+        src = tmp_path / "src"
+        dest = tmp_path / "dest"
+        src.mkdir()
+        dest.mkdir()
+        (src / "docs").mkdir()
+        (src / "docs" / "new.html").write_text("new")
+        (dest / "docs").mkdir()
+        (dest / "docs" / "old.html").write_text("old")
+
+        _move_directory_entries(src, dest)
+
+        assert (dest / "docs" / "new.html").read_text() == "new"
+        assert not (dest / "docs" / "old.html").exists()
+        assert not (dest / "docs" / "docs").exists()
+        assert list(src.iterdir()) == []
+
+    def test_replace_restores_on_install_failure(self, tmp_path: Path) -> None:
+        """Install failure after aside move must restore originals and re-raise."""
+        from docsfy.cli.projects import (
+            _move_directory_entries,
+            _replace_directory_contents,
+        )
+
+        output_dir = tmp_path / "out"
+        source_dir = tmp_path / "src"
+        output_dir.mkdir()
+        source_dir.mkdir()
+        (output_dir / "old.txt").write_text("keep-me")
+        (source_dir / "new.txt").write_text("new")
+
+        calls = {"n": 0}
+        real_move = _move_directory_entries
+
+        def flaky_move(src: Path, dest: Path) -> None:
+            calls["n"] += 1
+            if calls["n"] == 2:
+                raise RuntimeError("install boom")
+            real_move(src, dest)
+
+        with patch(
+            "docsfy.cli.projects._move_directory_entries", side_effect=flaky_move
+        ):
+            with pytest.raises(RuntimeError, match="install boom"):
+                _replace_directory_contents(output_dir, source_dir)
+
+        assert (output_dir / "old.txt").read_text() == "keep-me"
+        assert not (output_dir / "new.txt").exists()
+        assert list(tmp_path.glob(".docsfy-aside-*")) == []
+
+    def test_replace_restores_on_keyboard_interrupt(self, tmp_path: Path) -> None:
+        """KeyboardInterrupt during install must still restore aside contents."""
+        from docsfy.cli.projects import (
+            _move_directory_entries,
+            _replace_directory_contents,
+        )
+
+        output_dir = tmp_path / "out"
+        source_dir = tmp_path / "src"
+        output_dir.mkdir()
+        source_dir.mkdir()
+        (output_dir / "old.txt").write_text("keep-me")
+        (source_dir / "new.txt").write_text("new")
+
+        calls = {"n": 0}
+        real_move = _move_directory_entries
+
+        def interrupt_on_install(src: Path, dest: Path) -> None:
+            calls["n"] += 1
+            if calls["n"] == 2:
+                raise KeyboardInterrupt
+            real_move(src, dest)
+
+        with patch(
+            "docsfy.cli.projects._move_directory_entries",
+            side_effect=interrupt_on_install,
+        ):
+            with pytest.raises(KeyboardInterrupt):
+                _replace_directory_contents(output_dir, source_dir)
+
+        assert (output_dir / "old.txt").read_text() == "keep-me"
+        assert not (output_dir / "new.txt").exists()
+        assert list(tmp_path.glob(".docsfy-aside-*")) == []
+
+    def test_replace_warns_unrecovered_aside(self, tmp_path: Path) -> None:
+        """When aside cannot be emptied after failure, warn instead of deleting."""
+        from docsfy.cli.projects import (
+            _move_directory_entries,
+            _replace_directory_contents,
+        )
+
+        output_dir = tmp_path / "out"
+        source_dir = tmp_path / "src"
+        output_dir.mkdir()
+        source_dir.mkdir()
+        (output_dir / "old.txt").write_text("keep-me")
+        (source_dir / "new.txt").write_text("new")
+
+        calls = {"n": 0}
+        real_move = _move_directory_entries
+        real_rmdir = Path.rmdir
+
+        def flaky_move(src: Path, dest: Path) -> None:
+            calls["n"] += 1
+            if calls["n"] == 2:
+                raise RuntimeError("install boom")
+            real_move(src, dest)
+
+        def rmdir_fail(self: Path) -> None:
+            if self.name.startswith(".docsfy-aside-"):
+                # Leave a marker so rmdir would fail even if empty check passes.
+                (self / ".stuck").write_text("x")
+            real_rmdir(self)
+
+        with (
+            patch(
+                "docsfy.cli.projects._move_directory_entries", side_effect=flaky_move
+            ),
+            patch.object(Path, "rmdir", rmdir_fail),
+            patch("docsfy.cli.projects.typer.echo") as echo,
+        ):
+            with pytest.raises(RuntimeError, match="install boom"):
+                _replace_directory_contents(output_dir, source_dir)
+
+        assert (output_dir / "old.txt").read_text() == "keep-me"
+        warning_calls = [
+            c
+            for c in echo.call_args_list
+            if c.args and "unrecovered aside" in str(c.args[0])
+        ]
+        assert warning_calls
+        asides = list(tmp_path.glob(".docsfy-aside-*"))
+        assert len(asides) == 1
+        assert (asides[0] / ".stuck").exists()
