@@ -2097,7 +2097,10 @@ async def download_variant(
     site_dir = get_project_site_dir(name, provider, model, project_owner, branch=branch)
     if not site_dir.exists():
         raise HTTPException(status_code=404, detail="Site not found")
-    return await _stream_tarball(site_dir, f"{name}-{branch}-{provider}-{model}")
+    # Encode branch so slash-containing names stay a single tar path segment
+    # (matches disk-path convention and CLI flatten expected_name).
+    safe_branch = encode_branch_for_path(branch)
+    return await _stream_tarball(site_dir, f"{name}-{safe_branch}-{provider}-{model}")
 
 
 @router.delete("/projects/{name}")

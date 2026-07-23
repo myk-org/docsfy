@@ -658,10 +658,38 @@ class TestDownload:
         assert "Refusing to clear dangerous path" in result.output
         mock_client.download.assert_not_called()
 
+    def test_download_refuses_users_exact(self, mock_client: MagicMock) -> None:
+        """macOS /Users root must be refused (exact match; works on Linux too)."""
+        result = runner.invoke(
+            app,
+            [*_DOWNLOAD_VARIANT_ARGS, "--output", "/Users"],
+        )
+        assert result.exit_code == 1
+        assert "Refusing to clear dangerous path" in result.output
+        mock_client.download.assert_not_called()
+
     @pytest.mark.parametrize(
         "unsafe_path",
-        ["/dev", "/proc", "/sys", "/run", "/var/tmp"],
-        ids=["dev", "proc", "sys", "run", "var_tmp"],
+        [
+            "/dev",
+            "/proc",
+            "/sys",
+            "/run",
+            "/var/tmp",
+            "/System",
+            "/Library",
+            "/System/Library",
+        ],
+        ids=[
+            "dev",
+            "proc",
+            "sys",
+            "run",
+            "var_tmp",
+            "system",
+            "library",
+            "system_library",
+        ],
     )
     def test_download_refuses_system_roots(
         self, mock_client: MagicMock, unsafe_path: str
@@ -939,3 +967,131 @@ class TestDownload:
         asides = list(tmp_path.glob(".docsfy-aside-*"))
         assert len(asides) == 1
         assert (asides[0] / ".stuck").exists()
+
+    def test_replace_warns_when_success_rmtree_fails(self, tmp_path: Path) -> None:
+        """Success-path aside cleanup must warn when rmtree fails (not silent)."""
+        from docsfy.cli.projects import _replace_directory_contents
+
+        output_dir = tmp_path / "out"
+        source_dir = tmp_path / "src"
+        output_dir.mkdir()
+        source_dir.mkdir()
+        (output_dir / "old.txt").write_text("old")
+        (source_dir / "new.txt").write_text("new")
+
+        with (
+            patch(
+                "docsfy.cli.projects.shutil.rmtree",
+                side_effect=OSError("rmtree denied"),
+            ),
+            patch("docsfy.cli.projects.typer.echo") as echo,
+        ):
+            _replace_directory_contents(output_dir, source_dir)
+
+        assert (output_dir / "new.txt").read_text() == "new"
+        assert not (output_dir / "old.txt").exists()
+        warning_calls = [
+            c
+            for c in echo.call_args_list
+            if c.args and "unrecovered aside" in str(c.args[0])
+        ]
+        assert warning_calls
+        assert list(tmp_path.glob(".docsfy-aside-*"))
+
+    def test_move_directory_entries_rejects_symlink_src(self, tmp_path: Path) -> None:
+        """Symlink src must be refused so a TOCTOU swap cannot redirect the move."""
+        from docsfy.cli.projects import _move_directory_entries
+
+        real_src = tmp_path / "real-src"
+        dest = tmp_path / "dest"
+        link = tmp_path / "src-link"
+        real_src.mkdir()
+        dest.mkdir()
+        (real_src / "secret.txt").write_text("secret")
+        link.symlink_to(real_src)
+
+        with pytest.raises(OSError, match="non-directory or symlink"):
+            _move_directory_entries(link, dest)
+
+        assert (real_src / "secret.txt").exists()
+        assert list(dest.iterdir()) == []
+
+    def test_replace_refuses_symlink_swap_before_aside(self, tmp_path: Path) -> None:
+        """If output becomes a symlink after mkdir check, refuse before aside move."""
+        import typer
+
+        from docsfy.cli.projects import (
+            _refuse_unsafe_clear_target,
+            _replace_directory_contents,
+        )
+
+        output_dir = tmp_path / "out"
+        source_dir = tmp_path / "src"
+        sensitive = tmp_path / "sensitive"
+        output_dir.mkdir()
+        source_dir.mkdir()
+        sensitive.mkdir()
+        (sensitive / "keep.txt").write_text("do not wipe")
+        (source_dir / "new.txt").write_text("new")
+
+        refuse_calls = {"n": 0}
+
+        def refuse_then_swap(directory: Path) -> None:
+            refuse_calls["n"] += 1
+            # Third call is the re-check immediately before moving aside.
+            if refuse_calls["n"] == 3:
+                import shutil as _shutil
+
+                _shutil.rmtree(directory)
+                directory.symlink_to(sensitive)
+            _refuse_unsafe_clear_target(directory)
+
+        with patch(
+            "docsfy.cli.projects._refuse_unsafe_clear_target",
+            side_effect=refuse_then_swap,
+        ):
+            with pytest.raises(typer.Exit):
+                _replace_directory_contents(output_dir, source_dir)
+
+        assert (sensitive / "keep.txt").read_text() == "do not wipe"
+        assert not (sensitive / "new.txt").exists()
+        assert refuse_calls["n"] == 3
+
+    def test_flatten_expected_name_encodes_slash_branch(
+        self, mock_client: MagicMock, tmp_path: Path
+    ) -> None:
+        """Branches with '/' must use encode_branch_for_path in flatten expected_name."""
+        from docsfy.models import encode_branch_for_path
+
+        branch = "feat/issue-1"
+        safe = encode_branch_for_path(branch)
+        nested = f"my-repo-{safe}-cursor-gpt-5"
+        output_dir = tmp_path / "docs"
+        mock_client.download.side_effect = lambda url_path, output_path: (
+            _write_nested_docs_tarball(output_path, nested_name=nested)
+        )
+
+        result = runner.invoke(
+            app,
+            [
+                "download",
+                "my-repo",
+                "-b",
+                branch,
+                "-p",
+                "cursor",
+                "-m",
+                "gpt-5",
+                "--output",
+                str(output_dir),
+                "--flatten",
+            ],
+        )
+        assert result.exit_code == 0
+        assert "flattened" in result.output.lower()
+        assert (output_dir / "index.html").exists()
+        assert not (output_dir / nested).exists()
+        # Download URL must also use the encoded branch segment.
+        called_url = mock_client.download.call_args.args[0]
+        assert f"/{safe}/" in called_url
+        assert f"/{branch}/" not in called_url

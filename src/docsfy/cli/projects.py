@@ -11,13 +11,14 @@ import httpx
 import typer
 
 from docsfy.cli.formatting import print_table
-from docsfy.models import is_uuid
+from docsfy.models import encode_branch_for_path, is_uuid
 
 # Exact paths that must never be cleared (descendants of these are allowed).
 _UNSAFE_CLEAR_EXACT: frozenset[Path] = frozenset(
     {
         Path("/"),
         Path("/home"),
+        Path("/Users"),  # macOS home root (descendants allowed)
         Path("/opt"),
         Path("/tmp"),
         Path("/var/tmp"),
@@ -36,6 +37,8 @@ _UNSAFE_CLEAR_PREFIXES: frozenset[Path] = frozenset(
         Path("/sys"),
         Path("/run"),
         Path("/var"),
+        Path("/System"),  # macOS system tree
+        Path("/Library"),  # macOS system library tree
     }
 )
 
@@ -94,7 +97,13 @@ def _move_directory_entries(src: Path, dest: Path) -> None:
 
     If a same-named entry already exists under *dest*, remove it first so the
     move replaces rather than nesting (``dest/name/name``).
+
+    Rejects *src* that is a symlink or not a real directory (lstat semantics)
+    so a TOCTOU swap to a symlink cannot redirect the move.
     """
+    # lstat: is_symlink() / is_dir(follow_symlinks=False) must not follow links.
+    if src.is_symlink() or not src.is_dir(follow_symlinks=False):
+        raise OSError(f"Refusing to move from non-directory or symlink path: {src}")
     for item in list(src.iterdir()):
         dest_path = dest / item.name
         if dest_path.exists() or dest_path.is_symlink():
@@ -111,7 +120,8 @@ def _clear_directory_entries(directory: Path) -> None:
     Symlink directory entries are unlinked (not followed). Caller must have
     already validated *directory* via ``_refuse_unsafe_clear_target``.
     """
-    if not directory.is_dir() or directory.is_symlink():
+    # Re-check immediately before iterating (TOCTOU: path may have become a symlink).
+    if directory.is_symlink() or not directory.is_dir(follow_symlinks=False):
         return
     for item in directory.iterdir():
         if item.is_dir() and not item.is_symlink():
@@ -168,6 +178,8 @@ def _replace_directory_contents(output_dir: Path, source_dir: Path) -> None:
     aside = Path(tempfile.mkdtemp(prefix=".docsfy-aside-", dir=str(output_dir.parent)))
     moved_aside = False
     try:
+        # Re-check immediately before moving output aside (TOCTOU).
+        _refuse_unsafe_clear_target(output_dir)
         _move_directory_entries(output_dir, aside)
         moved_aside = True
         _move_directory_entries(source_dir, output_dir)
@@ -182,7 +194,10 @@ def _replace_directory_contents(output_dir: Path, source_dir: Path) -> None:
             _partial_recover_aside(output_dir, aside)
         raise
     else:
-        shutil.rmtree(aside, ignore_errors=True)
+        try:
+            shutil.rmtree(aside)
+        except OSError:
+            _warn_unrecovered_aside(aside)
 
 
 def _flatten_extracted_tree(
@@ -591,11 +606,16 @@ def download(
         owner_qs = f"?owner={owner}" if owner else ""
 
         if branch and provider and model:
+            # Path segment must use encoded branch (matches server URL + tar arcname).
+            safe_branch = encode_branch_for_path(branch)
+            nested_archive_dir = f"{name}-{safe_branch}-{provider}-{model}"
             url_path = (
-                f"/api/projects/{name}/{branch}/{provider}/{model}/download{owner_qs}"
+                f"/api/projects/{name}/{safe_branch}/{provider}/{model}/download"
+                f"{owner_qs}"
             )
-            archive_name = f"{name}-{branch}-{provider}-{model}-docs.tar.gz"
+            archive_name = f"{nested_archive_dir}-docs.tar.gz"
         else:
+            nested_archive_dir = name
             url_path = f"/api/projects/{name}/download{owner_qs}"
             archive_name = f"{name}-docs.tar.gz"
 
@@ -618,12 +638,8 @@ def download(
 
                 flattened = False
                 if flatten:
-                    expected_name = (
-                        f"{name}-{branch}-{provider}-{model}"
-                        if branch and provider and model
-                        else name
-                    )
-                    flattened = _flatten_extracted_tree(extract_dir, expected_name)
+                    # Tar top-level dir uses encode_branch_for_path (server arcname).
+                    flattened = _flatten_extracted_tree(extract_dir, nested_archive_dir)
 
                 _replace_directory_contents(output_dir, extract_dir)
                 if flatten and flattened:
