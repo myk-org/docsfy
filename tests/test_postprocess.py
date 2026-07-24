@@ -8,6 +8,14 @@ from unittest.mock import patch
 import pytest
 from docsfy.ai_client import AIResult
 
+# Shared body text long enough to pass generator.page_content_passes_quality_gate's
+# minimum substantive length check, for use in add_cross_links tests where the
+# fixture's actual content doesn't matter beyond "not CoT chatter".
+_SUBSTANTIVE_BODY = (
+    "Content that is long enough to pass the generator's page quality gate "
+    "for these cross-link tests."
+)
+
 
 def test_detect_version_pyproject_toml(tmp_path: Path) -> None:
     from docsfy.postprocess import detect_version
@@ -194,9 +202,18 @@ async def test_add_cross_links(tmp_path: Path) -> None:
     from docsfy.postprocess import add_cross_links
 
     pages = {
-        "intro": "# Introduction\nOverview content.",
-        "config": "# Configuration\nConfig content.",
-        "api": "# API Reference\nAPI content.",
+        "intro": (
+            "# Introduction\nOverview content that explains the introduction "
+            "page in enough detail to be substantive documentation."
+        ),
+        "config": (
+            "# Configuration\nConfig content that explains all the available "
+            "settings and how to change them in enough detail."
+        ),
+        "api": (
+            "# API Reference\nAPI content that documents the available "
+            "endpoints and parameters in enough detail for readers."
+        ),
     }
     plan = {
         "navigation": [
@@ -785,8 +802,8 @@ async def test_add_cross_links_skips_self_links(tmp_path: Path) -> None:
     from docsfy.postprocess import add_cross_links
 
     pages = {
-        "intro": "# Intro\nContent.",
-        "config": "# Config\nContent.",
+        "intro": f"# Intro\n{_SUBSTANTIVE_BODY}",
+        "config": f"# Config\n{_SUBSTANTIVE_BODY}",
     }
     plan = {
         "navigation": [
@@ -823,8 +840,8 @@ async def test_add_cross_links_deduplicates(tmp_path: Path) -> None:
     from docsfy.postprocess import add_cross_links
 
     pages = {
-        "intro": "# Intro\nContent.",
-        "config": "# Config\nContent.",
+        "intro": f"# Intro\n{_SUBSTANTIVE_BODY}",
+        "config": f"# Config\n{_SUBSTANTIVE_BODY}",
     }
     plan = {
         "navigation": [
@@ -860,7 +877,7 @@ async def test_add_cross_links_caps_at_five(tmp_path: Path) -> None:
     from docsfy.postprocess import add_cross_links
 
     slugs = [f"page{i}" for i in range(8)]
-    pages = {slug: f"# {slug}\nContent." for slug in slugs}
+    pages = {slug: f"# {slug}\n{_SUBSTANTIVE_BODY}" for slug in slugs}
     plan = {
         "navigation": [
             {
@@ -937,8 +954,8 @@ async def test_add_cross_links_escapes_markdown_in_titles(tmp_path: Path) -> Non
     from docsfy.postprocess import add_cross_links
 
     pages = {
-        "intro": "# Intro\nContent.",
-        "special": "# Special\nContent.",
+        "intro": f"# Intro\n{_SUBSTANTIVE_BODY}",
+        "special": f"# Special\n{_SUBSTANTIVE_BODY}",
     }
     plan = {
         "navigation": [
@@ -980,8 +997,8 @@ async def test_add_cross_links_fallback_to_slug_for_unknown_pages(
     from docsfy.postprocess import add_cross_links
 
     pages = {
-        "intro": "# Intro\nContent.",
-        "extra": "# Extra\nContent.",
+        "intro": f"# Intro\n{_SUBSTANTIVE_BODY}",
+        "extra": f"# Extra\n{_SUBSTANTIVE_BODY}",
     }
     plan = {
         "navigation": [
@@ -1211,6 +1228,86 @@ def test_fix_broken_internal_links_dotted_slug_valid() -> None:
     }
     result = fix_broken_internal_links(pages, plan, project_name="test")
     assert "[API v2](api.v2.html)" in result["intro"]
+
+
+# --- Issue #121: don't dress up CoT chatter / failure stubs with Related Pages ---
+
+
+@pytest.mark.asyncio
+async def test_add_cross_links_skips_cot_chatter_page(tmp_path: Path) -> None:
+    """add_cross_links must not append Related Pages to AI exploration chatter."""
+    from docsfy.postprocess import add_cross_links
+
+    cot_content = (
+        "Let me start by reading the knowledge graph report before writing "
+        "anything for this page. Now let me check the pages manifest too."
+    )
+    pages = {
+        "intro": cot_content,
+        "config": f"# Config\n{_SUBSTANTIVE_BODY}",
+    }
+    plan = {
+        "navigation": [
+            {
+                "group": "Docs",
+                "pages": [
+                    {"slug": "intro", "title": "Intro", "description": ""},
+                    {"slug": "config", "title": "Config", "description": ""},
+                ],
+            }
+        ]
+    }
+    cross_links_json = json.dumps({"intro": ["config"]})
+    with patch(
+        "docsfy.postprocess.call_ai_once",
+        return_value=AIResult(success=True, text=cross_links_json),
+    ):
+        result = await add_cross_links(
+            pages=pages,
+            plan=plan,
+            ai_provider="claude",
+            ai_model="opus",
+            repo_path=tmp_path,
+        )
+    assert result["intro"] == cot_content
+    assert "## Related Pages" not in result["intro"]
+
+
+@pytest.mark.asyncio
+async def test_add_cross_links_skips_known_failure_stub(tmp_path: Path) -> None:
+    """add_cross_links must not append Related Pages to a known generation-failure stub."""
+    from docsfy.postprocess import add_cross_links
+
+    stub_content = "# Intro\n\n*Documentation generation failed. Please re-run.*"
+    pages = {
+        "intro": stub_content,
+        "config": f"# Config\n{_SUBSTANTIVE_BODY}",
+    }
+    plan = {
+        "navigation": [
+            {
+                "group": "Docs",
+                "pages": [
+                    {"slug": "intro", "title": "Intro", "description": ""},
+                    {"slug": "config", "title": "Config", "description": ""},
+                ],
+            }
+        ]
+    }
+    cross_links_json = json.dumps({"intro": ["config"]})
+    with patch(
+        "docsfy.postprocess.call_ai_once",
+        return_value=AIResult(success=True, text=cross_links_json),
+    ):
+        result = await add_cross_links(
+            pages=pages,
+            plan=plan,
+            ai_provider="claude",
+            ai_model="opus",
+            repo_path=tmp_path,
+        )
+    assert result["intro"] == stub_content
+    assert "## Related Pages" not in result["intro"]
 
 
 def test_fix_broken_internal_links_dotted_slug_broken() -> None:

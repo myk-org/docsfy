@@ -5,6 +5,7 @@ import json
 import re
 import urllib.parse
 import shutil
+from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
@@ -12,6 +13,7 @@ import markdown
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 from simple_logger.logger import get_logger
 
+from docsfy.generator import is_generation_failure_stub
 from docsfy.models import DOCSFY_REPO_URL
 
 logger = get_logger(name=__name__)
@@ -479,6 +481,19 @@ def _build_llms_full_txt(
     return "\n".join(lines)
 
 
+def _filter_navigation_pages(
+    navigation: list[dict[str, Any]],
+    keep_page: Callable[[dict[str, Any]], bool],
+) -> list[dict[str, Any]]:
+    """Return navigation groups with pages filtered by `keep_page`, dropping empty groups."""
+    filtered: list[dict[str, Any]] = []
+    for group in navigation:
+        kept_pages = [page for page in group.get("pages", []) if keep_page(page)]
+        if kept_pages:
+            filtered.append({**group, "pages": kept_pages})
+    return filtered
+
+
 def render_site(
     plan: dict[str, Any],
     pages: dict[str, str],
@@ -520,15 +535,9 @@ def render_site(
             valid_pages[slug] = content
 
     # Filter navigation to only include pages that exist in valid_pages
-    filtered_navigation: list[dict[str, Any]] = []
-    for group in navigation:
-        filtered_pages = [
-            page
-            for page in group.get("pages", [])
-            if page.get("slug", "") in valid_pages
-        ]
-        if filtered_pages:
-            filtered_navigation.append({**group, "pages": filtered_pages})
+    filtered_navigation = _filter_navigation_pages(
+        navigation, lambda page: page.get("slug", "") in valid_pages
+    )
 
     index_html = render_index(
         project_name, tagline, filtered_navigation, repo_url=repo_url, version=version
@@ -572,13 +581,22 @@ def render_site(
         json.dumps(search_index), encoding="utf-8"
     )
 
-    # Generate llms.txt files using filtered navigation so only rendered pages appear
-    llms_txt = _build_llms_txt(plan, navigation=filtered_navigation)
+    # Generate llms.txt files using filtered navigation so only rendered pages
+    # appear. Pages whose content is a known generation-failure stub are
+    # additionally excluded here so AI-readable indexes never present a
+    # failed/CoT page as if it were real documentation, even though the
+    # stub remains visible on the HTML site itself as a failure notice.
+    llms_navigation = _filter_navigation_pages(
+        filtered_navigation,
+        lambda page: (
+            not is_generation_failure_stub(valid_pages.get(page.get("slug", ""), ""))
+        ),
+    )
+
+    llms_txt = _build_llms_txt(plan, navigation=llms_navigation)
     (output_dir / "llms.txt").write_text(llms_txt, encoding="utf-8")
 
-    llms_full_txt = _build_llms_full_txt(
-        plan, valid_pages, navigation=filtered_navigation
-    )
+    llms_full_txt = _build_llms_full_txt(plan, valid_pages, navigation=llms_navigation)
     (output_dir / "llms-full.txt").write_text(llms_full_txt, encoding="utf-8")
 
     logger.info(f"Rendered site: {len(valid_pages)} pages to {output_dir}")

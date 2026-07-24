@@ -167,6 +167,8 @@ agent-browser javascript "Array.from(document.querySelectorAll('.related-pages a
 - Each link `href` points to another page within the same documentation set (relative URL or path containing `/docs/for-testing-only/`)
 - Link text is a human-readable page name (not a raw URL or empty string)
 
+**Note (issue #121, page quality gate — conceptual/manual verification):** A page whose generated content fails `page_content_passes_quality_gate()` (e.g. AI exploration/chain-of-thought chatter instead of real documentation, or a known generation-failure stub) must NOT have a "Related Pages" section appended, even if the cross-linking AI suggests related slugs for it — `postprocess.add_cross_links()` skips appending the section for any page that fails the gate. This is hard to force deterministically in this suite (it depends on the AI backend actually emitting CoT chatter), so it isn't a numbered automated step here. To verify manually: inject/mock an AI response that returns CoT-style chatter with no H1 for a page during generation, confirm the resulting page renders the failure stub (`*Documentation generation failed...*`) with no "Related Pages" section, and confirm the stub page is excluded from `llms.txt`/`llms-full.txt` (see [e2e-03-docs-quality-and-ui.md](e2e-03-docs-quality-and-ui.md#86-llmstxt-accessible)). Unit coverage for this behavior lives in `tests/test_generator.py` and `tests/test_postprocess.py`/`tests/test_renderer.py`.
+
 ---
 
 ### 27.4 Validation and cross-linking stages appear in WebSocket progress
