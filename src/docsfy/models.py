@@ -126,6 +126,11 @@ class GenerateRequest(BaseModel):
 PageType = Literal["guide", "reference", "recipe", "concept"]
 PAGE_TYPES: tuple[str, ...] = get_args(PageType)
 
+# Heading used by postprocess.add_cross_links when appending suggested links.
+# Shared so the quality gate (generator.py) can strip it off before measuring
+# substantive body length, and so postprocess doesn't duplicate the literal string.
+RELATED_PAGES_HEADING = "## Related Pages"
+
 
 class DocPage(BaseModel):
     slug: str

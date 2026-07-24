@@ -15,7 +15,12 @@ from docsfy.cost_tracker import add_cost
 from docsfy.json_parser import parse_json_array_response, parse_json_response
 from pydantic import ValidationError
 
-from docsfy.models import DEFAULT_BRANCH, PAGE_TYPES, DocPlan
+from docsfy.models import (
+    DEFAULT_BRANCH,
+    PAGE_TYPES,
+    RELATED_PAGES_HEADING,
+    DocPlan,
+)
 from docsfy.prompts import (
     SIDECAR_TOOLS,
     build_incremental_page_prompt,
@@ -151,11 +156,6 @@ def _strip_ai_artifacts(text: str) -> str:
     return text.strip()
 
 
-# Heading used by postprocess.add_cross_links when appending suggested links.
-# Shared so the quality gate can strip it off before measuring substantive
-# body length, and so postprocess doesn't duplicate the literal string.
-RELATED_PAGES_HEADING = "## Related Pages"
-
 # Minimum length (in characters) of page body content after the H1 title,
 # excluding any "## Related Pages" section, for the content to be considered
 # substantive documentation rather than a near-empty stub dressed up with
@@ -237,6 +237,11 @@ _FAILURE_STUB_RE = re.compile(
 )
 
 
+# How many times generate_full_page_content attempts generation (initial
+# call plus regenerations) before giving up and returning a failure stub.
+_PAGE_GENERATION_MAX_ATTEMPTS = 2
+
+
 def _generation_failure_stub(title: str, *, retry_hint: bool = True) -> str:
     """Build the standard loud failure stub for pages that never produced usable content."""
     message = _FAILURE_STUB_MESSAGE if retry_hint else _FAILURE_STUB_MESSAGE_SHORT
@@ -292,8 +297,11 @@ def page_content_passes_quality_gate(
         return False, reason
 
     body = lines[1].strip() if len(lines) > 1 else ""
+    # (?:^|\n) also matches the heading at the very start of the body, which
+    # happens after leading whitespace/newlines were stripped above (e.g. a
+    # page whose only "content" after the H1 is a "## Related Pages" list).
     body_without_related = re.split(
-        rf"\n{re.escape(RELATED_PAGES_HEADING)}\b", body, maxsplit=1
+        rf"(?:^|\n){re.escape(RELATED_PAGES_HEADING)}\b", body, maxsplit=1
     )[0].strip()
     if len(body_without_related) < _MIN_SUBSTANTIVE_BODY_CHARS:
         return False, "content body is too short to be substantive documentation"
@@ -463,7 +471,7 @@ async def generate_full_page_content(
         graph_report_available=graph_report_available,
         image_catalog_path=image_catalog_path,
     )
-    for attempt in range(2):
+    for attempt in range(_PAGE_GENERATION_MAX_ATTEMPTS):
         output = await _call_ai_or_raise(
             prompt=prompt,
             repo_path=repo_path,
@@ -477,7 +485,7 @@ async def generate_full_page_content(
         )
         if ok:
             return content
-        if attempt == 0:
+        if attempt < _PAGE_GENERATION_MAX_ATTEMPTS - 1:
             logger.warning(
                 f"Page '{page_title}' failed quality gate ({reason}); regenerating once"
             )
@@ -659,10 +667,10 @@ async def generate_page(
                     repo_type=repo_type,
                     image_catalog_path=image_catalog_path,
                 )
-                # Defense-in-depth: strip AI artifacts before the gate, same
-                # as the full-generation path, so the gate's "content should
-                # already be stripped" convention holds here too.
-                output = _strip_ai_artifacts(output)
+                # Defense-in-depth: strip AI artifacts and preamble before the
+                # gate, same as the full-generation path, so the gate's
+                # "content should already be stripped" convention holds here too.
+                output = _strip_ai_artifacts(_strip_ai_preamble(output))
                 ok, reason = page_content_passes_quality_gate(
                     output, expected_title=title
                 )

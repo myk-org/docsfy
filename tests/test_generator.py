@@ -678,6 +678,41 @@ def test_page_content_passes_quality_gate_accepts_generic_phrase_mid_sentence() 
     assert ok is True, reason
 
 
+def test_page_content_passes_quality_gate_rejects_related_pages_at_body_start() -> None:
+    """Review fix: when the H1's body consists ONLY of a "## Related Pages"
+    section (i.e. the heading sits at the very start of the stripped body,
+    with no leading blank line to anchor a "\\n## Related Pages" match), the
+    Related Pages section must still be excluded from the substantive-body
+    length check so the page is correctly rejected as too short."""
+    from docsfy.generator import page_content_passes_quality_gate
+
+    content = "# Title\n\n## Related Pages\n- [a](b.html)"
+    ok, reason = page_content_passes_quality_gate(content)
+    assert ok is False
+    assert "short" in reason
+
+
+def test_page_content_passes_quality_gate_rejects_long_related_pages_only_body() -> (
+    None
+):
+    """Same bug as above, but padded past _MIN_SUBSTANTIVE_BODY_CHARS so the
+    old "\\n## Related Pages" split (which never matched a heading sitting at
+    the very start of the body) would have incorrectly let this pass as
+    substantive content instead of counting it as link-only filler."""
+    from docsfy.generator import page_content_passes_quality_gate
+
+    content = (
+        "# Title\n\n"
+        "## Related Pages\n"
+        "- [Introduction Guide](introduction.html)\n"
+        "- [Configuration Guide](configuration.html)\n"
+        "- [Deployment Guide](deployment.html)"
+    )
+    ok, reason = page_content_passes_quality_gate(content)
+    assert ok is False
+    assert "short" in reason
+
+
 def test_page_content_passes_quality_gate_rejects_too_short_body() -> None:
     from docsfy.generator import page_content_passes_quality_gate
 
@@ -902,3 +937,56 @@ async def test_generate_page_falls_back_to_full_generation_when_incremental_outp
 
     assert md == full_page_response.strip()
     assert mock_call.call_count == 2
+
+
+async def test_generate_page_incremental_strips_ai_preamble_before_gate(
+    tmp_path: Path,
+) -> None:
+    """Review fix: the incremental path must strip AI preamble (not just
+    artifacts) before running the quality gate, same as the full-generation
+    path. Here the incremental update replaces the leading H1 with narration
+    followed by a real H1 further down; without preamble stripping the
+    merged content wouldn't start with an H1 and would incorrectly fall back
+    to full generation."""
+    from docsfy.generator import generate_page
+
+    cache_dir = tmp_path / "cache"
+    cache_dir.mkdir()
+    existing_content = (
+        "# Introduction\n\nWelcome! This page gives a complete overview of "
+        "the project and how it works end to end.\n"
+    )
+    incremental_response = json.dumps(
+        {
+            "updates": [
+                {
+                    "old_text": "# Introduction\n\n",
+                    "new_text": (
+                        "Let me start by exploring the diff before writing "
+                        "the real update for this page.\n\n"
+                        "# Introduction\n\n"
+                    ),
+                }
+            ]
+        }
+    )
+    with patch(
+        "docsfy.generator.call_ai_once",
+        side_effect=[AIResult(success=True, text=incremental_response)],
+    ) as mock_call:
+        md = await generate_page(
+            repo_path=tmp_path,
+            slug="introduction",
+            title="Introduction",
+            description="Overview",
+            cache_dir=cache_dir,
+            ai_provider="claude",
+            ai_model="opus",
+            existing_content=existing_content,
+            changed_files=["src/main.py"],
+            diff_content="diff --git a/src/main.py\n+new line",
+        )
+
+    assert md.startswith("# Introduction")
+    assert "Let me start" not in md
+    assert mock_call.call_count == 1

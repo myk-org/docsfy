@@ -17,12 +17,11 @@ from simple_logger.logger import get_logger
 from docsfy.ai_client import AIResult, call_ai_once, run_parallel_with_limit
 from docsfy.cost_tracker import add_cost
 from docsfy.generator import (
-    RELATED_PAGES_HEADING,
     generate_full_page_content,
     page_content_passes_quality_gate,
 )
 from docsfy.json_parser import parse_json_array_response, parse_json_response
-from docsfy.models import PAGE_TYPES
+from docsfy.models import PAGE_TYPES, RELATED_PAGES_HEADING
 from docsfy.prompts import (
     SIDECAR_TOOLS,
     build_completeness_prompt,
