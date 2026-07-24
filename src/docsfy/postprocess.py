@@ -16,9 +16,12 @@ from simple_logger.logger import get_logger
 
 from docsfy.ai_client import AIResult, call_ai_once, run_parallel_with_limit
 from docsfy.cost_tracker import add_cost
-from docsfy.generator import generate_full_page_content
+from docsfy.generator import (
+    generate_full_page_content,
+    page_content_passes_quality_gate,
+)
 from docsfy.json_parser import parse_json_array_response, parse_json_response
-from docsfy.models import PAGE_TYPES
+from docsfy.models import PAGE_TYPES, RELATED_PAGES_HEADING
 from docsfy.prompts import (
     SIDECAR_TOOLS,
     build_completeness_prompt,
@@ -861,6 +864,16 @@ async def add_cross_links(
         if not isinstance(related_slugs, list) or not related_slugs:
             continue
 
+        # Don't dress up failing/CoT-chatter content with a Related Pages
+        # section — that would make an obviously broken stub look complete.
+        passes_gate, gate_reason = page_content_passes_quality_gate(updated[slug])
+        if not passes_gate:
+            logger.info(
+                f"[{project_name}] Skipping Related Pages for '{slug}': "
+                f"content failed quality gate ({gate_reason})"
+            )
+            continue
+
         link_items: list[str] = []
         seen: set[str] = set()
         for related_slug in related_slugs:
@@ -885,7 +898,7 @@ async def add_cross_links(
                 break
 
         if link_items:
-            related_section = "\n\n## Related Pages\n\n" + "\n".join(link_items)
+            related_section = f"\n\n{RELATED_PAGES_HEADING}\n\n" + "\n".join(link_items)
             updated[slug] = updated[slug] + related_section
 
     return updated

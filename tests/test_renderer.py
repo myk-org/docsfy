@@ -424,6 +424,53 @@ def test_render_site_passes_version(tmp_path: Path) -> None:
     assert "Generated from version 3.0.0" in page_html
 
 
+def test_render_site_excludes_failure_stubs_from_llms_txt(tmp_path: Path) -> None:
+    """Issue #121: llms.txt/llms-full.txt must not index generation-failure stubs."""
+    from docsfy.renderer import render_site
+
+    plan = {
+        "project_name": "test-repo",
+        "tagline": "A test project",
+        "navigation": [
+            {
+                "group": "Getting Started",
+                "pages": [
+                    {
+                        "slug": "introduction",
+                        "title": "Introduction",
+                        "description": "Overview",
+                    },
+                    {
+                        "slug": "broken",
+                        "title": "Broken Page",
+                        "description": "Failed generation",
+                    },
+                ],
+            },
+        ],
+    }
+    pages = {
+        "introduction": "# Introduction\n\nWelcome to test-repo.",
+        "broken": "# Broken Page\n\n*Documentation generation failed. Please re-run.*",
+    }
+    output_dir = tmp_path / "site"
+
+    render_site(plan=plan, pages=pages, output_dir=output_dir)
+
+    llms_txt = (output_dir / "llms.txt").read_text()
+    assert "Introduction" in llms_txt
+    assert "Broken Page" not in llms_txt
+
+    llms_full_txt = (output_dir / "llms-full.txt").read_text()
+    assert "Welcome to test-repo" in llms_full_txt
+    assert "Broken Page" not in llms_full_txt
+    assert "generation failed" not in llms_full_txt
+
+    # The failed page is still rendered as an HTML page (visible failure notice)
+    # rather than silently vanishing from the site.
+    assert (output_dir / "broken.html").exists()
+
+
 def test_search_index_generated(tmp_path: Path) -> None:
     from docsfy.renderer import render_site
 

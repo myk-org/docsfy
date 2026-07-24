@@ -15,7 +15,12 @@ from docsfy.cost_tracker import add_cost
 from docsfy.json_parser import parse_json_array_response, parse_json_response
 from pydantic import ValidationError
 
-from docsfy.models import DEFAULT_BRANCH, PAGE_TYPES, DocPlan
+from docsfy.models import (
+    DEFAULT_BRANCH,
+    PAGE_TYPES,
+    RELATED_PAGES_HEADING,
+    DocPlan,
+)
 from docsfy.prompts import (
     SIDECAR_TOOLS,
     build_incremental_page_prompt,
@@ -33,14 +38,75 @@ def is_unsafe_slug(slug: str) -> bool:
     return "/" in slug or "\\" in slug or slug.startswith(".") or ".." in slug
 
 
-def _strip_ai_preamble(text: str) -> str:
-    """Strip AI thinking/planning text that appears before actual content."""
+# An H1 heading line: a single leading "#" followed by whitespace and text.
+# Deliberately excludes "##"+ so that sub-headings inside AI preamble don't
+# get mistaken for the real page title.
+_H1_LINE_RE = re.compile(r"^#\s+\S")
+
+# How many leading lines we're willing to scan looking for the real H1 title
+# when stripping AI exploration/planning chatter. Wide enough to survive
+# multi-paragraph "let me start by..." preambles, narrow enough to avoid
+# accidentally treating a legitimate document body as "preamble".
+_PREAMBLE_SCAN_LINES = 50
+
+
+def _find_h1_within_scan_window(text: str) -> str | None:
+    """Return text starting at the first H1 found within the scan window, or None."""
     lines = text.split("\n")
     for i, line in enumerate(lines):
-        if i > 10:
+        if i > _PREAMBLE_SCAN_LINES:
             break
-        if line.startswith("#"):
+        if _H1_LINE_RE.match(line):
             return "\n".join(lines[i:])
+    return None
+
+
+def _strip_leading_agent_narration_paragraphs(text: str) -> str:
+    """Strip a leading run of paragraphs that read as agent narration.
+
+    Defense-in-depth only: reuses ``_AGENT_NARRATION_PATTERNS`` to drop
+    exploration chatter ("Let me start by...", "Now let me...") sitting at
+    the very front of the output, one whole paragraph at a time, as long as
+    each paragraph matches at least one narration pattern. Stops at the
+    first paragraph that doesn't match. The quality gate remains the
+    authoritative check; this just gives real content a better chance of
+    being recognized when it's preceded by chatter the H1 scan alone can't
+    see past (e.g. preamble long enough to push the real H1 beyond
+    ``_PREAMBLE_SCAN_LINES``).
+    """
+    paragraphs = text.split("\n\n")
+    idx = 0
+    while idx < len(paragraphs) - 1 and any(
+        pattern.search(paragraphs[idx]) for pattern in _AGENT_NARRATION_PATTERNS
+    ):
+        idx += 1
+    if idx == 0:
+        return text
+    return "\n\n".join(paragraphs[idx:])
+
+
+def _strip_ai_preamble(text: str) -> str:
+    """Strip AI thinking/planning text that appears before actual content.
+
+    Scans up to ``_PREAMBLE_SCAN_LINES`` lines looking for the first real H1
+    heading and discards everything before it (including any agent-speak
+    paragraphs). As defense-in-depth, if no H1 is found in that window, a
+    leading run of agent-narration paragraphs is stripped first (see
+    ``_strip_leading_agent_narration_paragraphs``) and the H1 scan is
+    retried, which recovers cases where narration chatter pushed the real H1
+    beyond the scan window. If no H1 is found either way, the original text
+    is returned unchanged so the quality gate can reject it explicitly.
+    """
+    found = _find_h1_within_scan_window(text)
+    if found is not None:
+        return found
+
+    narration_stripped = _strip_leading_agent_narration_paragraphs(text)
+    if narration_stripped is not text:
+        found = _find_h1_within_scan_window(narration_stripped)
+        if found is not None:
+            return found
+
     return text
 
 
@@ -88,6 +154,182 @@ def _strip_ai_artifacts(text: str) -> str:
                 break  # Only apply the first match
 
     return text.strip()
+
+
+# Minimum length (in characters) of page body content after the H1 title,
+# excluding any "## Related Pages" section, for the content to be considered
+# substantive documentation rather than a near-empty stub dressed up with
+# cross-links.
+_MIN_SUBSTANTIVE_BODY_CHARS = 80
+
+# Only scan the opening of the content for the noun-phrase patterns below.
+# Real docs can legitimately mention things like "knowledge graph" deep in
+# the prose (as a topic, not narration); CoT chatter puts this kind of
+# phrasing at the very start, matching the observed rootcoz failure shape
+# (issue #121: "Let me start by reading the knowledge graph...").
+_NARRATION_SCAN_CHARS = 400
+
+# Ambiguous noun phrases: topics that real documentation can legitimately
+# discuss anywhere in its body (docsfy's own docs describe its knowledge
+# graph feature, for instance), so these are only treated as a narration
+# signal when found in the opening window above, matching how the original
+# rootcoz failures actually looked.
+_AGENT_NARRATION_NOUN_PATTERNS: tuple[re.Pattern[str], ...] = tuple(
+    re.compile(pattern, re.IGNORECASE)
+    for pattern in (
+        r"\bknowledge graph\b",
+        r"\bpages? manifest\b",
+    )
+)
+
+# First-person narration verb-phrases that strongly indicate the AI is
+# narrating its own exploration process ("chain of thought") instead of
+# writing documentation. Unlike the noun phrases above, these are checked
+# across the *entire* content (title + body), anchored to the start of a
+# line via _AGENT_NARRATION_LINE_START_RE below rather than as a free
+# substring search. Anchoring to line-start is what makes a full-document
+# scan safe: real prose can mention "check the config" or "look at the log"
+# mid-sentence anywhere, but real documentation essentially never *opens a
+# line* with first-person narration like "Let me check..." or "Now let me
+# explore...". This lets exploration chatter be caught wherever it leaks in
+# (not just the opening 400 chars) while avoiding false-rejects on the same
+# generic verbs used naturally mid-sentence.
+_AGENT_NARRATION_VERB_PHRASES: tuple[str, ...] = (
+    r"let me (?:start|now|read|explore|look|check|examine|search|analyze)\b",
+    r"now let me\b",
+    r"i'll start by\b",
+    r"i will start by\b",
+    r"first,? i(?:'ll| will)\b",
+    r"i need to (?:read|explore|check|look at|examine)\b",
+    r"exploring the (?:repo|repository|codebase)\b",
+)
+
+_AGENT_NARRATION_LINE_START_RE = re.compile(
+    r"^[ \t]*(?:" + "|".join(_AGENT_NARRATION_VERB_PHRASES) + r")",
+    re.IGNORECASE | re.MULTILINE,
+)
+
+# Full pattern set (noun phrases + verb phrases as free substrings), retained
+# for _strip_leading_agent_narration_paragraphs's defense-in-depth stripping,
+# where over-stripping a misidentified leading paragraph is low-risk (worst
+# case it falls through to the ordinary "no H1 found" rejection).
+_AGENT_NARRATION_PATTERNS: tuple[re.Pattern[str], ...] = (
+    _AGENT_NARRATION_NOUN_PATTERNS
+    + tuple(
+        re.compile(pattern, re.IGNORECASE) for pattern in _AGENT_NARRATION_VERB_PHRASES
+    )
+)
+
+_FAILURE_STUB_MESSAGE = "*Documentation generation failed. Please re-run.*"
+_FAILURE_STUB_MESSAGE_SHORT = "*Documentation generation failed.*"
+
+# Matches both known failure-stub formats used across the codebase:
+#   "# {title}\n\n*Documentation generation failed. Please re-run.*"
+#   "# {title}\n\n*Documentation generation failed.*"
+#
+# Deliberately NOT re.DOTALL, and the title is restricted to a single line
+# ([^\n]+ rather than .+). Without these constraints, "." matches newlines,
+# so a real multi-paragraph document that happens to *end* with this exact
+# phrase would have its entire body greedily swallowed as part of the
+# "title" and get misclassified as a stub (see issue #121 review).
+_FAILURE_STUB_RE = re.compile(
+    r"^#[ \t]+[^\n]+\n\n\*Documentation generation failed\.(?: Please re-run\.)?\*\s*$"
+)
+
+
+# How many times generate_full_page_content attempts generation (initial
+# call plus regenerations) before giving up and returning a failure stub.
+_PAGE_GENERATION_MAX_ATTEMPTS = 2
+
+
+def _generation_failure_stub(title: str, *, retry_hint: bool = True) -> str:
+    """Build the standard loud failure stub for pages that never produced usable content."""
+    message = _FAILURE_STUB_MESSAGE if retry_hint else _FAILURE_STUB_MESSAGE_SHORT
+    return f"# {title}\n\n{message}"
+
+
+def is_generation_failure_stub(content: str) -> bool:
+    """Check whether content is one of the known generation-failure stub formats.
+
+    Used by postprocessing (cross-links, llms.txt/llms-full.txt indexing) to
+    avoid treating a failed page as if it were real, complete documentation.
+    """
+    return bool(_FAILURE_STUB_RE.match(content.strip()))
+
+
+def page_content_passes_quality_gate(
+    content: str, expected_title: str | None = None
+) -> tuple[bool, str]:
+    """Check whether generated page content is real documentation, not AI chatter.
+
+    Rejects content that is empty, lacks a proper ``# Title`` H1, is a known
+    generation-failure stub, is too short to be substantive, or whose opening
+    reads like AI exploration narration (chain-of-thought) rather than
+    documentation prose.
+
+    Args:
+        content: The page content to check. Callers on the full-generation
+            path pre-strip via ``_strip_ai_artifacts``/``_strip_ai_preamble``;
+            the incremental-update path also strips before calling this (see
+            ``generate_page``). The checks here are conservative enough to
+            still behave correctly on unstripped content, so this is a
+            best-effort convention rather than a hard precondition.
+        expected_title: Optional planned page title, used only to produce a
+            more actionable rejection reason.
+
+    Returns:
+        A ``(passes, reason)`` tuple. ``reason`` is ``"ok"`` when passing,
+        otherwise a short human-readable explanation for logging.
+    """
+    stripped = content.strip()
+    if not stripped:
+        return False, "content is empty"
+
+    if is_generation_failure_stub(stripped):
+        return False, "content is a known generation-failure stub"
+
+    lines = stripped.split("\n", 1)
+    first_line = lines[0]
+    if not _H1_LINE_RE.match(first_line):
+        reason = "content does not start with an H1 heading (# Title)"
+        if expected_title:
+            reason += f" (expected title: {expected_title!r})"
+        return False, reason
+
+    body = lines[1].strip() if len(lines) > 1 else ""
+    # (?:^|\n) also matches the heading at the very start of the body, which
+    # happens after leading whitespace/newlines were stripped above (e.g. a
+    # page whose only "content" after the H1 is a "## Related Pages" list).
+    body_without_related = re.split(
+        rf"(?:^|\n){re.escape(RELATED_PAGES_HEADING)}\b", body, maxsplit=1
+    )[0].strip()
+    if len(body_without_related) < _MIN_SUBSTANTIVE_BODY_CHARS:
+        return False, "content body is too short to be substantive documentation"
+
+    # Scan the whole opening (title line included) for ambiguous noun-phrase
+    # topics since CoT chatter can leak into the title itself, not just the
+    # body, and these are only suspicious when they appear immediately.
+    opening = stripped[:_NARRATION_SCAN_CHARS]
+    for pattern in _AGENT_NARRATION_NOUN_PATTERNS:
+        if pattern.search(opening):
+            return (
+                False,
+                f"opening content matches agent-narration pattern {pattern.pattern!r}",
+            )
+
+    # Scan the *entire* content (not just the opening) for lines that open
+    # with first-person agent-narration verb phrasing. This catches CoT
+    # chatter that leaks in beyond the opening window while staying safe
+    # against false-rejects on generic verbs used mid-sentence, since it
+    # only fires on line-start matches (see _AGENT_NARRATION_LINE_START_RE).
+    line_start_match = _AGENT_NARRATION_LINE_START_RE.search(stripped)
+    if line_start_match:
+        return (
+            False,
+            f"content contains a line opening with agent-narration phrasing {line_start_match.group(0)!r}",
+        )
+
+    return True, "ok"
 
 
 async def _call_ai_or_raise(
@@ -229,14 +471,30 @@ async def generate_full_page_content(
         graph_report_available=graph_report_available,
         image_catalog_path=image_catalog_path,
     )
-    output = await _call_ai_or_raise(
-        prompt=prompt,
-        repo_path=repo_path,
-        ai_provider=ai_provider,
-        ai_model=ai_model,
-        ai_cli_timeout=ai_cli_timeout,
-    )
-    return _strip_ai_artifacts(_strip_ai_preamble(output))
+    for attempt in range(_PAGE_GENERATION_MAX_ATTEMPTS):
+        output = await _call_ai_or_raise(
+            prompt=prompt,
+            repo_path=repo_path,
+            ai_provider=ai_provider,
+            ai_model=ai_model,
+            ai_cli_timeout=ai_cli_timeout,
+        )
+        content = _strip_ai_artifacts(_strip_ai_preamble(output))
+        ok, reason = page_content_passes_quality_gate(
+            content, expected_title=page_title
+        )
+        if ok:
+            return content
+        if attempt < _PAGE_GENERATION_MAX_ATTEMPTS - 1:
+            logger.warning(
+                f"Page '{page_title}' failed quality gate ({reason}); regenerating once"
+            )
+        else:
+            logger.error(
+                f"Page '{page_title}' failed quality gate after regeneration ({reason})"
+            )
+
+    return _generation_failure_stub(page_title)
 
 
 async def _generate_incremental_page_content(
@@ -374,6 +632,23 @@ async def generate_page(
         logger.debug(f"[{_label}] Using cached page: {slug}")
         return cache_file.read_text(encoding="utf-8")
 
+    async def _run_full_page_generation() -> str:
+        """Shared full-generation fallback, avoiding repeating the same kwargs 3x."""
+        return await generate_full_page_content(
+            repo_path=repo_path,
+            project_name=prompt_project_name,
+            page_title=title,
+            page_description=description,
+            ai_provider=ai_provider,
+            ai_model=ai_model,
+            ai_cli_timeout=ai_cli_timeout,
+            page_type=page_type,
+            other_pages_path=other_pages_path,
+            repo_type=repo_type,
+            graph_report_available=graph_report_available,
+            image_catalog_path=image_catalog_path,
+        )
+
     try:
         if existing_content is not None and changed_files is not None:
             try:
@@ -392,43 +667,30 @@ async def generate_page(
                     repo_type=repo_type,
                     image_catalog_path=image_catalog_path,
                 )
+                # Defense-in-depth: strip AI artifacts and preamble before the
+                # gate, same as the full-generation path, so the gate's
+                # "content should already be stripped" convention holds here too.
+                output = _strip_ai_artifacts(_strip_ai_preamble(output))
+                ok, reason = page_content_passes_quality_gate(
+                    output, expected_title=title
+                )
+                if not ok:
+                    logger.warning(
+                        f"[{_label}] Incremental update for page '{slug}' failed "
+                        f"quality gate ({reason}), falling back to full page generation"
+                    )
+                    output = await _run_full_page_generation()
             except (RuntimeError, ValueError) as exc:
                 logger.warning(
                     f"[{_label}] Incremental update failed for page '{slug}', "
                     f"falling back to full page generation: {exc}"
                 )
-                output = await generate_full_page_content(
-                    repo_path=repo_path,
-                    project_name=prompt_project_name,
-                    page_title=title,
-                    page_description=description,
-                    ai_provider=ai_provider,
-                    ai_model=ai_model,
-                    ai_cli_timeout=ai_cli_timeout,
-                    page_type=page_type,
-                    other_pages_path=other_pages_path,
-                    repo_type=repo_type,
-                    graph_report_available=graph_report_available,
-                    image_catalog_path=image_catalog_path,
-                )
+                output = await _run_full_page_generation()
         else:
-            output = await generate_full_page_content(
-                repo_path=repo_path,
-                project_name=prompt_project_name,
-                page_title=title,
-                page_description=description,
-                ai_provider=ai_provider,
-                ai_model=ai_model,
-                ai_cli_timeout=ai_cli_timeout,
-                page_type=page_type,
-                other_pages_path=other_pages_path,
-                repo_type=repo_type,
-                graph_report_available=graph_report_available,
-                image_catalog_path=image_catalog_path,
-            )
+            output = await _run_full_page_generation()
     except RuntimeError as exc:
         logger.warning(f"[{_label}] Failed to generate page '{slug}': {exc}")
-        output = f"# {title}\n\n*Documentation generation failed. Please re-run.*"
+        output = _generation_failure_stub(title)
     cache_dir.mkdir(parents=True, exist_ok=True)
     cache_file.write_text(output, encoding="utf-8")
     logger.info(f"[{_label}] Generated page: {slug} ({len(output)} chars)")
@@ -560,8 +822,8 @@ async def generate_all_pages(
             logger.warning(
                 f"[{_label}] Page generation failed for '{page_info['slug']}': {result}"
             )
-            pages[page_info["slug"]] = (
-                f"# {page_info['title']}\n\n*Documentation generation failed.*"
+            pages[page_info["slug"]] = _generation_failure_stub(
+                page_info["title"], retry_hint=False
             )
         else:
             pages[page_info["slug"]] = result

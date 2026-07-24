@@ -140,6 +140,8 @@ agent-browser screenshot
 - The content is non-empty text
 - This file should be larger than `llms.txt`
 
+**Note (issue #121, page quality gate):** `llms.txt` and `llms-full.txt` must never list or embed a page whose content is a known generation-failure stub (`is_generation_failure_stub()` in `src/docsfy/generator.py`). `renderer.render_site()` filters these out when building both files — the failed page still renders as a normal `.html` page on the site (visible failure notice: `*Documentation generation failed...*`), it's just excluded from the AI-readable indexes. This is hard to force deterministically in a live generation run (it depends on the AI backend actually returning unusable output), so verifying it end-to-end is conceptual/manual: if a page ever shows the failure stub on this site, confirm its title does NOT appear in `llms.txt` and its content does NOT appear in `llms-full.txt`. Automated coverage lives in `tests/test_renderer.py::test_render_site_excludes_failure_stubs_from_llms_txt`.
+
 ---
 
 ## Test 9: Status Page

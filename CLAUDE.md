@@ -28,7 +28,7 @@ When adding new code:
 
 | Resource Type | Location | Examples |
 |---|---|---|
-| Python constants | `src/docsfy/models.py` | `VALID_PROVIDERS`, `DEFAULT_BRANCH`, `PAGE_TYPES`, `REPO_TYPES`, `DOCSFY_DOCS_URL`, `DOCSFY_REPO_URL`, `DEFAULT_SIDECAR_BY_PROVIDER`, `CLI_SIDECAR_BY_PROVIDER`, `SIDECAR_*` |
+| Python constants | `src/docsfy/models.py` | `VALID_PROVIDERS`, `DEFAULT_BRANCH`, `PAGE_TYPES`, `REPO_TYPES`, `DOCSFY_DOCS_URL`, `DOCSFY_REPO_URL`, `DEFAULT_SIDECAR_BY_PROVIDER`, `CLI_SIDECAR_BY_PROVIDER`, `SIDECAR_*`, `RELATED_PAGES_HEADING` |
 
 | Data models | `src/docsfy/models.py` | `GenerateRequest`, `DocPlan`, `DocPage`, `NavGroup`, `RepoType` |
 | DB constants & validators | `src/docsfy/storage.py` | `VALID_STATUSES`, `VALID_ROLES`, `_validate_name()`, `_validate_owner()` |
@@ -36,6 +36,7 @@ When adding new code:
 | Sidecar wrapper | `sidecar-helper/` | `startSidecar()` — Pi SDK HTTP sidecar for AI provider calls |
 | Code graph | `src/docsfy/code_graph.py` | `build_code_graph()` — Graphify knowledge graph for AI context |
 | Prompt constants | `src/docsfy/prompts.py` | `_MAX_DIFF_LENGTH`, `_GUIDE_WRITING_RULES`, `_REFERENCE_WRITING_RULES`, `_RECIPE_WRITING_RULES`, `_CONCEPT_WRITING_RULES`, `_INCREMENTAL_WRITING_RULES`, `_NAV_STRUCTURE_MAP`, `_REPO_TYPE_WRITING_RULES_MAP`, `truncate_diff_content()` |
+| Page quality gate | `src/docsfy/generator.py` | `page_content_passes_quality_gate()`, `is_generation_failure_stub()`, `_PAGE_GENERATION_MAX_ATTEMPTS` |
 | Image catalog | `src/docsfy/images.py` | `DOCSFY_IMAGES_DIR`, `IMAGE_EXTENSIONS`, `build_image_catalog()`, `copy_images_to_site()` |
 | Frontend constants | `frontend/src/lib/constants.ts` | API base URL, poll intervals, toast durations, SK_VISION_PROVIDER, SK_VISION_MODEL |
 | Frontend design tokens | `frontend/src/theme.css` | Command Deck color tokens, fonts, animations |
@@ -111,6 +112,35 @@ When adding new code:
 - The AI CLI runs with `cwd` access to the repo — it can explore files itself
 - Prompts should be short instructions: what to do, where to find input, what format to return
 - This applies to ALL prompts: planning, page generation, validation, cross-linking, everything
+
+## Page Quality Gate
+
+AI page generation occasionally returns exploration/chain-of-thought chatter
+(e.g. "Let me start by reading the knowledge graph...") instead of real
+documentation. To prevent that from being cached/published:
+
+- `page_content_passes_quality_gate()` (`src/docsfy/generator.py`) rejects
+  content that is empty, lacks a proper `# Title` H1, is too short to be
+  substantive, matches known agent-narration phrasing (in its opening, or as
+  a line opening with narration verb phrasing anywhere in the body), or is
+  a known generation-failure stub.
+- `generate_full_page_content()` runs the gate after stripping AI artifacts;
+  on failure it regenerates once, then falls back to `_generation_failure_stub()`,
+  which produces one of two known stub formats (both matched by
+  `is_generation_failure_stub()`), never caches/publishes chatter:
+  - Long form (`retry_hint=True`, the default): used when `generate_full_page_content()`
+    exhausts its retries — `# {title}\n\n*Documentation generation failed. Please re-run.*`
+  - Short form (`retry_hint=False`): used by `generate_all_pages()` when a page's
+    generation coroutine raises an exception outright (no retry already happened
+    at that layer) — `# {title}\n\n*Documentation generation failed.*`
+- `generate_page()`'s incremental-update path strips AI artifacts and runs the
+  same gate, falling back to full generation if the incremental result fails it.
+- `postprocess.add_cross_links()` skips appending `## Related Pages` to any
+  page that fails the gate or is a known failure stub (either format), so
+  broken pages don't get dressed up to look complete.
+- `renderer.render_site()` excludes known failure stubs (either format) from
+  `llms.txt` / `llms-full.txt` (they remain visible on the HTML site itself as
+  a failure notice, just not indexed as valid docs for AI consumers).
 
 ## Generated Documentation
 
