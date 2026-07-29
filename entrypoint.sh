@@ -21,37 +21,32 @@ if [ "${DEV_MODE:-}" = "true" ] && [ -f /app/sidecar-helper/src/server.ts ]; the
 fi
 if [ -f /app/sidecar-helper/dist/server.js ]; then
     export SIDECAR_PORT="${SIDECAR_PORT:-9100}"
-    # Resolve ACPX / CLI extension paths (location varies with npm hoisting).
+    # Resolve ACPX / CLI extension paths.
     # Do not override operator-provided paths (custom mounts / config).
+    _ORCH_EXTENSIONS="/app/sidecar-helper/node_modules/pi-orchestrator-config/extensions"
     if [ -z "${SIDECAR_ACPX_EXTENSION_PATH:-}" ]; then
-        for _acpx_candidate in \
-            "/app/sidecar-helper/node_modules/pi-orchestrator-config/extensions/acpx-provider/index.ts" \
-            "/app/sidecar-helper/node_modules/@myk-org/pi-sidecar/node_modules/pi-orchestrator-config/extensions/acpx-provider/index.ts"; do
-            if [ -f "$_acpx_candidate" ]; then
-                export SIDECAR_ACPX_EXTENSION_PATH="$_acpx_candidate"
-                break
-            fi
-        done
+        if [ -f "${_ORCH_EXTENSIONS}/acpx-provider/index.ts" ]; then
+            export SIDECAR_ACPX_EXTENSION_PATH="${_ORCH_EXTENSIONS}/acpx-provider/index.ts"
+        fi
     fi
     if [ -n "${ACPX_AGENTS:-}" ] && [ -z "${SIDECAR_ACPX_EXTENSION_PATH:-}" ]; then
-        echo "[sidecar] WARNING: ACPX_AGENTS is set but ACPX extension was not found under:" >&2
-        echo "[sidecar]   /app/sidecar-helper/node_modules/pi-orchestrator-config/extensions/acpx-provider/index.ts" >&2
-        echo "[sidecar]   /app/sidecar-helper/node_modules/@myk-org/pi-sidecar/node_modules/pi-orchestrator-config/extensions/acpx-provider/index.ts" >&2
+        echo "[sidecar] WARNING: ACPX_AGENTS is set but ACPX extension was not found at ${_ORCH_EXTENSIONS}/acpx-provider/index.ts" >&2
     fi
     if [ -z "${SIDECAR_CLI_PROVIDER_EXTENSION_PATH:-}" ]; then
-        for _cli_candidate in \
-            "/app/sidecar-helper/node_modules/pi-orchestrator-config/extensions/cli-provider/index.ts" \
-            "/app/sidecar-helper/node_modules/@myk-org/pi-sidecar/node_modules/pi-orchestrator-config/extensions/cli-provider/index.ts"; do
-            if [ -f "$_cli_candidate" ]; then
-                export SIDECAR_CLI_PROVIDER_EXTENSION_PATH="$_cli_candidate"
-                break
-            fi
-        done
+        if [ -f "${_ORCH_EXTENSIONS}/cli-provider/index.ts" ]; then
+            export SIDECAR_CLI_PROVIDER_EXTENSION_PATH="${_ORCH_EXTENSIONS}/cli-provider/index.ts"
+        fi
     fi
     if [ -n "${CLI_AGENTS:-}" ] && [ -z "${SIDECAR_CLI_PROVIDER_EXTENSION_PATH:-}" ]; then
-        echo "[sidecar] WARNING: CLI_AGENTS is set but CLI extension was not found under:" >&2
-        echo "[sidecar]   /app/sidecar-helper/node_modules/pi-orchestrator-config/extensions/cli-provider/index.ts" >&2
-        echo "[sidecar]   /app/sidecar-helper/node_modules/@myk-org/pi-sidecar/node_modules/pi-orchestrator-config/extensions/cli-provider/index.ts" >&2
+        echo "[sidecar] WARNING: CLI_AGENTS is set but CLI extension was not found at ${_ORCH_EXTENSIONS}/cli-provider/index.ts" >&2
+    fi
+    if [ -z "${SIDECAR_PROVIDER_EXTENSION_PATH:-}" ]; then
+        if [ -f "${_ORCH_EXTENSIONS}/providers/index.ts" ]; then
+            export SIDECAR_PROVIDER_EXTENSION_PATH="${_ORCH_EXTENSIONS}/providers/index.ts"
+        fi
+    fi
+    if { [ -n "${ACPX_AGENTS:-}" ] || [ -n "${CLI_AGENTS:-}" ]; } && [ -z "${SIDECAR_PROVIDER_EXTENSION_PATH:-}" ]; then
+        echo "[sidecar] WARNING: ACPX_AGENTS/CLI_AGENTS is set but unified provider extension was not found at ${_ORCH_EXTENSIONS}/providers/index.ts" >&2
     fi
     node /app/sidecar-helper/dist/server.js &
     SIDECAR_PID=$!
