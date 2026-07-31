@@ -1,258 +1,313 @@
-# Getting Started with docsfy
+# Get Started with docsfy
 
-Generate a polished, browsable documentation site from any Git repository in minutes. This guide walks you through installing docsfy, configuring it, and producing your first set of docs.
+You want a working docsfy server quickly so you can sign in, run one real generation, and confirm the full flow before you tune anything else. This guide takes you from a fresh checkout to a browsable docs site with the shortest supported path.
 
 ## Prerequisites
 
-- **Docker** and **Docker Compose** (for running the server)
-- A **Git repository** (public HTTPS URL) you want to document
-- (Optional) [uv](https://docs.astral.sh/uv/) for installing the CLI tool
+- Docker with Compose
+- A Git repository URL you want to document
+- An `ADMIN_KEY` you can store in `.env` with at least 16 characters
+- At least one working `cursor`, `claude`, or `gemini` model in the environment where docsfy runs
 
-## Quick Start
-
-```bash
-git clone https://github.com/myk-org/docsfy.git && cd docsfy
-cp .env.example .env   # then set ADMIN_KEY (min 16 chars)
-docker compose up       # open http://localhost:8000
-```
-
-That's it — the web dashboard is now running at `http://localhost:8000`. Log in with username `admin` and the `ADMIN_KEY` you set, paste a repo URL, and click **Generate**.
-
-## Step-by-Step Setup
-
-### 1. Clone the repository
+## Quick Example
 
 ```bash
 git clone https://github.com/myk-org/docsfy.git
 cd docsfy
+cp .env.example .env
 ```
 
-### 2. Create your environment file
+```dotenv
+ADMIN_KEY=change-this-to-a-16-plus-character-password
+SECURE_COOKIES=false
+```
+
+```bash
+docker compose up --build -d
+curl http://localhost:800/health
+```
+
+Open `http://localhost:800/login`, sign in as `admin` with the same `ADMIN_KEY`, then start a generation for `https://github.com/myk-org/for-testing-only`.
+
+| Field | Value |
+| --- | --- |
+| Username | `admin` |
+| Password | your `ADMIN_KEY` |
+| Repository URL | `https://github.com/myk-org/for-testing-only` |
+| Branch | `main` |
+| Repository Type | `Auto-detect` |
+| Force full regeneration | off |
+
+> **Note:** This quick example uses plain local HTTP, so `SECURE_COOKIES=false` is required for the browser session to stick on `http://localhost`.
+
+## Step-by-step
+
+1. Prepare your local config.
 
 ```bash
 cp .env.example .env
 ```
 
-Open `.env` and set the required `ADMIN_KEY` value. This is the master password for the admin account and must be at least 16 characters:
+Set these values first:
 
-```bash
-ADMIN_KEY=your-secure-password-here
-```
-
-> **Warning:** Never commit your `.env` file to version control. It contains secrets.
-
-For local HTTP development (not behind HTTPS), also add:
-
-```bash
+```dotenv
+ADMIN_KEY=change-this-to-a-16-plus-character-password
 SECURE_COOKIES=false
 ```
 
-### 3. Start the server
+Leave the checked-in AI defaults alone for your first run unless you already know you need a different provider or model. Do not commit `.env`.
+
+| Where you open docsfy | `SECURE_COOKIES` |
+| --- | --- |
+| `http://localhost:800` | `false` |
+| HTTPS deployment | `true` |
+
+> **Warning:** The server refuses to start if `ADMIN_KEY` is missing or shorter than 16 characters.
+
+2. Start the server.
 
 ```bash
-docker compose up
+docker compose up --build -d
 ```
-
-Docker builds the application image, starts the AI sidecar service, and launches the web server on port **8000**. Wait for the health check to pass, then open your browser to `http://localhost:8000`.
-
-### 4. Log in
-
-On the login screen, enter:
-
-| Field    | Value                        |
-|----------|------------------------------|
-| Username | `admin`                      |
-| Password | The `ADMIN_KEY` from `.env`  |
-
-### 5. Generate your first docs
-
-1. In the dashboard, paste a Git repository URL (e.g., `https://github.com/myk-org/for-testing-only`).
-2. Leave **Branch** as `main` (or pick another branch).
-3. Click **Generate**.
-4. Watch the progress in real time — docsfy clones the repo, plans the documentation structure, generates pages with AI, and renders a static HTML site.
-
-When the status shows **Ready**, click the project name to browse your generated docs.
-
-> **Tip:** docsfy auto-detects the repository type (app, library, framework, or tests) and tailors the documentation structure accordingly. You can override this in the generate form if needed.
-
-## Using the CLI
-
-The CLI lets you do everything from the terminal — generate, check status, download, and manage projects.
-
-### Install the CLI
 
 ```bash
-uv tool install docsfy
+curl http://localhost:800/health
 ```
 
-### Configure a server profile
+When the health check succeeds, docsfy is ready at `http://localhost:800`. The Compose setup also mounts `./data` into the container, so your database and generated docs survive restarts.
 
-```bash
-docsfy config init
+3. Sign in as the built-in admin.
+
+Open `http://localhost:800/login` and enter the same values you just configured.
+
+| Field | Value |
+| --- | --- |
+| Username | `admin` |
+| Password | your `ADMIN_KEY` |
+
+![docsfy login page with username and password fields](images/login-page.png)
+
+After sign-in, you land on the dashboard and can start a generation right away.
+
+![Dashboard showing the project sidebar with project count and total generation cost](images/dashboard.png)
+
+4. Start your first generation.
+
+Use a small public repository for the easiest first run. In **New Generation**, enter these values and click **Generate**.
+
+```text
+Repository URL: https://github.com/myk-org/for-testing-only
+Branch: main
+Repository Type: Auto-detect
+Provider: cursor
+Model: gpt-5.4-xhigh-fast
+Force full regeneration: off
 ```
 
-You'll be prompted for:
+Leave **Repository Type** on **Auto-detect** and keep **Force full regeneration** off for this first pass. See [Generate Documentation](generate-documentation.html) for the full field-by-field guide.
 
-| Prompt       | Example value              |
-|--------------|----------------------------|
-| Profile name | `dev`                      |
-| Server URL   | `http://localhost:8000`     |
-| Username     | `admin`                    |
-| Password     | Your `ADMIN_KEY`           |
+![New generation form with repository URL, branch, provider, model, vision provider, and repository type fields](images/generate-form.png)
 
-This saves a profile to `~/.config/docsfy/config.toml`. You can add multiple server profiles (dev, staging, prod) and switch between them with `--server`:
+5. Wait for the run to finish.
 
-```bash
-docsfy --server prod list
-```
+docsfy opens the new variant view and updates it as the run progresses. When the status becomes `Ready`, use **View Documentation** to open the generated site.
 
-### Generate docs from the terminal
+See [Track Generation Progress](track-generation-progress.html) if you want the meaning of each stage or need to monitor a longer run.
 
-```bash
-docsfy generate https://github.com/org/repo
-```
+![Variant detail panel showing generation status, page count, commit SHA, and documentation links](images/variant-detail.png)
 
-Target a specific branch:
+Once the project appears in the sidebar, you can expand it to see the branch and model variant that was generated.
 
-```bash
-docsfy generate https://github.com/org/repo --branch dev
-```
+![Dashboard with project tree expanded showing variants, branches, and generation status](images/dashboard-expanded.png)
 
-Watch generation progress in real time:
+6. Open your docs site.
 
-```bash
-docsfy generate https://github.com/org/repo --watch
-```
+Click **View Documentation** to open the finished site in a new tab. You should see a homepage with sidebar navigation and links for the pages docsfy generated from your repository.
 
-### Check project status
+See [Browse and Download Docs](browse-and-download-docs.html) when you want direct doc URLs, downloadable artifacts, or the generated `llms.txt` files.
 
-```bash
-docsfy list
-docsfy status my-repo
-```
+![Generated documentation site homepage with navigation sidebar and getting started links](images/docs-site-index.png)
 
-### Download generated docs
+Open any page from the sidebar to confirm that the generated content rendered cleanly.
 
-```bash
-docsfy download my-repo --output ./my-docs --flatten
-```
-
-This extracts the generated HTML site into `./my-docs`, ready to deploy anywhere.
-
-> **Tip:** See [Using the CLI](using-the-cli.html) for the full setup guide and [CLI Command Reference](cli-reference.html) for all available commands and flags.
-
-## Understanding Variants
-
-Every documentation build is a **variant** — a unique combination of project name, branch, AI provider, and AI model. This means you can generate docs for the same repo on different branches or with different AI models and compare the results side by side.
-
-The URL pattern for browsing a specific variant is:
-
-```
-http://localhost:8000/docs/{project}/{branch}/{provider}/{model}/
-```
-
-For example: `http://localhost:8000/docs/my-repo/main/cursor/gpt-5.4-xhigh-fast/`
-
-If you browse `/docs/{project}/` without specifying a variant, docsfy serves the most recently generated one.
-
-See [Browsing Generated Documentation](browsing-docs.html) for more on navigating and sharing doc URLs.
+![Generated documentation page showing formatted content with code blocks and navigation](images/docs-site-page.png)
 
 ## Advanced Usage
 
-### Choosing an AI provider and model
+- Keep the defaults for your first run, then switch providers or models only if your environment is already set up for them. See [Configure AI Providers and Models](configure-ai-providers-and-models.html) for model refresh, provider setup, and vision options.
+- For your first run, leave **Repository Type** on **Auto-detect**. If docsfy guesses wrong or you want to force a different documentation style, see [Generate Documentation](generate-documentation.html).
+- Keep **Force full regeneration** off unless you need a clean rebuild. See [Regenerate After Code Changes](regenerate-after-code-changes.html) for when to use it.
+- If you switch providers, the model picker updates to show the models docsfy knows about for that provider.
 
-docsfy supports three AI providers: **claude**, **gemini**, and **cursor**. The server defaults (set via `AI_PROVIDER` and `AI_MODEL` in `.env`) are used for new generations unless you override them.
+![Generate form with Gemini provider selected showing the available AI models dropdown](images/generate-form-models.png)
 
-From the CLI:
-
-```bash
-docsfy generate https://github.com/org/repo --provider claude --model claude-sonnet-4-20250514
-```
-
-To see available providers and models:
-
-```bash
-docsfy models
-```
-
-See [Configuring AI Providers](configuring-ai-providers.html) for details on provider setup and the sidecar service.
-
-### Force a full regeneration
-
-By default, docsfy performs **incremental updates** — it detects code changes since the last generation and only regenerates affected pages. To force a complete rebuild:
-
-```bash
-docsfy generate https://github.com/org/repo --force
-```
-
-Or check the **Force** checkbox in the web dashboard.
-
-See [Working with Incremental Updates](incremental-updates.html) for how change detection works.
-
-### Specifying the repository type
-
-docsfy auto-detects whether your repo is an app, library, framework, or test suite. You can override this to get better-tailored documentation:
-
-```bash
-docsfy generate https://github.com/org/repo --repo-type library
-```
-
-Valid types: `app`, `library`, `framework`, `tests`.
-
-### Managing users
-
-Create additional user accounts with the CLI:
-
-```bash
-docsfy admin users create alice --role user
-```
-
-Roles control access levels:
-
-| Role     | Permissions                              |
-|----------|------------------------------------------|
-| `admin`  | Full access — manage users, all projects |
-| `user`   | Generate, view, and manage own projects  |
-| `viewer` | Read-only access to shared projects      |
-
-See [Managing Users and Access Control](managing-users.html) for the full user management guide.
-
-### Running in production
-
-For production deployments with persistent storage, TLS, and custom configuration, see [Deploying with Docker](deployment.html).
+- If you want a terminal-first workflow after this browser setup, see [Set Up the CLI](set-up-the-cli.html). For copy-paste command patterns, see [Run Common CLI Workflows](common-workflow-recipes.html).
+- If you want to run docsfy outside Docker or prepare a longer-lived environment, see [Deploy docsfy](deploy-docsfy.html).
 
 ## Troubleshooting
 
-**"ADMIN_KEY environment variable is required"**
-Set `ADMIN_KEY` in your `.env` file. It must be at least 16 characters.
+- If the container exits immediately, re-check `.env`. `ADMIN_KEY` is required and must be at least 16 characters long.
+- If you can load the login page but keep getting sent back to `/login` on `http://localhost`, set `SECURE_COOKIES=false`, restart the stack, and sign in again.
+- If `curl http://localhost:800/health` never succeeds, run `docker compose logs -f docsfy` and fix the startup error before trying to sign in.
+- If the server is healthy but generation fails quickly, the selected provider or model is not ready in the environment running docsfy. See [Configure AI Providers and Models](configure-ai-providers-and-models.html).
+- If the repository URL is rejected, use a full hosted Git URL such as `https://github.com/myk-org/for-testing-only.git` or `git@github.com:myk-org/for-testing-only.git`.# Get Started with docsfy
 
-**Login works but the session drops immediately**
-If you're running over plain HTTP (not HTTPS), set `SECURE_COOKIES=false` in `.env`. Secure cookies are rejected by browsers on non-HTTPS connections.
+You want a working docsfy server quickly so you can sign in, run one real generation, and confirm the full flow before you tune anything else. This guide takes you from a fresh checkout to a browsable docs site with the shortest supported path.
 
-**"Variant is already being generated" (409 error)**
-A generation is already running for the same project/branch/provider/model combination. Wait for it to finish, or abort it:
+## Prerequisites
+
+- Docker with Compose
+- A Git repository URL you want to document
+- An `ADMIN_KEY` you can store in `.env` with at least 16 characters
+- At least one working `cursor`, `claude`, or `gemini` model in the environment where docsfy runs
+
+## Quick Example
 
 ```bash
-docsfy abort my-repo --branch main --provider cursor --model gpt-5.4-xhigh-fast
+git clone https://github.com/myk-org/docsfy.git
+cd docsfy
+cp .env.example .env
 ```
 
-**Generation fails with sidecar errors**
-The AI sidecar service must be running and healthy. In Docker, the entrypoint handles this automatically. Check the container logs for `[sidecar] Sidecar is ready`. If the sidecar isn't starting, verify your AI provider credentials are configured correctly — see [Configuring AI Providers](configuring-ai-providers.html).
+```dotenv
+ADMIN_KEY=change-this-to-a-16-plus-character-password
+SECURE_COOKIES=false
+```
 
-**Branch names with slashes are rejected**
-Branch names cannot contain `/` because they appear as URL path segments. Use hyphens instead (e.g., `release-1.x` instead of `release/1.x`).
+```bash
+docker compose up --build -d
+curl http://localhost:8000/health
+```
 
-## Next Steps
+Open `http://localhost:8000/login`, sign in as `admin` with the same `ADMIN_KEY`, then start a generation for `https://github.com/myk-org/for-testing-only`.
 
-- [Generating Documentation](generating-docs.html) — detailed guide on all generation options
-- [Managing Projects and Variants](managing-projects.html) — list, inspect, and delete projects
-- [Configuration Reference](configuration-reference.html) — all environment variables and settings
-- [Common Workflow Recipes](recipes-common-workflows.html) — CI/CD automation, multi-branch docs, and more
+| Field | Value |
+| --- | --- |
+| Username | `admin` |
+| Password | your `ADMIN_KEY` |
+| Repository URL | `https://github.com/myk-org/for-testing-only` |
+| Branch | `main` |
+| Repository Type | `Auto-detect` |
+| Force full regeneration | off |
+
+> **Note:** This quick example uses plain local HTTP, so `SECURE_COOKIES=false` is required for the browser session to stick on `http://localhost`.
+
+## Step-by-step
+
+1. Prepare your local config.
+
+```bash
+cp .env.example .env
+```
+
+Set these values first:
+
+```dotenv
+ADMIN_KEY=change-this-to-a-16-plus-character-password
+SECURE_COOKIES=false
+```
+
+Leave the checked-in AI defaults alone for your first run unless you already know you need a different provider or model. Do not commit `.env`.
+
+| Where you open docsfy | `SECURE_COOKIES` |
+| --- | --- |
+| `http://localhost:8000` | `false` |
+| HTTPS deployment | `true` |
+
+> **Warning:** The server refuses to start if `ADMIN_KEY` is missing or shorter than 16 characters.
+
+2. Start the server.
+
+```bash
+docker compose up --build -d
+```
+
+```bash
+curl http://localhost:8000/health
+```
+
+When the health check succeeds, docsfy is ready at `http://localhost:8000`. The Compose setup also mounts `./data` into the container, so your database and generated docs survive restarts.
+
+3. Sign in as the built-in admin.
+
+Open `http://localhost:8000/login` and enter the same values you just configured.
+
+| Field | Value |
+| --- | --- |
+| Username | `admin` |
+| Password | your `ADMIN_KEY` |
+
+![docsfy login page with username and password fields](images/login-page.png)
+
+After sign-in, you land on the dashboard and can start a generation right away.
+
+![Dashboard showing the project sidebar with project count and total generation cost](images/dashboard.png)
+
+4. Start your first generation.
+
+Use a small public repository for the easiest first run. In **New Generation**, enter these values and click **Generate**.
+
+```text
+Repository URL: https://github.com/myk-org/for-testing-only
+Branch: main
+Repository Type: Auto-detect
+Provider: cursor
+Model: gpt-5.4-xhigh-fast
+Force full regeneration: off
+```
+
+Leave **Repository Type** on **Auto-detect** and keep **Force full regeneration** off for this first pass. See [Generate Documentation](generate-documentation.html) for the full field-by-field guide.
+
+![New generation form with repository URL, branch, provider, model, vision provider, and repository type fields](images/generate-form.png)
+
+5. Wait for the run to finish.
+
+docsfy opens the new variant view and updates it as the run progresses. When the status becomes `Ready`, use **View Documentation** to open the generated site.
+
+See [Track Generation Progress](track-generation-progress.html) if you want the meaning of each stage or need to monitor a longer run.
+
+![Variant detail panel showing generation status, page count, commit SHA, and documentation links](images/variant-detail.png)
+
+Once the project appears in the sidebar, you can expand it to see the branch and model variant that was generated.
+
+![Dashboard with project tree expanded showing variants, branches, and generation status](images/dashboard-expanded.png)
+
+6. Open your docs site.
+
+Click **View Documentation** to open the finished site in a new tab. You should see a homepage with sidebar navigation and links for the pages docsfy generated from your repository.
+
+See [Browse and Download Docs](browse-and-download-docs.html) when you want direct doc URLs, downloadable artifacts, or the generated `llms.txt` files.
+
+![Generated documentation site homepage with navigation sidebar and getting started links](images/docs-site-index.png)
+
+Open any page from the sidebar to confirm that the generated content rendered cleanly.
+
+![Generated documentation page showing formatted content with code blocks and navigation](images/docs-site-page.png)
+
+## Advanced Usage
+
+- Keep the defaults for your first run, then switch providers or models only if your environment is already set up for them. See [Configure AI Providers and Models](configure-ai-providers-and-models.html) for model refresh, provider setup, and vision options.
+- For your first run, leave **Repository Type** on **Auto-detect**. If docsfy guesses wrong or you want to force a different documentation style, see [Generate Documentation](generate-documentation.html).
+- Keep **Force full regeneration** off unless you need a clean rebuild. See [Regenerate After Code Changes](regenerate-after-code-changes.html) for when to use it.
+- If you switch providers, the model picker updates to show the models docsfy knows about for that provider.
+
+![Generate form with Gemini provider selected showing the available AI models dropdown](images/generate-form-models.png)
+
+- If you want a terminal-first workflow after this browser setup, see [Set Up the CLI](set-up-the-cli.html). For copy-paste command patterns, see [Run Common CLI Workflows](common-workflow-recipes.html).
+- If you want to run docsfy outside Docker or prepare a longer-lived environment, see [Deploy docsfy](deploy-docsfy.html).
+
+## Troubleshooting
+
+- If the container exits immediately, re-check `.env`. `ADMIN_KEY` is required and must be at least 16 characters long.
+- If you can load the login page but keep getting sent back to `/login` on `http://localhost`, set `SECURE_COOKIES=false`, restart the stack, and sign in again.
+- If `curl http://localhost:8000/health` never succeeds, run `docker compose logs -f docsfy` and fix the startup error before trying to sign in.
+- If the server is healthy but generation fails quickly, the selected provider or model is not ready in the environment running docsfy. See [Configure AI Providers and Models](configure-ai-providers-and-models.html).
+- If the repository URL is rejected, use a full hosted Git URL such as `https://github.com/myk-org/for-testing-only.git` or `git@github.com:myk-org/for-testing-only.git`.
 
 ## Related Pages
 
-- [Generating Documentation](generating-docs.html)
-- [Deploying with Docker](deployment.html)
-- [Using the CLI](using-the-cli.html)
-- [Configuration Reference](configuration-reference.html)
-- [Managing Projects and Variants](managing-projects.html)
+- [Set Up the CLI](set-up-the-cli.html)
+- [Generate Documentation](generate-documentation.html)
+- [Configure AI Providers and Models](configure-ai-providers-and-models.html)
+- [Track Generation Progress](track-generation-progress.html)
+- [Browse and Download Docs](browse-and-download-docs.html)
