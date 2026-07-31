@@ -80,13 +80,15 @@ USER appuser
 # Always fetch the latest versions of these CLI tools at build time.
 
 # Install Cursor Agent CLI (installs to ~/.local/bin)
-# Claude and Gemini are handled by the Pi SDK sidecar — no CLI needed
 RUN /bin/bash -o pipefail -c "curl -fsSL https://cursor.com/install | bash"
 
-# Configure npm for non-root global installs and install acpx CLI (needed by sidecar acpx-provider extension)
+# Install Claude Code CLI (installs to ~/.local/bin)
+RUN /bin/bash -o pipefail -c "curl -fsSL https://claude.ai/install.sh | bash"
+
+# Configure npm for non-root global installs and install CLIs
 RUN mkdir -p /home/appuser/.npm-global \
   && npm config set prefix '/home/appuser/.npm-global' \
-  && npm install -g acpx
+  && npm install -g acpx @google/gemini-cli
 
 # Switch to root for file copies and permission fixes
 USER root
