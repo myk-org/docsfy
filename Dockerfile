@@ -53,6 +53,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   bash \
   git \
   curl \
+  tini \
   && rm -rf /var/lib/apt/lists/*
 
 # Copy Node.js from sidecar builder for runtime parity
@@ -140,4 +141,4 @@ EXPOSE 5173
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
   CMD curl -f http://localhost:${PORT:-8000}/health && curl -f http://localhost:${SIDECAR_PORT:-9100}/health || exit 1
 
-ENTRYPOINT ["/app/entrypoint.sh"]
+ENTRYPOINT ["tini", "--", "/app/entrypoint.sh"]

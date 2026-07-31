@@ -57,9 +57,16 @@ if [ "${DEV_MODE:-}" = "true" ]; then
         --host 0.0.0.0 --port "$PORT" \
         --reload --reload-dir /app/src
 elif [ -n "${SIDECAR_PID:-}" ]; then
-    # Sidecar is running — don't exec so EXIT trap fires for cleanup
+    # Sidecar is running — run app in background so EXIT trap fires for cleanup
     uv run --no-sync uvicorn docsfy.main:app \
-        --host 0.0.0.0 --port "$PORT"
+        --host 0.0.0.0 --port "$PORT" &
+    APP_PID=$!
+
+    # Forward signals to app (|| true guards against errexit when PID gone)
+    trap 'kill -TERM $APP_PID 2>/dev/null || true' TERM
+    trap 'kill -INT $APP_PID 2>/dev/null || true' INT
+
+    wait $APP_PID
 else
     # No sidecar — exec for efficiency
     exec uv run --no-sync uvicorn docsfy.main:app \
