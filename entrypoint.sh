@@ -21,9 +21,13 @@ if [ "${DEV_MODE:-}" = "true" ] && [ -f /app/sidecar-helper/src/server.ts ]; the
 fi
 if [ -f /app/sidecar-helper/dist/server.js ]; then
     export SIDECAR_PORT="${SIDECAR_PORT:-9100}"
-    # Resolve ACPX / CLI extension paths.
+    # Resolve ACPX / CLI / unified provider extension paths.
+    # Use Node resolution to find pi-orchestrator-config regardless of npm hoisting.
     # Do not override operator-provided paths (custom mounts / config).
-    _ORCH_EXTENSIONS="/app/sidecar-helper/node_modules/pi-orchestrator-config/extensions"
+    _ORCH_EXTENSIONS=$(node -e "console.log(require.resolve('pi-orchestrator-config/package.json').replace('/package.json', '') + '/extensions')" 2>/dev/null) || _ORCH_EXTENSIONS=""
+    if [ -z "$_ORCH_EXTENSIONS" ]; then
+        echo "[sidecar] WARNING: Could not resolve pi-orchestrator-config via Node — extension paths will not be set" >&2
+    fi
     if [ -z "${SIDECAR_ACPX_EXTENSION_PATH:-}" ]; then
         if [ -f "${_ORCH_EXTENSIONS}/acpx-provider/index.ts" ]; then
             export SIDECAR_ACPX_EXTENSION_PATH="${_ORCH_EXTENSIONS}/acpx-provider/index.ts"
