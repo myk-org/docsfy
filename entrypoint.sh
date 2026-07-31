@@ -1,8 +1,8 @@
 #!/bin/bash
-set -e
+set -euo pipefail
 
 # Dev mode: start Vite dev server in background for frontend HMR
-if [ "$DEV_MODE" = "true" ] && [ -f /app/frontend/package.json ]; then
+if [ "${DEV_MODE:-}" = "true" ] && [ -f /app/frontend/package.json ]; then
     echo "[DEV] Frontend source detected, starting Vite dev server..."
     cd /app/frontend || exit 1
     npm ci
@@ -21,37 +21,6 @@ if [ "${DEV_MODE:-}" = "true" ] && [ -f /app/sidecar-helper/src/server.ts ]; the
 fi
 if [ -f /app/sidecar-helper/dist/server.js ]; then
     export SIDECAR_PORT="${SIDECAR_PORT:-9100}"
-    # Resolve ACPX / CLI / unified provider extension paths.
-    # Use Node resolution to find pi-orchestrator-config regardless of npm hoisting.
-    # Do not override operator-provided paths (custom mounts / config).
-    _ORCH_EXTENSIONS=$(node -e "console.log(require.resolve('pi-orchestrator-config/package.json').replace('/package.json', '') + '/extensions')" 2>/dev/null) || _ORCH_EXTENSIONS=""
-    if [ -z "$_ORCH_EXTENSIONS" ]; then
-        echo "[sidecar] WARNING: Could not resolve pi-orchestrator-config via Node — extension paths will not be set" >&2
-    fi
-    if [ -z "${SIDECAR_ACPX_EXTENSION_PATH:-}" ]; then
-        if [ -f "${_ORCH_EXTENSIONS}/acpx-provider/index.ts" ]; then
-            export SIDECAR_ACPX_EXTENSION_PATH="${_ORCH_EXTENSIONS}/acpx-provider/index.ts"
-        fi
-    fi
-    if [ -n "${ACPX_AGENTS:-}" ] && [ -z "${SIDECAR_ACPX_EXTENSION_PATH:-}" ]; then
-        echo "[sidecar] WARNING: ACPX_AGENTS is set but ACPX extension was not found at ${_ORCH_EXTENSIONS}/acpx-provider/index.ts" >&2
-    fi
-    if [ -z "${SIDECAR_CLI_PROVIDER_EXTENSION_PATH:-}" ]; then
-        if [ -f "${_ORCH_EXTENSIONS}/cli-provider/index.ts" ]; then
-            export SIDECAR_CLI_PROVIDER_EXTENSION_PATH="${_ORCH_EXTENSIONS}/cli-provider/index.ts"
-        fi
-    fi
-    if [ -n "${CLI_AGENTS:-}" ] && [ -z "${SIDECAR_CLI_PROVIDER_EXTENSION_PATH:-}" ]; then
-        echo "[sidecar] WARNING: CLI_AGENTS is set but CLI extension was not found at ${_ORCH_EXTENSIONS}/cli-provider/index.ts" >&2
-    fi
-    if [ -z "${SIDECAR_PROVIDER_EXTENSION_PATH:-}" ]; then
-        if [ -f "${_ORCH_EXTENSIONS}/providers/index.ts" ]; then
-            export SIDECAR_PROVIDER_EXTENSION_PATH="${_ORCH_EXTENSIONS}/providers/index.ts"
-        fi
-    fi
-    if { [ -n "${ACPX_AGENTS:-}" ] || [ -n "${CLI_AGENTS:-}" ]; } && [ -z "${SIDECAR_PROVIDER_EXTENSION_PATH:-}" ]; then
-        echo "[sidecar] WARNING: ACPX_AGENTS/CLI_AGENTS is set but unified provider extension was not found at ${_ORCH_EXTENSIONS}/providers/index.ts" >&2
-    fi
     node /app/sidecar-helper/dist/server.js &
     SIDECAR_PID=$!
     echo "[sidecar] Started Pi SDK sidecar (PID $SIDECAR_PID) on port $SIDECAR_PORT"
@@ -60,26 +29,29 @@ if [ -f /app/sidecar-helper/dist/server.js ]; then
     trap 'kill $SIDECAR_PID 2>/dev/null; wait $SIDECAR_PID 2>/dev/null' EXIT
 
     # Monitor sidecar — if it dies, kill the main process too
-    (while kill -0 $SIDECAR_PID 2>/dev/null; do sleep 5; done; echo "[sidecar] Sidecar died, shutting down container"; kill 1 2>/dev/null) &
+    (trap 'exit 0' TERM
+     while kill -0 $SIDECAR_PID 2>/dev/null; do sleep 5; done
+     echo "[sidecar] Sidecar died, shutting down container"
+     kill 1 2>/dev/null) &
 
-    # Wait for sidecar to be ready
-    echo "[sidecar] Waiting for sidecar to be ready..."
+    # Wait for health (up to 15s)
+    echo "[sidecar] Waiting for health check..."
     for i in $(seq 1 30); do
-        if curl -sf http://localhost:${SIDECAR_PORT}/health > /dev/null 2>&1; then
-            echo "[sidecar] Sidecar is ready"
-            break
-        fi
-        if [ "$i" -eq 30 ]; then
-            echo "[sidecar] WARNING: Sidecar not ready after 30s, starting anyway"
-        fi
-        sleep 1
+        curl -sf "http://127.0.0.1:${SIDECAR_PORT}/health" > /dev/null 2>&1 && break
+        sleep 0.5
     done
+
+    if ! curl -sf "http://127.0.0.1:${SIDECAR_PORT}/health" > /dev/null 2>&1; then
+        echo "[sidecar] ERROR: not healthy after 15s — aborting" >&2
+        exit 1
+    fi
+    echo "[sidecar] Health check passed"
 fi
 
 # Resolve PORT with a default
 export PORT="${PORT:-8000}"
 
-if [ "$DEV_MODE" = "true" ]; then
+if [ "${DEV_MODE:-}" = "true" ]; then
     echo "Starting FastAPI with hot reload on port $PORT..."
     uv run --no-sync uvicorn docsfy.main:app \
         --host 0.0.0.0 --port "$PORT" \

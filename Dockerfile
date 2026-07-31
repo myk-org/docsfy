@@ -16,13 +16,10 @@ FROM node:22-slim AS sidecar-builder
 
 WORKDIR /sidecar
 
-RUN apt-get update && apt-get install -y --no-install-recommends git && rm -rf /var/lib/apt/lists/*
-
 COPY sidecar-helper/package.json sidecar-helper/package-lock.json ./
 RUN npm ci
 
 COPY sidecar-helper/ .
-RUN node -e "const v = process.versions.node.split('.').map(Number); if (v[0] < 22 || (v[0] === 22 && v[1] < 19)) { console.error('Node >= 22.19.0 required, got ' + process.versions.node); process.exit(1); }"
 RUN npx tsc
 RUN npm prune --omit=dev
 
