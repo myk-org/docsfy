@@ -21,7 +21,6 @@ if [ "${DEV_MODE:-}" = "true" ] && [ -f /app/sidecar-helper/src/server.ts ]; the
 fi
 if [ -f /app/sidecar-helper/dist/server.js ]; then
     export SIDECAR_PORT="${SIDECAR_PORT:-9100}"
-    export SIDECAR_WATCHDOG_URL="http://127.0.0.1:${PORT:-8000}/health"
     node /app/sidecar-helper/dist/server.js &
     SIDECAR_PID=$!
     echo "[sidecar] Started Pi SDK sidecar (PID $SIDECAR_PID) on port $SIDECAR_PORT"
