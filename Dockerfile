@@ -16,8 +16,6 @@ FROM node:22-slim AS sidecar-builder
 
 WORKDIR /sidecar
 
-RUN apt-get update && apt-get install -y --no-install-recommends git && rm -rf /var/lib/apt/lists/*
-
 COPY sidecar-helper/package.json sidecar-helper/package-lock.json ./
 RUN npm ci
 
@@ -55,6 +53,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   bash \
   git \
   curl \
+  tini \
   && rm -rf /var/lib/apt/lists/*
 
 # Copy Node.js from sidecar builder for runtime parity
@@ -79,13 +78,15 @@ USER appuser
 # Always fetch the latest versions of these CLI tools at build time.
 
 # Install Cursor Agent CLI (installs to ~/.local/bin)
-# Claude and Gemini are handled by the Pi SDK sidecar — no CLI needed
 RUN /bin/bash -o pipefail -c "curl -fsSL https://cursor.com/install | bash"
 
-# Configure npm for non-root global installs and install acpx CLI (needed by sidecar acpx-provider extension)
+# Install Claude Code CLI (installs to ~/.local/bin)
+RUN /bin/bash -o pipefail -c "curl -fsSL https://claude.ai/install.sh | bash"
+
+# Configure npm for non-root global installs and install CLIs
 RUN mkdir -p /home/appuser/.npm-global \
   && npm config set prefix '/home/appuser/.npm-global' \
-  && npm install -g acpx
+  && npm install -g acpx @google/gemini-cli
 
 # Switch to root for file copies and permission fixes
 USER root
@@ -140,4 +141,4 @@ EXPOSE 5173
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
   CMD curl -f http://localhost:${PORT:-8000}/health && curl -f http://localhost:${SIDECAR_PORT:-9100}/health || exit 1
 
-ENTRYPOINT ["/app/entrypoint.sh"]
+ENTRYPOINT ["tini", "--", "/app/entrypoint.sh"]
