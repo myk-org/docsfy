@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Getting Started with docsfy - docsfy</title>
-    <meta name="description" content="Turn any Git repository into a polished documentation site in minutes">
+    <title>Get Started with docsfy - docsfy</title>
+    <meta name="description" content="Turn any Git repo into a polished, AI-readable documentation site you can browse, share, and download in minutes.">
     <link rel="stylesheet" href="assets/style.css">
     <script>try{var t=localStorage.getItem('theme');if(t==='dark')document.documentElement.setAttribute('data-theme','dark')}catch(e){}</script>
     <link rel="alternate" type="text/plain" title="LLM Documentation Index" href="llms.txt">
@@ -14,7 +14,7 @@
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <a href="index.html" class="sidebar-logo">docsfy</a>
-            <p class="sidebar-tagline">Turn any Git repository into a polished documentation site in minutes</p>
+            <p class="sidebar-tagline">Turn any Git repo into a polished, AI-readable documentation site you can browse, share, and download in minutes.</p>
         </div>
 
         <div class="sidebar-search">
@@ -31,14 +31,14 @@
                     <li>
                         <a href="quickstart.html"
                            class="nav-link active" aria-current="page">
-                            Getting Started with docsfy
+                            Get Started with docsfy
                         </a>
                     </li>
                     
                     <li>
-                        <a href="deployment.html"
+                        <a href="set-up-the-cli.html"
                            class="nav-link">
-                            Deploying with Docker
+                            Set Up the CLI
                         </a>
                     </li>
                     
@@ -50,58 +50,65 @@
                 <ul class="nav-group-pages">
                     
                     <li>
-                        <a href="generating-docs.html"
+                        <a href="generate-documentation.html"
                            class="nav-link">
-                            Generating Documentation
+                            Generate Documentation
                         </a>
                     </li>
                     
                     <li>
-                        <a href="managing-projects.html"
+                        <a href="configure-ai-providers-and-models.html"
                            class="nav-link">
-                            Managing Projects and Variants
+                            Configure AI Providers and Models
                         </a>
                     </li>
                     
                     <li>
-                        <a href="browsing-docs.html"
+                        <a href="track-generation-progress.html"
                            class="nav-link">
-                            Browsing Generated Documentation
+                            Track Generation Progress
                         </a>
                     </li>
                     
                     <li>
-                        <a href="managing-users.html"
+                        <a href="browse-and-download-docs.html"
                            class="nav-link">
-                            Managing Users and Access Control
+                            Browse and Download Docs
                         </a>
                     </li>
                     
                     <li>
-                        <a href="configuring-ai-providers.html"
+                        <a href="regenerate-after-code-changes.html"
                            class="nav-link">
-                            Configuring AI Providers
+                            Regenerate After Code Changes
                         </a>
                     </li>
                     
                     <li>
-                        <a href="incremental-updates.html"
+                        <a href="manage-projects-and-variants.html"
                            class="nav-link">
-                            Working with Incremental Updates
+                            Manage Projects and Variants
                         </a>
                     </li>
                     
                     <li>
-                        <a href="using-the-cli.html"
+                        <a href="manage-users-and-access.html"
                            class="nav-link">
-                            Using the CLI
+                            Manage Users and Access
                         </a>
                     </li>
                     
                     <li>
-                        <a href="llms-txt-ai-readable-docs.html"
+                        <a href="deploy-docsfy.html"
                            class="nav-link">
-                            AI-Readable Documentation with llms.txt
+                            Deploy docsfy
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="use-repository-images-in-generated-docs.html"
+                           class="nav-link">
+                            Use Repository Images in Generated Docs
                         </a>
                     </li>
                     
@@ -113,9 +120,16 @@
                 <ul class="nav-group-pages">
                     
                     <li>
-                        <a href="recipes-common-workflows.html"
+                        <a href="common-workflow-recipes.html"
                            class="nav-link">
-                            Common Workflow Recipes
+                            Run Common CLI Workflows
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="branch-and-model-recipes.html"
+                           class="nav-link">
+                            Generate Variants by Branch and Model
                         </a>
                     </li>
                     
@@ -127,16 +141,16 @@
                 <ul class="nav-group-pages">
                     
                     <li>
-                        <a href="api-reference.html"
+                        <a href="cli-command-reference.html"
                            class="nav-link">
-                            REST API Reference
+                            CLI Command Reference
                         </a>
                     </li>
                     
                     <li>
-                        <a href="cli-reference.html"
+                        <a href="http-api-and-websocket-reference.html"
                            class="nav-link">
-                            CLI Command Reference
+                            HTTP API and WebSocket Reference
                         </a>
                     </li>
                     
@@ -196,49 +210,30 @@
                          converted to HTML server-side by the markdown library, not
                          user-supplied input. XSS risk is minimal and accepted since
                          the AI generates the content, not end users. -->
-                    <h1 id="getting-started-with-docsfy">Getting Started with docsfy</h1>
-<p>Generate a polished, browsable documentation site from any Git repository in minutes. This guide walks you through installing docsfy, configuring it, and producing your first set of docs.</p>
+                    <h1 id="get-started-with-docsfy">Get Started with docsfy</h1>
+<p>You want a working docsfy server quickly so you can sign in, run one real generation, and confirm the full flow before you tune anything else. This guide takes you from a fresh checkout to a browsable docs site with the shortest supported path.</p>
 <h2 id="prerequisites">Prerequisites</h2>
 <ul>
-<li><strong>Docker</strong> and <strong>Docker Compose</strong> (for running the server)</li>
-<li>A <strong>Git repository</strong> (public HTTPS URL) you want to document</li>
-<li>(Optional) <a href="https://docs.astral.sh/uv/">uv</a> for installing the CLI tool</li>
+<li>Docker with Compose</li>
+<li>A Git repository URL you want to document</li>
+<li>An <code>ADMIN_KEY</code> you can store in <code>.env</code> with at least 16 characters</li>
+<li>At least one working <code>cursor</code>, <code>claude</code>, or <code>gemini</code> model in the environment where docsfy runs</li>
 </ul>
-<h2 id="quick-start">Quick Start</h2>
-<div class="highlight"><pre><span></span><code>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/myk-org/docsfy.git<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nb">cd</span><span class="w"> </span>docsfy
-cp<span class="w"> </span>.env.example<span class="w"> </span>.env<span class="w">   </span><span class="c1"># then set ADMIN_KEY (min 16 chars)</span>
-docker<span class="w"> </span>compose<span class="w"> </span>up<span class="w">       </span><span class="c1"># open http://localhost:8000</span>
-</code></pre></div>
-
-<p>That's it — the web dashboard is now running at <code>http://localhost:8000</code>. Log in with username <code>admin</code> and the <code>ADMIN_KEY</code> you set, paste a repo URL, and click <strong>Generate</strong>.</p>
-<h2 id="step-by-step-setup">Step-by-Step Setup</h2>
-<h3 id="1-clone-the-repository">1. Clone the repository</h3>
+<h2 id="quick-example">Quick Example</h2>
 <div class="highlight"><pre><span></span><code>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/myk-org/docsfy.git
 <span class="nb">cd</span><span class="w"> </span>docsfy
+cp<span class="w"> </span>.env.example<span class="w"> </span>.env
 </code></pre></div>
 
-<h3 id="2-create-your-environment-file">2. Create your environment file</h3>
-<div class="highlight"><pre><span></span><code>cp<span class="w"> </span>.env.example<span class="w"> </span>.env
+<div class="highlight"><pre><span></span><code>ADMIN_KEY=change-this-to-a-16-plus-character-password
+SECURE_COOKIES=false
 </code></pre></div>
 
-<p>Open <code>.env</code> and set the required <code>ADMIN_KEY</code> value. This is the master password for the admin account and must be at least 16 characters:</p>
-<div class="highlight"><pre><span></span><code><span class="nv">ADMIN_KEY</span><span class="o">=</span>your-secure-password-here
+<div class="highlight"><pre><span></span><code>docker<span class="w"> </span>compose<span class="w"> </span>up<span class="w"> </span>--build<span class="w"> </span>-d
+curl<span class="w"> </span>http://localhost:800/health
 </code></pre></div>
 
-<blockquote>
-<p><strong>Warning:</strong> Never commit your <code>.env</code> file to version control. It contains secrets.</p>
-</blockquote>
-<p>For local HTTP development (not behind HTTPS), also add:</p>
-<div class="highlight"><pre><span></span><code><span class="nv">SECURE_COOKIES</span><span class="o">=</span><span class="nb">false</span>
-</code></pre></div>
-
-<h3 id="3-start-the-server">3. Start the server</h3>
-<div class="highlight"><pre><span></span><code>docker<span class="w"> </span>compose<span class="w"> </span>up
-</code></pre></div>
-
-<p>Docker builds the application image, starts the AI sidecar service, and launches the web server on port <strong>8000</strong>. Wait for the health check to pass, then open your browser to <code>http://localhost:8000</code>.</p>
-<h3 id="4-log-in">4. Log in</h3>
-<p>On the login screen, enter:</p>
+<p>Open <code>http://localhost:800/login</code>, sign in as <code>admin</code> with the same <code>ADMIN_KEY</code>, then start a generation for <code>https://github.com/myk-org/for-testing-only</code>.</p>
 <table>
 <thead>
 <tr>
@@ -253,180 +248,334 @@ docker<span class="w"> </span>compose<span class="w"> </span>up<span class="w"> 
 </tr>
 <tr>
 <td>Password</td>
-<td>The <code>ADMIN_KEY</code> from <code>.env</code></td>
+<td>your <code>ADMIN_KEY</code></td>
+</tr>
+<tr>
+<td>Repository URL</td>
+<td><code>https://github.com/myk-org/for-testing-only</code></td>
+</tr>
+<tr>
+<td>Branch</td>
+<td><code>main</code></td>
+</tr>
+<tr>
+<td>Repository Type</td>
+<td><code>Auto-detect</code></td>
+</tr>
+<tr>
+<td>Force full regeneration</td>
+<td>off</td>
 </tr>
 </tbody>
 </table>
-<h3 id="5-generate-your-first-docs">5. Generate your first docs</h3>
-<ol>
-<li>In the dashboard, paste a Git repository URL (e.g., <code>https://github.com/myk-org/for-testing-only</code>).</li>
-<li>Leave <strong>Branch</strong> as <code>main</code> (or pick another branch).</li>
-<li>Click <strong>Generate</strong>.</li>
-<li>Watch the progress in real time — docsfy clones the repo, plans the documentation structure, generates pages with AI, and renders a static HTML site.</li>
-</ol>
-<p>When the status shows <strong>Ready</strong>, click the project name to browse your generated docs.</p>
 <blockquote>
-<p><strong>Tip:</strong> docsfy auto-detects the repository type (app, library, framework, or tests) and tailors the documentation structure accordingly. You can override this in the generate form if needed.</p>
+<p><strong>Note:</strong> This quick example uses plain local HTTP, so <code>SECURE_COOKIES=false</code> is required for the browser session to stick on <code>http://localhost</code>.</p>
 </blockquote>
-<h2 id="using-the-cli">Using the CLI</h2>
-<p>The CLI lets you do everything from the terminal — generate, check status, download, and manage projects.</p>
-<h3 id="install-the-cli">Install the CLI</h3>
-<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>tool<span class="w"> </span>install<span class="w"> </span>docsfy
+<h2 id="step-by-step">Step-by-step</h2>
+<ol>
+<li>Prepare your local config.</li>
+</ol>
+<div class="highlight"><pre><span></span><code>cp<span class="w"> </span>.env.example<span class="w"> </span>.env
 </code></pre></div>
 
-<h3 id="configure-a-server-profile">Configure a server profile</h3>
-<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>config<span class="w"> </span>init
+<p>Set these values first:</p>
+<div class="highlight"><pre><span></span><code>ADMIN_KEY=change-this-to-a-16-plus-character-password
+SECURE_COOKIES=false
 </code></pre></div>
 
-<p>You'll be prompted for:</p>
+<p>Leave the checked-in AI defaults alone for your first run unless you already know you need a different provider or model. Do not commit <code>.env</code>.</p>
 <table>
 <thead>
 <tr>
-<th>Prompt</th>
-<th>Example value</th>
+<th>Where you open docsfy</th>
+<th><code>SECURE_COOKIES</code></th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Profile name</td>
-<td><code>dev</code></td>
+<td><code>http://localhost:800</code></td>
+<td><code>false</code></td>
 </tr>
 <tr>
-<td>Server URL</td>
-<td><code>http://localhost:8000</code></td>
+<td>HTTPS deployment</td>
+<td><code>true</code></td>
 </tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Warning:</strong> The server refuses to start if <code>ADMIN_KEY</code> is missing or shorter than 16 characters.</p>
+</blockquote>
+<ol>
+<li>Start the server.</li>
+</ol>
+<div class="highlight"><pre><span></span><code>docker<span class="w"> </span>compose<span class="w"> </span>up<span class="w"> </span>--build<span class="w"> </span>-d
+</code></pre></div>
+
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>http://localhost:800/health
+</code></pre></div>
+
+<p>When the health check succeeds, docsfy is ready at <code>http://localhost:800</code>. The Compose setup also mounts <code>./data</code> into the container, so your database and generated docs survive restarts.</p>
+<ol>
+<li>Sign in as the built-in admin.</li>
+</ol>
+<p>Open <code>http://localhost:800/login</code> and enter the same values you just configured.</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
 <tr>
 <td>Username</td>
 <td><code>admin</code></td>
 </tr>
 <tr>
 <td>Password</td>
-<td>Your <code>ADMIN_KEY</code></td>
+<td>your <code>ADMIN_KEY</code></td>
 </tr>
 </tbody>
 </table>
-<p>This saves a profile to <code>~/.config/docsfy/config.toml</code>. You can add multiple server profiles (dev, staging, prod) and switch between them with <code>--server</code>:</p>
-<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>--server<span class="w"> </span>prod<span class="w"> </span>list
+<p><img alt="docsfy login page with username and password fields" src="images/login-page.png" /></p>
+<p>After sign-in, you land on the dashboard and can start a generation right away.</p>
+<p><img alt="Dashboard showing the project sidebar with project count and total generation cost" src="images/dashboard.png" /></p>
+<ol>
+<li>Start your first generation.</li>
+</ol>
+<p>Use a small public repository for the easiest first run. In <strong>New Generation</strong>, enter these values and click <strong>Generate</strong>.</p>
+<div class="highlight"><pre><span></span><code>Repository URL: https://github.com/myk-org/for-testing-only
+Branch: main
+Repository Type: Auto-detect
+Provider: cursor
+Model: gpt-5.4-xhigh-fast
+Force full regeneration: off
 </code></pre></div>
 
-<h3 id="generate-docs-from-the-terminal">Generate docs from the terminal</h3>
-<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>generate<span class="w"> </span>https://github.com/org/repo
-</code></pre></div>
-
-<p>Target a specific branch:</p>
-<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>generate<span class="w"> </span>https://github.com/org/repo<span class="w"> </span>--branch<span class="w"> </span>dev
-</code></pre></div>
-
-<p>Watch generation progress in real time:</p>
-<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>generate<span class="w"> </span>https://github.com/org/repo<span class="w"> </span>--watch
-</code></pre></div>
-
-<h3 id="check-project-status">Check project status</h3>
-<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>list
-docsfy<span class="w"> </span>status<span class="w"> </span>my-repo
-</code></pre></div>
-
-<h3 id="download-generated-docs">Download generated docs</h3>
-<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>download<span class="w"> </span>my-repo<span class="w"> </span>--output<span class="w"> </span>./my-docs<span class="w"> </span>--flatten
-</code></pre></div>
-
-<p>This extracts the generated HTML site into <code>./my-docs</code>, ready to deploy anywhere.</p>
-<blockquote>
-<p><strong>Tip:</strong> See <a href="using-the-cli.html">Using the CLI</a> for the full setup guide and <a href="cli-reference.html">CLI Command Reference</a> for all available commands and flags.</p>
-</blockquote>
-<h2 id="understanding-variants">Understanding Variants</h2>
-<p>Every documentation build is a <strong>variant</strong> — a unique combination of project name, branch, AI provider, and AI model. This means you can generate docs for the same repo on different branches or with different AI models and compare the results side by side.</p>
-<p>The URL pattern for browsing a specific variant is:</p>
-<div class="highlight"><pre><span></span><code>http://localhost:8000/docs/{project}/{branch}/{provider}/{model}/
-</code></pre></div>
-
-<p>For example: <code>http://localhost:8000/docs/my-repo/main/cursor/gpt-5.4-xhigh-fast/</code></p>
-<p>If you browse <code>/docs/{project}/</code> without specifying a variant, docsfy serves the most recently generated one.</p>
-<p>See <a href="browsing-docs.html">Browsing Generated Documentation</a> for more on navigating and sharing doc URLs.</p>
+<p>Leave <strong>Repository Type</strong> on <strong>Auto-detect</strong> and keep <strong>Force full regeneration</strong> off for this first pass. See <a href="generate-documentation.html">Generate Documentation</a> for the full field-by-field guide.</p>
+<p><img alt="New generation form with repository URL, branch, provider, model, vision provider, and repository type fields" src="images/generate-form.png" /></p>
+<ol>
+<li>Wait for the run to finish.</li>
+</ol>
+<p>docsfy opens the new variant view and updates it as the run progresses. When the status becomes <code>Ready</code>, use <strong>View Documentation</strong> to open the generated site.</p>
+<p>See <a href="track-generation-progress.html">Track Generation Progress</a> if you want the meaning of each stage or need to monitor a longer run.</p>
+<p><img alt="Variant detail panel showing generation status, page count, commit SHA, and documentation links" src="images/variant-detail.png" /></p>
+<p>Once the project appears in the sidebar, you can expand it to see the branch and model variant that was generated.</p>
+<p><img alt="Dashboard with project tree expanded showing variants, branches, and generation status" src="images/dashboard-expanded.png" /></p>
+<ol>
+<li>Open your docs site.</li>
+</ol>
+<p>Click <strong>View Documentation</strong> to open the finished site in a new tab. You should see a homepage with sidebar navigation and links for the pages docsfy generated from your repository.</p>
+<p>See <a href="browse-and-download-docs.html">Browse and Download Docs</a> when you want direct doc URLs, downloadable artifacts, or the generated <code>llms.txt</code> files.</p>
+<p><img alt="Generated documentation site homepage with navigation sidebar and getting started links" src="images/docs-site-index.png" /></p>
+<p>Open any page from the sidebar to confirm that the generated content rendered cleanly.</p>
+<p><img alt="Generated documentation page showing formatted content with code blocks and navigation" src="images/docs-site-page.png" /></p>
 <h2 id="advanced-usage">Advanced Usage</h2>
-<h3 id="choosing-an-ai-provider-and-model">Choosing an AI provider and model</h3>
-<p>docsfy supports three AI providers: <strong>claude</strong>, <strong>gemini</strong>, and <strong>cursor</strong>. The server defaults (set via <code>AI_PROVIDER</code> and <code>AI_MODEL</code> in <code>.env</code>) are used for new generations unless you override them.</p>
-<p>From the CLI:</p>
-<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>generate<span class="w"> </span>https://github.com/org/repo<span class="w"> </span>--provider<span class="w"> </span>claude<span class="w"> </span>--model<span class="w"> </span>claude-sonnet-4-20250514
+<ul>
+<li>Keep the defaults for your first run, then switch providers or models only if your environment is already set up for them. See <a href="configure-ai-providers-and-models.html">Configure AI Providers and Models</a> for model refresh, provider setup, and vision options.</li>
+<li>For your first run, leave <strong>Repository Type</strong> on <strong>Auto-detect</strong>. If docsfy guesses wrong or you want to force a different documentation style, see <a href="generate-documentation.html">Generate Documentation</a>.</li>
+<li>Keep <strong>Force full regeneration</strong> off unless you need a clean rebuild. See <a href="regenerate-after-code-changes.html">Regenerate After Code Changes</a> for when to use it.</li>
+<li>If you switch providers, the model picker updates to show the models docsfy knows about for that provider.</li>
+</ul>
+<p><img alt="Generate form with Gemini provider selected showing the available AI models dropdown" src="images/generate-form-models.png" /></p>
+<ul>
+<li>If you want a terminal-first workflow after this browser setup, see <a href="set-up-the-cli.html">Set Up the CLI</a>. For copy-paste command patterns, see <a href="common-workflow-recipes.html">Run Common CLI Workflows</a>.</li>
+<li>If you want to run docsfy outside Docker or prepare a longer-lived environment, see <a href="deploy-docsfy.html">Deploy docsfy</a>.</li>
+</ul>
+<h2 id="troubleshooting">Troubleshooting</h2>
+<ul>
+<li>If the container exits immediately, re-check <code>.env</code>. <code>ADMIN_KEY</code> is required and must be at least 16 characters long.</li>
+<li>If you can load the login page but keep getting sent back to <code>/login</code> on <code>http://localhost</code>, set <code>SECURE_COOKIES=false</code>, restart the stack, and sign in again.</li>
+<li>If <code>curl http://localhost:800/health</code> never succeeds, run <code>docker compose logs -f docsfy</code> and fix the startup error before trying to sign in.</li>
+<li>If the server is healthy but generation fails quickly, the selected provider or model is not ready in the environment running docsfy. See <a href="configure-ai-providers-and-models.html">Configure AI Providers and Models</a>.</li>
+<li>If the repository URL is rejected, use a full hosted Git URL such as <code>https://github.com/myk-org/for-testing-only.git</code> or <code>git@github.com:myk-org/for-testing-only.git</code>.# Get Started with docsfy</li>
+</ul>
+<p>You want a working docsfy server quickly so you can sign in, run one real generation, and confirm the full flow before you tune anything else. This guide takes you from a fresh checkout to a browsable docs site with the shortest supported path.</p>
+<h2 id="prerequisites_1">Prerequisites</h2>
+<ul>
+<li>Docker with Compose</li>
+<li>A Git repository URL you want to document</li>
+<li>An <code>ADMIN_KEY</code> you can store in <code>.env</code> with at least 16 characters</li>
+<li>At least one working <code>cursor</code>, <code>claude</code>, or <code>gemini</code> model in the environment where docsfy runs</li>
+</ul>
+<h2 id="quick-example_1">Quick Example</h2>
+<div class="highlight"><pre><span></span><code>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/myk-org/docsfy.git
+<span class="nb">cd</span><span class="w"> </span>docsfy
+cp<span class="w"> </span>.env.example<span class="w"> </span>.env
 </code></pre></div>
 
-<p>To see available providers and models:</p>
-<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>models
+<div class="highlight"><pre><span></span><code>ADMIN_KEY=change-this-to-a-16-plus-character-password
+SECURE_COOKIES=false
 </code></pre></div>
 
-<p>See <a href="configuring-ai-providers.html">Configuring AI Providers</a> for details on provider setup and the sidecar service.</p>
-<h3 id="force-a-full-regeneration">Force a full regeneration</h3>
-<p>By default, docsfy performs <strong>incremental updates</strong> — it detects code changes since the last generation and only regenerates affected pages. To force a complete rebuild:</p>
-<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>generate<span class="w"> </span>https://github.com/org/repo<span class="w"> </span>--force
+<div class="highlight"><pre><span></span><code>docker<span class="w"> </span>compose<span class="w"> </span>up<span class="w"> </span>--build<span class="w"> </span>-d
+curl<span class="w"> </span>http://localhost:8000/health
 </code></pre></div>
 
-<p>Or check the <strong>Force</strong> checkbox in the web dashboard.</p>
-<p>See <a href="incremental-updates.html">Working with Incremental Updates</a> for how change detection works.</p>
-<h3 id="specifying-the-repository-type">Specifying the repository type</h3>
-<p>docsfy auto-detects whether your repo is an app, library, framework, or test suite. You can override this to get better-tailored documentation:</p>
-<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>generate<span class="w"> </span>https://github.com/org/repo<span class="w"> </span>--repo-type<span class="w"> </span>library
-</code></pre></div>
-
-<p>Valid types: <code>app</code>, <code>library</code>, <code>framework</code>, <code>tests</code>.</p>
-<h3 id="managing-users">Managing users</h3>
-<p>Create additional user accounts with the CLI:</p>
-<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>admin<span class="w"> </span>users<span class="w"> </span>create<span class="w"> </span>alice<span class="w"> </span>--role<span class="w"> </span>user
-</code></pre></div>
-
-<p>Roles control access levels:</p>
+<p>Open <code>http://localhost:8000/login</code>, sign in as <code>admin</code> with the same <code>ADMIN_KEY</code>, then start a generation for <code>https://github.com/myk-org/for-testing-only</code>.</p>
 <table>
 <thead>
 <tr>
-<th>Role</th>
-<th>Permissions</th>
+<th>Field</th>
+<th>Value</th>
 </tr>
 </thead>
 <tbody>
 <tr>
+<td>Username</td>
 <td><code>admin</code></td>
-<td>Full access — manage users, all projects</td>
 </tr>
 <tr>
-<td><code>user</code></td>
-<td>Generate, view, and manage own projects</td>
+<td>Password</td>
+<td>your <code>ADMIN_KEY</code></td>
 </tr>
 <tr>
-<td><code>viewer</code></td>
-<td>Read-only access to shared projects</td>
+<td>Repository URL</td>
+<td><code>https://github.com/myk-org/for-testing-only</code></td>
+</tr>
+<tr>
+<td>Branch</td>
+<td><code>main</code></td>
+</tr>
+<tr>
+<td>Repository Type</td>
+<td><code>Auto-detect</code></td>
+</tr>
+<tr>
+<td>Force full regeneration</td>
+<td>off</td>
 </tr>
 </tbody>
 </table>
-<p>See <a href="managing-users.html">Managing Users and Access Control</a> for the full user management guide.</p>
-<h3 id="running-in-production">Running in production</h3>
-<p>For production deployments with persistent storage, TLS, and custom configuration, see <a href="deployment.html">Deploying with Docker</a>.</p>
-<h2 id="troubleshooting">Troubleshooting</h2>
-<p><strong>"ADMIN_KEY environment variable is required"</strong>
-Set <code>ADMIN_KEY</code> in your <code>.env</code> file. It must be at least 16 characters.</p>
-<p><strong>Login works but the session drops immediately</strong>
-If you're running over plain HTTP (not HTTPS), set <code>SECURE_COOKIES=false</code> in <code>.env</code>. Secure cookies are rejected by browsers on non-HTTPS connections.</p>
-<p><strong>"Variant is already being generated" (409 error)</strong>
-A generation is already running for the same project/branch/provider/model combination. Wait for it to finish, or abort it:</p>
-<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>abort<span class="w"> </span>my-repo<span class="w"> </span>--branch<span class="w"> </span>main<span class="w"> </span>--provider<span class="w"> </span>cursor<span class="w"> </span>--model<span class="w"> </span>gpt-5.4-xhigh-fast
+<blockquote>
+<p><strong>Note:</strong> This quick example uses plain local HTTP, so <code>SECURE_COOKIES=false</code> is required for the browser session to stick on <code>http://localhost</code>.</p>
+</blockquote>
+<h2 id="step-by-step_1">Step-by-step</h2>
+<ol>
+<li>Prepare your local config.</li>
+</ol>
+<div class="highlight"><pre><span></span><code>cp<span class="w"> </span>.env.example<span class="w"> </span>.env
 </code></pre></div>
 
-<p><strong>Generation fails with sidecar errors</strong>
-The AI sidecar service must be running and healthy. In Docker, the entrypoint handles this automatically. Check the container logs for <code>[sidecar] Sidecar is ready</code>. If the sidecar isn't starting, verify your AI provider credentials are configured correctly — see <a href="configuring-ai-providers.html">Configuring AI Providers</a>.</p>
-<p><strong>Branch names with slashes are rejected</strong>
-Branch names cannot contain <code>/</code> because they appear as URL path segments. Use hyphens instead (e.g., <code>release-1.x</code> instead of <code>release/1.x</code>).</p>
-<h2 id="next-steps">Next Steps</h2>
+<p>Set these values first:</p>
+<div class="highlight"><pre><span></span><code>ADMIN_KEY=change-this-to-a-16-plus-character-password
+SECURE_COOKIES=false
+</code></pre></div>
+
+<p>Leave the checked-in AI defaults alone for your first run unless you already know you need a different provider or model. Do not commit <code>.env</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Where you open docsfy</th>
+<th><code>SECURE_COOKIES</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>http://localhost:8000</code></td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td>HTTPS deployment</td>
+<td><code>true</code></td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Warning:</strong> The server refuses to start if <code>ADMIN_KEY</code> is missing or shorter than 16 characters.</p>
+</blockquote>
+<ol>
+<li>Start the server.</li>
+</ol>
+<div class="highlight"><pre><span></span><code>docker<span class="w"> </span>compose<span class="w"> </span>up<span class="w"> </span>--build<span class="w"> </span>-d
+</code></pre></div>
+
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>http://localhost:8000/health
+</code></pre></div>
+
+<p>When the health check succeeds, docsfy is ready at <code>http://localhost:8000</code>. The Compose setup also mounts <code>./data</code> into the container, so your database and generated docs survive restarts.</p>
+<ol>
+<li>Sign in as the built-in admin.</li>
+</ol>
+<p>Open <code>http://localhost:8000/login</code> and enter the same values you just configured.</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Username</td>
+<td><code>admin</code></td>
+</tr>
+<tr>
+<td>Password</td>
+<td>your <code>ADMIN_KEY</code></td>
+</tr>
+</tbody>
+</table>
+<p><img alt="docsfy login page with username and password fields" src="images/login-page.png" /></p>
+<p>After sign-in, you land on the dashboard and can start a generation right away.</p>
+<p><img alt="Dashboard showing the project sidebar with project count and total generation cost" src="images/dashboard.png" /></p>
+<ol>
+<li>Start your first generation.</li>
+</ol>
+<p>Use a small public repository for the easiest first run. In <strong>New Generation</strong>, enter these values and click <strong>Generate</strong>.</p>
+<div class="highlight"><pre><span></span><code>Repository URL: https://github.com/myk-org/for-testing-only
+Branch: main
+Repository Type: Auto-detect
+Provider: cursor
+Model: gpt-5.4-xhigh-fast
+Force full regeneration: off
+</code></pre></div>
+
+<p>Leave <strong>Repository Type</strong> on <strong>Auto-detect</strong> and keep <strong>Force full regeneration</strong> off for this first pass. See <a href="generate-documentation.html">Generate Documentation</a> for the full field-by-field guide.</p>
+<p><img alt="New generation form with repository URL, branch, provider, model, vision provider, and repository type fields" src="images/generate-form.png" /></p>
+<ol>
+<li>Wait for the run to finish.</li>
+</ol>
+<p>docsfy opens the new variant view and updates it as the run progresses. When the status becomes <code>Ready</code>, use <strong>View Documentation</strong> to open the generated site.</p>
+<p>See <a href="track-generation-progress.html">Track Generation Progress</a> if you want the meaning of each stage or need to monitor a longer run.</p>
+<p><img alt="Variant detail panel showing generation status, page count, commit SHA, and documentation links" src="images/variant-detail.png" /></p>
+<p>Once the project appears in the sidebar, you can expand it to see the branch and model variant that was generated.</p>
+<p><img alt="Dashboard with project tree expanded showing variants, branches, and generation status" src="images/dashboard-expanded.png" /></p>
+<ol>
+<li>Open your docs site.</li>
+</ol>
+<p>Click <strong>View Documentation</strong> to open the finished site in a new tab. You should see a homepage with sidebar navigation and links for the pages docsfy generated from your repository.</p>
+<p>See <a href="browse-and-download-docs.html">Browse and Download Docs</a> when you want direct doc URLs, downloadable artifacts, or the generated <code>llms.txt</code> files.</p>
+<p><img alt="Generated documentation site homepage with navigation sidebar and getting started links" src="images/docs-site-index.png" /></p>
+<p>Open any page from the sidebar to confirm that the generated content rendered cleanly.</p>
+<p><img alt="Generated documentation page showing formatted content with code blocks and navigation" src="images/docs-site-page.png" /></p>
+<h2 id="advanced-usage_1">Advanced Usage</h2>
 <ul>
-<li><a href="generating-docs.html">Generating Documentation</a> — detailed guide on all generation options</li>
-<li><a href="managing-projects.html">Managing Projects and Variants</a> — list, inspect, and delete projects</li>
-<li><a href="configuration-reference.html">Configuration Reference</a> — all environment variables and settings</li>
-<li><a href="recipes-common-workflows.html">Common Workflow Recipes</a> — CI/CD automation, multi-branch docs, and more</li>
+<li>Keep the defaults for your first run, then switch providers or models only if your environment is already set up for them. See <a href="configure-ai-providers-and-models.html">Configure AI Providers and Models</a> for model refresh, provider setup, and vision options.</li>
+<li>For your first run, leave <strong>Repository Type</strong> on <strong>Auto-detect</strong>. If docsfy guesses wrong or you want to force a different documentation style, see <a href="generate-documentation.html">Generate Documentation</a>.</li>
+<li>Keep <strong>Force full regeneration</strong> off unless you need a clean rebuild. See <a href="regenerate-after-code-changes.html">Regenerate After Code Changes</a> for when to use it.</li>
+<li>If you switch providers, the model picker updates to show the models docsfy knows about for that provider.</li>
+</ul>
+<p><img alt="Generate form with Gemini provider selected showing the available AI models dropdown" src="images/generate-form-models.png" /></p>
+<ul>
+<li>If you want a terminal-first workflow after this browser setup, see <a href="set-up-the-cli.html">Set Up the CLI</a>. For copy-paste command patterns, see <a href="common-workflow-recipes.html">Run Common CLI Workflows</a>.</li>
+<li>If you want to run docsfy outside Docker or prepare a longer-lived environment, see <a href="deploy-docsfy.html">Deploy docsfy</a>.</li>
+</ul>
+<h2 id="troubleshooting_1">Troubleshooting</h2>
+<ul>
+<li>If the container exits immediately, re-check <code>.env</code>. <code>ADMIN_KEY</code> is required and must be at least 16 characters long.</li>
+<li>If you can load the login page but keep getting sent back to <code>/login</code> on <code>http://localhost</code>, set <code>SECURE_COOKIES=false</code>, restart the stack, and sign in again.</li>
+<li>If <code>curl http://localhost:8000/health</code> never succeeds, run <code>docker compose logs -f docsfy</code> and fix the startup error before trying to sign in.</li>
+<li>If the server is healthy but generation fails quickly, the selected provider or model is not ready in the environment running docsfy. See <a href="configure-ai-providers-and-models.html">Configure AI Providers and Models</a>.</li>
+<li>If the repository URL is rejected, use a full hosted Git URL such as <code>https://github.com/myk-org/for-testing-only.git</code> or <code>git@github.com:myk-org/for-testing-only.git</code>.</li>
 </ul>
 <h2 id="related-pages">Related Pages</h2>
 <ul>
-<li><a href="generating-docs.html">Generating Documentation</a></li>
-<li><a href="deployment.html">Deploying with Docker</a></li>
-<li><a href="using-the-cli.html">Using the CLI</a></li>
-<li><a href="configuration-reference.html">Configuration Reference</a></li>
-<li><a href="managing-projects.html">Managing Projects and Variants</a></li>
+<li><a href="set-up-the-cli.html">Set Up the CLI</a></li>
+<li><a href="generate-documentation.html">Generate Documentation</a></li>
+<li><a href="configure-ai-providers-and-models.html">Configure AI Providers and Models</a></li>
+<li><a href="track-generation-progress.html">Track Generation Progress</a></li>
+<li><a href="browse-and-download-docs.html">Browse and Download Docs</a></li>
 </ul>
                 </div>
             </article>
@@ -435,9 +584,9 @@ Branch names cannot contain <code>/</code> because they appear as URL path segme
                 <div></div>
                 
                 
-                <a href="deployment.html" class="page-nav-link page-nav-next">
+                <a href="set-up-the-cli.html" class="page-nav-link page-nav-next">
                     <span class="page-nav-label">Next</span>
-                    <span class="page-nav-title">Deploying with Docker</span>
+                    <span class="page-nav-title">Set Up the CLI</span>
                 </a>
                 
             </nav>
@@ -448,34 +597,15 @@ Branch names cannot contain <code>/</code> because they appear as URL path segme
                     <div class="toc">
 <ul>
 <li><a href="#prerequisites">Prerequisites</a></li>
-<li><a href="#quick-start">Quick Start</a></li>
-<li><a href="#step-by-step-setup">Step-by-Step Setup</a><ul>
-<li><a href="#1-clone-the-repository">1. Clone the repository</a></li>
-<li><a href="#2-create-your-environment-file">2. Create your environment file</a></li>
-<li><a href="#3-start-the-server">3. Start the server</a></li>
-<li><a href="#4-log-in">4. Log in</a></li>
-<li><a href="#5-generate-your-first-docs">5. Generate your first docs</a></li>
-</ul>
-</li>
-<li><a href="#using-the-cli">Using the CLI</a><ul>
-<li><a href="#install-the-cli">Install the CLI</a></li>
-<li><a href="#configure-a-server-profile">Configure a server profile</a></li>
-<li><a href="#generate-docs-from-the-terminal">Generate docs from the terminal</a></li>
-<li><a href="#check-project-status">Check project status</a></li>
-<li><a href="#download-generated-docs">Download generated docs</a></li>
-</ul>
-</li>
-<li><a href="#understanding-variants">Understanding Variants</a></li>
-<li><a href="#advanced-usage">Advanced Usage</a><ul>
-<li><a href="#choosing-an-ai-provider-and-model">Choosing an AI provider and model</a></li>
-<li><a href="#force-a-full-regeneration">Force a full regeneration</a></li>
-<li><a href="#specifying-the-repository-type">Specifying the repository type</a></li>
-<li><a href="#managing-users">Managing users</a></li>
-<li><a href="#running-in-production">Running in production</a></li>
-</ul>
-</li>
+<li><a href="#quick-example">Quick Example</a></li>
+<li><a href="#step-by-step">Step-by-step</a></li>
+<li><a href="#advanced-usage">Advanced Usage</a></li>
 <li><a href="#troubleshooting">Troubleshooting</a></li>
-<li><a href="#next-steps">Next Steps</a></li>
+<li><a href="#prerequisites_1">Prerequisites</a></li>
+<li><a href="#quick-example_1">Quick Example</a></li>
+<li><a href="#step-by-step_1">Step-by-step</a></li>
+<li><a href="#advanced-usage_1">Advanced Usage</a></li>
+<li><a href="#troubleshooting_1">Troubleshooting</a></li>
 <li><a href="#related-pages">Related Pages</a></li>
 </ul>
 </div>
@@ -488,7 +618,7 @@ Branch names cannot contain <code>/</code> because they appear as URL path segme
 
         <footer class="page-footer">
             
-            <span class="footer-version">Generated from version 1.7.1</span>
+            <span class="footer-version">Generated from version 1.9.3</span>
             <span class="footer-sep">&middot;</span>
             
             Generated with <a href="https://github.com/myk-org/docsfy" target="_blank" rel="noopener">docs<span class="brand-accent">fy</span></a>

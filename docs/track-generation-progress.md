@@ -1,143 +1,268 @@
-# Tracking Generation Progress
+# Track Generation Progress
 
-Use docsfy's live progress views to decide whether a generation is moving normally, already finished, or worth stopping before it spends more time and AI usage. This page shows the fastest ways to watch a run in the dashboard and from the CLI.
+Keep each generation in view so you can tell whether docsfy is still working, already finished, or needs intervention. When you can see the current stage in real time, it is much easier to decide whether to wait, inspect a specific run, or stop and retry.
 
 ## Prerequisites
-
-- Start a generation first if you do not already have one running. See [Generating Documentation](generate-documentation.html).
-- For terminal examples, configure the `docsfy` CLI first. See [Managing docsfy from the CLI](manage-docsfy-from-the-cli.html).
-- Use a `user` or `admin` account if you may need to abort a run. `viewer` can monitor a run but cannot stop it.
+- Access to a running docsfy server.
+- A signed-in dashboard session or a configured CLI profile with a working key.
+- An active run, or a repository you are ready to generate. See [Generate Documentation](generate-documentation.html) for details.
 
 ## Quick Example
-
 ```shell
-docsfy generate https://github.com/myk-org/for-testing-only --provider gemini --model gemini-2.5-flash --watch
+docsfy generate https://github.com/org/my-repo --watch
 ```
 
-Run this when you want one command that starts a generation and keeps printing progress until it reaches `ready`, `error`, or `aborted`.
+This starts a run and keeps the terminal attached to live progress. docsfy prints the project name, branch, status, and generation ID, then streams updates until the run becomes `ready`, `error`, or `aborted`.
+
+> **Note:** `--watch` only attaches when the server returns `generating`. If the command returns `ready` immediately, docsfy decided that variant was already current.
 
 ## Step-by-Step
+1. Start the run in watch mode.
 
-### 1. Open the exact variant you want to watch
-
-In the dashboard sidebar, expand the repository and branch, then select the provider/model variant. Collapsed repository groups still show how many variants are ready, generating, failed, or aborted, which makes active work easy to spot when you have several variants.
-
-### 2. Check the status first
-
-| Status | What it means | What to do |
-| --- | --- | --- |
-| `Generating` | The run is still active. | Keep watching, or abort if you started the wrong run. |
-| `Ready` | The docs finished successfully. | Open or download the finished variant. |
-| `Error` | The run failed. | Read the message, fix the problem, and start again. |
-| `Aborted` | A user stopped the run. | Review the message and regenerate if needed. |
-
-### 3. Use the activity log and page counter together
-
-Stay on the variant detail view while the run is active. The Activity Log and progress bar update live, so you do not need to refresh the page manually.
-
-```mermaid
-flowchart LR
-  A[cloning] --> B{next step}
-  B --> C[planning]
-  B --> D[incremental_planning]
-  B --> E[up_to_date]
-  C --> F[generating_pages]
-  D --> F
-  F --> G[validating]
-  G --> H[cross_linking]
-  H --> I[rendering]
-  I --> J[ready]
+```shell
+docsfy generate https://github.com/org/my-repo --watch
 ```
 
-| CLI stage | What you will see in the dashboard | What it means |
-| --- | --- | --- |
-| `cloning` | `Cloning repository...` | docsfy is preparing the repository source. |
-| `planning` | `Planning documentation structure...` | docsfy is building a full docs plan. |
-| `incremental_planning` | `Planning incremental update...` | docsfy is deciding what can be reused from an earlier run. |
-| `generating_pages` | `Generating page X of Y...` and `Generated page X of Y` | docsfy is writing or updating pages. |
-| `validating` | `Validating documentation against codebase...` | docsfy is checking the generated pages against the repository. |
-| `cross_linking` | `Adding cross-page links...` | docsfy is fixing cross-page references. |
-| `rendering` | `Rendering documentation site...` | docsfy is building the final site. |
-| `up_to_date` | `Documentation is already up to date.` | Nothing changed that required a rebuild. |
+Use this when you want one command to submit the job and follow it live in the terminal. See [CLI Command Reference](cli-command-reference.html) for details.
 
-> **Note:** The progress bar appears only after planning finishes, because docsfy does not know the total page count until the plan exists.
+2. Keep the dashboard open while the run is active.
 
-### 4. Know when a run is actually finished
+Open the dashboard and select the active run from the list. While the connection stays healthy, the page updates automatically and shows:
 
-`X of Y pages` measures page generation only. If the counter reaches `Y of Y` and the status still says `Generating`, docsfy is usually finishing `validating`, `cross_linking`, or `rendering`.
+- the current status: `Generating`, `Ready`, `Error`, or `Aborted`
+- elapsed time while the run is still active
+- page count and progress percentage when a plan is available
+- the generation ID for later lookup
+- an activity log that advances as stages complete
 
-A healthy run does not have to increase the page counter every second. It is still healthy if the stage changes, the activity log keeps moving, or it finishes quickly as already up to date.
+> **Tip:** Copy the generation ID early for long runs. You can use it later with `docsfy status` or `docsfy abort` without retyping the branch, provider, and model.
 
-> **Tip:** Treat `Ready` as the real finish line. A run can hit `100%` page generation before the final site is fully built.
+3. Read the stage names as they change.
 
-### 5. Recognize the fast successful case
+The terminal watcher and dashboard activity log use these stage names:
 
-If a regenerate finishes quickly and the ready view says `Documentation is already up to date.`, the run succeeded without rebuilding pages. This is normal when the source content did not change in a way that requires new docs output.
+| Stage | What it means |
+| --- | --- |
+| `cloning` | docsfy is fetching the repository or refreshing its local copy. |
+| `analyzing` | docsfy is scanning the codebase to understand its structure. |
+| `cataloging_images` | docsfy is cataloging repository images when a `docsfy-images/` directory exists. |
+| `planning` | docsfy is building a full documentation plan. |
+| `incremental_planning` | docsfy is deciding what to reuse and what to regenerate for an update run. |
+| `generating_pages` | docsfy is writing pages and increasing the page count as they finish. |
+| `validating` | docsfy is checking generated pages against the codebase and documentation rules. |
+| `completeness_check` | docsfy is checking for missing coverage and may add gap pages. |
+| `cross_linking` | docsfy is adding and repairing internal page links. |
+| `rendering` | docsfy is building the final static documentation site. |
+| `up_to_date` | docsfy determined the selected variant already matches the current repository state. |
 
-If you see `Planning incremental update...` instead of full planning, docsfy is reusing earlier work. That is also a normal, healthy path.
+4. Recheck progress from the CLI whenever you need to.
 
-### 6. Abort when the run is clearly the wrong one
+Use `status` when you want to revisit a run after closing `--watch`, narrow to one exact variant, or jump directly to a copied generation ID.
 
-Click `Abort Generation`, confirm the dialog, and wait for the status to change to `Aborted`. Use this when you started the wrong branch, model, or repository, or when you want to stop a duplicate run and start over cleanly.
+```shell
+docsfy status my-repo
+docsfy status my-repo --branch main --provider cursor --model gpt-5.4-xhigh-fast
+docsfy status a1b2c3d4-e5f6-7890-abcd-ef1234567890
+```
 
-> **Warning:** Aborting discards in-flight progress for that run.
+The first form shows all visible variants for the project. The filtered form targets one exact variant, and the generation ID form goes straight to a single run.
+
+5. Stop a run if progress shows it should not continue.
+
+If you started the wrong branch, chose the wrong model, or no longer want the active run, stop it from the dashboard or the CLI.
+
+```shell
+docsfy abort my-repo --branch main --provider cursor --model gpt-5.4-xhigh-fast
+docsfy abort a1b2c3d4-e5f6-7890-abcd-ef1234567890
+```
+
+When the stop request succeeds, the run changes to `aborted`. You can then start a fresh run with the settings you want.
 
 ## Advanced Usage
+Use the dashboard for day-to-day monitoring, the CLI watcher for one-off runs, and the WebSocket or JSON output when you need automation.
 
-```shell
-docsfy status for-testing-only --branch main --provider gemini --model gemini-2.5-flash
+| Method | Best for | What you get |
+| --- | --- | --- |
+| Dashboard | Day-to-day monitoring | Live status, progress bar, elapsed time, activity log, and copyable generation ID |
+| `docsfy generate --watch` | One-off CLI runs | Submission plus live progress in one terminal session |
+| `docsfy status --json` | Scripts and CI checks | Pollable machine-readable status |
+| WebSocket `/api/ws` | Custom live integrations | Push updates without polling |
+
+If you want your own live watcher, connect to the same WebSocket the dashboard uses. A signed-in browser session can open it directly because the session cookie is sent automatically:
+
+```js
+const ws = new WebSocket(
+  `${location.protocol === 'https:' ? 'wss:' : 'ws:'}//${location.host}/api/ws`
+)
+
+ws.onmessage = (event) => {
+  const msg = JSON.parse(event.data)
+
+  if (msg.type === 'ping') {
+    ws.send(JSON.stringify({ type: 'pong' }))
+    return
+  }
+
+  if (msg.type === 'progress' || msg.type === 'status_change') {
+    console.log(msg.name, msg.status, msg.current_stage ?? '', msg.page_count ?? '')
+  }
 ```
 
-Use this when a run is already in progress and you want a snapshot of its status, stage, page count, last update time, commit, and any error message.
+A new connection gets an initial `sync` snapshot, then live `progress` and `status_change` events for projects you can access. See [HTTP API and WebSocket Reference](http-api-and-websocket-reference.html) for details.
+
+If you would rather poll than keep a socket open, use JSON output:
 
 ```shell
-docsfy list --status generating
+docsfy status my-repo --json
 ```
 
-Use this to scan all active runs from the terminal. The table includes the page count and generation ID, which is useful when the same repository has multiple active variants.
-
-```shell
-docsfy status <generation-id>
-docsfy abort <generation-id>
-```
-
-Copy the generation ID from the sidebar or the variant details when you want to inspect or stop one exact run without typing the full repository, branch, provider, and model combination.
-
-```shell
-docsfy abort for-testing-only --branch main --provider gemini --model gemini-2.5-flash
-```
-
-Use the fully specified abort command when more than one variant of the same repository might be running.
-
-```shell
-docsfy abort for-testing-only
-```
-
-Use the short form only when exactly one active variant matches that project name.
-
-Incremental runs can start with some pages already counted, because docsfy may reuse unchanged pages from the previous variant. That is expected behavior, not a stuck progress bar.
-
-> **Tip:** The Activity Log keeps auto-scrolling only while you are already near the bottom, so you can scroll up to inspect earlier steps without losing your place.
+> **Note:** Live updates go to admins, the project owner, and users who have been granted access to that project.
 
 
-> **Tip:** If live updates pause briefly, leave the page open for a moment. The dashboard retries automatically and falls back to periodic refresh if needed.
-
-See [CLI Command Reference](cli-command-reference.html) for full command syntax. If you intentionally run several branches or model combinations at the same time, see [Regenerating for New Branches and Models](regenerate-for-new-branches-and-models.html).
+> **Tip:** During reruns, `incremental_planning` usually means docsfy is doing a targeted update, while `planning` usually means it fell back to a full plan. See [Regenerate After Code Changes](regenerate-after-code-changes.html) for details.
 
 ## Troubleshooting
+- `--watch` stops with a timeout: the CLI waits up to 5 minutes for the next WebSocket message. Run `docsfy status my-repo` to confirm whether the job is still active, then reconnect with `--watch` if you still want a live stream.
+- `--watch` says it cannot determine the provider or model: rerun with explicit `--provider` and `--model`, or inspect the run first with `docsfy status my-repo`.
+- The dashboard is not updating immediately: the browser reconnects automatically, and after repeated socket failures it falls back to polling about every 10 seconds. Keep the page open and refresh your session if you were signed out.
+- A rerun finishes almost immediately: if the current stage is `up_to_date`, docsfy decided the selected variant already matches the repository state.
+- A rerun is taking as long as a full build: if you expected an incremental update but the stage shows `planning` instead of `incremental_planning`, docsfy is doing a full plan for that run.
+- The run ends in `error` or `aborted`: open the selected run, read the error message, and start a new run. See [Run Common CLI Workflows](common-workflow-recipes.html) for details.# Track Generation Progress
 
-- **`Abort Generation` is missing:** You are probably signed in as `viewer`. `viewer` can monitor accessible variants, but only `user` and `admin` can stop a run.
-- **The progress bar says `100%` but the run still shows `Generating`:** Page writing is done, but docsfy is still validating, cross-linking, or rendering. Wait for `Ready`, `Error`, or `Aborted`.
-- **`docsfy abort <name>` says multiple active variants were found:** Run it again with `--branch`, `--provider`, and `--model`, or use the generation ID.
-- **The run changed from `Generating` to `Error` after a restart:** docsfy marks interrupted runs as failed with `Server restarted during generation` instead of leaving them stuck forever. Start the run again.
-- **Abort says the generation already finished or that abort is still in progress:** Refresh the status, wait a few seconds, and retry only if the variant still shows `Generating`.
+Keep each generation in view so you can tell whether docsfy is still working, already finished, or needs intervention. When you can see the current stage in real time, it is much easier to decide whether to wait, inspect a specific run, or stop and retry.
 
-See [Fixing Setup and Generation Problems](fix-setup-and-generation-problems.html) for deeper failure diagnosis.
+## Prerequisites
+- Access to a running docsfy server.
+- A signed-in dashboard session or a configured CLI profile with a working key.
+- An active run, or a repository you are ready to generate. See [Generate Documentation](generate-documentation.html) for details.
+
+## Quick Example
+```shell
+docsfy generate https://github.com/org/my-repo --watch
+```
+
+This starts a run and keeps the terminal attached to live progress. docsfy prints the project name, branch, status, and generation ID, then streams updates until the run becomes `ready`, `error`, or `aborted`.
+
+> **Note:** `--watch` only attaches when the server returns `generating`. If the command returns `ready` immediately, docsfy decided that variant was already current.
+
+## Step-by-Step
+1. Start the run in watch mode.
+
+```shell
+docsfy generate https://github.com/org/my-repo --watch
+```
+
+Use this when you want one command to submit the job and follow it live in the terminal. See [CLI Command Reference](cli-command-reference.html) for details.
+
+2. Keep the dashboard open while the run is active.
+
+Open the dashboard and select the active run from the list. While the connection stays healthy, the page updates automatically and shows:
+
+- the current status: `Generating`, `Ready`, `Error`, or `Aborted`
+- elapsed time while the run is still active
+- page count and progress percentage when a plan is available
+- the generation ID for later lookup
+- an activity log that advances as stages complete
+
+> **Tip:** Copy the generation ID early for long runs. You can use it later with `docsfy status` or `docsfy abort` without retyping the branch, provider, and model.
+
+3. Read the stage names as they change.
+
+The terminal watcher and dashboard activity log use these stage names:
+
+| Stage | What it means |
+| --- | --- |
+| `cloning` | docsfy is fetching the repository or refreshing its local copy. |
+| `analyzing` | docsfy is scanning the codebase to understand its structure. |
+| `cataloging_images` | docsfy is cataloging repository images when a `docsfy-images/` directory exists. |
+| `planning` | docsfy is building a full documentation plan. |
+| `incremental_planning` | docsfy is deciding what to reuse and what to regenerate for an update run. |
+| `generating_pages` | docsfy is writing pages and increasing the page count as they finish. |
+| `validating` | docsfy is checking generated pages against the codebase and documentation rules. |
+| `completeness_check` | docsfy is checking for missing coverage and may add gap pages. |
+| `cross_linking` | docsfy is adding and repairing internal page links. |
+| `rendering` | docsfy is building the final static documentation site. |
+| `up_to_date` | docsfy determined the selected variant already matches the current repository state. |
+
+4. Recheck progress from the CLI whenever you need to.
+
+Use `status` when you want to revisit a run after closing `--watch`, narrow to one exact variant, or jump directly to a copied generation ID.
+
+```shell
+docsfy status my-repo
+docsfy status my-repo --branch main --provider cursor --model gpt-5.4-xhigh-fast
+docsfy status a1b2c3d4-e5f6-7890-abcd-ef1234567890
+```
+
+The first form shows all visible variants for the project. The filtered form targets one exact variant, and the generation ID form goes straight to a single run.
+
+5. Stop a run if progress shows it should not continue.
+
+If you started the wrong branch, chose the wrong model, or no longer want the active run, stop it from the dashboard or the CLI.
+
+```shell
+docsfy abort my-repo --branch main --provider cursor --model gpt-5.4-xhigh-fast
+docsfy abort a1b2c3d4-e5f6-7890-abcd-ef1234567890
+```
+
+When the stop request succeeds, the run changes to `aborted`. You can then start a fresh run with the settings you want.
+
+## Advanced Usage
+Use the dashboard for day-to-day monitoring, the CLI watcher for one-off runs, and the WebSocket or JSON output when you need automation.
+
+| Method | Best for | What you get |
+| --- | --- | --- |
+| Dashboard | Day-to-day monitoring | Live status, progress bar, elapsed time, activity log, and copyable generation ID |
+| `docsfy generate --watch` | One-off CLI runs | Submission plus live progress in one terminal session |
+| `docsfy status --json` | Scripts and CI checks | Pollable machine-readable status |
+| WebSocket `/api/ws` | Custom live integrations | Push updates without polling |
+
+If you want your own live watcher, connect to the same WebSocket the dashboard uses. A signed-in browser session can open it directly because the session cookie is sent automatically:
+
+```js
+const ws = new WebSocket(
+  `${location.protocol === 'https:' ? 'wss:' : 'ws:'}//${location.host}/api/ws`
+)
+
+ws.onmessage = (event) => {
+  const msg = JSON.parse(event.data)
+
+  if (msg.type === 'ping') {
+    ws.send(JSON.stringify({ type: 'pong' }))
+    return
+  }
+
+  if (msg.type === 'progress' || msg.type === 'status_change') {
+    console.log(msg.name, msg.status, msg.current_stage ?? '', msg.page_count ?? '')
+  }
+}
+```
+
+A new connection gets an initial `sync` snapshot, then live `progress` and `status_change` events for projects you can access. See [HTTP API and WebSocket Reference](http-api-and-websocket-reference.html) for details.
+
+If you would rather poll than keep a socket open, use JSON output:
+
+```shell
+docsfy status my-repo --json
+```
+
+> **Note:** Live updates go to admins, the project owner, and users who have been granted access to that project.
+
+
+> **Tip:** During reruns, `incremental_planning` usually means docsfy is doing a targeted update, while `planning` usually means it fell back to a full plan. See [Regenerate After Code Changes](regenerate-after-code-changes.html) for details.
+
+## Troubleshooting
+- `--watch` stops with a timeout: the CLI waits up to 5 minutes for the next WebSocket message. Run `docsfy status my-repo` to confirm whether the job is still active, then reconnect with `--watch` if you still want a live stream.
+- `--watch` says it cannot determine the provider or model: rerun with explicit `--provider` and `--model`, or inspect the run first with `docsfy status my-repo`.
+- The dashboard is not updating immediately: the browser reconnects automatically, and after repeated socket failures it falls back to polling about every 10 seconds. Keep the page open and refresh your session if you were signed out.
+- A rerun finishes almost immediately: if the current stage is `up_to_date`, docsfy decided the selected variant already matches the repository state.
+- A rerun is taking as long as a full build: if you expected an incremental update but the stage shows `planning` instead of `incremental_planning`, docsfy is doing a full plan for that run.
+- The run ends in `error` or `aborted`: open the selected run, read the error message, and start a new run. See [Run Common CLI Workflows](common-workflow-recipes.html) for details.
 
 ## Related Pages
 
-- [Generating Documentation](generate-documentation.html)
-- [Viewing and Downloading Docs](view-and-download-docs.html)
-- [Regenerating After Code Changes](regenerate-after-code-changes.html)
-- [Regenerating for New Branches and Models](regenerate-for-new-branches-and-models.html)
-- [Fixing Setup and Generation Problems](fix-setup-and-generation-problems.html)
+- [Generate Documentation](generate-documentation.html)
+- [Run Common CLI Workflows](common-workflow-recipes.html)
+- [HTTP API and WebSocket Reference](http-api-and-websocket-reference.html)
+- [Manage Projects and Variants](manage-projects-and-variants.html)
+- [Regenerate After Code Changes](regenerate-after-code-changes.html)

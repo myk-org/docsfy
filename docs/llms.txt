@@ -1,29 +1,20 @@
 # docsfy
 
-> Turn any Git repository into a polished documentation site in minutes
+> Turn any Git repo into a polished, AI-readable documentation site you can browse, share, and download in minutes.
 
 ## Getting Started
 
-- [Getting Started with docsfy](quickstart.md): Install docsfy, configure your environment, and generate your first documentation site from a Git repository in under five minutes
-- [Deploying with Docker](deployment.md): Run docsfy as a production service using Docker Compose, configure environment variables, and set up persistent storage
+- [Get Started with docsfy](quickstart.md): Set an admin key, start the server, sign in, and generate your first docs site from a Git repository in one short flow.
 
 ## User Guides
 
-- [Generating Documentation](generating-docs.md): Submit a repository via the web dashboard or CLI, choose an AI provider and model, target a specific branch, and monitor generation progress in real time
-- [Managing Projects and Variants](managing-projects.md): List, inspect, download, abort, and delete documentation projects and their branch/provider/model variants
-- [Browsing Generated Documentation](browsing-docs.md): Navigate the generated documentation site, use the search feature, switch between variants, and share doc URLs with your team
-- [Managing Users and Access Control](managing-users.md): Create user accounts, assign roles (admin, user, viewer), grant and revoke project access, and rotate API keys
-- [Configuring AI Providers](configuring-ai-providers.md): Select between Claude, Gemini, and Cursor providers, choose models, set timeouts, and understand the Pi SDK sidecar that routes AI calls
-- [Working with Incremental Updates](incremental-updates.md): Understand how docsfy detects code changes, regenerates only affected pages, and keeps documentation in sync with your repository
-- [Using the CLI](using-the-cli.md): Set up CLI server profiles, authenticate, and run all docsfy operations from the terminal including generate, status, download, and admin commands
-- [AI-Readable Documentation with llms.txt](llms-txt-ai-readable-docs.md): Explains that every generated documentation site automatically includes llms.txt (a structured index of all pages) and llms-full.txt (the complete documentation content concatenated into a single file) following the llms.txt standard. Covers how to point AI tools, LLM agents, and chatbots at these files to consume your project's documentation, the format and structure of each file, and how to use them for RAG pipelines or AI-assisted development workflows.
+- [Track Generation Progress](track-generation-progress.md): Follow generation stages in real time through the dashboard, WebSocket updates, and CLI watch mode so you know what the system is doing.
+- [Browse and Download Docs](browse-and-download-docs.md): Open the latest or variant-specific docs site, download a tarball or extracted copy, and find the AI-readable `llms.txt` outputs.
 
 ## Recipes
 
-- [Common Workflow Recipes](recipes-common-workflows.md): Copy-paste patterns for multi-branch documentation, force-regenerating stale docs, downloading and hosting static sites, and automating doc generation in CI/CD
+- [Run Common CLI Workflows](common-workflow-recipes.md): Copy commands for profile setup, watched generations, status by generation ID, flattened downloads, and day-to-day admin operations.
 
 ## Reference
 
-- [REST API Reference](api-reference.md): Complete reference for all API endpoints including authentication, project management, generation, admin operations, and WebSocket real-time updates
-- [CLI Command Reference](cli-reference.md): Full reference for the docsfy CLI covering all commands, flags, options, and output formats for generate, list, status, delete, abort, download, and admin subcommands
-- [Configuration Reference](configuration-reference.md): All environment variables, server settings, CLI config file format, and Docker Compose options with their defaults and valid values
+- [HTTP API and WebSocket Reference](http-api-and-websocket-reference.md): Look up authentication rules, REST endpoints, WebSocket message types, and document-serving URLs for automation or integrations.

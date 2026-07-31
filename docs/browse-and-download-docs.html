@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manage Users and Access - docsfy</title>
+    <title>Browse and Download Docs - docsfy</title>
     <meta name="description" content="Turn any Git repo into a polished, AI-readable documentation site you can browse, share, and download in minutes.">
     <link rel="stylesheet" href="assets/style.css">
     <script>try{var t=localStorage.getItem('theme');if(t==='dark')document.documentElement.setAttribute('data-theme','dark')}catch(e){}</script>
@@ -72,7 +72,7 @@
                     
                     <li>
                         <a href="browse-and-download-docs.html"
-                           class="nav-link">
+                           class="nav-link active" aria-current="page">
                             Browse and Download Docs
                         </a>
                     </li>
@@ -93,7 +93,7 @@
                     
                     <li>
                         <a href="manage-users-and-access.html"
-                           class="nav-link active" aria-current="page">
+                           class="nav-link">
                             Manage Users and Access
                         </a>
                     </li>
@@ -210,21 +210,174 @@
                          converted to HTML server-side by the markdown library, not
                          user-supplied input. XSS risk is minimal and accepted since
                          the AI generates the content, not end users. -->
-                    <h1 id="manage-users-and-access">Manage Users and Access</h1>
-<p><em>Documentation generation failed. Please re-run.</em></p>
+                    <h1 id="browse-and-download-docs">Browse and Download Docs</h1>
+<p>You want to get from a finished generation to something you can read, share, or archive. The fastest path is to open the latest ready docs site in your browser, then download the same output as a tarball or a local extracted copy when you need it offline or in another tool.</p>
+<h2 id="prerequisites">Prerequisites</h2>
+<ul>
+<li>A running docsfy server.</li>
+<li>A signed-in docsfy account with access to the project.</li>
+<li>At least one ready generation for that project.</li>
+<li>The <code>docsfy</code> CLI if you want local downloads or extraction.</li>
+</ul>
+<h2 id="quick-example">Quick Example</h2>
+<div class="highlight"><pre><span></span><code>https://docsfy.example.com/docs/my-project/
+</code></pre></div>
+
+<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>download<span class="w"> </span>my-project<span class="w"> </span>--output<span class="w"> </span>./my-project-docs<span class="w"> </span>--flatten
+</code></pre></div>
+
+<p>Open the URL to read the newest ready docs you can access for <code>my-project</code>. Run the command to save a local copy with <code>index.html</code>, <code>llms.txt</code>, and <code>llms-full.txt</code> directly in <code>./my-project-docs/</code>.</p>
+<h2 id="step-by-step">Step-by-Step</h2>
+<ol>
+<li>Open the latest ready docs site.</li>
+</ol>
+<div class="highlight"><pre><span></span><code>https://docsfy.example.com/docs/my-project/
+</code></pre></div>
+
+<p>Use this when you want the newest ready variant without caring which branch, provider, or model produced it. On the home page, use the page cards to jump into a section, or use the sidebar once you are inside a page.</p>
+<blockquote>
+<p><strong>Note:</strong> For shared projects, the latest route follows the newest ready variant you are allowed to access.</p>
+</blockquote>
+<ol>
+<li>Open one exact variant when you do not want the site to move to a newer run.</li>
+</ol>
+<div class="highlight"><pre><span></span><code>https://docsfy.example.com/docs/my-project/main/claude/&lt;model-id&gt;/
+</code></pre></div>
+
+<p>Use the variant-specific URL when you need a fixed branch and model. This is the safest choice for release docs, comparisons, or reproducible links.</p>
+<table>
+<thead>
+<tr>
+<th>If you want</th>
+<th>Open this path</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>newest ready docs you can access</td>
+<td><code>/docs/my-project/</code></td>
+</tr>
+<tr>
+<td>one exact variant</td>
+<td><code>/docs/my-project/&lt;branch&gt;/&lt;provider&gt;/&lt;model&gt;/</code></td>
+</tr>
+</tbody>
+</table>
+<p>If you need help finding the exact branch, provider, model, or generation ID, see <a href="manage-projects-and-variants.html">Manage Projects and Variants</a> for details.</p>
+<ol>
+<li>Download a tarball.</li>
+</ol>
+<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>download<span class="w"> </span>my-project
+</code></pre></div>
+
+<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>download<span class="w"> </span>my-project<span class="w"> </span>--branch<span class="w"> </span>main<span class="w"> </span>--provider<span class="w"> </span>claude<span class="w"> </span>--model<span class="w"> </span>&lt;model-id&gt;
+</code></pre></div>
+
+<p>The first command downloads the newest ready variant as <code>my-project-docs.tar.gz</code> in your current directory. The second command downloads one exact variant instead.</p>
+<blockquote>
+<p><strong>Tip:</strong> For more day-to-day command patterns, see <a href="common-workflow-recipes.html">Run Common CLI Workflows</a>.</p>
+</blockquote>
+<ol>
+<li>Extract a local copy instead of keeping the tarball.</li>
+</ol>
+<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>download<span class="w"> </span>my-project<span class="w"> </span>--output<span class="w"> </span>./my-project-docs
+</code></pre></div>
+
+<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>download<span class="w"> </span>my-project<span class="w"> </span>--output<span class="w"> </span>./my-project-docs<span class="w"> </span>--flatten
+</code></pre></div>
+
+<p>Use <code>--output</code> when you want a browsable directory right away. Add <code>--flatten</code> when you want the site files directly in the target directory instead of one nested top-level folder.</p>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Result</th>
+<th>Where to open <code>index.html</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>docsfy download my-project --output ./my-project-docs</code></td>
+<td>extracted copy, keeps the tarball’s top-level folder</td>
+<td>inside the extracted project folder</td>
+</tr>
+<tr>
+<td><code>docsfy download my-project --output ./my-project-docs --flatten</code></td>
+<td>extracted copy, flattened into the target directory</td>
+<td><code>./my-project-docs/index.html</code></td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Warning:</strong> When you use <code>--output</code>, docsfy replaces the contents of the target directory after a successful download and extract. Use a dedicated directory if you need to keep other files.</p>
+</blockquote>
+<ol>
+<li>Find the AI-readable outputs.</li>
+</ol>
+<div class="highlight"><pre><span></span><code>https://docsfy.example.com/docs/my-project/llms.txt
+https://docsfy.example.com/docs/my-project/llms-full.txt
+</code></pre></div>
+
+<div class="highlight"><pre><span></span><code>https://docsfy.example.com/docs/my-project/main/claude/&lt;model-id&gt;/llms.txt
+https://docsfy.example.com/docs/my-project/main/claude/&lt;model-id&gt;/llms-full.txt
+</code></pre></div>
+
+<p>Use <code>llms.txt</code> when you want a structured index of the rendered pages. Use <code>llms-full.txt</code> when you want the full documentation in one file. If you downloaded with <code>--flatten</code>, both files sit at the root of your output directory.</p>
+<p><code>llms.txt</code> links to per-page Markdown files, so you can also fetch one page at a time when you do not need the full site.</p>
+<h2 id="advanced-usage">Advanced Usage</h2>
+<ul>
+<li>Use a generation ID when you want the CLI to resolve the exact variant for you:</li>
+</ul>
+<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>download<span class="w"> </span>123e4567-e89b-12d3-a456-426614174000<span class="w"> </span>--output<span class="w"> </span>./my-project-docs<span class="w"> </span>--flatten
+</code></pre></div>
+
+<ul>
+<li>Encode branch names in variant URLs when the branch contains <code>/</code> or <code>~</code>:</li>
+<li><code>release/1.0</code> becomes <code>release~2F1.0</code></li>
+<li><code>feature~beta</code> becomes <code>feature~7Ebeta</code></li>
+</ul>
+<div class="highlight"><pre><span></span><code>https://docsfy.example.com/docs/my-project/release~2F1.0/claude/&lt;model-id&gt;/
+</code></pre></div>
+
+<ul>
+<li>If you are an admin and the same variant exists under more than one owner, disambiguate CLI downloads with <code>--owner</code>:</li>
+</ul>
+<div class="highlight"><pre><span></span><code>docsfy<span class="w"> </span>download<span class="w"> </span>my-project<span class="w"> </span>--branch<span class="w"> </span>main<span class="w"> </span>--provider<span class="w"> </span>claude<span class="w"> </span>--model<span class="w"> </span>&lt;model-id&gt;<span class="w"> </span>--owner<span class="w"> </span>alice
+</code></pre></div>
+
+<ul>
+<li>If you need exact endpoint forms for automation, see <a href="http-api-and-websocket-reference.html">HTTP API and WebSocket Reference</a>.</li>
+</ul>
+<h2 id="troubleshooting">Troubleshooting</h2>
+<ul>
+<li>If a docs URL sends you to <code>/login</code>, sign in first. The docs routes require authentication.</li>
+<li>If <code>docsfy download</code> returns <code>No ready variant</code> or the browser shows <code>No docs available</code>, wait for a successful generation or start a new one. See <a href="track-generation-progress.html">Track Generation Progress</a> and <a href="generate-documentation.html">Generate Documentation</a> for details.</li>
+<li>If a variant-specific URL returns <code>File not found</code>, re-check the branch, provider, and model. Branches with <code>/</code> must use the encoded form in the URL.</li>
+<li>If <code>docsfy download ... --flatten</code> fails with <code>--flatten requires --output</code>, add an output directory and rerun the command.</li>
+<li>If you expected shared docs but get <code>Not found</code>, ask an admin to confirm that access was granted. See <a href="manage-users-and-access.html">Manage Users and Access</a> for the access model.</li>
+<li>If you cannot find <code>index.html</code>, <code>llms.txt</code>, or <code>llms-full.txt</code> after extraction, look inside the nested project folder or rerun with <code>--flatten</code>.</li>
+</ul>
+<h2 id="related-pages">Related Pages</h2>
+<ul>
+<li><a href="track-generation-progress.html">Track Generation Progress</a></li>
+<li><a href="manage-projects-and-variants.html">Manage Projects and Variants</a></li>
+<li><a href="common-workflow-recipes.html">Run Common CLI Workflows</a></li>
+<li><a href="http-api-and-websocket-reference.html">HTTP API and WebSocket Reference</a></li>
+<li><a href="generate-documentation.html">Generate Documentation</a></li>
+</ul>
                 </div>
             </article>
             <nav class="page-nav">
                 
-                <a href="manage-projects-and-variants.html" class="page-nav-link page-nav-prev">
+                <a href="track-generation-progress.html" class="page-nav-link page-nav-prev">
                     <span class="page-nav-label">Previous</span>
-                    <span class="page-nav-title">Manage Projects and Variants</span>
+                    <span class="page-nav-title">Track Generation Progress</span>
                 </a>
                 
                 
-                <a href="deploy-docsfy.html" class="page-nav-link page-nav-next">
+                <a href="regenerate-after-code-changes.html" class="page-nav-link page-nav-next">
                     <span class="page-nav-label">Next</span>
-                    <span class="page-nav-title">Deploy docsfy</span>
+                    <span class="page-nav-title">Regenerate After Code Changes</span>
                 </a>
                 
             </nav>
@@ -233,7 +386,14 @@
                 <div class="toc-container">
                     <h3>On this page</h3>
                     <div class="toc">
-<ul></ul>
+<ul>
+<li><a href="#prerequisites">Prerequisites</a></li>
+<li><a href="#quick-example">Quick Example</a></li>
+<li><a href="#step-by-step">Step-by-Step</a></li>
+<li><a href="#advanced-usage">Advanced Usage</a></li>
+<li><a href="#troubleshooting">Troubleshooting</a></li>
+<li><a href="#related-pages">Related Pages</a></li>
+</ul>
 </div>
 
                 </div>
