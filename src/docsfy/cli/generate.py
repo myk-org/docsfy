@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 import json
-from typing import Any, Optional
+from typing import Any
 from urllib.parse import urlencode
 
+import httpx
 import typer
 import websockets.sync.client
 
@@ -135,36 +136,35 @@ def _watch_progress(
 
 
 def generate(
-    repo_url: str = typer.Argument(help="Git repository URL"),  # noqa: M511
-    branch: str = typer.Option("main", "--branch", "-b", help="Git branch"),  # noqa: M511
-    provider: Optional[str] = typer.Option(  # noqa: M511
+    repo_url: str = typer.Argument(help="Git repository URL"),
+    branch: str = typer.Option("main", "--branch", "-b", help="Git branch"),
+    provider: str | None = typer.Option(
         None, "--provider", help="AI provider (claude, gemini, cursor)"
     ),
-    model: Optional[str] = typer.Option(None, "--model", "-m", help="AI model name"),  # noqa: M511
-    repo_type: Optional[str] = typer.Option(  # noqa: M511
+    model: str | None = typer.Option(None, "--model", "-m", help="AI model name"),
+    repo_type: str | None = typer.Option(
         None,
         "--repo-type",
         "-t",
         help="Repository type (app, tests, library, framework). Auto-detected if not specified.",
     ),
-    vision_provider: Optional[str] = typer.Option(  # noqa: M511
+    vision_provider: str | None = typer.Option(
         None,
         "--vision-provider",
         help="AI provider for image description (defaults to generation provider)",
     ),
-    vision_model: Optional[str] = typer.Option(  # noqa: M511
+    vision_model: str | None = typer.Option(
         None,
         "--vision-model",
         help="AI model for image description (defaults to generation model)",
     ),
-    force: bool = typer.Option(False, "--force", "-f", help="Force full regeneration"),  # noqa: M511
-    watch: bool = typer.Option(  # noqa: M511
+    force: bool = typer.Option(False, "--force", "-f", help="Force full regeneration"),
+    watch: bool = typer.Option(
         False, "--watch", "-w", help="Watch generation progress via WebSocket"
     ),
 ) -> None:
     """Generate documentation for a Git repository."""
     from docsfy.cli.main import _state, get_client
-
     from docsfy.models import REPO_TYPES
 
     if repo_type and repo_type not in REPO_TYPES:
@@ -229,7 +229,13 @@ def generate(
                         detail.get("ai_provider", "")
                     )
                     actual_model = actual_model or str(detail.get("ai_model", ""))
-                except (typer.Exit, Exception) as exc:
+                except (
+                    typer.Exit,
+                    httpx.HTTPError,
+                    json.JSONDecodeError,
+                    ValueError,
+                    TypeError,
+                ) as exc:
                     # If we can't fetch details, try watching anyway
                     typer.echo(
                         f"Warning: could not fetch variant details: {exc}",
@@ -252,7 +258,13 @@ def generate(
                             )
                             actual_model = actual_model or str(proj.get("ai_model", ""))
                             break
-                except (typer.Exit, Exception) as exc:
+                except (
+                    typer.Exit,
+                    httpx.HTTPError,
+                    json.JSONDecodeError,
+                    ValueError,
+                    TypeError,
+                ) as exc:
                     typer.echo(
                         f"Warning: could not fetch status details: {exc}",
                         err=True,

@@ -28,7 +28,7 @@ def config_dir(tmp_path: Path):
 
 class TestConfigInit:
     def test_config_init_creates_file(self, config_dir: tuple[Path, Path]) -> None:
-        cfg_dir, cfg_file = config_dir
+        _cfg_dir, cfg_file = config_dir
         result = runner.invoke(
             app,
             ["config", "init"],
@@ -46,7 +46,7 @@ class TestConfigInit:
         assert not file_mode & stat.S_IROTH  # no other read
 
     def test_config_init_content(self, config_dir: tuple[Path, Path]) -> None:
-        cfg_dir, cfg_file = config_dir
+        _cfg_dir, cfg_file = config_dir
         runner.invoke(
             app,
             ["config", "init"],
@@ -67,7 +67,7 @@ class TestConfigInit:
     def test_config_init_default_profile_name(
         self, config_dir: tuple[Path, Path]
     ) -> None:
-        cfg_dir, cfg_file = config_dir
+        _cfg_dir, cfg_file = config_dir
         result = runner.invoke(
             app,
             ["config", "init"],
@@ -86,7 +86,7 @@ class TestConfigInit:
     def test_config_init_adds_second_profile(
         self, config_dir: tuple[Path, Path]
     ) -> None:
-        cfg_dir, cfg_file = config_dir
+        _cfg_dir, cfg_file = config_dir
         # Create first profile
         runner.invoke(
             app,
@@ -118,7 +118,7 @@ class TestConfigShow:
         assert "Config not found" in result.output
 
     def test_config_show_displays_profiles(self, config_dir: tuple[Path, Path]) -> None:
-        cfg_dir, cfg_file = config_dir
+        _cfg_dir, _cfg_file = config_dir
         # Create a config with a profile
         runner.invoke(
             app,
@@ -138,7 +138,7 @@ class TestConfigShow:
     def test_config_show_short_password_masked(
         self, config_dir: tuple[Path, Path]
     ) -> None:
-        cfg_dir, cfg_file = config_dir
+        _cfg_dir, _cfg_file = config_dir
         runner.invoke(
             app,
             ["config", "init"],
@@ -155,7 +155,7 @@ class TestConfigSet:
         assert result.exit_code == 1
 
     def test_config_set_default_server(self, config_dir: tuple[Path, Path]) -> None:
-        cfg_dir, cfg_file = config_dir
+        _cfg_dir, cfg_file = config_dir
         runner.invoke(
             app,
             ["config", "init"],
@@ -172,7 +172,7 @@ class TestConfigSet:
         assert config["default"]["server"] == "prod"
 
     def test_config_set_server_url(self, config_dir: tuple[Path, Path]) -> None:
-        cfg_dir, cfg_file = config_dir
+        _cfg_dir, cfg_file = config_dir
         runner.invoke(
             app,
             ["config", "init"],
@@ -191,7 +191,7 @@ class TestConfigSet:
         assert config["servers"]["dev"]["url"] == "https://new-server.com"
 
     def test_config_set_invalid_key(self, config_dir: tuple[Path, Path]) -> None:
-        cfg_dir, cfg_file = config_dir
+        _cfg_dir, _cfg_file = config_dir
         runner.invoke(
             app,
             ["config", "init"],
@@ -202,7 +202,7 @@ class TestConfigSet:
         assert "Invalid key" in result.output
 
     def test_config_set_server_password(self, config_dir: tuple[Path, Path]) -> None:
-        cfg_dir, cfg_file = config_dir
+        _cfg_dir, cfg_file = config_dir
         runner.invoke(
             app,
             ["config", "init"],
@@ -235,7 +235,7 @@ class TestResolveConnection:
         assert pw == "pass1"
 
     def test_explicit_host_default_port(self, config_dir: tuple[Path, Path]) -> None:
-        url, user, pw = resolve_connection(
+        url, _user, _pw = resolve_connection(
             server=None,
             host="myhost",
             port=None,
@@ -245,7 +245,7 @@ class TestResolveConnection:
         assert url == "https://myhost:8000"
 
     def test_server_profile(self, config_dir: tuple[Path, Path]) -> None:
-        cfg_dir, cfg_file = config_dir
+        _cfg_dir, _cfg_file = config_dir
         runner.invoke(
             app,
             ["config", "init"],
@@ -263,7 +263,7 @@ class TestResolveConnection:
         assert pw == "prod-key"
 
     def test_default_profile(self, config_dir: tuple[Path, Path]) -> None:
-        cfg_dir, cfg_file = config_dir
+        _cfg_dir, _cfg_file = config_dir
         runner.invoke(
             app,
             ["config", "init"],
@@ -281,7 +281,7 @@ class TestResolveConnection:
         assert pw == "dev-key"
 
     def test_partial_override(self, config_dir: tuple[Path, Path]) -> None:
-        cfg_dir, cfg_file = config_dir
+        _cfg_dir, _cfg_file = config_dir
         runner.invoke(
             app,
             ["config", "init"],
@@ -299,7 +299,7 @@ class TestResolveConnection:
         assert pw == "prod-key"
 
     def test_nonexistent_profile_error(self, config_dir: tuple[Path, Path]) -> None:
-        cfg_dir, cfg_file = config_dir
+        _cfg_dir, _cfg_file = config_dir
         runner.invoke(
             app,
             ["config", "init"],
@@ -325,7 +325,7 @@ class TestResolveConnection:
             )
 
     def test_host_overrides_profile_url(self, config_dir: tuple[Path, Path]) -> None:
-        cfg_dir, cfg_file = config_dir
+        _cfg_dir, _cfg_file = config_dir
         runner.invoke(
             app,
             ["config", "init"],
@@ -351,7 +351,7 @@ class TestHealth:
         assert result.exit_code == 1
 
     def test_health_success(self, config_dir: tuple[Path, Path]) -> None:
-        cfg_dir, cfg_file = config_dir
+        _cfg_dir, _cfg_file = config_dir
         runner.invoke(
             app,
             ["config", "init"],

@@ -3,8 +3,10 @@ from __future__ import annotations
 import asyncio
 import ipaddress
 import json
+import os
 import shutil
 import socket
+import sqlite3
 import tarfile
 import tempfile
 import time
@@ -28,12 +30,17 @@ from docsfy.ai_client import (
     probe_cursor_auth,
     refresh_models,
 )
-from docsfy.cost_tracker import (
-    CostAccumulator,
-    set_cost_accumulator,
-    reset_cost_accumulator,
+from docsfy.api.websocket import (
+    notify_progress,
+    notify_status_change,
+    notify_sync,
 )
 from docsfy.config import get_settings
+from docsfy.cost_tracker import (
+    CostAccumulator,
+    reset_cost_accumulator,
+    set_cost_accumulator,
+)
 from docsfy.generator import (
     generate_all_pages,
     is_unsafe_slug,
@@ -69,7 +76,6 @@ from docsfy.repository import (
 )
 from docsfy.storage import (
     _validate_name,
-    set_generation_cost,
     delete_project,
     get_known_branches,
     get_latest_variant,
@@ -84,12 +90,8 @@ from docsfy.storage import (
     list_projects,
     list_variants,
     save_project,
+    set_generation_cost,
     update_project_status,
-)
-from docsfy.api.websocket import (
-    notify_progress,
-    notify_status_change,
-    notify_sync,
 )
 
 logger = get_logger(name=__name__)
@@ -111,8 +113,8 @@ def _redact_url(url: str | None) -> str:
                 + (f":{parsed.port}" if parsed.port else "")
             )
             return urlunparse(redacted)
-    except Exception:
-        pass
+    except (ValueError, AttributeError) as exc:
+        logger.debug(f"URL redaction failed: {exc}")
     return url
 
 
@@ -427,9 +429,9 @@ async def _reject_private_url(url: str) -> None:
 
 async def _stream_tarball(site_dir: Path, archive_name: str) -> StreamingResponse:
     """Create a tar.gz archive and stream it as a response."""
-    tmp = tempfile.NamedTemporaryFile(suffix=".tar.gz", delete=False)
-    tar_path = Path(tmp.name)
-    tmp.close()
+    tmp_fd, tmp_name = tempfile.mkstemp(suffix=".tar.gz")
+    os.close(tmp_fd)
+    tar_path = Path(tmp_name)
 
     def _create_archive() -> None:
         with tarfile.open(tar_path, mode="w:gz") as tar:
@@ -543,7 +545,7 @@ async def _replace_variant(
                 owner=owner,
                 branch=branch,
             )
-        except Exception as exc:
+        except (OSError, sqlite3.Error) as exc:
             logger.warning(
                 f"[{project_name}] Failed to delete old variant DB row: {exc}"
             )
@@ -556,7 +558,7 @@ async def _replace_variant(
         )
         if old_dir.exists():
             await asyncio.to_thread(shutil.rmtree, old_dir)
-    except Exception as exc:
+    except OSError as exc:
         logger.warning(
             f"[{project_name}] Failed to clean up old variant directory: {exc}"
         )
@@ -687,7 +689,7 @@ async def _run_generation(
             generation_id=generation_id,
         )
         raise
-    except Exception as exc:
+    except (OSError, RuntimeError, ValueError, TypeError) as exc:
         logger.error(f"Generation failed for {project_name}: {exc}")
         await update_and_notify(
             gen_key,
@@ -713,7 +715,7 @@ async def _run_generation(
                     owner=owner,
                     cost_usd=cost_acc.total_cost_usd,
                 )
-            except Exception as exc:
+            except (OSError, sqlite3.Error, ValueError) as exc:
                 logger.warning(
                     f"[{project_name}] Failed to persist generation cost "
                     f"(${cost_acc.total_cost_usd:.4f} for {ai_provider}/{ai_model}): {exc}"
@@ -721,7 +723,7 @@ async def _run_generation(
             else:
                 try:
                     await notify_sync()
-                except Exception as exc:
+                except (OSError, ConnectionError) as exc:
                     logger.debug(
                         f"[{project_name}] Failed to send cost sync notification: {exc}"
                     )
@@ -914,16 +916,19 @@ async def _generate_from_path(
         logger.warning(
             f"[{project_name}] Base artifacts copy failed, falling back to full regeneration"
         )
-    if can_run_incremental_update:
-        # Shallow clones (--depth 1) only contain the latest commit.
-        # Fetch the old commit so that git-diff can compare the two.
-        if old_sha is not None and not deepen_clone_for_diff(repo_dir, old_sha):
-            logger.warning(
-                f"[{project_name}] Could not fetch old commit {old_sha}, "
-                "falling back to full regeneration"
-            )
-            old_sha = None  # skip the diff branch entirely
-            can_run_incremental_update = False
+    # Shallow clones (--depth 1) only contain the latest commit.
+    # Fetch the old commit so that git-diff can compare the two.
+    if (
+        can_run_incremental_update
+        and old_sha is not None
+        and not deepen_clone_for_diff(repo_dir, old_sha)
+    ):
+        logger.warning(
+            f"[{project_name}] Could not fetch old commit {old_sha}, "
+            "falling back to full regeneration"
+        )
+        old_sha = None  # skip the diff branch entirely
+        can_run_incremental_update = False
 
     if can_run_incremental_update:
         if old_sha is not None:
@@ -1078,7 +1083,7 @@ async def _generate_from_path(
             logger.info(
                 f"[{project_name}] Image catalog ready: {len(image_catalog)} images"
             )
-    except Exception as exc:
+    except (OSError, ValueError) as exc:
         logger.warning(f"[{project_name}] Image cataloging failed: {exc}")
 
     if plan is None:
@@ -1210,7 +1215,7 @@ async def _generate_from_path(
             plan=plan,
             ai_cli_timeout=ai_cli_timeout,
         )
-    except Exception as exc:
+    except (OSError, RuntimeError, ValueError) as exc:
         logger.warning(f"[{project_name}] Validation stage failed: {exc}")
 
     # Completeness check — generate pages for any undocumented features
@@ -1266,7 +1271,7 @@ async def _generate_from_path(
                 plan_json=json.dumps(plan),
                 generation_started_at=generation_started_at,
             )
-    except Exception as exc:
+    except (OSError, RuntimeError, ValueError) as exc:
         logger.warning(f"[{project_name}] Completeness check failed: {exc}")
 
     try:
@@ -1286,7 +1291,7 @@ async def _generate_from_path(
         pages = fix_broken_internal_links(pages, plan, project_name=project_name)
         try:
             pages = linkify_plain_references(pages, plan, project_name=project_name)
-        except Exception as exc:
+        except (ValueError, KeyError, TypeError) as exc:
             logger.warning(f"[{project_name}] linkify_plain_references failed: {exc}")
         pages = await add_cross_links(
             pages=pages,
@@ -1297,7 +1302,7 @@ async def _generate_from_path(
             project_name=project_name,
             ai_cli_timeout=ai_cli_timeout,
         )
-    except Exception as exc:
+    except (OSError, RuntimeError, ValueError) as exc:
         logger.warning(f"[{project_name}] Cross-linking stage failed: {exc}")
 
     version = detect_version(repo_dir)
@@ -1427,7 +1432,7 @@ async def _load_available_models() -> dict[str, list[dict[str, str]]]:
             total,
             ", ".join(f"{p}:{len(result[p])}" for p in VALID_PROVIDERS),
         )
-    except Exception as exc:
+    except (OSError, RuntimeError, ValueError, ConnectionError) as exc:
         logger.warning("Failed to load models from sidecar: %s", exc)
     return result
 

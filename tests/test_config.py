@@ -41,8 +41,12 @@ def test_custom_settings() -> None:
 
 
 def test_invalid_timeout_rejected() -> None:
+    from pydantic import ValidationError
+
     from docsfy.config import Settings
 
-    with patch.dict(os.environ, {"AI_CLI_TIMEOUT": "0"}, clear=True):
-        with pytest.raises(Exception):
-            Settings(_env_file=None)
+    with (
+        patch.dict(os.environ, {"AI_CLI_TIMEOUT": "0"}, clear=True),
+        pytest.raises(ValidationError),
+    ):
+        Settings(_env_file=None)

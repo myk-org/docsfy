@@ -9,7 +9,7 @@ import secrets
 import shutil
 import sqlite3
 import uuid
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
@@ -101,11 +101,11 @@ async def init_db(data_dir: str = "") -> None:
         needs_pk_migration = False
 
         # Detect old schema: branch/owner not in columns, or owner is nullable
-        if "branch" not in col_names:
-            needs_pk_migration = True
-        elif "owner" not in col_names:
-            needs_pk_migration = True
-        elif "ai_provider" not in col_names:
+        if (
+            "branch" not in col_names
+            or "owner" not in col_names
+            or "ai_provider" not in col_names
+        ):
             needs_pk_migration = True
         else:
             # Check if ai_provider is nullable (old schema)
@@ -991,7 +991,7 @@ async def create_session(
     """Create an opaque session token."""
     token = secrets.token_urlsafe(32)
     token_hash = _hash_session_token(token)
-    expires_at = datetime.now(timezone.utc) + timedelta(hours=ttl_hours)
+    expires_at = datetime.now(UTC) + timedelta(hours=ttl_hours)
     expires_str = expires_at.strftime("%Y-%m-%d %H:%M:%S")
     async with aiosqlite.connect(DB_PATH) as db:
         await db.execute(
@@ -1079,7 +1079,7 @@ async def get_max_concurrent_pages() -> int:
             db_val,
             exc,
         )
-    except Exception as exc:
+    except (OSError, sqlite3.Error) as exc:
         logger.debug(
             "Could not read max_concurrent_pages from DB: %s, using config default",
             exc,

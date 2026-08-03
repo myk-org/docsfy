@@ -6,6 +6,7 @@ from unittest.mock import patch
 
 import pytest
 from starlette.testclient import TestClient
+from starlette.websockets import WebSocketDisconnect
 
 TEST_ADMIN_KEY = "test-admin-secret-key"
 
@@ -13,7 +14,7 @@ TEST_ADMIN_KEY = "test-admin-secret-key"
 @pytest.fixture
 async def _init_db(tmp_path: Path):
     """Initialize storage paths and database without creating a client."""
-    import docsfy.storage as storage
+    from docsfy import storage
     from docsfy.config import get_settings
 
     orig_db = storage.DB_PATH
@@ -57,10 +58,12 @@ def sync_client(_init_db: None):
 
 def test_websocket_rejects_unauthenticated(sync_client: TestClient) -> None:
     """WS connect without auth should be closed with code 1008 (policy violation)."""
-    with pytest.raises(Exception):
-        # TestClient raises an exception when the server rejects the WebSocket
-        with sync_client.websocket_connect("/api/ws"):
-            pass
+    # TestClient raises when the server rejects the WebSocket
+    with (
+        pytest.raises(WebSocketDisconnect),
+        sync_client.websocket_connect("/api/ws"),
+    ):
+        pass
 
 
 def test_websocket_accepts_bearer_token(sync_client: TestClient) -> None:

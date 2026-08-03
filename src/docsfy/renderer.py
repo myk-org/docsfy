@@ -3,8 +3,8 @@ from __future__ import annotations
 import html as _html_mod
 import json
 import re
-import urllib.parse
 import shutil
+import urllib.parse
 from collections.abc import Callable
 from pathlib import Path
 from typing import Any
@@ -296,24 +296,17 @@ def _ensure_blank_lines(md_text: str) -> str:
 
             # List item not preceded by another list item
             if (
-                (stripped.startswith("- ") or stripped.startswith("* "))
-                and not prev_stripped.startswith("- ")
-                and not prev_stripped.startswith("* ")
+                (
+                    stripped.startswith(("- ", "* "))
+                    and not prev_stripped.startswith(("- ", "* "))
+                )
+                or re.match(r"^\d+\. ", stripped)
+                and not re.match(r"^\d+\. ", prev_stripped)
+                or stripped.startswith("> ")
+                and not prev_stripped.startswith("> ")
+                or stripped.startswith("```")
+                and not prev_stripped.startswith("```")
             ):
-                needs_blank = True
-
-            # Ordered list item not preceded by another ordered item
-            elif re.match(r"^\d+\. ", stripped) and not re.match(
-                r"^\d+\. ", prev_stripped
-            ):
-                needs_blank = True
-
-            # Blockquote not preceded by another blockquote
-            elif stripped.startswith("> ") and not prev_stripped.startswith("> "):
-                needs_blank = True
-
-            # Code fence not preceded by blank
-            elif stripped.startswith("```") and not prev_stripped.startswith("```"):
                 needs_blank = True
 
             if needs_blank:

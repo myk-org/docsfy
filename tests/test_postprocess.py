@@ -6,6 +6,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 import pytest
+
 from docsfy.ai_client import AIResult
 
 # Shared body text long enough to pass generator.page_content_passes_quality_gate's
@@ -779,18 +780,20 @@ async def test_add_cross_links_uses_confined_paths(tmp_path: Path) -> None:
             }
         ]
     }
-    with patch(
-        "docsfy.postprocess.call_ai_once",
-        return_value=AIResult(success=True, text=json.dumps({})),
+    with (
+        patch(
+            "docsfy.postprocess.call_ai_once",
+            return_value=AIResult(success=True, text=json.dumps({})),
+        ),
+        pytest.raises(ValueError, match="Unsafe generated filename"),
     ):
-        with pytest.raises(ValueError, match="Unsafe generated filename"):
-            await add_cross_links(
-                pages=pages,
-                plan=plan,
-                ai_provider="claude",
-                ai_model="opus",
-                repo_path=tmp_path,
-            )
+        await add_cross_links(
+            pages=pages,
+            plan=plan,
+            ai_provider="claude",
+            ai_model="opus",
+            repo_path=tmp_path,
+        )
 
 
 # --- Fix 7: Cross-link constraints (self-links, dedup, cap at 5) ---

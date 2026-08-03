@@ -13,7 +13,7 @@ TEST_ADMIN_KEY = "test-admin-secret-key"
 
 @pytest.fixture
 async def client(tmp_path: Path):
-    import docsfy.storage as storage
+    from docsfy import storage
     from docsfy.api.projects import _generating
     from docsfy.config import get_settings
 
@@ -120,12 +120,12 @@ async def test_get_models_includes_valid_providers(client: AsyncClient) -> None:
 
 async def test_get_models_no_auth_required() -> None:
     """GET /api/models works without authentication."""
-    import docsfy.storage as storage
-    from docsfy.config import get_settings
-
     # Use a temporary path to avoid interfering with other tests
     import tempfile
     from pathlib import Path
+
+    from docsfy import storage
+    from docsfy.config import get_settings
 
     with tempfile.TemporaryDirectory() as tmp:
         tmp_path = Path(tmp)
@@ -194,10 +194,10 @@ async def test_get_models_admin_gets_cursor_auth_details(
 
 async def test_refresh_models_requires_admin() -> None:
     """POST /api/models/refresh requires admin authentication."""
-    import docsfy.storage as storage
-    from docsfy.config import get_settings
-
     import tempfile
+
+    from docsfy import storage
+    from docsfy.config import get_settings
 
     with tempfile.TemporaryDirectory() as tmp:
         tmp_path = Path(tmp)

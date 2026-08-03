@@ -5,7 +5,7 @@ import shutil
 import tarfile
 import tempfile
 from pathlib import Path
-from typing import Annotated, Any, Optional
+from typing import Annotated, Any
 
 import httpx
 import typer
@@ -257,13 +257,13 @@ def _resolve_generation_id(
 
 
 def list_projects(
-    status_filter: Optional[str] = typer.Option(  # noqa: M511
+    status_filter: str | None = typer.Option(
         None, "--status", help="Filter by status (ready, generating, error)"
     ),
-    provider_filter: Optional[str] = typer.Option(  # noqa: M511
+    provider_filter: str | None = typer.Option(
         None, "--provider", help="Filter by AI provider"
     ),
-    output_json: bool = typer.Option(False, "--json", help="Output as JSON"),  # noqa: M511
+    output_json: bool = typer.Option(False, "--json", help="Output as JSON"),
 ) -> None:
     """List all projects."""
     from docsfy.cli.main import get_client
@@ -320,20 +320,16 @@ def list_projects(
 
 
 def status(
-    name: str = typer.Argument(help="Project name or generation ID (UUID)"),  # noqa: M511
-    branch: Optional[str] = typer.Option(  # noqa: M511
-        None, "--branch", "-b", help="Filter by branch"
-    ),
-    provider: Optional[str] = typer.Option(  # noqa: M511
+    name: str = typer.Argument(help="Project name or generation ID (UUID)"),
+    branch: str | None = typer.Option(None, "--branch", "-b", help="Filter by branch"),
+    provider: str | None = typer.Option(
         None, "--provider", "-p", help="Filter by provider"
     ),
-    model: Optional[str] = typer.Option(  # noqa: M511
-        None, "--model", "-m", help="Filter by model"
-    ),
-    owner: Optional[str] = typer.Option(  # noqa: M511
+    model: str | None = typer.Option(None, "--model", "-m", help="Filter by model"),
+    owner: str | None = typer.Option(
         None, "--owner", help="Project owner (for admin disambiguation)"
     ),
-    output_json: bool = typer.Option(False, "--json", help="Output as JSON"),  # noqa: M511
+    output_json: bool = typer.Option(False, "--json", help="Output as JSON"),
 ) -> None:
     """Show status of a project and its variants."""
     from docsfy.cli.main import get_client
@@ -416,25 +412,23 @@ def _print_variant_detail(v: dict[str, Any]) -> None:
 
 
 def delete(
-    name: str = typer.Argument(help="Project name or generation ID (UUID)"),  # noqa: M511
-    branch: Optional[str] = typer.Option(  # noqa: M511
+    name: str = typer.Argument(help="Project name or generation ID (UUID)"),
+    branch: str | None = typer.Option(
         None, "--branch", "-b", help="Branch of variant to delete"
     ),
-    provider: Optional[str] = typer.Option(  # noqa: M511
+    provider: str | None = typer.Option(
         None, "--provider", "-p", help="Provider of variant to delete"
     ),
-    model: Optional[str] = typer.Option(  # noqa: M511
+    model: str | None = typer.Option(
         None, "--model", "-m", help="Model of variant to delete"
     ),
-    owner: Optional[str] = typer.Option(  # noqa: M511
+    owner: str | None = typer.Option(
         None, "--owner", help="Project owner (required for admin)"
     ),
-    all_variants: bool = typer.Option(  # noqa: M511
+    all_variants: bool = typer.Option(
         False, "--all", help="Delete all variants of the project"
     ),
-    yes: bool = typer.Option(  # noqa: M511
-        False, "--yes", "-y", help="Skip confirmation prompt"
-    ),
+    yes: bool = typer.Option(False, "--yes", "-y", help="Skip confirmation prompt"),
 ) -> None:
     """Delete a project or a specific variant."""
     from docsfy.cli.main import get_client
@@ -500,17 +494,17 @@ def delete(
 
 
 def abort(
-    name: str = typer.Argument(help="Project name or generation ID (UUID)"),  # noqa: M511
-    branch: Optional[str] = typer.Option(  # noqa: M511
+    name: str = typer.Argument(help="Project name or generation ID (UUID)"),
+    branch: str | None = typer.Option(
         None, "--branch", "-b", help="Branch of variant to abort"
     ),
-    provider: Optional[str] = typer.Option(  # noqa: M511
+    provider: str | None = typer.Option(
         None, "--provider", "-p", help="Provider of variant to abort"
     ),
-    model: Optional[str] = typer.Option(  # noqa: M511
+    model: str | None = typer.Option(
         None, "--model", "-m", help="Model of variant to abort"
     ),
-    owner: Optional[str] = typer.Option(  # noqa: M511
+    owner: str | None = typer.Option(
         None, "--owner", help="Project owner (required for admin)"
     ),
 ) -> None:
@@ -551,20 +545,20 @@ def abort(
 
 
 def download(
-    name: str = typer.Argument(help="Project name or generation ID (UUID)"),  # noqa: M511
-    branch: Optional[str] = typer.Option(  # noqa: M511
+    name: str = typer.Argument(help="Project name or generation ID (UUID)"),
+    branch: str | None = typer.Option(
         None, "--branch", "-b", help="Branch of variant to download"
     ),
-    provider: Optional[str] = typer.Option(  # noqa: M511
+    provider: str | None = typer.Option(
         None, "--provider", "-p", help="Provider of variant to download"
     ),
-    model: Optional[str] = typer.Option(  # noqa: M511
+    model: str | None = typer.Option(
         None, "--model", "-m", help="Model of variant to download"
     ),
-    owner: Optional[str] = typer.Option(  # noqa: M511
+    owner: str | None = typer.Option(
         None, "--owner", help="Project owner (for admin disambiguation)"
     ),
-    output: Optional[str] = typer.Option(  # noqa: M511
+    output: str | None = typer.Option(
         None,
         "--output",
         "-o",
@@ -573,7 +567,7 @@ def download(
             "successful download and extract; default: save tar.gz to current dir)"
         ),
     ),
-    flatten: bool = typer.Option(  # noqa: M511
+    flatten: bool = typer.Option(
         False, "--flatten", help="Flatten extracted directory structure into output dir"
     ),
 ) -> None:
@@ -665,7 +659,7 @@ def download(
 
 def models(
     provider: Annotated[
-        Optional[str],
+        str | None,
         typer.Option("--provider", "-P", help="Filter by provider"),
     ] = None,
     refresh: Annotated[
@@ -696,10 +690,9 @@ def models(
     default_model = data.get("default_model", "")
     available = data.get("available_models", {})
 
-    if provider:
-        if provider not in providers:
-            typer.echo(f"Unknown provider: {provider}")
-            raise typer.Exit(1)
+    if provider and provider not in providers:
+        typer.echo(f"Unknown provider: {provider}")
+        raise typer.Exit(1)
 
     if json_output:
         if provider:

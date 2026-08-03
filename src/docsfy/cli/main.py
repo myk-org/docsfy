@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 import json
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any
 
+import httpx
 import typer
 
 from docsfy.cli.admin import admin_app
@@ -39,19 +40,15 @@ def get_client() -> DocsfyClient:
 
 @app.callback()
 def main_callback(
-    server: Optional[str] = typer.Option(  # noqa: M511
+    server: str | None = typer.Option(
         None, "--server", "-s", help="Server profile name from config"
     ),
-    host: Optional[str] = typer.Option(  # noqa: M511
+    host: str | None = typer.Option(
         None, "--host", help="Server host (overrides config)"
     ),
-    port: Optional[int] = typer.Option(  # noqa: M511
-        None, "--port", help="Server port (default 8000)"
-    ),
-    username: Optional[str] = typer.Option(  # noqa: M511
-        None, "--username", "-u", help="Username"
-    ),
-    password: Optional[str] = typer.Option(  # noqa: M511
+    port: int | None = typer.Option(None, "--port", help="Server port (default 8000)"),
+    username: str | None = typer.Option(None, "--username", "-u", help="Username"),
+    password: str | None = typer.Option(
         None, "--password", "-p", help="Password/API key"
     ),
 ) -> None:
@@ -64,8 +61,15 @@ def main_callback(
 
 
 # Import standalone commands after app is defined to avoid circular imports
-from docsfy.cli.generate import generate  # noqa: E402
-from docsfy.cli.projects import abort, delete, download, list_projects, models, status  # noqa: E402
+from docsfy.cli.generate import generate
+from docsfy.cli.projects import (
+    abort,
+    delete,
+    download,
+    list_projects,
+    models,
+    status,
+)
 
 app.command("generate")(generate)
 app.command("list")(list_projects)
@@ -95,7 +99,7 @@ def health() -> None:
         typer.echo(f"Status: {data.get('status', 'unknown')}")
     except typer.Exit:
         raise
-    except Exception as exc:
+    except (httpx.HTTPError, OSError, ConnectionError) as exc:
         typer.echo(f"Server unreachable: {exc}", err=True)
         raise typer.Exit(code=1)
     finally:

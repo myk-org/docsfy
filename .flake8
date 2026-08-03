@@ -1,5 +1,7 @@
 [flake8]
 select=M511
+per-file-ignores =
+    src/docsfy/cli/*:M511
 
 exclude =
     doc,

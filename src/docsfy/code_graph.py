@@ -78,8 +78,7 @@ def _parse_llm_json(raw: str) -> dict[str, Any]:
     """Parse JSON from LLM response, stripping markdown fences if present."""
     if raw.startswith("```"):
         raw = raw.split("```", 2)[1]
-        if raw.startswith("json"):
-            raw = raw[4:]
+        raw = raw.removeprefix("json")
         raw = raw.rsplit("```", 1)[0]
     try:
         return json.loads(raw.strip())
@@ -373,17 +372,17 @@ async def build_code_graph(
     Returns the path to GRAPH_REPORT.md on success, or None on failure.
     """
     try:
-        from graphify.detect import detect
-        from graphify.extract import extract, collect_files
-        from graphify.build import build_from_json
-        from graphify.cluster import cluster, score_all
         from graphify.analyze import (
             god_nodes,
-            surprising_connections,
             suggest_questions,
+            surprising_connections,
         )
-        from graphify.report import generate as generate_report
+        from graphify.build import build_from_json
+        from graphify.cluster import cluster, score_all
+        from graphify.detect import detect
         from graphify.export import to_json
+        from graphify.extract import collect_files, extract
+        from graphify.report import generate as generate_report
     except ImportError:
         logger.warning(
             "graphifyy package not installed, skipping code graph generation"

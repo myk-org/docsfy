@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import json
-from typing import Any, Optional
+from typing import Any
 
 import typer
 
@@ -19,7 +19,7 @@ admin_app.add_typer(access_app)
 
 @users_app.command("list")
 def users_list(
-    output_json: bool = typer.Option(False, "--json", help="Output as JSON"),  # noqa: M511
+    output_json: bool = typer.Option(False, "--json", help="Output as JSON"),
 ) -> None:
     """List all users."""
     from docsfy.cli.main import get_client
@@ -56,11 +56,11 @@ def users_list(
 
 @users_app.command("create")
 def users_create(
-    username: str = typer.Argument(help="Username to create"),  # noqa: M511
-    role: str = typer.Option(  # noqa: M511
+    username: str = typer.Argument(help="Username to create"),
+    role: str = typer.Option(
         "user", "--role", "-r", help="User role (user, viewer, admin)"
     ),
-    output_json: bool = typer.Option(False, "--json", help="Output as JSON"),  # noqa: M511
+    output_json: bool = typer.Option(False, "--json", help="Output as JSON"),
 ) -> None:
     """Create a new user."""
     from docsfy.cli.main import get_client
@@ -88,8 +88,8 @@ def users_create(
 
 @users_app.command("delete")
 def users_delete(
-    username: str = typer.Argument(help="Username to delete"),  # noqa: M511
-    yes: bool = typer.Option(False, "--yes", "-y", help="Skip confirmation prompt"),  # noqa: M511
+    username: str = typer.Argument(help="Username to delete"),
+    yes: bool = typer.Option(False, "--yes", "-y", help="Skip confirmation prompt"),
 ) -> None:
     """Delete a user."""
     if not yes:
@@ -110,11 +110,11 @@ def users_delete(
 
 @users_app.command("rotate-key")
 def users_rotate_key(
-    username: str = typer.Argument(help="Username whose key to rotate"),  # noqa: M511
-    new_key: Optional[str] = typer.Option(  # noqa: M511
+    username: str = typer.Argument(help="Username whose key to rotate"),
+    new_key: str | None = typer.Option(
         None, "--new-key", help="Custom API key (generated if omitted)"
     ),
-    output_json: bool = typer.Option(False, "--json", help="Output as JSON"),  # noqa: M511
+    output_json: bool = typer.Option(False, "--json", help="Output as JSON"),
 ) -> None:
     """Rotate a user's API key."""
     from docsfy.cli.main import get_client
@@ -147,9 +147,9 @@ def users_rotate_key(
 
 @access_app.command("list")
 def access_list(
-    project: str = typer.Argument(help="Project name"),  # noqa: M511
-    owner: str = typer.Option(..., "--owner", help="Project owner"),  # noqa: M511
-    output_json: bool = typer.Option(False, "--json", help="Output as JSON"),  # noqa: M511
+    project: str = typer.Argument(help="Project name"),
+    owner: str = typer.Option(..., "--owner", help="Project owner"),
+    output_json: bool = typer.Option(False, "--json", help="Output as JSON"),
 ) -> None:
     """List users with access to a project."""
     from docsfy.cli.main import get_client
@@ -176,9 +176,9 @@ def access_list(
 
 @access_app.command("grant")
 def access_grant(
-    project: str = typer.Argument(help="Project name"),  # noqa: M511
-    username: str = typer.Option(..., "--username", help="Username to grant access"),  # noqa: M511
-    owner: str = typer.Option(..., "--owner", help="Project owner"),  # noqa: M511
+    project: str = typer.Argument(help="Project name"),
+    username: str = typer.Option(..., "--username", help="Username to grant access"),
+    owner: str = typer.Option(..., "--owner", help="Project owner"),
 ) -> None:
     """Grant a user access to a project."""
     from docsfy.cli.main import get_client
@@ -196,9 +196,9 @@ def access_grant(
 
 @access_app.command("revoke")
 def access_revoke(
-    project: str = typer.Argument(help="Project name"),  # noqa: M511
-    username: str = typer.Option(..., "--username", help="Username to revoke access"),  # noqa: M511
-    owner: str = typer.Option(..., "--owner", help="Project owner"),  # noqa: M511
+    project: str = typer.Argument(help="Project name"),
+    username: str = typer.Option(..., "--username", help="Username to revoke access"),
+    owner: str = typer.Option(..., "--owner", help="Project owner"),
 ) -> None:
     """Revoke a user's access to a project."""
     from docsfy.cli.main import get_client

@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
+from pydantic import ValidationError
 
 
 def test_generate_request_valid_https() -> None:
@@ -32,7 +33,7 @@ def test_generate_request_extracts_project_name() -> None:
 def test_generate_request_invalid_url() -> None:
     from docsfy.models import GenerateRequest
 
-    with pytest.raises(Exception):
+    with pytest.raises(ValidationError):
         GenerateRequest(repo_url="not-a-url")
 
 
@@ -75,14 +76,14 @@ def test_generate_request_local_path(tmp_path: Path) -> None:
 def test_generate_request_requires_source() -> None:
     from docsfy.models import GenerateRequest
 
-    with pytest.raises(Exception):
+    with pytest.raises(ValidationError):
         GenerateRequest()
 
 
 def test_generate_request_rejects_both() -> None:
     from docsfy.models import GenerateRequest
 
-    with pytest.raises(Exception):
+    with pytest.raises(ValidationError):
         GenerateRequest(
             repo_url="https://github.com/org/repo.git", repo_path="/some/path"
         )
@@ -172,6 +173,7 @@ def test_docpage_type_case_normalization() -> None:
 
 def test_docpage_type_invalid_rejected() -> None:
     from pydantic import ValidationError
+
     from docsfy.models import DocPage
 
     with pytest.raises(ValidationError):

@@ -228,7 +228,7 @@ async def get_settings_endpoint(request: Request) -> dict[str, Any]:
     db_settings: dict[str, Any] = dict(await get_all_settings())
     # Convert numeric fields from string to int for the frontend
     for numeric_key in ("ai_cli_timeout", "max_concurrent_pages"):
-        if numeric_key in db_settings and db_settings[numeric_key]:
+        if db_settings.get(numeric_key):
             try:
                 db_settings[numeric_key] = int(db_settings[numeric_key])
             except (ValueError, TypeError):
