@@ -15,7 +15,7 @@ TEST_ADMIN_KEY = "test-admin-secret-key"
 
 @pytest.fixture
 async def client(tmp_path: Path):
-    import docsfy.storage as storage
+    from docsfy import storage
     from docsfy.api.projects import _generating
     from docsfy.config import get_settings
 
@@ -303,7 +303,7 @@ async def test_generate_rejects_private_url(client: AsyncClient) -> None:
 async def test_generate_from_path_falls_back_to_full_regeneration_when_diff_fails(
     client: AsyncClient, tmp_path: Path
 ) -> None:
-    import docsfy.storage as storage
+    from docsfy import storage
     from docsfy.api.projects import _generate_from_path
     from docsfy.storage import get_project_dir
 
@@ -386,7 +386,7 @@ async def test_generate_from_path_falls_back_to_full_regeneration_when_diff_fail
 async def test_generate_from_path_reuses_existing_plan_for_incremental_updates(
     client: AsyncClient, tmp_path: Path
 ) -> None:
-    import docsfy.storage as storage
+    from docsfy import storage
     from docsfy.api.projects import _generate_from_path
     from docsfy.storage import get_project_cache_dir, get_project_dir
 
@@ -492,7 +492,7 @@ async def test_generate_from_path_reuses_existing_plan_for_incremental_updates(
 async def test_generate_from_path_clears_stale_cache_for_full_regeneration(
     client: AsyncClient, tmp_path: Path
 ) -> None:
-    import docsfy.storage as storage
+    from docsfy import storage
     from docsfy.api.projects import _generate_from_path
     from docsfy.storage import get_project_cache_dir, get_project_dir
 
@@ -588,7 +588,7 @@ async def test_generate_from_path_clears_stale_cache_for_full_regeneration(
 async def test_generate_from_path_cross_provider_same_commit_reuses_existing_artifacts(
     client: AsyncClient, tmp_path: Path
 ) -> None:
-    import docsfy.storage as storage
+    from docsfy import storage
     from docsfy.api.projects import _generate_from_path
     from docsfy.storage import get_project, get_project_cache_dir, get_project_site_dir
 
@@ -693,7 +693,7 @@ async def test_generate_from_path_cross_provider_same_commit_reuses_existing_art
 async def test_generate_from_path_cross_provider_reuses_unchanged_cached_pages(
     client: AsyncClient, tmp_path: Path
 ) -> None:
-    import docsfy.storage as storage
+    from docsfy import storage
     from docsfy.api.projects import _generate_from_path
     from docsfy.storage import get_project, get_project_cache_dir, get_project_dir
 
@@ -829,7 +829,7 @@ async def test_force_generation_does_not_replace_existing_variant(
     client: AsyncClient, tmp_path: Path
 ) -> None:
     """force=True should do full generation without cross-provider reuse."""
-    import docsfy.storage as storage
+    from docsfy import storage
     from docsfy.api.projects import _generate_from_path
     from docsfy.storage import (
         get_project,

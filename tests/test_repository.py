@@ -49,6 +49,7 @@ def test_clone_repo_success(tmp_path: Path) -> None:
 
 def test_clone_repo_failure(tmp_path: Path) -> None:
     import pytest
+
     from docsfy.repository import clone_repo
 
     with patch("docsfy.repository.subprocess.run") as mock_run:
@@ -76,6 +77,7 @@ def test_get_local_repo_info(tmp_path: Path) -> None:
 
 def test_get_local_repo_info_failure(tmp_path: Path) -> None:
     import pytest
+
     from docsfy.repository import get_local_repo_info
 
     with patch("docsfy.repository.subprocess.run") as mock_run:
@@ -379,6 +381,7 @@ def test_clone_repo_detects_default_branch(tmp_path: Path) -> None:
 
 def test_clone_repo_invalid_branch(tmp_path: Path) -> None:
     import pytest
+
     from docsfy.repository import clone_repo
 
     with patch("docsfy.repository.subprocess.run") as mock_run:
@@ -409,6 +412,7 @@ def test_get_local_repo_info_returns_branch(tmp_path: Path) -> None:
 
 def test_get_local_repo_info_branch_mismatch(tmp_path: Path) -> None:
     import pytest
+
     from docsfy.repository import get_local_repo_info
 
     with patch("docsfy.repository.subprocess.run") as mock_run:

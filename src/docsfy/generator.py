@@ -8,13 +8,12 @@ from collections.abc import Awaitable, Callable
 from pathlib import Path
 from typing import Any
 
+from pydantic import ValidationError
 from simple_logger.logger import get_logger
 
 from docsfy.ai_client import AIResult, call_ai_once, run_parallel_with_limit
 from docsfy.cost_tracker import add_cost
 from docsfy.json_parser import parse_json_array_response, parse_json_response
-from pydantic import ValidationError
-
 from docsfy.models import (
     DEFAULT_BRANCH,
     PAGE_TYPES,
@@ -389,18 +388,18 @@ def _parse_incremental_page_updates(raw_text: str) -> list[tuple[str, str]]:
     raw_updates = payload.get("updates")
     if not isinstance(raw_updates, list):
         msg = "Incremental page update payload must contain an 'updates' list"
-        raise ValueError(msg)
+        raise TypeError(msg)
 
     updates: list[tuple[str, str]] = []
     for idx, item in enumerate(raw_updates):
         if not isinstance(item, dict):
             msg = f"Incremental update #{idx + 1} must be an object"
-            raise ValueError(msg)
+            raise TypeError(msg)
         old_text = item.get("old_text")
         new_text = item.get("new_text")
         if not isinstance(old_text, str) or not isinstance(new_text, str):
             msg = f"Incremental update #{idx + 1} must contain string old_text/new_text values"
-            raise ValueError(msg)
+            raise TypeError(msg)
         if not old_text:
             msg = f"Incremental update #{idx + 1} has an empty old_text value"
             raise ValueError(msg)
@@ -577,7 +576,7 @@ async def run_planner(
 
     if not isinstance(plan, dict):
         msg = f"[{project_name}] Planner returned {type(plan).__name__} instead of a JSON object"
-        raise RuntimeError(msg)
+        raise TypeError(msg)
 
     # Validate plan structure
     try:
@@ -713,7 +712,7 @@ async def generate_page(
         if on_page_generated is not None:
             try:
                 await on_page_generated(existing_pages)
-            except Exception as exc:
+            except (OSError, RuntimeError, ValueError, TypeError) as exc:
                 logger.debug(
                     f"[{_label}] on_page_generated callback failed for '{slug}': {exc}"
                 )

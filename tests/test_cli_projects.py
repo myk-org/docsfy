@@ -873,11 +873,13 @@ class TestDownload:
                 raise RuntimeError("install boom")
             real_move(src, dest)
 
-        with patch(
-            "docsfy.cli.projects._move_directory_entries", side_effect=flaky_move
+        with (
+            patch(
+                "docsfy.cli.projects._move_directory_entries", side_effect=flaky_move
+            ),
+            pytest.raises(RuntimeError, match="install boom"),
         ):
-            with pytest.raises(RuntimeError, match="install boom"):
-                _replace_directory_contents(output_dir, source_dir)
+            _replace_directory_contents(output_dir, source_dir)
 
         assert (output_dir / "old.txt").read_text() == "keep-me"
         assert not (output_dir / "new.txt").exists()
@@ -906,12 +908,14 @@ class TestDownload:
                 raise KeyboardInterrupt
             real_move(src, dest)
 
-        with patch(
-            "docsfy.cli.projects._move_directory_entries",
-            side_effect=interrupt_on_install,
+        with (
+            patch(
+                "docsfy.cli.projects._move_directory_entries",
+                side_effect=interrupt_on_install,
+            ),
+            pytest.raises(KeyboardInterrupt),
         ):
-            with pytest.raises(KeyboardInterrupt):
-                _replace_directory_contents(output_dir, source_dir)
+            _replace_directory_contents(output_dir, source_dir)
 
         assert (output_dir / "old.txt").read_text() == "keep-me"
         assert not (output_dir / "new.txt").exists()
@@ -953,9 +957,9 @@ class TestDownload:
             ),
             patch.object(Path, "rmdir", rmdir_fail),
             patch("docsfy.cli.projects.typer.echo") as echo,
+            pytest.raises(RuntimeError, match="install boom"),
         ):
-            with pytest.raises(RuntimeError, match="install boom"):
-                _replace_directory_contents(output_dir, source_dir)
+            _replace_directory_contents(output_dir, source_dir)
 
         assert (output_dir / "old.txt").read_text() == "keep-me"
         warning_calls = [
@@ -1046,12 +1050,14 @@ class TestDownload:
                 directory.symlink_to(sensitive)
             _refuse_unsafe_clear_target(directory)
 
-        with patch(
-            "docsfy.cli.projects._refuse_unsafe_clear_target",
-            side_effect=refuse_then_swap,
+        with (
+            patch(
+                "docsfy.cli.projects._refuse_unsafe_clear_target",
+                side_effect=refuse_then_swap,
+            ),
+            pytest.raises(typer.Exit),
         ):
-            with pytest.raises(typer.Exit):
-                _replace_directory_contents(output_dir, source_dir)
+            _replace_directory_contents(output_dir, source_dir)
 
         assert (sensitive / "keep.txt").read_text() == "do not wipe"
         assert not (sensitive / "new.txt").exists()

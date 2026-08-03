@@ -7,13 +7,13 @@ import os
 import time
 from typing import Any
 
-from pi_sidecar_client import AIResult
-from pi_sidecar_client import call_ai_once as _call_ai_once
 from pi_sidecar_client import (
+    AIResult,
     check_sidecar_available,
     get_sidecar_client,
     run_parallel_with_limit,
 )
+from pi_sidecar_client import call_ai_once as _call_ai_once
 from simple_logger.logger import get_logger
 
 from docsfy.models import (

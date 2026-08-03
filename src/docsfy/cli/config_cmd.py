@@ -93,15 +93,14 @@ def resolve_connection(
         url = f"{scheme}://{host}:{resolved_port}"
     else:
         url = profile.get("url", "")
-        if not url:
-            # No URL from profile and no --host flag
-            if not profile_name:
-                typer.echo(
-                    "No server configured. Use --server, --host, or run "
-                    "'docsfy config init'.",
-                    err=True,
-                )
-                raise typer.Exit(code=1)
+        # No URL from profile and no --host flag
+        if not url and not profile_name:
+            typer.echo(
+                "No server configured. Use --server, --host, or run "
+                "'docsfy config init'.",
+                err=True,
+            )
+            raise typer.Exit(code=1)
 
     # Resolve credentials: explicit flags win over profile
     resolved_username = username or profile.get("username", "")

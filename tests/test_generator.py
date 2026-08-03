@@ -5,6 +5,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 import pytest
+
 from docsfy.ai_client import AIResult
 
 
@@ -55,33 +56,37 @@ async def test_run_planner(tmp_path: Path, sample_plan: dict) -> None:
 async def test_run_planner_ai_failure(tmp_path: Path) -> None:
     from docsfy.generator import run_planner
 
-    with patch(
-        "docsfy.generator.call_ai_once",
-        return_value=AIResult(success=False, text="AI error"),
+    with (
+        patch(
+            "docsfy.generator.call_ai_once",
+            return_value=AIResult(success=False, text="AI error"),
+        ),
+        pytest.raises(RuntimeError, match="AI error"),
     ):
-        with pytest.raises(RuntimeError, match="AI error"):
-            await run_planner(
-                repo_path=tmp_path,
-                project_name="test-repo",
-                ai_provider="claude",
-                ai_model="opus",
-            )
+        await run_planner(
+            repo_path=tmp_path,
+            project_name="test-repo",
+            ai_provider="claude",
+            ai_model="opus",
+        )
 
 
 async def test_run_planner_bad_json(tmp_path: Path) -> None:
     from docsfy.generator import run_planner
 
-    with patch(
-        "docsfy.generator.call_ai_once",
-        return_value=AIResult(success=True, text="not json"),
+    with (
+        patch(
+            "docsfy.generator.call_ai_once",
+            return_value=AIResult(success=True, text="not json"),
+        ),
+        pytest.raises(RuntimeError, match="Failed to parse"),
     ):
-        with pytest.raises(RuntimeError, match="Failed to parse"):
-            await run_planner(
-                repo_path=tmp_path,
-                project_name="test-repo",
-                ai_provider="claude",
-                ai_model="opus",
-            )
+        await run_planner(
+            repo_path=tmp_path,
+            project_name="test-repo",
+            ai_provider="claude",
+            ai_model="opus",
+        )
 
 
 async def test_call_ai_or_raise_passes_tools(tmp_path: Path) -> None:

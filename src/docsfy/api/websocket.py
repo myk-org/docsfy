@@ -93,8 +93,8 @@ async def _heartbeat(websocket: WebSocket) -> None:
         await asyncio.sleep(_WS_HEARTBEAT_INTERVAL)
         try:
             await websocket.send_json({"type": "ping"})
-        except Exception:
-            logger.debug("WebSocket heartbeat send failed, stopping heartbeat")
+        except (OSError, ConnectionError, RuntimeError) as exc:
+            logger.debug("WebSocket heartbeat send failed, stopping heartbeat: %s", exc)
             return
 
         # Wait for pong
@@ -116,8 +116,10 @@ async def _heartbeat(websocket: WebSocket) -> None:
                     logger.info("WebSocket closing due to missed pongs")
                     await websocket.close(code=1001)
                     return
-        except Exception:
-            logger.debug("WebSocket heartbeat pong-wait failed, stopping heartbeat")
+        except (OSError, ConnectionError, RuntimeError, TimeoutError) as exc:
+            logger.debug(
+                "WebSocket heartbeat pong-wait failed, stopping heartbeat: %s", exc
+            )
             return
 
 
@@ -164,14 +166,14 @@ async def websocket_endpoint(websocket: WebSocket) -> None:
 
     except WebSocketDisconnect:
         logger.debug(f"WebSocket disconnected: username='{username}'")
-    except Exception as exc:
+    except (OSError, ConnectionError, RuntimeError) as exc:
         logger.debug(f"WebSocket error for {username}: {exc}")
     finally:
         if heartbeat_task is not None:
             heartbeat_task.cancel()
             try:
                 await heartbeat_task
-            except (asyncio.CancelledError, Exception):
+            except (asyncio.CancelledError, OSError, RuntimeError):
                 pass
 
         conns = _connections.get(username)
@@ -213,8 +215,10 @@ async def _broadcast_to_relevant(
             for ws, _ws_is_admin, _role in list(conns):
                 try:
                     await ws.send_json(message)
-                except Exception:
-                    logger.debug(f"WebSocket broadcast failed for user '{username}'")
+                except (OSError, ConnectionError, RuntimeError) as exc:
+                    logger.debug(
+                        f"WebSocket broadcast failed for user '{username}': {exc}"
+                    )
 
 
 async def notify_progress(
@@ -312,8 +316,10 @@ async def _send_sync_to_connections(
         try:
             sync_data = await _get_projects_for_user(target_username, ws_is_admin)
             await ws.send_json({"type": "sync", **sync_data})
-        except Exception:
-            logger.debug(f"WebSocket sync send failed for user '{target_username}'")
+        except (OSError, ConnectionError, RuntimeError) as exc:
+            logger.debug(
+                f"WebSocket sync send failed for user '{target_username}': {exc}"
+            )
 
 
 async def notify_sync(username: str | None = None) -> None:

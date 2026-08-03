@@ -13,7 +13,7 @@ TEST_ADMIN_KEY = "test-admin-secret-key"
 @pytest.fixture
 async def _init_db(tmp_path: Path):
     """Initialize storage paths and database without creating a client."""
-    import docsfy.storage as storage
+    from docsfy import storage
     from docsfy.config import get_settings
 
     orig_db = storage.DB_PATH

@@ -17,8 +17,7 @@ _CAT_FILE_TIMEOUT = 10
 
 def extract_repo_name(repo_url: str) -> str:
     name = repo_url.rstrip("/").split("/")[-1]
-    if name.endswith(".git"):
-        name = name[:-4]
+    name = name.removesuffix(".git")
     if ":" in name:
         name = name.split(":")[-1].split("/")[-1]
     return name
@@ -40,6 +39,7 @@ def clone_repo(
             capture_output=True,
             text=True,
             timeout=_CLONE_TIMEOUT,
+            check=False,
         )
     except (subprocess.TimeoutExpired, OSError) as exc:
         msg = f"Clone failed: {exc}"
@@ -54,6 +54,7 @@ def clone_repo(
             capture_output=True,
             text=True,
             timeout=_CAT_FILE_TIMEOUT,
+            check=False,
         )
     except (subprocess.TimeoutExpired, OSError) as exc:
         msg = f"Clone failed: {exc}"
@@ -69,6 +70,7 @@ def clone_repo(
             capture_output=True,
             text=True,
             timeout=_CAT_FILE_TIMEOUT,
+            check=False,
         )
     except (subprocess.TimeoutExpired, OSError) as exc:
         msg = f"Clone failed: {exc}"
@@ -109,6 +111,7 @@ def get_diff(
             capture_output=True,
             text=True,
             timeout=_DIFF_TIMEOUT,
+            check=False,
         )
     except (subprocess.TimeoutExpired, OSError) as exc:
         logger.warning(f"Failed to get diff: {exc}")
@@ -125,6 +128,7 @@ def get_diff(
             capture_output=True,
             text=True,
             timeout=_NAMES_TIMEOUT,
+            check=False,
         )
     except (subprocess.TimeoutExpired, OSError) as exc:
         logger.warning(f"Failed to get changed file names: {exc}")
@@ -158,6 +162,7 @@ def deepen_clone_for_diff(repo_path: Path, old_sha: str) -> bool:
             capture_output=True,
             text=True,
             timeout=_CAT_FILE_TIMEOUT,
+            check=False,
         )
         if check.returncode == 0:
             return True
@@ -169,6 +174,7 @@ def deepen_clone_for_diff(repo_path: Path, old_sha: str) -> bool:
             capture_output=True,
             text=True,
             timeout=_FETCH_TIMEOUT,
+            check=False,
         )
         return result.returncode == 0
     except (subprocess.TimeoutExpired, OSError) as exc:
@@ -187,6 +193,7 @@ def get_local_repo_info(
             capture_output=True,
             text=True,
             timeout=_CAT_FILE_TIMEOUT,
+            check=False,
         )
     except (subprocess.TimeoutExpired, OSError) as exc:
         msg = f"Failed to get commit SHA: {exc}"
@@ -202,6 +209,7 @@ def get_local_repo_info(
             capture_output=True,
             text=True,
             timeout=_CAT_FILE_TIMEOUT,
+            check=False,
         )
     except (subprocess.TimeoutExpired, OSError) as exc:
         msg = f"Failed to detect branch: {exc}"

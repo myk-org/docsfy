@@ -12,7 +12,7 @@ TEST_ADMIN_KEY = "test-admin-secret-key"
 
 @pytest.fixture
 async def client(tmp_path: Path):
-    import docsfy.storage as storage
+    from docsfy import storage
     from docsfy.api.projects import _generating
     from docsfy.config import get_settings
 

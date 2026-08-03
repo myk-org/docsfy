@@ -14,15 +14,17 @@ from starlette.responses import JSONResponse, RedirectResponse, Response
 
 from docsfy.api.admin import router as admin_router
 from docsfy.api.auth import router as auth_router
-from docsfy.api.websocket import router as ws_router
 from docsfy.api.projects import (
     _check_ownership,
     _generating,
     _resolve_latest_accessible_variant,
     _resolve_project,
     _validate_project_name,
+)
+from docsfy.api.projects import (
     router as projects_router,
 )
+from docsfy.api.websocket import router as ws_router
 from docsfy.config import get_settings
 from docsfy.models import DEFAULT_BRANCH, decode_branch_from_path
 from docsfy.storage import (
@@ -38,7 +40,7 @@ from docsfy.storage import (
 logger = get_logger(name=__name__)
 
 # Re-export so existing tests can do ``from docsfy.main import _generating``
-__all__ = ["app", "_generating"]
+__all__ = ["_generating", "app"]
 
 
 @asynccontextmanager

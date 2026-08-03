@@ -7,9 +7,9 @@ import shutil
 import subprocess
 import tempfile
 import uuid
+from collections.abc import Awaitable, Callable
 from configparser import ConfigParser
 from pathlib import Path
-from collections.abc import Awaitable, Callable
 from typing import Any
 
 from simple_logger.logger import get_logger
@@ -311,8 +311,8 @@ def detect_version(repo_path: Path) -> str | None:
             version = data.get("tool", {}).get("poetry", {}).get("version")
             if version:
                 return str(version)
-        except Exception:
-            logger.debug("Failed to parse pyproject.toml for version")
+        except (OSError, ValueError, TypeError, KeyError) as exc:
+            logger.debug("Failed to parse pyproject.toml for version: %s", exc)
 
     # 2. package.json
     package_json = repo_path / "package.json"
@@ -322,8 +322,8 @@ def detect_version(repo_path: Path) -> str | None:
             version = data.get("version")
             if version:
                 return str(version)
-        except Exception:
-            logger.debug("Failed to parse package.json for version")
+        except (OSError, ValueError, TypeError, KeyError) as exc:
+            logger.debug("Failed to parse package.json for version: %s", exc)
 
     # 3. Cargo.toml
     cargo_toml = repo_path / "Cargo.toml"
@@ -335,8 +335,8 @@ def detect_version(repo_path: Path) -> str | None:
             version = data.get("package", {}).get("version")
             if version:
                 return str(version)
-        except Exception:
-            logger.debug("Failed to parse Cargo.toml for version")
+        except (OSError, ValueError, TypeError, KeyError) as exc:
+            logger.debug("Failed to parse Cargo.toml for version: %s", exc)
 
     # 4. setup.cfg
     setup_cfg = repo_path / "setup.cfg"
@@ -347,8 +347,8 @@ def detect_version(repo_path: Path) -> str | None:
             version = parser.get("metadata", "version", fallback=None)
             if version:
                 return str(version)
-        except Exception:
-            logger.debug("Failed to parse setup.cfg for version")
+        except (OSError, ValueError, TypeError, KeyError) as exc:
+            logger.debug("Failed to parse setup.cfg for version: %s", exc)
 
     # 5. Git tags
     try:
@@ -458,7 +458,7 @@ async def _validate_single_page(
         cache_file = _confined_path(cache_dir, f"{slug}.md")
         await asyncio.to_thread(cache_file.write_text, new_content, encoding="utf-8")
         return new_content
-    except Exception as exc:
+    except (OSError, RuntimeError, ValueError, TypeError, KeyError) as exc:
         logger.warning(f"[{project_name}] Regeneration failed for page '{slug}': {exc}")
         return content
 
@@ -733,7 +733,7 @@ async def check_and_fill_completeness(
                 logger.info(
                     f"[{project_name}] Gap page generated: {title} ({len(content)} chars)"
                 )
-            except Exception as exc:
+            except (OSError, RuntimeError, ValueError, TypeError, KeyError) as exc:
                 logger.warning(
                     f"[{project_name}] Failed to generate gap page '{slug}': {exc}"
                 )
@@ -830,7 +830,7 @@ async def add_cross_links(
                 ai_call_timeout=ai_cli_timeout,
                 tools=list(SIDECAR_TOOLS),
             )
-        except Exception as exc:
+        except (OSError, RuntimeError, ValueError, TypeError) as exc:
             logger.warning(
                 f"[{project_name}] add_cross_links: AI call raised {exc}, returning pages unchanged"
             )

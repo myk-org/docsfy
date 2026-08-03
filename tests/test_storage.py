@@ -11,7 +11,7 @@ TEST_ADMIN_KEY = "test-admin-secret-key"
 
 @pytest.fixture
 async def db_path(tmp_path: Path) -> Path:
-    import docsfy.storage as storage
+    from docsfy import storage
 
     # Save original globals to restore after test
     orig_db_path = storage.DB_PATH
@@ -821,7 +821,7 @@ async def test_migration_adds_branch_default(db_path: Path) -> None:
 
 
 async def test_init_db_with_data_dir(tmp_path: Path) -> None:
-    import docsfy.storage as storage
+    from docsfy import storage
 
     # Save original globals to restore after test
     orig_db_path = storage.DB_PATH
@@ -893,7 +893,7 @@ async def test_get_known_branches(db_path: Path) -> None:
 
 async def test_set_generation_cost(tmp_path: Path) -> None:
     """set_generation_cost sets total_cost_usd on a variant."""
-    import docsfy.storage as storage
+    from docsfy import storage
 
     orig_db = storage.DB_PATH
     orig_projects = storage.PROJECTS_DIR
@@ -941,7 +941,7 @@ async def test_set_generation_cost(tmp_path: Path) -> None:
 
 async def test_get_total_cost(tmp_path: Path) -> None:
     """get_total_cost sums total_cost_usd across all variants."""
-    import docsfy.storage as storage
+    from docsfy import storage
 
     orig_db = storage.DB_PATH
     orig_projects = storage.PROJECTS_DIR
@@ -989,7 +989,7 @@ async def test_get_total_cost(tmp_path: Path) -> None:
 
 async def test_get_total_cost_owner_scoped(tmp_path: Path) -> None:
     """get_total_cost(owner=...) only sums that owner's costs."""
-    import docsfy.storage as storage
+    from docsfy import storage
 
     orig_db = storage.DB_PATH
     orig_data = storage.DATA_DIR
@@ -1027,7 +1027,7 @@ async def test_get_total_cost_owner_scoped(tmp_path: Path) -> None:
 
 async def test_save_project_resets_cost(tmp_path: Path) -> None:
     """save_project resets total_cost_usd to NULL for a new generation."""
-    import docsfy.storage as storage
+    from docsfy import storage
 
     orig_db = storage.DB_PATH
     orig_projects = storage.PROJECTS_DIR

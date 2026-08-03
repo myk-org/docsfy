@@ -13,7 +13,7 @@ TEST_ADMIN_KEY = "test-admin-secret-key"
 @pytest.fixture
 async def _init_db(tmp_path: Path):
     """Initialize storage paths and database without creating a client."""
-    import docsfy.storage as storage
+    from docsfy import storage
     from docsfy.config import get_settings
 
     orig_db = storage.DB_PATH
@@ -709,7 +709,7 @@ async def test_user_rotates_own_key(_init_db: None) -> None:
     from docsfy.storage import create_user
 
     _generating.clear()
-    username, key = await create_user("rotatetest", role="user")
+    _username, key = await create_user("rotatetest", role="user")
 
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as ac:

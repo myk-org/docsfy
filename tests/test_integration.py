@@ -12,9 +12,9 @@ TEST_ADMIN_KEY = "test-admin-secret-key"
 
 @pytest.fixture
 async def client(tmp_path: Path):
-    import docsfy.storage as storage
-    from docsfy.config import get_settings
+    from docsfy import storage
     from docsfy.api.projects import _generating
+    from docsfy.config import get_settings
 
     orig_db = storage.DB_PATH
     orig_data = storage.DATA_DIR
@@ -51,7 +51,7 @@ async def client(tmp_path: Path):
 
 async def test_full_flow_mock(client: AsyncClient, tmp_path: Path) -> None:
     """Test the full generate -> status -> download flow with mocked AI."""
-    import docsfy.storage as storage
+    from docsfy import storage
 
     sample_plan = {
         "project_name": "test-repo",
@@ -163,7 +163,7 @@ async def test_full_flow_mock(client: AsyncClient, tmp_path: Path) -> None:
 
 async def test_full_flow_with_branch(client: AsyncClient, tmp_path: Path) -> None:
     """Test generation with explicit branch parameter."""
-    import docsfy.storage as storage
+    from docsfy import storage
 
     sample_plan = {
         "project_name": "test-repo",
