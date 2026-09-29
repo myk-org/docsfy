@@ -29,7 +29,7 @@ repos:
 
   # flake8 retained for RedHatQE M511 plugin; ruff handles standard linting
   - repo: https://github.com/PyCQA/flake8
-    rev: 7.3.0
+    rev: 7.4.1
     hooks:
       - id: flake8
         args: [--config=.flake8]
@@ -44,7 +44,7 @@ repos:
         exclude: ^docs/
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.16.8
+    rev: v0.16.9
     hooks:
       - id: ruff
         args: [--fix]
