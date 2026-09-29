@@ -113,6 +113,36 @@ When adding new code:
 - Prompts should be short instructions: what to do, where to find input, what format to return
 - This applies to ALL prompts: planning, page generation, validation, cross-linking, everything
 
+## Sidecar Version Alignment
+
+`@myk-org/pi-sidecar` (npm, `sidecar-helper/package.json`) and
+`pi-sidecar-client` (PyPI, `pyproject.toml`) are released together and share one
+version number.
+
+- Bump both in the same change. If only one moves, the workspace and the
+  Python runtime can disagree about the sidecar protocol.
+- Regenerate both lockfiles, and **delete the lockfile rather than refreshing
+  it** (`rm -rf node_modules package-lock.json && npm install`; `uv lock`). A
+  plain `npm install` preserves existing lock entries that still satisfy their
+  ranges, so the requested version lands on top while the old vulnerable
+  transitive tree survives underneath.
+- Never pin either with an exact version — use a range (`>=X.Y.Z`).
+- Verify the *resolved tree*, not the requested version:
+
+  ```bash
+  cd sidecar-helper
+  npm ls @myk-org/pi-sidecar pi-orchestrator-config \
+    @huggingface/transformers sharp adm-zip --all
+  ```
+
+  Expect `adm-zip` >= 0.6.0 and `sharp` >= 0.35.5, with no `invalid` or
+  `extraneous` entries. `UNMET OPTIONAL DEPENDENCY` lines are normal.
+- Do not add an npm `overrides` block to force these. The range resolves
+  correctly on its own, and an override protects only this repo.
+- `renovate.json` runs `lockFileMaintenance`, which updates lockfiles
+  incrementally — the exact path that produces the false-negative above. Re-run
+  the `npm ls` check after any automated lockfile update.
+
 ## Page Quality Gate
 
 AI page generation occasionally returns exploration/chain-of-thought chatter
